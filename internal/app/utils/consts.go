@@ -8,7 +8,7 @@ const (
 	L1
 	L2
 	L3
-	HLC
+	Hlc
 )
 
 const (
