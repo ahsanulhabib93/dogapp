@@ -1,0 +1,23 @@
+secret = ["12","34", "34", "56","56","56","45"]
+
+[logconfig]
+logger = "logrus"
+level = "info"
+
+[traceconfig]
+host = "localhost"
+port = "6832"
+servicename = "supplier_service"
+type = "const"
+param = 1
+
+[grpcserverconfig]
+port = "5006"
+reflection=true
+
+[serviceconfig]
+name = "supplier_service"
+originalName = "supplier_service"
+
+[cloudStorageConfig]
+serviceAccount = "config/service-account.json"
