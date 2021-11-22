@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/voonik/goFramework/pkg/database"
-	"github.com/voonik/supplier_service/internal/app/utils"
+	"github.com/voonik/ss2/internal/app/utils"
 )
 
 type Supplier struct {

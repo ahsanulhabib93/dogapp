@@ -6,11 +6,11 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	supplierpb "github.com/voonik/goConnect/api/go/supplier_service/supplier"
+	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
-	"github.com/voonik/supplier_service/internal/app/models"
-	"github.com/voonik/supplier_service/internal/app/services"
-	"github.com/voonik/supplier_service/internal/app/test/test_helper"
+	"github.com/voonik/ss2/internal/app/models"
+	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/test_helper"
 )
 
 var _ = Describe("ListSupplier", func() {

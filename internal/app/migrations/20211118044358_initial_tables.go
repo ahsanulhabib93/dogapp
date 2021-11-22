@@ -4,7 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	migrator "github.com/voonik/goFramework/pkg/migrations"
-	"github.com/voonik/supplier_service/internal/app/models"
+	"github.com/voonik/ss2/internal/app/models"
 	"gopkg.in/gormigrate.v1"
 )
 

@@ -6,8 +6,8 @@ import (
 	"math/rand"
 
 	"github.com/voonik/goFramework/pkg/database"
-	"github.com/voonik/supplier_service/internal/app/models"
-	"github.com/voonik/supplier_service/internal/app/utils"
+	"github.com/voonik/ss2/internal/app/models"
+	"github.com/voonik/ss2/internal/app/utils"
 )
 
 func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supplier {

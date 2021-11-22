@@ -1,6 +1,6 @@
 [databaseconfig]
 user="root"
 password=""
-name="supplier_service"
+name="ss2"
 host="localhost"
 port="3306"

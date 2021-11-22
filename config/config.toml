@@ -7,7 +7,7 @@ level = "info"
 [traceconfig]
 host = "localhost"
 port = "6832"
-servicename = "supplier_service"
+servicename = "ss2"
 type = "const"
 param = 1
 
@@ -16,8 +16,8 @@ port = "5006"
 reflection=true
 
 [serviceconfig]
-name = "supplier_service"
-originalName = "supplier_service"
+name = "ss2"
+originalName = "ss2"
 
 [cloudStorageConfig]
 serviceAccount = "config/service-account.json"

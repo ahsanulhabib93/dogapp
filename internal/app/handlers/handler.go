@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/voonik/supplier_service/internal/app/services"
+	"github.com/voonik/ss2/internal/app/services"
 )
 
 func GetSupplierInstance() *services.SupplierService {

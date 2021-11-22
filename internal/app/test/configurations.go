@@ -5,7 +5,7 @@ import (
 	"github.com/qor/validations"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
-	"github.com/voonik/supplier_service/internal/app/migrations"
+	"github.com/voonik/ss2/internal/app/migrations"
 	dbcleaner "gopkg.in/khaiql/dbcleaner.v2"
 )
 

@@ -1,4 +1,4 @@
-module github.com/voonik/supplier_service
+module github.com/voonik/ss2
 
 go 1.16
 

@@ -5,7 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/voonik/supplier_service/internal/app/test"
+	"github.com/voonik/ss2/internal/app/test"
 )
 
 func TestExpenseConfigurationService(t *testing.T) {

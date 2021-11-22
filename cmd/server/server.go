@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/qor/validations"
-	supplierpb "github.com/voonik/goConnect/api/go/supplier_service/supplier"
+	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/config"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/goFramework/pkg/grpc/server"
-	"github.com/voonik/supplier_service/internal/app/handlers"
-	"github.com/voonik/supplier_service/internal/app/migrations"
+	"github.com/voonik/ss2/internal/app/handlers"
+	"github.com/voonik/ss2/internal/app/migrations"
 	"google.golang.org/grpc/reflection"
 )
 
