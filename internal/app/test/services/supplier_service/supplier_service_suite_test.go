@@ -14,5 +14,5 @@ func TestExpenseConfigurationService(t *testing.T) {
 }
 
 var _ = AfterEach(func() {
-	test.Cleaner.Clean("suppliers")
+	test.Cleaner.Clean("suppliers", "supplier_addresses")
 })

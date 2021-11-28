@@ -6,8 +6,9 @@ import (
 
 type KeyAccountManager struct {
 	database.VaccountGorm
-	Name     string
-	Email    string
-	Phone    string
-	Supplier Supplier
+	SupplierID uint64
+	Name       string
+	Email      string
+	Phone      string
+	Supplier   Supplier
 }

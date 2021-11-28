@@ -9,8 +9,8 @@ type Supplier struct {
 	database.VaccountGorm
 	Name                  string
 	Email                 string
-	SupplierType          utils.SupplierType
-	SupplierAddresses     []SupplierAddress
+	SupplierType          utils.SupplierType `json:"supplier_type"`
+	SupplierAddresses     []SupplierAddress  `json:"supplier_addresses"`
 	PaymentAccountDetails []PaymentAccountDetail
 	KeyAccountManagers    []KeyAccountManager
 }

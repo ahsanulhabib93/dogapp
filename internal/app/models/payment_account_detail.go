@@ -7,6 +7,7 @@ import (
 
 type PaymentAccountDetail struct {
 	database.VaccountGorm
+	SupplierID    uint64
 	AccountType   utils.AccountType
 	AccountName   string
 	AccountNumber string

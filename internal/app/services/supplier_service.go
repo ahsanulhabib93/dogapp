@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -21,7 +22,9 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 
 func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	resp := supplierpb.ListResponse{}
-	query := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses")
+
+	query := database.DBAPM(ctx).Model(&models.Supplier{}).Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id")
+
 	if params.GetId() != 0 {
 		query = query.Where("suppliers.id = ?", params.GetId())
 	}
@@ -37,7 +40,13 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	if params.GetCity() != "" {
 		query = query.Where("supplier_addresses.city = ?", params.GetCity())
 	}
-	query.Scan(&resp.Data)
+
+	suppliersWithAddresses := []models.Supplier{{}}
+	query.Select("distinct suppliers.*").Preload("SupplierAddresses").Find(&suppliersWithAddresses)
+
+	temp, _ := json.Marshal(suppliersWithAddresses)
+	json.Unmarshal(temp, &resp.Data)
+
 	return &resp, nil
 }
 
