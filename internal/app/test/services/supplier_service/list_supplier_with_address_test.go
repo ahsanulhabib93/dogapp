@@ -2,7 +2,6 @@ package supplier_service_test
 
 import (
 	"context"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,15 +14,15 @@ import (
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
-var _ = Describe("ListSupplier", func() {
+var _ = Describe("ListSupplierWithAddress", func() {
 	var ctx context.Context
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
 	})
 
-	Context("Supplier List with addresses", func() {
-		It("Should Respond with all the suppliers with addresses", func() {
+	Context("Without any filters", func() {
+		It("Should return all the suppliers with addresses", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
@@ -34,7 +33,6 @@ var _ = Describe("ListSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(len(res.Data)).To(Equal(2))
 
-			fmt.Printf("Response %+v", res.Data)
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
 			Expect(supplierData1.Name).To(Equal(supplier1.Name))
@@ -63,6 +61,106 @@ var _ = Describe("ListSupplier", func() {
 			Expect(len(supplierData2.SupplierAddresses)).To(Equal(2))
 			Expect(supplierData2.SupplierAddresses[0].IsDefault).To(Equal(false))
 			Expect(supplierData2.SupplierAddresses[1].IsDefault).To(Equal(false))
+		})
+	})
+
+	Context("With Supplier Id filter", func() {
+		It("Should return corresponding supplier addresses", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+
+			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Id: supplier2.ID})
+			Expect(err).To(BeNil())
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier2.Email))
+			Expect(supplierData1.Name).To(Equal(supplier2.Name))
+			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
+			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
+		})
+	})
+
+	Context("With Supplier name filter", func() {
+		It("Should return corresponding supplier addresses", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{Name: "string 123", SupplierType: utils.L1})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+
+			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Name: "str"})
+			Expect(err).To(BeNil())
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier2.Email))
+			Expect(supplierData1.Name).To(Equal(supplier2.Name))
+			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
+			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
+		})
+	})
+
+	Context("With Supplier email filter", func() {
+		It("Should return corresponding supplier addresses", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+
+			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Email: supplier2.Email})
+			Expect(err).To(BeNil())
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier2.Email))
+			Expect(supplierData1.Name).To(Equal(supplier2.Name))
+			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
+			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
+		})
+	})
+
+	Context("With Phone filter", func() {
+		It("Should return corresponding supplier addresses", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			address1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+
+			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Phone: address1.Phone})
+			Expect(err).To(BeNil())
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier2.Email))
+			Expect(supplierData1.Name).To(Equal(supplier2.Name))
+			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
+			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
+		})
+	})
+
+	Context("With City filter", func() {
+		It("Should return corresponding supplier addresses", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			address1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+
+			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{City: address1.City})
+			Expect(err).To(BeNil())
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier2.Email))
+			Expect(supplierData1.Name).To(Equal(supplier2.Name))
+			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
+			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
 		})
 	})
 })

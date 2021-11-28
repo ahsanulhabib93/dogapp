@@ -12,8 +12,10 @@ import (
 
 func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supplier {
 	id := rand.Intn(100)
-	supplier.Name = fmt.Sprintf("Test-%v", id)
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
+	if supplier.Name == "" {
+		supplier.Name = fmt.Sprintf("Test-%v", id)
+	}
 	if supplier.SupplierType == 0 {
 		supplier.SupplierType = utils.Hlc
 	}
