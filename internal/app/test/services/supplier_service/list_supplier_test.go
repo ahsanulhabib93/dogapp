@@ -26,7 +26,7 @@ var _ = Describe("ListSupplier", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
 
-			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
+			res, err := new(services.SupplierService).ListSupplier(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
 			Expect(len(res.Data)).To(Equal(2))
 
@@ -39,47 +39,6 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
-		})
-	})
-
-	Context("Supplier Address List", func() {
-		It("Should Respond with corresponding addresses", func() {
-			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
-			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
-			supplierAddress2 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
-
-			res, err := new(services.SupplierService).ListSupplierAddresses(ctx, &supplierpb.ListSupplierAddressParams{SupplierId: supplier2.ID})
-			Expect(err).To(BeNil())
-			Expect(len(res.Data)).To(Equal(2))
-
-			addressData1 := res.Data[0]
-			Expect(addressData1.Firstname).To(Equal(supplierAddress1.Firstname))
-			Expect(addressData1.Lastname).To(Equal(supplierAddress1.Lastname))
-			Expect(addressData1.Address1).To(Equal(supplierAddress1.Address1))
-			Expect(addressData1.Address2).To(Equal(supplierAddress1.Address2))
-			Expect(addressData1.Landmark).To(Equal(supplierAddress1.Landmark))
-			Expect(addressData1.City).To(Equal(supplierAddress1.City))
-			Expect(addressData1.State).To(Equal(supplierAddress1.State))
-			Expect(addressData1.Country).To(Equal(supplierAddress1.Country))
-			Expect(addressData1.Zipcode).To(Equal(supplierAddress1.Zipcode))
-			Expect(addressData1.Phone).To(Equal(supplierAddress1.Phone))
-			Expect(addressData1.GstNumber).To(Equal(supplierAddress1.GstNumber))
-			Expect(addressData1.IsDefault).To(Equal(false))
-
-			addressData2 := res.Data[1]
-			Expect(addressData2.Firstname).To(Equal(supplierAddress2.Firstname))
-			Expect(addressData2.Lastname).To(Equal(supplierAddress2.Lastname))
-			Expect(addressData2.Address1).To(Equal(supplierAddress2.Address1))
-			Expect(addressData2.Address2).To(Equal(supplierAddress2.Address2))
-			Expect(addressData2.Landmark).To(Equal(supplierAddress2.Landmark))
-			Expect(addressData2.City).To(Equal(supplierAddress2.City))
-			Expect(addressData2.State).To(Equal(supplierAddress2.State))
-			Expect(addressData2.Country).To(Equal(supplierAddress2.Country))
-			Expect(addressData2.Zipcode).To(Equal(supplierAddress2.Zipcode))
-			Expect(addressData2.Phone).To(Equal(supplierAddress2.Phone))
-			Expect(addressData2.GstNumber).To(Equal(supplierAddress2.GstNumber))
-			Expect(addressData2.IsDefault).To(Equal(false))
 		})
 	})
 })

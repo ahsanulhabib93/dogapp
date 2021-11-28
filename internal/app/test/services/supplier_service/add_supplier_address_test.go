@@ -66,7 +66,7 @@ var _ = Describe("AddSupplierAddress", func() {
 	})
 
 	Context("While adding address for invalid Supplier ID", func() {
-		It("Should create address and return success response", func() {
+		It("Should return error response", func() {
 			param := &supplierpb.SupplierAddressParam{
 				SupplierId: 1000,
 				Firstname:  "Firstname",

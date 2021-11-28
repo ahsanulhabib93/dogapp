@@ -14,7 +14,7 @@ import (
 
 type SupplierService struct{}
 
-func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
+func (ss *SupplierService) ListSupplier(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	resp := supplierpb.ListResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).Scan(&resp.Data)
 	return &resp, nil
@@ -50,7 +50,7 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	return &resp, nil
 }
 
-func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierParam) (*supplierpb.BasicApiResponse, error) {
+func (ss *SupplierService) AddSupplier(ctx context.Context, params *supplierpb.SupplierParam) (*supplierpb.BasicApiResponse, error) {
 	resp := supplierpb.BasicApiResponse{Success: false}
 	supplier := models.Supplier{
 		Name:         params.GetName(),

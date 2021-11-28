@@ -39,7 +39,7 @@ var _ = Describe("AddSupplier", func() {
 				Phone:        "Phone",
 				GstNumber:    "GstNumber",
 			}
-			res, err := new(services.SupplierService).Add(ctx, param)
+			res, err := new(services.SupplierService).AddSupplier(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))

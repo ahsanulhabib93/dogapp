@@ -45,3 +45,27 @@ func CreateSupplierAddress(ctx context.Context, supplierAddress *models.Supplier
 	database.DBAPM(ctx).Save(supplierAddress)
 	return supplierAddress
 }
+
+func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.PaymentAccountDetail) *models.PaymentAccountDetail {
+	id := rand.Intn(100)
+	paymentAccount.AccountName = fmt.Sprintf("AccountName-%v", id)
+	paymentAccount.AccountNumber = fmt.Sprintf("AccountNumber-%v", id)
+
+	if paymentAccount.AccountType != utils.Mfs {
+		paymentAccount.AccountType = utils.Bank
+		paymentAccount.BankName = fmt.Sprintf("BankName-%v", id)
+		paymentAccount.BranchName = fmt.Sprintf("BranchName-%v", id)
+		paymentAccount.RoutingNumber = fmt.Sprintf("RoutingNumber-%v", id)
+	}
+	database.DBAPM(ctx).Save(paymentAccount)
+	return paymentAccount
+}
+
+func CreateKeyAccountManager(ctx context.Context, accountManager *models.KeyAccountManager) *models.KeyAccountManager {
+	id := rand.Intn(100)
+	accountManager.Name = fmt.Sprintf("Test-%v", id)
+	accountManager.Email = fmt.Sprintf("test-%v@shopup.org", id)
+	accountManager.Email = fmt.Sprintf("Phone-%v", id)
+	database.DBAPM(ctx).Save(accountManager)
+	return accountManager
+}
