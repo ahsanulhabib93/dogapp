@@ -1,0 +1,15 @@
+
+#List the substring of directories to be excluded from the coverage report
+# adding /app/test  - excludes all the packages inside the test directory
+# if nothing to exclude --
+# dirs:
+#  - <->
+#files:
+#  - <->
+#To exclude Certain files in  a package from coverage report
+dirs:
+  - <->
+  - app/handlers
+  - cmd/server
+  - app/test
+  - app/migrations
