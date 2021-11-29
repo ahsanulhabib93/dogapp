@@ -1,0 +1,71 @@
+name: Deploy2Prod
+on:
+  release:
+    types: [published]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_PRODUCTION_CLUSTER: ${{ secrets.GKE_PRODUCTION_CLUSTER }}    # TODO: update to cluster name
+  GKE_ZONE: ${{ secrets.GKE_ZONE }}   # TODO: update to cluster zone
+  GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
+
+jobs:
+  deploy-prod:
+    name: Setup, Build, Publish, and Deploy to Production
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      # Setup gcloud CLI
+      - uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_default_credentials: true
+
+      # Configure Docker to use the gcloud command-line tool as a credential
+      # helper for authentication
+      - run: |-
+          gcloud --quiet auth configure-docker
+      # Build and Push the Docker image to Google Container Registry
+      - name: Build and push
+        run: |
+          docker build -t ss2 . --build-arg GITHUB_TOKEN="${{secrets.PAT_GITHUB}}" -f docker/Dockerfile
+          docker tag ss2 gcr.io/voonik-tech/vnkshopup/ss2:${GITHUB_REF##*/}
+          docker push gcr.io/voonik-tech/vnkshopup/ss2:${GITHUB_REF##*/}
+      # Set up helm v3.4.1
+      - uses: azure/setup-helm@v1
+        with:
+          version: '3.4.1' # default is latest stable
+        id: install
+
+      # Deploy to production GKE cluster
+      - name: Deploy to production
+        run: |
+          gcloud container clusters get-credentials vnk-shop-cluster --zone asia-southeast1-a --project $PROJECT_ID
+          helm plugin install https://github.com/hayorov/helm-gcs --version 0.3.5
+          helm repo add shopup gs://shopup-prod/helm-charts
+          helm repo update
+          ### Update envoy grpc transcoder if any changes are made to protobuf file ###
+            git clone https://$GITHUB_TOKEN@github.com/Voonik/goConnect.git
+            cd goConnect
+            git checkout $(grep "github.com/voonik/goConnect" ../go.mod | awk -F'-' '{print $(NF)}')
+            cd -
+            git clone https://github.com/googleapis/googleapis
+            GOOGLEAPIS_DIR=./googleapis
+            cp goConnect/api/proto/ss2/supplier.proto .
+            sed -i 's/\/\/transcoder//' supplier.proto
+            sudo apt install -y protobuf-compiler
+            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto
+            kubectl -n vnkshopup create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run | kubectl apply -f -
+          ################################################################################
+          helm upgrade --install --atomic --timeout 600s --namespace vnkshopup ss2 shopup/ss2 --set image.tag=${GITHUB_REF##*/}
+      # Send Slack Alerts
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_CHANNEL: deployment-status
+          SLACK_ICON: https://shopimages1.vstores.io/dev_ops/production-icon.png?size=48
+          SLACK_COLOR: '#2EB67D'
+          SLACK_MESSAGE: "Helm Intsall/Upgrade Successful\nService: SS2\nBranch: Master\nEnvironment: Production"
