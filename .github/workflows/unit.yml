@@ -59,7 +59,7 @@ jobs:
           ENV: test
         run: |
           touch create_db.sql
-          echo "create database sr_test;" >> create_db.sql
+          echo "create database ss2_test;" >> create_db.sql
           mysql --host 127.0.0.1 --port 33306 -uroot -ppassword  < create_db.sql
 
       - name: Run tests
