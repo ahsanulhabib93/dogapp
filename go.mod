@@ -11,7 +11,7 @@ require (
 	github.com/onsi/gomega v1.10.5
 	github.com/qor/qor v1.2.0 // indirect
 	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46
-	github.com/voonik/goConnect v0.0.0-00010101000000-000000000000
+	github.com/voonik/goConnect v0.0.0-20211125074207-8b48e88459da
 	github.com/voonik/goFramework v0.0.0-20211107082033-83daa61a3f7a
 	google.golang.org/grpc v1.42.0
 	gopkg.in/gormigrate.v1 v1.6.0
@@ -19,4 +19,3 @@ require (
 	gorm.io/datatypes v1.0.3 // indirect
 )
 
-replace github.com/voonik/goConnect => /Users/ramyakvr/GoLang/src/github.com/voonik/goConnect/
