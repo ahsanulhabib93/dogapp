@@ -60,4 +60,18 @@ var _ = Describe("ListKeyAccountManager", func() {
 			Expect(res.Message).To(Equal("Supplier Not Found"))
 		})
 	})
+
+	Context("While adding account manager without name", func() {
+		It("Should return error response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := kampb.KeyAccountManagerParam{
+				SupplierId: supplier.ID,
+			}
+			res, err := new(services.KeyAccountManagerService).Add(ctx, &param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating KeyAccountManager: Name can't be blank"))
+		})
+	})
 })

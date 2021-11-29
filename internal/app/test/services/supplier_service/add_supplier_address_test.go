@@ -79,4 +79,39 @@ var _ = Describe("AddSupplierAddress", func() {
 			Expect(res.Message).To(Equal("Supplier Not Found"))
 		})
 	})
+
+	Context("While adding address without zipcode", func() {
+		It("Should return error response", func() {
+			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+			param := &supplierpb.SupplierAddressParam{
+				SupplierId: supplier.ID,
+				Firstname:  "Firstname",
+				Lastname:   "Lastname",
+				Address1:   "Address1",
+			}
+			res, err := new(services.SupplierService).AddSupplierAddress(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier Address: Zipcode can't be blank"))
+		})
+	})
+
+	Context("While adding address without address1", func() {
+		It("Should return error response", func() {
+			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+			param := &supplierpb.SupplierAddressParam{
+				SupplierId: supplier.ID,
+				Firstname:  "Firstname",
+				Lastname:   "Lastname",
+				Zipcode:    "Zipcode",
+			}
+			res, err := new(services.SupplierService).AddSupplierAddress(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier Address: Address1 can't be blank"))
+		})
+	})
+
 })

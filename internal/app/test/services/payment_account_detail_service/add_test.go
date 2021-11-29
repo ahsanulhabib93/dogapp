@@ -68,4 +68,34 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			Expect(res.Message).To(Equal("Supplier Not Found"))
 		})
 	})
+
+	Context("While adding payment account detail without account name", func() {
+		It("Should return error response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:    supplier.ID,
+				AccountNumber: "AccountNumber",
+			}
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: AccountName can't be blank"))
+		})
+	})
+
+	Context("While adding payment account detail without account number", func() {
+		It("Should return error response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:  supplier.ID,
+				AccountName: "AccountName",
+			}
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: AccountNumber can't be blank"))
+		})
+	})
 })
