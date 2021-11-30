@@ -8,6 +8,7 @@ import (
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -113,13 +114,14 @@ func (ss *SupplierService) AddSupplierAddress(ctx context.Context, params *suppl
 			GstNumber: params.GetGstNumber(),
 			IsDefault: params.GetIsDefault(),
 		}
-		err := database.DBAPM(ctx).Model(&models.SupplierAddress{}).Create(&supplierAddress)
 
+		err := database.DBAPM(ctx).Model(&models.SupplierAddress{}).Create(&supplierAddress)
 		if err != nil && err.Error != nil {
 			errorMsg := fmt.Sprintf("Error while creating Supplier Address: %s", err.Error)
 			log.Println(errorMsg)
 			resp.Message = errorMsg
 		} else {
+			helpers.UpdateOtherAddress(ctx, &supplierAddress)
 			resp.Message = "SupplierAddress Added Successfully"
 			resp.Success = true
 		}
