@@ -152,7 +152,7 @@ var _ = Describe("AddSupplierAddress", func() {
 		})
 	})
 
-	XContext("While adding address without address1", func() {
+	Context("While adding address without address1", func() {
 		It("Should return error response", func() {
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierAddressParam{
