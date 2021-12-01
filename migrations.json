@@ -1,0 +1,51 @@
+{
+    "role_scopes": [
+      {
+        "role_name": "dummy_reseller",
+        "scope_id": "oms"
+      },
+      {
+        "role_name": "dummy_reseller",
+        "scope_id": "wms"
+      },
+      {
+        "role_name": "dummy_sr_admin",
+        "scope_id": "oms"
+      },
+      {
+        "role_name": "dummy_reseller",
+        "scope_id": "cmt"
+      }
+    ],
+    "role_permissions": [
+      {
+        "role_name": "dummy_reseller",
+        "permission_id": "oms:Coupon:get"
+      }
+    ],
+    "roles": [
+        {
+            "name": "dummy_sr_admin",
+            "description": "salesRepAdmin"
+        },
+        {
+            "name": "dummy_sr_agent",
+            "description": "writer"
+        }
+    ],
+    "permissions": [
+        {
+            "id": "oms:Coupon:get",
+            "description": "getCouponuisition",
+            "scope_id": "oms"
+        }
+    ],
+    "route_permissions": [
+        {
+            "route": "coupon/create",
+            "request_method": "POST",
+            "service": "orders",
+            "required_permission_id": "oms:Coupon:get"
+        }
+    ]
+}
