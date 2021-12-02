@@ -18,3 +18,5 @@ require (
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
 	gorm.io/datatypes v1.0.3 // indirect
 )
+
+replace github.com/voonik/goConnect => /Users/ramyakvr/GoLang/src/github.com/voonik/goConnect/

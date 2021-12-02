@@ -26,7 +26,7 @@ var _ = Describe("ListSupplier", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
 
-			res, err := new(services.SupplierService).ListSupplier(ctx, &supplierpb.ListParams{})
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
 			Expect(len(res.Data)).To(Equal(2))
 

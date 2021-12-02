@@ -11,14 +11,17 @@ import (
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
+// PaymentAccountDetailService ...
 type PaymentAccountDetailService struct{}
 
+// List ...
 func (ps *PaymentAccountDetailService) List(ctx context.Context, params *paymentpb.ListParams) (*paymentpb.ListResponse, error) {
 	resp := paymentpb.ListResponse{}
 	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
 	return &resp, nil
 }
 
+// Add ...
 func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentpb.PaymentAccountDetailParam) (*paymentpb.BasicApiResponse, error) {
 	resp := paymentpb.BasicApiResponse{Success: false}
 

@@ -10,14 +10,17 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 )
 
+// KeyAccountManagerService ...
 type KeyAccountManagerService struct{}
 
+// List ...
 func (kams *KeyAccountManagerService) List(ctx context.Context, params *kampb.ListParams) (*kampb.ListResponse, error) {
 	resp := kampb.ListResponse{}
 	database.DBAPM(ctx).Model(&models.KeyAccountManager{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
 	return &resp, nil
 }
 
+// Add ...
 func (kams *KeyAccountManagerService) Add(ctx context.Context, params *kampb.KeyAccountManagerParam) (*kampb.BasicApiResponse, error) {
 	resp := kampb.BasicApiResponse{Success: false}
 
