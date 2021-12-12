@@ -48,3 +48,29 @@ func (kams *KeyAccountManagerService) Add(ctx context.Context, params *kampb.Key
 	}
 	return &resp, nil
 }
+
+// Edit ...
+func (kams *KeyAccountManagerService) Edit(ctx context.Context, params *kampb.KeyAccountManagerObject) (*kampb.BasicApiResponse, error) {
+	resp := kampb.BasicApiResponse{Success: false}
+
+	keyAccountManager := &models.KeyAccountManager{}
+	result := database.DBAPM(ctx).Model(&models.KeyAccountManager{}).First(keyAccountManager, params.GetId())
+	if result.RecordNotFound() {
+		resp.Message = "KeyAccountManager Not Found"
+	} else {
+		err := database.DBAPM(ctx).Model(keyAccountManager).Updates(models.KeyAccountManager{
+			Name:  params.GetName(),
+			Email: params.GetEmail(),
+			Phone: params.GetPhone(),
+		})
+		if err != nil && err.Error != nil {
+			errorMsg := fmt.Sprintf("Error while updating KeyAccountManager: %s", err.Error)
+			log.Println(errorMsg)
+			resp.Message = errorMsg
+		} else {
+			resp.Message = "KeyAccountManager Edited Successfully"
+			resp.Success = true
+		}
+	}
+	return &resp, nil
+}

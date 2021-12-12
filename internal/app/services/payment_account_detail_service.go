@@ -53,3 +53,33 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 	}
 	return &resp, nil
 }
+
+// Edit ...
+func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *paymentpb.PaymentAccountDetailObject) (*paymentpb.BasicApiResponse, error) {
+	resp := paymentpb.BasicApiResponse{Success: false}
+
+	paymentAccountDetail := &models.PaymentAccountDetail{}
+	result := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(paymentAccountDetail, params.GetId())
+	if result.RecordNotFound() {
+		resp.Message = "PaymentAccountDetail Not Found"
+	} else {
+		paymentAccountDetail.AccountType = utils.AccountType(params.GetAccountType())
+		paymentAccountDetail.AccountName = params.GetAccountName()
+		paymentAccountDetail.AccountNumber = params.GetAccountNumber()
+		paymentAccountDetail.BankName = params.GetBankName()
+		paymentAccountDetail.BranchName = params.GetBranchName()
+		paymentAccountDetail.RoutingNumber = params.GetRoutingNumber()
+		paymentAccountDetail.IsDefault = params.GetIsDefault()
+
+		err := database.DBAPM(ctx).Save(paymentAccountDetail)
+		if err != nil && err.Error != nil {
+			errorMsg := fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
+			log.Println(errorMsg)
+			resp.Message = errorMsg
+		} else {
+			resp.Message = "PaymentAccountDetail Edited Successfully"
+			resp.Success = true
+		}
+	}
+	return &resp, nil
+}

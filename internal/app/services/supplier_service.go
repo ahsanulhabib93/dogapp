@@ -87,3 +87,29 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	}
 	return &resp, nil
 }
+
+// Edit ...
+func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.SupplierObject) (*supplierpb.BasicApiResponse, error) {
+	resp := supplierpb.BasicApiResponse{Success: false}
+
+	supplier := &models.Supplier{}
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(supplier, params.GetId())
+	if result.RecordNotFound() {
+		resp.Message = "Supplier Not Found"
+	} else {
+		err := database.DBAPM(ctx).Model(supplier).Updates(models.Supplier{
+			Name:         params.GetName(),
+			Email:        params.GetEmail(),
+			SupplierType: utils.SupplierType(params.GetSupplierType()),
+		})
+		if err != nil && err.Error != nil {
+			errorMsg := fmt.Sprintf("Error while updating Supplier: %s", err.Error)
+			log.Println(errorMsg)
+			resp.Message = errorMsg
+		} else {
+			resp.Message = "Supplier Edited Successfully"
+			resp.Success = true
+		}
+	}
+	return &resp, nil
+}

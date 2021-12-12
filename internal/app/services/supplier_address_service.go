@@ -59,3 +59,38 @@ func (sas *SupplierAddressService) Add(ctx context.Context, params *addresspb.Su
 	}
 	return &resp, nil
 }
+
+// Edit ...
+func (sas *SupplierAddressService) Edit(ctx context.Context, params *addresspb.SupplierAddressObject) (*addresspb.BasicApiResponse, error) {
+	resp := addresspb.BasicApiResponse{Success: false}
+
+	address := &models.SupplierAddress{}
+	result := database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(address, params.GetId())
+	if result.RecordNotFound() {
+		resp.Message = "SupplierAddress Not Found"
+	} else {
+		address.Firstname = params.GetFirstname()
+		address.Lastname = params.GetLastname()
+		address.Address1 = params.GetAddress1()
+		address.Address2 = params.GetAddress2()
+		address.Landmark = params.GetLandmark()
+		address.City = params.GetCity()
+		address.State = params.GetState()
+		address.Country = params.GetCountry()
+		address.Zipcode = params.GetZipcode()
+		address.Phone = params.GetPhone()
+		address.GstNumber = params.GetGstNumber()
+		address.IsDefault = params.GetIsDefault()
+
+		err := database.DBAPM(ctx).Save(address)
+		if err != nil && err.Error != nil {
+			errorMsg := fmt.Sprintf("Error while updating SupplierAddress: %s", err.Error)
+			log.Println(errorMsg)
+			resp.Message = errorMsg
+		} else {
+			resp.Message = "SupplierAddress Edited Successfully"
+			resp.Success = true
+		}
+	}
+	return &resp, nil
+}
