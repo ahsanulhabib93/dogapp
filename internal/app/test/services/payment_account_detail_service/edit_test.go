@@ -25,7 +25,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 	Context("Editing all attributes of existing PaymentAccount", func() {
 		It("Should update and return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.id, AccountType: utils.Bank})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Bank})
 			param := &paymentpb.PaymentAccountDetailObject{
 				Id:            paymentAccount.ID,
 				AccountType:   uint64(utils.Bank),
@@ -42,7 +42,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("PaymentAccountDetail Edited Successfully"))
 
-			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccount, address.ID)
+			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccount, paymentAccount.ID)
 			Expect(paymentAccount.AccountType).To(Equal(utils.Bank))
 			Expect(paymentAccount.AccountName).To(Equal(param.AccountName))
 			Expect(paymentAccount.AccountNumber).To(Equal(param.AccountNumber))
@@ -56,7 +56,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 	Context("Editing only account number of existing record", func() {
 		It("Should update and return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.id, AccountType: utils.Bank})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Bank})
 			param := &paymentpb.PaymentAccountDetailObject{
 				Id:            paymentAccount.ID,
 				AccountName:   "AccountName",
