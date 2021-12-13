@@ -63,10 +63,9 @@ jobs:
             GOOGLEAPIS_DIR=./googleapis
             cp goConnect/api/proto/ss2/{supplier*,payment*,key*} .
             sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto
-            sudo apt-get update
             sudo apt-get install -y protobuf-compiler
             protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto
-            kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run | kubectl apply -f -
+            kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
           ################################################################################
           helm upgrade --install --atomic --timeout 600s --namespace mokam ss2 shopup/ss2-staging --set image.tag=$IMAGE_TAG
       # Send Slack Alerts
