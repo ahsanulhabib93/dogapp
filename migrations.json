@@ -1,8 +1,32 @@
 {
+    "roles": [
+      {
+          "name": "ss2owner",
+          "description": "SS2 owner"
+      }
+    ],
+    "scopes": [
+      {
+        "id": "supplierpanel",
+        "description": "supplier panel"
+      }      
+    ],
     "role_scopes": [
       {
         "role_name": "ss2owner",
         "scope_id": "supplierpanel"
+      }
+    ],
+    "permissions": [
+      {
+          "id": "supplierpanel:supplierlistapi:view",
+          "description": "supplier list api view",
+          "scope_id": "supplierpanel"
+      },
+      {
+          "id": "supplierpanel:supplierlistadminapi:admin",
+          "description": "supplier api admin",
+          "scope_id": "supplierpanel"
       }
     ],
     "role_permissions": [
@@ -14,24 +38,6 @@
         "role_name": "ss2owner",
         "permission_id": "supplierpanel:supplierlistadminapi:admin"
       }
-    ],
-    "roles": [
-        {
-            "name": "ss2owner",
-            "description": "SS2 owner"
-        }
-    ],
-    "permissions": [
-        {
-            "id": "supplierpanel:supplierlistapi:view",
-            "description": "supplier list api view",
-            "scope_id": "supplierpanel"
-        },
-        {
-            "id": "supplierpanel:supplierlistadminapi:admin",
-            "description": "supplier api admin",
-            "scope_id": "supplierpanel"
-        }
     ],
     "route_permissions": [
         {
@@ -47,8 +53,8 @@
           "required_permission_id": "supplierpanel:supplierlistapi:view"
         },
         {
-          "route": "/supplier/POST",
-          "request_method": "GET",
+          "route": "/supplier/add",
+          "request_method": "POST",
           "service": "ss2",
           "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
         },
