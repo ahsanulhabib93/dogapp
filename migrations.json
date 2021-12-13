@@ -1,51 +1,116 @@
 {
     "role_scopes": [
       {
-        "role_name": "dummy_reseller",
-        "scope_id": "oms"
-      },
-      {
-        "role_name": "dummy_reseller",
-        "scope_id": "wms"
-      },
-      {
-        "role_name": "dummy_sr_admin",
-        "scope_id": "oms"
-      },
-      {
-        "role_name": "dummy_reseller",
-        "scope_id": "cmt"
+        "role_name": "ss2owner",
+        "scope_id": "supplierpanel"
       }
     ],
     "role_permissions": [
       {
-        "role_name": "dummy_reseller",
-        "permission_id": "oms:Coupon:get"
+        "role_name": "ss2owner",
+        "permission_id": "supplierpanel:supplierlistapi:view"
+      },
+      {
+        "role_name": "ss2owner",
+        "permission_id": "supplierpanel:supplierlistadminapi:admin"
       }
     ],
     "roles": [
         {
-            "name": "dummy_sr_admin",
-            "description": "salesRepAdmin"
-        },
-        {
-            "name": "dummy_sr_agent",
-            "description": "writer"
+            "name": "ss2owner",
+            "description": "SS2 owner"
         }
     ],
     "permissions": [
         {
-            "id": "oms:Coupon:get",
-            "description": "getCouponuisition",
-            "scope_id": "oms"
+            "id": "supplierpanel:supplierlistapi:view",
+            "description": "supplier list api view",
+            "scope_id": "supplierpanel"
+        },
+        {
+            "id": "supplierpanel:supplierlistadminapi:admin",
+            "description": "supplier api admin",
+            "scope_id": "supplierpanel"
         }
     ],
     "route_permissions": [
         {
-            "route": "coupon/create",
-            "request_method": "POST",
-            "service": "orders",
-            "required_permission_id": "oms:Coupon:get"
+            "route": "/supplier/list",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view"
+        },
+        {
+          "route": "/supplier/list_with_address",
+          "request_method": "GET",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistapi:view"
+        },
+        {
+          "route": "/supplier/POST",
+          "request_method": "GET",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
+        },
+        {
+          "route": "/supplier/edit",
+          "request_method": "POST",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
+        },
+        {
+          "route": "/supplier_address/list",
+          "request_method": "GET",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistapi:view"
+        },
+        {
+          "route": "/supplier_address/add",
+          "request_method": "POST",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
+        },
+        {
+          "route": "/supplier_address/edit",
+          "request_method": "POST",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
+        },
+        {
+          "route": "/payment_account_detail/list",
+          "request_method": "GET",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistapi:view"
+        },
+        {
+          "route": "/payment_account_detail/add",
+          "request_method": "POST",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
+        },
+        {
+          "route": "/payment_account_detail/edit",
+          "request_method": "POST",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
+        },
+        {
+          "route": "/key_account_manager/list",
+          "request_method": "GET",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistapi:view"
+        },
+        {
+          "route": "/key_account_manager/add",
+          "request_method": "POST",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
+        },
+        {
+          "route": "/key_account_manager/edit",
+          "request_method": "POST",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
         }
     ]
 }
