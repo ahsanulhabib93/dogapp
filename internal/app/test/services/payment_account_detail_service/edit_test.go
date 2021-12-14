@@ -25,7 +25,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 	Context("Editing all attributes of existing PaymentAccount", func() {
 		It("Should update and return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Bank})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Bank, IsDefault: true})
 			param := &paymentpb.PaymentAccountDetailObject{
 				Id:            paymentAccount.ID,
 				AccountType:   uint64(utils.Bank),
@@ -34,7 +34,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 				BankName:      "BankName",
 				BranchName:    "BranchName",
 				RoutingNumber: "RoutingNumber",
-				IsDefault:     false,
+				IsDefault:     true,
 			}
 			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
 
@@ -49,14 +49,39 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount.BankName).To(Equal(param.BankName))
 			Expect(paymentAccount.BranchName).To(Equal(param.BranchName))
 			Expect(paymentAccount.RoutingNumber).To(Equal(param.RoutingNumber))
-			Expect(paymentAccount.IsDefault).To(Equal(false))
+			Expect(paymentAccount.IsDefault).To(Equal(true))
+		})
+	})
+
+	Context("Updating non-default address as default", func() {
+		It("Should update other default address as non-default and return success response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			paymentAccount1 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
+			paymentAccount2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
+			paymentAccount3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:        paymentAccount3.ID,
+				IsDefault: true,
+			}
+			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("PaymentAccountDetail Edited Successfully"))
+
+			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccount1, paymentAccount1.ID)
+			Expect(paymentAccount1.IsDefault).To(Equal(false))
+			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccount2, paymentAccount2.ID)
+			Expect(paymentAccount2.IsDefault).To(Equal(false))
+			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccount3, paymentAccount3.ID)
+			Expect(paymentAccount3.IsDefault).To(Equal(true))
 		})
 	})
 
 	Context("Editing only account number of existing record", func() {
 		It("Should update and return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Bank})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Bank, IsDefault: true})
 			param := &paymentpb.PaymentAccountDetailObject{
 				Id:            paymentAccount.ID,
 				AccountName:   "AccountName",

@@ -1,6 +1,9 @@
 package models
 
 import (
+	"errors"
+
+	"github.com/jinzhu/gorm"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -15,4 +18,13 @@ type PaymentAccountDetail struct {
 	BranchName    string
 	RoutingNumber string
 	IsDefault     bool
+}
+
+func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
+	if !paymentAccount.IsDefault {
+		result := db.Model(&paymentAccount).Where("supplier_id = ? and is_default = ? and id != ?", paymentAccount.SupplierID, true, paymentAccount.ID).First(&PaymentAccountDetail{})
+		if result.RecordNotFound() {
+			db.AddError(errors.New("Default Payment Account is required"))
+		}
+	}
 }

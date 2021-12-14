@@ -100,7 +100,6 @@ var _ = Describe("AddSupplierAddress", func() {
 
 			address1 := addresses[0]
 			Expect(address1.IsDefault).To(Equal(false))
-
 			address2 := addresses[1]
 			Expect(address2.IsDefault).To(Equal(false))
 
@@ -168,5 +167,4 @@ var _ = Describe("AddSupplierAddress", func() {
 			Expect(res.Message).To(Equal("Error while creating Supplier Address: Address1 can't be blank"))
 		})
 	})
-
 })

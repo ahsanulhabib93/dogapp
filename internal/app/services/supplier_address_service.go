@@ -49,13 +49,11 @@ func (sas *SupplierAddressService) Add(ctx context.Context, params *addresspb.Su
 			IsDefault:  params.GetIsDefault(),
 		}
 
-		err := database.DBAPM(ctx).Model(&models.SupplierAddress{}).Create(&supplierAddress)
+		err := database.DBAPM(ctx).Save(&supplierAddress)
 		if err != nil && err.Error != nil {
-			errorMsg := fmt.Sprintf("Error while creating Supplier Address: %s", err.Error)
-			log.Println(errorMsg)
-			resp.Message = errorMsg
+			resp.Message = fmt.Sprintf("Error while creating Supplier Address: %s", err.Error)
 		} else {
-			helpers.UpdateOtherAddress(ctx, &supplierAddress)
+			helpers.UpdateDefaultAddress(ctx, &supplierAddress)
 			resp.Message = "SupplierAddress Added Successfully"
 			resp.Success = true
 		}
@@ -69,33 +67,36 @@ func (sas *SupplierAddressService) Edit(ctx context.Context, params *addresspb.S
 	log.Printf("EditAddressParams: %+v", params)
 	resp := addresspb.BasicApiResponse{Success: false}
 
-	address := &models.SupplierAddress{}
-	result := database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(address, params.GetId())
+	supplierAddress := models.SupplierAddress{}
+	result := database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&supplierAddress, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "SupplierAddress Not Found"
 	} else {
-		err := database.DBAPM(ctx).Model(address).Updates(models.SupplierAddress{
-			Firstname: params.GetFirstname(),
-			Lastname:  params.GetLastname(),
-			Address1:  params.GetAddress1(),
-			Address2:  params.GetAddress2(),
-			Landmark:  params.GetLandmark(),
-			City:      params.GetCity(),
-			State:     params.GetState(),
-			Country:   params.GetCountry(),
-			Zipcode:   params.GetZipcode(),
-			Phone:     params.GetPhone(),
-			GstNumber: params.GetGstNumber(),
-			IsDefault: params.GetIsDefault(),
-		})
-
-		if err != nil && err.Error != nil {
-			errorMsg := fmt.Sprintf("Error while updating SupplierAddress: %s", err.Error)
-			log.Println(errorMsg)
-			resp.Message = errorMsg
+		if supplierAddress.IsDefault && !params.GetIsDefault() {
+			resp.Message = "Default address is required"
 		} else {
-			resp.Message = "SupplierAddress Edited Successfully"
-			resp.Success = true
+			err := database.DBAPM(ctx).Model(&supplierAddress).Updates(models.SupplierAddress{
+				Firstname: params.GetFirstname(),
+				Lastname:  params.GetLastname(),
+				Address1:  params.GetAddress1(),
+				Address2:  params.GetAddress2(),
+				Landmark:  params.GetLandmark(),
+				City:      params.GetCity(),
+				State:     params.GetState(),
+				Country:   params.GetCountry(),
+				Zipcode:   params.GetZipcode(),
+				Phone:     params.GetPhone(),
+				GstNumber: params.GetGstNumber(),
+				IsDefault: params.GetIsDefault(),
+			})
+
+			if err != nil && err.Error != nil {
+				resp.Message = fmt.Sprintf("Error while updating SupplierAddress: %s", err.Error)
+			} else {
+				helpers.UpdateDefaultAddress(ctx, &supplierAddress)
+				resp.Message = "SupplierAddress Edited Successfully"
+				resp.Success = true
+			}
 		}
 	}
 	log.Printf("EditAddressResponse: %+v", resp)

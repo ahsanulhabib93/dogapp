@@ -7,6 +7,7 @@ import (
 
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -43,13 +44,12 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			RoutingNumber: params.GetRoutingNumber(),
 			IsDefault:     params.GetIsDefault(),
 		}
-		err := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Create(&paymentAccountDetail)
+		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 		if err != nil && err.Error != nil {
-			errorMsg := fmt.Sprintf("Error while creating PaymentAccountDetail: %s", err.Error)
-			log.Println(errorMsg)
-			resp.Message = errorMsg
+			resp.Message = fmt.Sprintf("Error while creating PaymentAccountDetail: %s", err.Error)
 		} else {
+			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
 			resp.Message = "PaymentAccountDetail Added Successfully"
 			resp.Success = true
 		}
@@ -63,12 +63,12 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 	log.Printf("EditPaymentAccountParams: %+v", params)
 	resp := paymentpb.BasicApiResponse{Success: false}
 
-	paymentAccountDetail := &models.PaymentAccountDetail{}
-	result := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(paymentAccountDetail, params.GetId())
+	paymentAccountDetail := models.PaymentAccountDetail{}
+	result := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccountDetail, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "PaymentAccountDetail Not Found"
 	} else {
-		err := database.DBAPM(ctx).Model(paymentAccountDetail).Updates(models.PaymentAccountDetail{
+		err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 			AccountType:   utils.AccountType(params.GetAccountType()),
 			AccountName:   params.GetAccountName(),
 			AccountNumber: params.GetAccountNumber(),
@@ -78,10 +78,9 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			IsDefault:     params.GetIsDefault(),
 		})
 		if err != nil && err.Error != nil {
-			errorMsg := fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
-			log.Println(errorMsg)
-			resp.Message = errorMsg
+			resp.Message = fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
 		} else {
+			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
 			resp.Message = "PaymentAccountDetail Edited Successfully"
 			resp.Success = true
 		}

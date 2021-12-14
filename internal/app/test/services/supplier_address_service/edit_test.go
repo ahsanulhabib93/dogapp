@@ -24,7 +24,8 @@ var _ = Describe("EditSupplierAddress", func() {
 	Context("Editing all attributes of existing Supplier address", func() {
 		It("Should update address and return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			address := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
+			defaultAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
+			address := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: false})
 			param := &addresspb.SupplierAddressObject{
 				Id:        address.ID,
 				Firstname: "Firstname",
@@ -59,6 +60,48 @@ var _ = Describe("EditSupplierAddress", func() {
 			Expect(address.Phone).To(Equal(param.Phone))
 			Expect(address.GstNumber).To(Equal(param.GstNumber))
 			Expect(address.IsDefault).To(Equal(false))
+
+			database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&defaultAddress, defaultAddress.ID)
+			Expect(defaultAddress.IsDefault).To(Equal(true))
+		})
+	})
+
+	Context("Updating default address as non-default", func() {
+		It("Should return error response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			address := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
+			param := &addresspb.SupplierAddressObject{
+				Id:        address.ID,
+				IsDefault: false,
+			}
+			res, err := new(services.SupplierAddressService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Default address is required"))
+		})
+	})
+
+	Context("Updating non-default address as default", func() {
+		It("Should update address and return success response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			address1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
+			address2 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: false})
+			param := &addresspb.SupplierAddressObject{
+				Id:        address2.ID,
+				IsDefault: true,
+			}
+			res, err := new(services.SupplierAddressService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("SupplierAddress Edited Successfully"))
+
+			database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&address2, address2.ID)
+			Expect(address2.IsDefault).To(Equal(true))
+
+			database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&address1, address1.ID)
+			Expect(address1.IsDefault).To(Equal(false))
 		})
 	})
 

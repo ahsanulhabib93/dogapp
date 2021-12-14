@@ -76,17 +76,8 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Email:        "Email",
 				SupplierType: uint64(utils.Hlc),
-				Firstname:    "Firstname",
-				Lastname:     "Lastname",
 				Address1:     "Address1",
-				Address2:     "Address2",
-				Landmark:     "Landmark",
-				City:         "City",
-				State:        "State",
-				Country:      "Country",
 				Zipcode:      "Zipcode",
-				Phone:        "Phone",
-				GstNumber:    "GstNumber",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -103,17 +94,8 @@ var _ = Describe("AddSupplier", func() {
 				Name:         supplier1.Name,
 				Email:        "Email",
 				SupplierType: uint64(utils.Hlc),
-				Firstname:    "Firstname",
-				Lastname:     "Lastname",
 				Address1:     "Address1",
-				Address2:     "Address2",
-				Landmark:     "Landmark",
-				City:         "City",
-				State:        "State",
-				Country:      "Country",
 				Zipcode:      "Zipcode",
-				Phone:        "Phone",
-				GstNumber:    "GstNumber",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -121,4 +103,20 @@ var _ = Describe("AddSupplier", func() {
 			Expect(res.Message).To(Equal("Error while creating Supplier: Name should be unique"))
 		})
 	})
+
+	Context("Adding Supplier without supplier type", func() {
+		It("Should return error response", func() {
+			param := &supplierpb.SupplierParam{
+				Name:     "Name",
+				Email:    "Email",
+				Address1: "Address1",
+				Zipcode:  "Zipcode",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
+		})
+	})
+
 })

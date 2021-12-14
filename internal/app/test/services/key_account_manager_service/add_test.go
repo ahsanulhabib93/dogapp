@@ -15,7 +15,7 @@ import (
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
-var _ = Describe("ListKeyAccountManager", func() {
+var _ = Describe("AddKeyAccountManager", func() {
 	var ctx context.Context
 
 	BeforeEach(func() {

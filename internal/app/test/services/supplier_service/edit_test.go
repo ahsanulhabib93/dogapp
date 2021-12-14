@@ -75,4 +75,20 @@ var _ = Describe("EditSupplier", func() {
 			Expect(res.Message).To(Equal("Supplier Not Found"))
 		})
 	})
+
+	Context("Editing with other supplier name", func() {
+		It("Should return error response", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			param := &supplierpb.SupplierObject{
+				Id:   supplier1.ID,
+				Name: supplier2.Name,
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while updating Supplier: Name should be unique"))
+		})
+	})
 })
