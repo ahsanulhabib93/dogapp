@@ -75,6 +75,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:    supplier.ID,
 				AccountNumber: "AccountNumber",
+				AccountType:   uint64(utils.Bank),
 			}
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 
@@ -95,7 +96,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: AccountNumber can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: AccountType can't be blank; AccountNumber can't be blank"))
 		})
 	})
 })

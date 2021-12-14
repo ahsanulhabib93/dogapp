@@ -23,7 +23,8 @@ var _ = Describe("EditKeyAccountManager", func() {
 
 	Context("Editing existing Account Manager", func() {
 		It("Should update and return success response", func() {
-			accountManager := test_helper.CreateKeyAccountManager(ctx, &models.KeyAccountManager{})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			accountManager := test_helper.CreateKeyAccountManager(ctx, &models.KeyAccountManager{SupplierID: supplier.ID})
 			param := &kampb.KeyAccountManagerObject{
 				Id:    accountManager.ID,
 				Name:  "Name",
@@ -45,7 +46,8 @@ var _ = Describe("EditKeyAccountManager", func() {
 
 	Context("Editing only name of existing account manager", func() {
 		It("Should return error response", func() {
-			accountManager := test_helper.CreateKeyAccountManager(ctx, &models.KeyAccountManager{})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			accountManager := test_helper.CreateKeyAccountManager(ctx, &models.KeyAccountManager{SupplierID: supplier.ID})
 			param := &kampb.KeyAccountManagerObject{
 				Id:   accountManager.ID,
 				Name: "Name",

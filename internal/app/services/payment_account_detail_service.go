@@ -31,7 +31,7 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 		resp.Message = "Supplier Not Found"
 	} else {
 		paymentAccountDetail := models.PaymentAccountDetail{
-			Supplier:      *supplier,
+			SupplierID:    supplier.ID,
 			AccountType:   utils.AccountType(params.GetAccountType()),
 			AccountName:   params.GetAccountName(),
 			AccountNumber: params.GetAccountNumber(),
@@ -63,15 +63,15 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 	if result.RecordNotFound() {
 		resp.Message = "PaymentAccountDetail Not Found"
 	} else {
-		paymentAccountDetail.AccountType = utils.AccountType(params.GetAccountType())
-		paymentAccountDetail.AccountName = params.GetAccountName()
-		paymentAccountDetail.AccountNumber = params.GetAccountNumber()
-		paymentAccountDetail.BankName = params.GetBankName()
-		paymentAccountDetail.BranchName = params.GetBranchName()
-		paymentAccountDetail.RoutingNumber = params.GetRoutingNumber()
-		paymentAccountDetail.IsDefault = params.GetIsDefault()
-
-		err := database.DBAPM(ctx).Save(paymentAccountDetail)
+		err := database.DBAPM(ctx).Model(paymentAccountDetail).Updates(models.PaymentAccountDetail{
+			AccountType:   utils.AccountType(params.GetAccountType()),
+			AccountName:   params.GetAccountName(),
+			AccountNumber: params.GetAccountNumber(),
+			BankName:      params.GetBankName(),
+			BranchName:    params.GetBranchName(),
+			RoutingNumber: params.GetRoutingNumber(),
+			IsDefault:     params.GetIsDefault(),
+		})
 		if err != nil && err.Error != nil {
 			errorMsg := fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
 			log.Println(errorMsg)

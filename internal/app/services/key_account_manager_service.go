@@ -30,10 +30,10 @@ func (kams *KeyAccountManagerService) Add(ctx context.Context, params *kampb.Key
 		resp.Message = "Supplier Not Found"
 	} else {
 		keyAccountManager := models.KeyAccountManager{
-			Supplier: *supplier,
-			Name:     params.GetName(),
-			Email:    params.GetEmail(),
-			Phone:    params.GetPhone(),
+			SupplierID: supplier.ID,
+			Name:       params.GetName(),
+			Email:      params.GetEmail(),
+			Phone:      params.GetPhone(),
 		}
 		err := database.DBAPM(ctx).Model(&models.KeyAccountManager{}).Create(&keyAccountManager)
 

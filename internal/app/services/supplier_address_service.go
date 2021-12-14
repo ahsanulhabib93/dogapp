@@ -31,19 +31,19 @@ func (sas *SupplierAddressService) Add(ctx context.Context, params *addresspb.Su
 		resp.Message = "Supplier Not Found"
 	} else {
 		supplierAddress := models.SupplierAddress{
-			Supplier:  *supplier,
-			Firstname: params.GetFirstname(),
-			Lastname:  params.GetLastname(),
-			Address1:  params.GetAddress1(),
-			Address2:  params.GetAddress2(),
-			Landmark:  params.GetLandmark(),
-			City:      params.GetCity(),
-			State:     params.GetState(),
-			Country:   params.GetCountry(),
-			Zipcode:   params.GetZipcode(),
-			Phone:     params.GetPhone(),
-			GstNumber: params.GetGstNumber(),
-			IsDefault: params.GetIsDefault(),
+			SupplierID: supplier.ID,
+			Firstname:  params.GetFirstname(),
+			Lastname:   params.GetLastname(),
+			Address1:   params.GetAddress1(),
+			Address2:   params.GetAddress2(),
+			Landmark:   params.GetLandmark(),
+			City:       params.GetCity(),
+			State:      params.GetState(),
+			Country:    params.GetCountry(),
+			Zipcode:    params.GetZipcode(),
+			Phone:      params.GetPhone(),
+			GstNumber:  params.GetGstNumber(),
+			IsDefault:  params.GetIsDefault(),
 		}
 
 		err := database.DBAPM(ctx).Model(&models.SupplierAddress{}).Create(&supplierAddress)
@@ -69,20 +69,21 @@ func (sas *SupplierAddressService) Edit(ctx context.Context, params *addresspb.S
 	if result.RecordNotFound() {
 		resp.Message = "SupplierAddress Not Found"
 	} else {
-		address.Firstname = params.GetFirstname()
-		address.Lastname = params.GetLastname()
-		address.Address1 = params.GetAddress1()
-		address.Address2 = params.GetAddress2()
-		address.Landmark = params.GetLandmark()
-		address.City = params.GetCity()
-		address.State = params.GetState()
-		address.Country = params.GetCountry()
-		address.Zipcode = params.GetZipcode()
-		address.Phone = params.GetPhone()
-		address.GstNumber = params.GetGstNumber()
-		address.IsDefault = params.GetIsDefault()
+		err := database.DBAPM(ctx).Model(address).Updates(models.SupplierAddress{
+			Firstname: params.GetFirstname(),
+			Lastname:  params.GetLastname(),
+			Address1:  params.GetAddress1(),
+			Address2:  params.GetAddress2(),
+			Landmark:  params.GetLandmark(),
+			City:      params.GetCity(),
+			State:     params.GetState(),
+			Country:   params.GetCountry(),
+			Zipcode:   params.GetZipcode(),
+			Phone:     params.GetPhone(),
+			GstNumber: params.GetGstNumber(),
+			IsDefault: params.GetIsDefault(),
+		})
 
-		err := database.DBAPM(ctx).Save(address)
 		if err != nil && err.Error != nil {
 			errorMsg := fmt.Sprintf("Error while updating SupplierAddress: %s", err.Error)
 			log.Println(errorMsg)
