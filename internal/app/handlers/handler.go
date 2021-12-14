@@ -8,6 +8,10 @@ func GetSupplierInstance() *services.SupplierService {
 	return new(services.SupplierService)
 }
 
+func GetSupplierAddressInstance() *services.SupplierAddressService {
+	return new(services.SupplierAddressService)
+}
+
 func GetPaymentAccountDetailInstance() *services.PaymentAccountDetailService {
 	return new(services.PaymentAccountDetailService)
 }
