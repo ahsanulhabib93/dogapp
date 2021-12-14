@@ -1,6 +1,9 @@
 package models
 
 import (
+	"errors"
+
+	"github.com/jinzhu/gorm"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -13,4 +16,11 @@ type Supplier struct {
 	SupplierAddresses     []SupplierAddress  `json:"supplier_addresses"`
 	PaymentAccountDetails []PaymentAccountDetail
 	KeyAccountManagers    []KeyAccountManager
+}
+
+func (supplier Supplier) Validate(db *gorm.DB) {
+	result := db.Model(&supplier).First(&Supplier{}, "name = ?", supplier.Name)
+	if !result.RecordNotFound() {
+		db.AddError(errors.New("Name should be unique"))
+	}
 }

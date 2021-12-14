@@ -17,13 +17,16 @@ type SupplierService struct{}
 
 // List ...
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
+	log.Printf("ListSupplierParams: %+v", params)
 	resp := supplierpb.ListResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).Scan(&resp.Data)
+	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
 }
 
 // ListWithSupplierAddresses ...
 func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
+	log.Printf("ListwithAddressParams: %+v", params)
 	resp := supplierpb.ListResponse{}
 
 	query := database.DBAPM(ctx).Model(&models.Supplier{}).Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id")
@@ -49,12 +52,13 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
 	json.Unmarshal(temp, &resp.Data)
-
+	log.Printf("ListwithAddressResponse: %+v", resp)
 	return &resp, nil
 }
 
 // Add ...
 func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierParam) (*supplierpb.BasicApiResponse, error) {
+	log.Printf("AddSupplierParams: %+v", params)
 	resp := supplierpb.BasicApiResponse{Success: false}
 	supplier := models.Supplier{
 		Name:         params.GetName(),
@@ -85,11 +89,13 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		resp.Message = "Supplier Added Successfully"
 		resp.Success = true
 	}
+	log.Printf("AddSupplierResponse: %+v", resp)
 	return &resp, nil
 }
 
 // Edit ...
 func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.SupplierObject) (*supplierpb.BasicApiResponse, error) {
+	log.Printf("EditSupplierParams: %+v", params)
 	resp := supplierpb.BasicApiResponse{Success: false}
 
 	supplier := &models.Supplier{}
@@ -111,5 +117,6 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			resp.Success = true
 		}
 	}
+	log.Printf("EditSupplierResponse: %+v", resp)
 	return &resp, nil
 }

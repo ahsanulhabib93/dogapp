@@ -16,13 +16,16 @@ type SupplierAddressService struct{}
 
 // List ...
 func (sas *SupplierAddressService) List(ctx context.Context, params *addresspb.ListSupplierAddressParams) (*addresspb.ListSupplierAddressResponse, error) {
+	log.Printf("ListAddressParams: %+v", params)
 	resp := addresspb.ListSupplierAddressResponse{}
 	database.DBAPM(ctx).Model(&models.SupplierAddress{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
+	log.Printf("ListAddressResponse: %+v", resp)
 	return &resp, nil
 }
 
 // Add ...
 func (sas *SupplierAddressService) Add(ctx context.Context, params *addresspb.SupplierAddressParam) (*addresspb.BasicApiResponse, error) {
+	log.Printf("AddAddressParams: %+v", params)
 	resp := addresspb.BasicApiResponse{Success: false}
 
 	supplier := &models.Supplier{}
@@ -57,11 +60,13 @@ func (sas *SupplierAddressService) Add(ctx context.Context, params *addresspb.Su
 			resp.Success = true
 		}
 	}
+	log.Printf("AddAddressResponse: %+v", resp)
 	return &resp, nil
 }
 
 // Edit ...
 func (sas *SupplierAddressService) Edit(ctx context.Context, params *addresspb.SupplierAddressObject) (*addresspb.BasicApiResponse, error) {
+	log.Printf("EditAddressParams: %+v", params)
 	resp := addresspb.BasicApiResponse{Success: false}
 
 	address := &models.SupplierAddress{}
@@ -93,5 +98,6 @@ func (sas *SupplierAddressService) Edit(ctx context.Context, params *addresspb.S
 			resp.Success = true
 		}
 	}
+	log.Printf("EditAddressResponse: %+v", resp)
 	return &resp, nil
 }

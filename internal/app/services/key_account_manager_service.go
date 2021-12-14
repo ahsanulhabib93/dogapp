@@ -15,13 +15,16 @@ type KeyAccountManagerService struct{}
 
 // List ...
 func (kams *KeyAccountManagerService) List(ctx context.Context, params *kampb.ListParams) (*kampb.ListResponse, error) {
+	log.Printf("ListKamParams: %+v", params)
 	resp := kampb.ListResponse{}
 	database.DBAPM(ctx).Model(&models.KeyAccountManager{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
+	log.Printf("ListKamResponse: %+v", resp)
 	return &resp, nil
 }
 
 // Add ...
 func (kams *KeyAccountManagerService) Add(ctx context.Context, params *kampb.KeyAccountManagerParam) (*kampb.BasicApiResponse, error) {
+	log.Printf("AddKamParams: %+v", params)
 	resp := kampb.BasicApiResponse{Success: false}
 
 	supplier := &models.Supplier{}
@@ -46,11 +49,13 @@ func (kams *KeyAccountManagerService) Add(ctx context.Context, params *kampb.Key
 			resp.Success = true
 		}
 	}
+	log.Printf("AddKamResponse: %+v", resp)
 	return &resp, nil
 }
 
 // Edit ...
 func (kams *KeyAccountManagerService) Edit(ctx context.Context, params *kampb.KeyAccountManagerObject) (*kampb.BasicApiResponse, error) {
+	log.Printf("EditKamParams: %+v", params)
 	resp := kampb.BasicApiResponse{Success: false}
 
 	keyAccountManager := &models.KeyAccountManager{}
@@ -72,5 +77,6 @@ func (kams *KeyAccountManagerService) Edit(ctx context.Context, params *kampb.Ke
 			resp.Success = true
 		}
 	}
+	log.Printf("EditKamResponse: %+v", resp)
 	return &resp, nil
 }

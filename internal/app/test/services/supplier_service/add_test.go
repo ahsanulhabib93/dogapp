@@ -11,6 +11,7 @@ import (
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
@@ -92,6 +93,32 @@ var _ = Describe("AddSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: Name can't be blank"))
+		})
+	})
+
+	Context("Adding Supplier with existing name", func() {
+		It("Should return error response", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := &supplierpb.SupplierParam{
+				Name:         supplier1.Name,
+				Email:        "Email",
+				SupplierType: uint64(utils.Hlc),
+				Firstname:    "Firstname",
+				Lastname:     "Lastname",
+				Address1:     "Address1",
+				Address2:     "Address2",
+				Landmark:     "Landmark",
+				City:         "City",
+				State:        "State",
+				Country:      "Country",
+				Zipcode:      "Zipcode",
+				Phone:        "Phone",
+				GstNumber:    "GstNumber",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: Name should be unique"))
 		})
 	})
 })

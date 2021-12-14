@@ -16,13 +16,16 @@ type PaymentAccountDetailService struct{}
 
 // List ...
 func (ps *PaymentAccountDetailService) List(ctx context.Context, params *paymentpb.ListParams) (*paymentpb.ListResponse, error) {
+	log.Printf("ListPaymentAccountParams: %+v", params)
 	resp := paymentpb.ListResponse{}
 	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
+	log.Printf("ListPaymentAccountResponse: %+v", resp)
 	return &resp, nil
 }
 
 // Add ...
 func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentpb.PaymentAccountDetailParam) (*paymentpb.BasicApiResponse, error) {
+	log.Printf("AddPaymentAccountParams: %+v", params)
 	resp := paymentpb.BasicApiResponse{Success: false}
 
 	supplier := &models.Supplier{}
@@ -51,11 +54,13 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			resp.Success = true
 		}
 	}
+	log.Printf("AddPaymentAccountResponse: %+v", resp)
 	return &resp, nil
 }
 
 // Edit ...
 func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *paymentpb.PaymentAccountDetailObject) (*paymentpb.BasicApiResponse, error) {
+	log.Printf("EditPaymentAccountParams: %+v", params)
 	resp := paymentpb.BasicApiResponse{Success: false}
 
 	paymentAccountDetail := &models.PaymentAccountDetail{}
@@ -81,5 +86,6 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			resp.Success = true
 		}
 	}
+	log.Printf("EditPaymentAccountResponse: %+v", resp)
 	return &resp, nil
 }
