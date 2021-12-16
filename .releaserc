@@ -1,0 +1,4 @@
+{
+"branches": ["master", "[0-9].[0-9].[0-9]"],
+"plugins": ['@semantic-release/commit-analyzer', '@semantic-release/release-notes-generator', '@semantic-release/github']
+}
