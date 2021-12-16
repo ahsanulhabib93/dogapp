@@ -1,0 +1,34 @@
+name: StagingAuthMigration
+
+on:
+  pull_request:
+    branches: [master]
+    types: [labeled]
+
+env:
+  AUTH_MIGRATION_API: ${{ secrets.STAGING_AUTH_MIGRATION_API || 'https://mokamap.shopups2.xyz/auth/v0/migrate' }}
+  AUTH_TOKEN: ${{ secrets.STAGING_DIRTY_HACK_TOKEN }}
+  FILE_NAME: ${{ secrets.AUTH_MIGRATIONS_FILE_PATH  || 'migrations.json' }}
+
+jobs:
+  adding-auth-data-in-identity-service:
+    name: Adding Auth Data in Identity Service
+    runs-on: ubuntu-20.04
+    if: github.event.label.name == 'Ok to deploy in staging'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: URL and File Check
+        run: |
+          echo "Migration URL : "
+          echo ${{ env.AUTH_MIGRATION_API }} | sed 's/./& /g'
+          echo "Migration File Name : "
+          echo ${{ env.FILE_NAME }} | sed 's/./& /g'
+          (ls ${{ env.FILE_NAME }} && echo "File Exists") || (echo "File Does not Exists. Creating an Empty file" && echo "{}" > ${{ env.FILE_NAME }})
+      
+      - name: curl
+        uses: wei/curl@v1
+        with:
+          args: |
+            -X POST '${{ env.AUTH_MIGRATION_API }}' --header 'Authorization: bearer ${{ env.AUTH_TOKEN }}' --form 'json_file=@${{ env.FILE_NAME }}'

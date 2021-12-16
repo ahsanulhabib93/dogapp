@@ -1,4 +1,4 @@
-package supplier_service_test
+package supplier_address_service_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	addresspb "github.com/voonik/goConnect/api/go/ss2/supplier_address"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
@@ -24,7 +24,7 @@ var _ = Describe("AddSupplierAddress", func() {
 	Context("While adding address for existing Supplier", func() {
 		It("Should create address and return success response", func() {
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
-			param := &supplierpb.SupplierAddressParam{
+			param := &addresspb.SupplierAddressParam{
 				SupplierId: supplier.ID,
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
@@ -39,7 +39,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				GstNumber:  "GstNumber",
 				IsDefault:  false,
 			}
-			res, err := new(services.SupplierService).AddSupplierAddress(ctx, param)
+			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
@@ -73,7 +73,7 @@ var _ = Describe("AddSupplierAddress", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: false})
-			param := &supplierpb.SupplierAddressParam{
+			param := &addresspb.SupplierAddressParam{
 				SupplierId: supplier.ID,
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
@@ -88,7 +88,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				GstNumber:  "GstNumber",
 				IsDefault:  true,
 			}
-			res, err := new(services.SupplierService).AddSupplierAddress(ctx, param)
+			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
@@ -100,7 +100,6 @@ var _ = Describe("AddSupplierAddress", func() {
 
 			address1 := addresses[0]
 			Expect(address1.IsDefault).To(Equal(false))
-
 			address2 := addresses[1]
 			Expect(address2.IsDefault).To(Equal(false))
 
@@ -122,12 +121,12 @@ var _ = Describe("AddSupplierAddress", func() {
 
 	Context("While adding address for invalid Supplier ID", func() {
 		It("Should return error response", func() {
-			param := &supplierpb.SupplierAddressParam{
+			param := &addresspb.SupplierAddressParam{
 				SupplierId: 1000,
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
 			}
-			res, err := new(services.SupplierService).AddSupplierAddress(ctx, param)
+			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
@@ -138,13 +137,13 @@ var _ = Describe("AddSupplierAddress", func() {
 	Context("While adding address without zipcode", func() {
 		It("Should return error response", func() {
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
-			param := &supplierpb.SupplierAddressParam{
+			param := &addresspb.SupplierAddressParam{
 				SupplierId: supplier.ID,
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
 				Address1:   "Address1",
 			}
-			res, err := new(services.SupplierService).AddSupplierAddress(ctx, param)
+			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
@@ -155,18 +154,17 @@ var _ = Describe("AddSupplierAddress", func() {
 	Context("While adding address without address1", func() {
 		It("Should return error response", func() {
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
-			param := &supplierpb.SupplierAddressParam{
+			param := &addresspb.SupplierAddressParam{
 				SupplierId: supplier.ID,
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
 				Zipcode:    "Zipcode",
 			}
-			res, err := new(services.SupplierService).AddSupplierAddress(ctx, param)
+			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier Address: Address1 can't be blank"))
 		})
 	})
-
 })

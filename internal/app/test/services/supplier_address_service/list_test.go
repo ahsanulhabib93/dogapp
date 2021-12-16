@@ -1,4 +1,4 @@
-package supplier_service_test
+package supplier_address_service_test
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	addresspb "github.com/voonik/goConnect/api/go/ss2/supplier_address"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
@@ -28,7 +28,7 @@ var _ = Describe("ListSupplier", func() {
 			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			supplierAddress2 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
-			res, err := new(services.SupplierService).ListSupplierAddresses(ctx, &supplierpb.ListSupplierAddressParams{SupplierId: supplier2.ID})
+			res, err := new(services.SupplierAddressService).List(ctx, &addresspb.ListSupplierAddressParams{SupplierId: supplier2.ID})
 			Expect(err).To(BeNil())
 			Expect(len(res.Data)).To(Equal(2))
 

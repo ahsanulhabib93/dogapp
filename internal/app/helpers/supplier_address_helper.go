@@ -7,12 +7,23 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 )
 
-func UpdateOtherAddress(ctx context.Context, address *models.SupplierAddress) error {
+func UpdateDefaultAddress(ctx context.Context, address *models.SupplierAddress) error {
 	if address.IsDefault {
 		otherDefaultAddress := &models.SupplierAddress{}
 		database.DBAPM(ctx).Model(address).Where("supplier_id = ? and is_default = ? and id != ?", address.SupplierID, true, address.ID).First(&otherDefaultAddress)
 		if otherDefaultAddress != nil {
 			database.DBAPM(ctx).Model(otherDefaultAddress).Update("is_default", false)
+		}
+	}
+	return nil
+}
+
+func UpdateDefaultPaymentAccount(ctx context.Context, paymentAccount *models.PaymentAccountDetail) error {
+	if paymentAccount.IsDefault {
+		otherDefaultPayment := &models.PaymentAccountDetail{}
+		database.DBAPM(ctx).Model(paymentAccount).Where("supplier_id = ? and is_default = ? and id != ?", paymentAccount.SupplierID, true, paymentAccount.ID).First(&otherDefaultPayment)
+		if otherDefaultPayment != nil {
+			database.DBAPM(ctx).Model(otherDefaultPayment).Update("is_default", false)
 		}
 	}
 	return nil

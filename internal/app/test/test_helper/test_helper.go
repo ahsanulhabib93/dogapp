@@ -25,7 +25,7 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 
 func CreateSupplierWithAddress(ctx context.Context, supplier *models.Supplier) *models.Supplier {
 	supplier = CreateSupplier(ctx, supplier)
-	CreateSupplierAddress(ctx, &models.SupplierAddress{Supplier: *supplier, IsDefault: true})
+	CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
 	return supplier
 }
 

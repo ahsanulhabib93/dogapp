@@ -10,16 +10,17 @@ import (
 
 type Supplier struct {
 	database.VaccountGorm
-	Name                  string `gorm:"not null"`
+	Name                  string `gorm:"not null" valid:"required"`
 	Email                 string
-	SupplierType          utils.SupplierType `json:"supplier_type"`
+	SupplierType          utils.SupplierType `json:"supplier_type" valid:"required"`
 	SupplierAddresses     []SupplierAddress  `json:"supplier_addresses"`
 	PaymentAccountDetails []PaymentAccountDetail
 	KeyAccountManagers    []KeyAccountManager
 }
 
 func (supplier Supplier) Validate(db *gorm.DB) {
-	if supplier.Name == "" {
-		db.AddError(errors.New("Name can't be blank"))
+	result := db.Model(&supplier).First(&Supplier{}, "name = ?", supplier.Name)
+	if !result.RecordNotFound() {
+		db.AddError(errors.New("Name should be unique"))
 	}
 }

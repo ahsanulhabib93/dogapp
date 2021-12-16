@@ -50,7 +50,7 @@ jobs:
       - name: Deploy to staging
         run: |
           export IMAGE_TAG=`echo "$SOURCE_BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g'`-$GITHUB_RUN_NUMBER
-          gcloud container clusters get-credentials shop-uat-cluster --zone asia-southeast1-a --project $PROJECT_ID
+          gcloud container clusters get-credentials shopup-mokam-stg --zone asia-southeast1 --project $PROJECT_ID
           helm plugin install https://github.com/hayorov/helm-gcs --version 0.3.5
           helm repo add shopup gs://shopup-prod/helm-charts
           helm repo update
@@ -61,13 +61,13 @@ jobs:
             cd -
             git clone https://github.com/googleapis/googleapis
             GOOGLEAPIS_DIR=./googleapis
-            cp goConnect/api/proto/ss2/supplier.proto .
-            sed -i 's/\/\/transcoder//' supplier.proto
-            sudo apt install -y protobuf-compiler
-            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto
-            kubectl -n shopup-uat create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run | kubectl apply -f -
+            cp goConnect/api/proto/ss2/{supplier*,payment*,key*} .
+            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto
+            sudo apt-get install -y protobuf-compiler
+            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto
+            kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
           ################################################################################
-          helm upgrade --install --atomic --timeout 600s --namespace shopup-uat ss2 shopup/ss2-staging --set image.tag=$IMAGE_TAG
+          helm upgrade --install --atomic --timeout 600s --namespace mokam ss2 shopup/ss2-staging --set image.tag=$IMAGE_TAG
       # Send Slack Alerts
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2

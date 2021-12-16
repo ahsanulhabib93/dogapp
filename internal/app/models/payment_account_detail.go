@@ -10,22 +10,21 @@ import (
 
 type PaymentAccountDetail struct {
 	database.VaccountGorm
-	SupplierID    uint64 `gorm:"index:idx_supplier_id"`
-	AccountType   utils.AccountType
-	AccountName   string `gorm:"not null"`
-	AccountNumber string `gorm:"not null"`
+	SupplierID    uint64            `gorm:"index:idx_supplier_id" valid:"required"`
+	AccountType   utils.AccountType `valid:"required"`
+	AccountName   string            `gorm:"not null" valid:"required"`
+	AccountNumber string            `gorm:"not null" valid:"required"`
 	BankName      string
 	BranchName    string
 	RoutingNumber string
 	IsDefault     bool
-	Supplier      Supplier
 }
 
 func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
-	if paymentAccount.AccountName == "" {
-		db.AddError(errors.New("AccountName can't be blank"))
-	}
-	if paymentAccount.AccountNumber == "" {
-		db.AddError(errors.New("AccountNumber can't be blank"))
+	if !paymentAccount.IsDefault {
+		result := db.Model(&paymentAccount).Where("supplier_id = ? and is_default = ? and id != ?", paymentAccount.SupplierID, true, paymentAccount.ID).First(&PaymentAccountDetail{})
+		if result.RecordNotFound() {
+			db.AddError(errors.New("Default Payment Account is required"))
+		}
 	}
 }
