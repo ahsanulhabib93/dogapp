@@ -42,7 +42,7 @@ jobs:
       # Deploy to production GKE cluster
       - name: Deploy to production
         run: |
-          gcloud container clusters get-credentials vnk-shop-cluster --zone asia-southeast1-a --project $PROJECT_ID
+          gcloud container clusters get-credentials mokam-prod --zone asia-southeast1 --project $PROJECT_ID
           helm plugin install https://github.com/hayorov/helm-gcs --version 0.3.5
           helm repo add shopup gs://shopup-prod/helm-charts
           helm repo update
@@ -57,9 +57,9 @@ jobs:
             sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto
             sudo apt install -y protobuf-compiler
             protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto
-            kubectl -n vnkshopup create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
+            kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
           ################################################################################
-          helm upgrade --install --atomic --timeout 600s --namespace vnkshopup ss2 shopup/ss2 --set image.tag=${GITHUB_REF##*/}
+          helm upgrade --install --atomic --timeout 600s --namespace mokam ss2 shopup/ss2 --set image.tag=${GITHUB_REF##*/}
       # Send Slack Alerts
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
