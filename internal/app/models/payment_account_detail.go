@@ -23,7 +23,6 @@ type PaymentAccountDetail struct {
 }
 
 func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
-
 	if !paymentAccount.IsDefault {
 		result := db.Model(&paymentAccount).Where("supplier_id = ? and is_default = ? and id != ?", paymentAccount.SupplierID, true, paymentAccount.ID).First(&PaymentAccountDetail{})
 		if result.RecordNotFound() {
@@ -33,6 +32,13 @@ func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 
 	if !paymentAccount.validAccountSubType() {
 		db.AddError(errors.New("Invalid Account SubType"))
+	}
+
+	if paymentAccount.BankID != 0 {
+		result := db.Model(&Bank{}).First(&Bank{}, paymentAccount.BankID)
+		if result.RecordNotFound() {
+			db.AddError(errors.New("Invalid Bank Name"))
+		}
 	}
 }
 

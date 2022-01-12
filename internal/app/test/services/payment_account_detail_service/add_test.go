@@ -25,13 +25,14 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 	Context("Add", func() {
 		It("Should create payment account detail and return success", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier.ID,
 				AccountType:    uint64(utils.Bank),
 				AccountSubType: uint64(utils.Savings),
 				AccountName:    "AccountName",
 				AccountNumber:  "AccountNumber",
-				BankName:       "BankName",
+				BankId:         bank.ID,
 				BranchName:     "BranchName",
 				RoutingNumber:  "RoutingNumber",
 				IsDefault:      true,
@@ -50,7 +51,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			Expect(paymentAccount.AccountSubType).To(Equal(utils.Savings))
 			Expect(paymentAccount.AccountName).To(Equal(param.AccountName))
 			Expect(paymentAccount.AccountNumber).To(Equal(param.AccountNumber))
-			Expect(paymentAccount.BankName).To(Equal(param.BankName))
+			Expect(paymentAccount.BankID).To(Equal(param.BankId))
 			Expect(paymentAccount.BranchName).To(Equal(param.BranchName))
 			Expect(paymentAccount.RoutingNumber).To(Equal(param.RoutingNumber))
 			Expect(paymentAccount.IsDefault).To(Equal(true))
@@ -165,15 +166,31 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 				AccountSubType: uint64(utils.Bkash),
 				AccountName:    "AccountName",
 				AccountNumber:  "AccountNumber",
-				BankName:       "BankName",
-				BranchName:     "BranchName",
-				RoutingNumber:  "RoutingNumber",
 				IsDefault:      true,
 			}
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: Invalid Account SubType"))
+		})
+	})
+
+	Context("While adding with invalid bank ID", func() {
+		It("Should return error response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:     supplier.ID,
+				AccountType:    uint64(utils.Bank),
+				AccountSubType: uint64(utils.Savings),
+				AccountName:    "AccountName",
+				AccountNumber:  "AccountNumber",
+				BankId:         1000,
+				IsDefault:      true,
+			}
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: Invalid Bank Name"))
 		})
 	})
 })

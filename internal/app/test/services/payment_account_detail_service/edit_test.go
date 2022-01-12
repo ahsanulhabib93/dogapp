@@ -26,13 +26,14 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 		It("Should update and return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Bank, IsDefault: true})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			param := &paymentpb.PaymentAccountDetailObject{
 				Id:             paymentAccount.ID,
 				AccountType:    uint64(utils.Bank),
 				AccountSubType: uint64(utils.Savings),
 				AccountName:    "AccountName",
 				AccountNumber:  "AccountNumber",
-				BankName:       "BankName",
+				BankId:         bank.ID,
 				BranchName:     "BranchName",
 				RoutingNumber:  "RoutingNumber",
 				IsDefault:      true,
@@ -48,7 +49,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount.AccountSubType).To(Equal(utils.Savings))
 			Expect(paymentAccount.AccountName).To(Equal(param.AccountName))
 			Expect(paymentAccount.AccountNumber).To(Equal(param.AccountNumber))
-			Expect(paymentAccount.BankName).To(Equal(param.BankName))
+			Expect(paymentAccount.BankID).To(Equal(param.BankId))
 			Expect(paymentAccount.BranchName).To(Equal(param.BranchName))
 			Expect(paymentAccount.RoutingNumber).To(Equal(param.RoutingNumber))
 			Expect(paymentAccount.IsDefault).To(Equal(true))
@@ -101,7 +102,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount.AccountSubType).To(Equal(utils.Current))
 			Expect(updatedPayment.AccountName).To(Equal(param.AccountName))
 			Expect(updatedPayment.AccountNumber).To(Equal(param.AccountNumber))
-			Expect(updatedPayment.BankName).To(Equal(paymentAccount.BankName))
+			Expect(updatedPayment.BankID).To(Equal(paymentAccount.BankID))
 			Expect(updatedPayment.BranchName).To(Equal(paymentAccount.BranchName))
 			Expect(updatedPayment.RoutingNumber).To(Equal(paymentAccount.RoutingNumber))
 			Expect(updatedPayment.IsDefault).To(Equal(paymentAccount.IsDefault))
@@ -132,6 +133,22 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while updating PaymentAccountDetail: Invalid Account SubType"))
+		})
+	})
+
+	Context("Editing with invalid bank name", func() {
+		It("Should return error response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Bank, IsDefault: true})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:     paymentAccount.ID,
+				BankId: 100,
+			}
+			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while updating PaymentAccountDetail: Invalid Bank Name"))
 		})
 	})
 
