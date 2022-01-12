@@ -16,7 +16,6 @@ type PaymentAccountDetail struct {
 	AccountName    string               `gorm:"not null" valid:"required"`
 	AccountNumber  string               `gorm:"not null" valid:"required"`
 	BankID         uint64
-	BankName       string
 	BranchName     string
 	RoutingNumber  string
 	IsDefault      bool

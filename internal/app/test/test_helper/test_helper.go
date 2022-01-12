@@ -56,8 +56,10 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 	} else {
 		paymentAccount.AccountType = utils.Bank
 		paymentAccount.AccountSubType = utils.Current
-		bank := CreateBank(ctx, &models.Bank{})
-		paymentAccount.BankID = bank.ID
+		if paymentAccount.BankID == 0 {
+			bank := CreateBank(ctx, &models.Bank{})
+			paymentAccount.BankID = bank.ID
+		}
 		paymentAccount.BranchName = fmt.Sprintf("BranchName-%v", id)
 		paymentAccount.RoutingNumber = fmt.Sprintf("RoutingNumber-%v", id)
 	}

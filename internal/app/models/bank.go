@@ -8,3 +8,7 @@ type Bank struct {
 	database.VaccountGorm
 	Name string `gorm:"not null" valid:"required"`
 }
+
+func GetBankJoinStr() string {
+	return "left join banks on banks.id = payment_account_details.bank_id and banks.vaccount_id=payment_account_details.vaccount_id"
+}

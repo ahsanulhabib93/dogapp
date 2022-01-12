@@ -20,4 +20,15 @@ func init() {
 			return nil
 		},
 	})
+	migrator.Register(&gormigrate.Migration{
+		ID: "20220112055358",
+		Migrate: func(tx *gorm.DB) error {
+			return tx.Model(
+				&models.PaymentAccountDetail{},
+			).DropColumn("bank_name").Error
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	})
 }
