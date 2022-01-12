@@ -51,12 +51,16 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 	paymentAccount.AccountName = fmt.Sprintf("AccountName-%v", id)
 	paymentAccount.AccountNumber = fmt.Sprintf("AccountNumber-%v", id)
 
-	if paymentAccount.AccountType != utils.Mfs {
+	if paymentAccount.AccountType == utils.Mfs {
+		paymentAccount.AccountSubType = utils.Bkash
+	} else {
 		paymentAccount.AccountType = utils.Bank
+		paymentAccount.AccountSubType = utils.Current
 		paymentAccount.BankName = fmt.Sprintf("BankName-%v", id)
 		paymentAccount.BranchName = fmt.Sprintf("BranchName-%v", id)
 		paymentAccount.RoutingNumber = fmt.Sprintf("RoutingNumber-%v", id)
 	}
+
 	database.DBAPM(ctx).Save(paymentAccount)
 	return paymentAccount
 }

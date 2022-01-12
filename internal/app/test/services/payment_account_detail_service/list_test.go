@@ -33,12 +33,14 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 
 			accountData1 := res.Data[0]
 			Expect(accountData1.AccountType).To(Equal(uint64(utils.Mfs)))
+			Expect(accountData1.AccountSubType).To(Equal(uint64(utils.Bkash)))
 			Expect(accountData1.AccountName).To(Equal(accountDetail1.AccountName))
 			Expect(accountData1.AccountNumber).To(Equal(accountDetail1.AccountNumber))
 			Expect(accountData1.IsDefault).To(Equal(true))
 
 			accountData2 := res.Data[1]
 			Expect(accountData2.AccountType).To(Equal(uint64(utils.Bank)))
+			Expect(accountData2.AccountSubType).To(Equal(uint64(utils.Current)))
 			Expect(accountData2.AccountName).To(Equal(accountDetail2.AccountName))
 			Expect(accountData2.AccountNumber).To(Equal(accountDetail2.AccountNumber))
 			Expect(accountData2.BankName).To(Equal(accountDetail2.BankName))

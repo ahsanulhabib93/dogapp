@@ -35,14 +35,15 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 		resp.Message = "Supplier Not Found"
 	} else {
 		paymentAccountDetail := models.PaymentAccountDetail{
-			SupplierID:    supplier.ID,
-			AccountType:   utils.AccountType(params.GetAccountType()),
-			AccountName:   params.GetAccountName(),
-			AccountNumber: params.GetAccountNumber(),
-			BankName:      params.GetBankName(),
-			BranchName:    params.GetBranchName(),
-			RoutingNumber: params.GetRoutingNumber(),
-			IsDefault:     params.GetIsDefault(),
+			SupplierID:     supplier.ID,
+			AccountType:    utils.AccountType(params.GetAccountType()),
+			AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
+			AccountName:    params.GetAccountName(),
+			AccountNumber:  params.GetAccountNumber(),
+			BankName:       params.GetBankName(),
+			BranchName:     params.GetBranchName(),
+			RoutingNumber:  params.GetRoutingNumber(),
+			IsDefault:      params.GetIsDefault(),
 		}
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
@@ -69,13 +70,14 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 		resp.Message = "PaymentAccountDetail Not Found"
 	} else {
 		err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
-			AccountType:   utils.AccountType(params.GetAccountType()),
-			AccountName:   params.GetAccountName(),
-			AccountNumber: params.GetAccountNumber(),
-			BankName:      params.GetBankName(),
-			BranchName:    params.GetBranchName(),
-			RoutingNumber: params.GetRoutingNumber(),
-			IsDefault:     params.GetIsDefault(),
+			AccountType:    utils.AccountType(params.GetAccountType()),
+			AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
+			AccountName:    params.GetAccountName(),
+			AccountNumber:  params.GetAccountNumber(),
+			BankName:       params.GetBankName(),
+			BranchName:     params.GetBranchName(),
+			RoutingNumber:  params.GetRoutingNumber(),
+			IsDefault:      params.GetIsDefault(),
 		})
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
