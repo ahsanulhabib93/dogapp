@@ -1,6 +1,8 @@
 package migrations
 
 import (
+	"log"
+
 	"github.com/jinzhu/gorm"
 	migrator "github.com/voonik/goFramework/pkg/migrations"
 	"github.com/voonik/ss2/internal/app/models"
@@ -23,9 +25,13 @@ func init() {
 	migrator.Register(&gormigrate.Migration{
 		ID: "20220112055358",
 		Migrate: func(tx *gorm.DB) error {
-			return tx.Model(
+			err := tx.Model(
 				&models.PaymentAccountDetail{},
 			).DropColumn("bank_name").Error
+			if err != nil {
+				log.Printf("ERROR: %v", err)
+			}
+			return nil
 		},
 		Rollback: func(tx *gorm.DB) error {
 			return nil
