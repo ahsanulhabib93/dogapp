@@ -14,5 +14,5 @@ func TestPaymentAccountDetailService(t *testing.T) {
 }
 
 var _ = AfterEach(func() {
-	test.Cleaner.Clean("suppliers", "payment_account_details")
+	test.Cleaner.Clean("suppliers", "payment_account_details", "banks")
 })

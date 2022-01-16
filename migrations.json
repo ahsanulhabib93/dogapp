@@ -113,6 +113,12 @@
           "required_permission_id": "supplierpanel:supplierlistadminapi:admin"
         },
         {
+          "route": "/bank/list",
+          "request_method": "GET",
+          "service": "ss2",
+          "required_permission_id": "supplierpanel:supplierlistapi:view"
+        },
+        {
           "route": "/key_account_manager/edit",
           "request_method": "POST",
           "service": "ss2",

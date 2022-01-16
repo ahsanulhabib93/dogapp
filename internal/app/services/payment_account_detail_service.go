@@ -19,8 +19,9 @@ type PaymentAccountDetailService struct{}
 func (ps *PaymentAccountDetailService) List(ctx context.Context, params *paymentpb.ListParams) (*paymentpb.ListResponse, error) {
 	log.Printf("ListPaymentAccountParams: %+v", params)
 	resp := paymentpb.ListResponse{}
-	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
-	log.Printf("ListPaymentAccountResponse: %+v", resp)
+	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
+		models.GetBankJoinStr()).Select("payment_account_details.*, banks.name bank_name").Where(
+		"supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
 	return &resp, nil
 }
 
@@ -35,14 +36,15 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 		resp.Message = "Supplier Not Found"
 	} else {
 		paymentAccountDetail := models.PaymentAccountDetail{
-			SupplierID:    supplier.ID,
-			AccountType:   utils.AccountType(params.GetAccountType()),
-			AccountName:   params.GetAccountName(),
-			AccountNumber: params.GetAccountNumber(),
-			BankName:      params.GetBankName(),
-			BranchName:    params.GetBranchName(),
-			RoutingNumber: params.GetRoutingNumber(),
-			IsDefault:     params.GetIsDefault(),
+			SupplierID:     supplier.ID,
+			AccountType:    utils.AccountType(params.GetAccountType()),
+			AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
+			AccountName:    params.GetAccountName(),
+			AccountNumber:  params.GetAccountNumber(),
+			BankID:         params.GetBankId(),
+			BranchName:     params.GetBranchName(),
+			RoutingNumber:  params.GetRoutingNumber(),
+			IsDefault:      params.GetIsDefault(),
 		}
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
@@ -69,13 +71,14 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 		resp.Message = "PaymentAccountDetail Not Found"
 	} else {
 		err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
-			AccountType:   utils.AccountType(params.GetAccountType()),
-			AccountName:   params.GetAccountName(),
-			AccountNumber: params.GetAccountNumber(),
-			BankName:      params.GetBankName(),
-			BranchName:    params.GetBranchName(),
-			RoutingNumber: params.GetRoutingNumber(),
-			IsDefault:     params.GetIsDefault(),
+			AccountType:    utils.AccountType(params.GetAccountType()),
+			AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
+			AccountName:    params.GetAccountName(),
+			AccountNumber:  params.GetAccountNumber(),
+			BankID:         params.GetBankId(),
+			BranchName:     params.GetBranchName(),
+			RoutingNumber:  params.GetRoutingNumber(),
+			IsDefault:      params.GetIsDefault(),
 		})
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
@@ -86,5 +89,13 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 		}
 	}
 	log.Printf("EditPaymentAccountResponse: %+v", resp)
+	return &resp, nil
+}
+
+// ListBanks ...
+func (ps *PaymentAccountDetailService) ListBanks(ctx context.Context, params *paymentpb.ListBankParams) (*paymentpb.ListBankResponse, error) {
+	log.Printf("ListBanksParams: %+v", params)
+	resp := paymentpb.ListBankResponse{}
+	database.DBAPM(ctx).Model(&models.Bank{}).Scan(&resp.Data)
 	return &resp, nil
 }

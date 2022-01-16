@@ -51,12 +51,19 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 	paymentAccount.AccountName = fmt.Sprintf("AccountName-%v", id)
 	paymentAccount.AccountNumber = fmt.Sprintf("AccountNumber-%v", id)
 
-	if paymentAccount.AccountType != utils.Mfs {
+	if paymentAccount.AccountType == utils.Mfs {
+		paymentAccount.AccountSubType = utils.Bkash
+	} else {
 		paymentAccount.AccountType = utils.Bank
-		paymentAccount.BankName = fmt.Sprintf("BankName-%v", id)
+		paymentAccount.AccountSubType = utils.Current
+		if paymentAccount.BankID == 0 {
+			bank := CreateBank(ctx, &models.Bank{})
+			paymentAccount.BankID = bank.ID
+		}
 		paymentAccount.BranchName = fmt.Sprintf("BranchName-%v", id)
 		paymentAccount.RoutingNumber = fmt.Sprintf("RoutingNumber-%v", id)
 	}
+
 	database.DBAPM(ctx).Save(paymentAccount)
 	return paymentAccount
 }
@@ -68,4 +75,11 @@ func CreateKeyAccountManager(ctx context.Context, accountManager *models.KeyAcco
 	accountManager.Email = fmt.Sprintf("Phone-%v", id)
 	database.DBAPM(ctx).Save(accountManager)
 	return accountManager
+}
+
+func CreateBank(ctx context.Context, bank *models.Bank) *models.Bank {
+	id := rand.Intn(100)
+	bank.Name = fmt.Sprintf("TestBank-%v", id)
+	database.DBAPM(ctx).Save(bank)
+	return bank
 }
