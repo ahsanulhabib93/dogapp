@@ -12,6 +12,7 @@ type Supplier struct {
 	database.VaccountGorm
 	Name                  string `gorm:"not null" valid:"required"`
 	Email                 string
+	Status                string
 	SupplierType          utils.SupplierType `json:"supplier_type" valid:"required"`
 	SupplierAddresses     []SupplierAddress  `json:"supplier_addresses"`
 	PaymentAccountDetails []PaymentAccountDetail
