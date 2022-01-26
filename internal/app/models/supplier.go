@@ -25,13 +25,14 @@ type Supplier struct {
 }
 
 func (supplier Supplier) Validate(db *gorm.DB) {
-	result := db.Model(&supplier).First(&Supplier{}, "name = ?", supplier.Name)
-	if !result.RecordNotFound() {
+	s := &Supplier{}
+	result := db.Model(&supplier).First(s, "name = ?", supplier.Name)
+	if !result.RecordNotFound() && s.ID != supplier.ID {
 		db.AddError(errors.New("Name should be unique"))
 	}
 
-	if !(supplier.Status == SupplierStatusActive ||
-		supplier.Status == SupplierStatusPending) {
+	if !(supplier.Status == SupplierStatusActive || supplier.Status == SupplierStatusPending) &&
+		len(supplier.Status) > 0 {
 		db.AddError(errors.New("Status should be Active/Pending"))
 	}
 }
