@@ -63,6 +63,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	supplier := models.Supplier{
 		Name:         params.GetName(),
 		Email:        params.GetEmail(),
+		Status:       params.GetStatus(),
 		SupplierType: utils.SupplierType(params.GetSupplierType()),
 		SupplierAddresses: []models.SupplierAddress{{
 			Firstname: params.GetFirstname(),
@@ -79,6 +80,10 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 			IsDefault: true,
 		}},
 	}
+	if supplier.Status == "" {
+		supplier.Status = models.SupplierStatusPendding
+	}
+
 	err := database.DBAPM(ctx).Save(&supplier)
 
 	if err != nil && err.Error != nil {

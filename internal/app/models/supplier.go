@@ -8,6 +8,10 @@ import (
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
+const (
+	SupplierStatusPendding = "Pending"
+)
+
 type Supplier struct {
 	database.VaccountGorm
 	Name                  string `gorm:"not null" valid:"required"`
