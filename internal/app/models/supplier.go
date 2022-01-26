@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	SupplierStatusPendding = "Pending"
+	SupplierStatusActive  = "Active"
+	SupplierStatusPending = "Pending"
 )
 
 type Supplier struct {
@@ -27,5 +28,10 @@ func (supplier Supplier) Validate(db *gorm.DB) {
 	result := db.Model(&supplier).First(&Supplier{}, "name = ?", supplier.Name)
 	if !result.RecordNotFound() {
 		db.AddError(errors.New("Name should be unique"))
+	}
+
+	if !(supplier.Status == SupplierStatusActive ||
+		supplier.Status == SupplierStatusPending) {
+		db.AddError(errors.New("Status should be Active/Pending"))
 	}
 }

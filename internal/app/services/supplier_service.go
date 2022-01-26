@@ -81,7 +81,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		}},
 	}
 	if supplier.Status == "" {
-		supplier.Status = models.SupplierStatusPendding
+		supplier.Status = models.SupplierStatusPending
 	}
 
 	err := database.DBAPM(ctx).Save(&supplier)
@@ -109,6 +109,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Name:         params.GetName(),
 			Email:        params.GetEmail(),
+			Status:       params.GetStatus(),
 			SupplierType: utils.SupplierType(params.GetSupplierType()),
 		})
 		if err != nil && err.Error != nil {
