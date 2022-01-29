@@ -10,12 +10,13 @@ import (
 
 type Supplier struct {
 	database.VaccountGorm
-	Name                  string `gorm:"not null" valid:"required"`
-	Email                 string
-	SupplierType          utils.SupplierType `json:"supplier_type" valid:"required"`
-	SupplierAddresses     []SupplierAddress  `json:"supplier_addresses"`
-	PaymentAccountDetails []PaymentAccountDetail
-	KeyAccountManagers    []KeyAccountManager
+	Name                     string `gorm:"not null" valid:"required"`
+	Email                    string
+	SupplierType             utils.SupplierType `json:"supplier_type" valid:"required"`
+	SupplierAddresses        []SupplierAddress  `json:"supplier_addresses"`
+	PaymentAccountDetails    []PaymentAccountDetail
+	KeyAccountManagers       []KeyAccountManager
+	SupplierCategoryMappings []SupplierCategoryMapping
 }
 
 func (supplier Supplier) Validate(db *gorm.DB) {
