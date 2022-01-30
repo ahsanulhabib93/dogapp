@@ -19,8 +19,9 @@ type SupplierService struct{}
 // List ...
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	log.Printf("ListSupplierParams: %+v", params)
-	resp := supplierpb.ListResponse{}
-	database.DBAPM(ctx).Model(&models.Supplier{}).Scan(&resp.Data)
+	suppliers := []models.Supplier{}
+	database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").Find(&suppliers)
+	resp := ss.prepareResponse(suppliers)
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
 }
@@ -167,4 +168,24 @@ func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.Supplie
 	}
 
 	return categories
+}
+
+func (ss *SupplierService) prepareResponse(suppliers []models.Supplier) supplierpb.ListResponse {
+	data := []supplierpb.SupplierObject{}
+	for _, supplier := range suppliers {
+		temp, _ := json.Marshal(supplier)
+		so := supplierpb.SupplierObject{}
+		json.Unmarshal(temp, &so)
+		for _, cMap := range supplier.SupplierCategoryMappings {
+			so.CategoryIds = append(so.CategoryIds, cMap.CategoryID)
+		}
+
+		data = append(data, so)
+
+	}
+
+	resp := supplierpb.ListResponse{}
+	temp, _ := json.Marshal(data)
+	json.Unmarshal(temp, &resp.Data)
+	return resp
 }
