@@ -1,4 +1,4 @@
-FROM golang:1.15.8-alpine as base
+FROM gcr.io/voonik-tech/vnkshopup/golang-1-15-8:1.0 as base
 # We use multi-stage build to avoid storing GitHub token inside Docker image
 FROM base as builder
 # Set necessary environmet variables needed for our image
@@ -9,8 +9,6 @@ ENV GO111MODULE=on \
     GOPRIVATE=github.com/voonik
 
 WORKDIR /ss2
-
-RUN apk add --no-cache git ca-certificates
 
 # GitHub token for downloading private dependencies
 ARG GITHUB_TOKEN
