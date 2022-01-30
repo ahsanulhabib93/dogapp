@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
@@ -64,7 +65,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		Name:                     params.GetName(),
 		Email:                    params.GetEmail(),
 		SupplierType:             utils.SupplierType(params.GetSupplierType()),
-		SupplierCategoryMappings: ss.bulkCategories(params.GetCategoryIds()),
+		SupplierCategoryMappings: ss.prepareCategoreMapping(params.GetCategoryIds()),
 		SupplierAddresses: []models.SupplierAddress{{
 			Firstname: params.GetFirstname(),
 			Lastname:  params.GetLastname(),
@@ -98,14 +99,20 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	resp := supplierpb.BasicApiResponse{Success: false}
 
 	supplier := models.Supplier{}
-	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetId())
+	query := database.DBAPM(ctx).Model(&models.Supplier{})
+	if params.GetCategoryIds() != nil {
+		query = query.Preload("SupplierCategoryMappings")
+	}
+
+	result := query.First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
 	} else {
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
-			Name:         params.GetName(),
-			Email:        params.GetEmail(),
-			SupplierType: utils.SupplierType(params.GetSupplierType()),
+			Name:                     params.GetName(),
+			Email:                    params.GetEmail(),
+			SupplierType:             utils.SupplierType(params.GetSupplierType()),
+			SupplierCategoryMappings: ss.updateCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
@@ -118,7 +125,40 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	return &resp, nil
 }
 
-func (ss *SupplierService) bulkCategories(ids []uint64) []models.SupplierCategoryMapping {
+func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId uint64, newIds []uint64) []models.SupplierCategoryMapping {
+	if len(newIds) == 0 {
+		return nil
+	}
+
+	supplierCategoryMappings := []models.SupplierCategoryMapping{}
+	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplierId).Find(&supplierCategoryMappings)
+	categoryToCreateMap := map[uint64]bool{}
+	for _, id := range newIds {
+		categoryToCreateMap[id] = true
+	}
+
+	for _, cMap := range supplierCategoryMappings {
+		query := database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id = ?", cMap.ID)
+		if _, ok := categoryToCreateMap[cMap.ID]; ok {
+			query.Update("deleted_at", nil)
+			categoryToCreateMap[cMap.ID] = false
+		} else if cMap.DeletedAt == nil {
+			t := time.Now()
+			query.Update("deleted_at", &t)
+		}
+	}
+
+	newIds = []uint64{}
+	for k, v := range categoryToCreateMap {
+		if v {
+			newIds = append(newIds, k)
+		}
+	}
+
+	return ss.prepareCategoreMapping(newIds)
+}
+
+func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
 	categories := []models.SupplierCategoryMapping{}
 	for _, id := range ids {
 		categories = append(categories, models.SupplierCategoryMapping{
