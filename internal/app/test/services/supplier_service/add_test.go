@@ -39,6 +39,7 @@ var _ = Describe("AddSupplier", func() {
 				Zipcode:      "Zipcode",
 				Phone:        "Phone",
 				GstNumber:    "GstNumber",
+				CategoryIds:  []uint64{1, 30},
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -47,9 +48,11 @@ var _ = Describe("AddSupplier", func() {
 			Expect(res.Message).To(Equal("Supplier Added Successfully"))
 
 			supplier := &models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).First(&supplier)
+			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierCategoryMappings").First(&supplier)
 			Expect(supplier.Email).To(Equal(param.Email))
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
+			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
+			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
 
 			addresses := []*models.SupplierAddress{{}}
 			database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Find(&addresses)

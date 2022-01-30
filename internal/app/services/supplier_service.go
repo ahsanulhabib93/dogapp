@@ -61,9 +61,10 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	log.Printf("AddSupplierParams: %+v", params)
 	resp := supplierpb.BasicApiResponse{Success: false}
 	supplier := models.Supplier{
-		Name:         params.GetName(),
-		Email:        params.GetEmail(),
-		SupplierType: utils.SupplierType(params.GetSupplierType()),
+		Name:                     params.GetName(),
+		Email:                    params.GetEmail(),
+		SupplierType:             utils.SupplierType(params.GetSupplierType()),
+		SupplierCategoryMappings: ss.bulkCategories(params.GetCategoryIds()),
 		SupplierAddresses: []models.SupplierAddress{{
 			Firstname: params.GetFirstname(),
 			Lastname:  params.GetLastname(),
@@ -115,4 +116,15 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	}
 	log.Printf("EditSupplierResponse: %+v", resp)
 	return &resp, nil
+}
+
+func (ss *SupplierService) bulkCategories(ids []uint64) []models.SupplierCategoryMapping {
+	categories := []models.SupplierCategoryMapping{}
+	for _, id := range ids {
+		categories = append(categories, models.SupplierCategoryMapping{
+			CategoryID: id,
+		})
+	}
+
+	return categories
 }
