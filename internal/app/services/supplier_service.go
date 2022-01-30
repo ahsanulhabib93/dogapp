@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
@@ -138,14 +139,21 @@ func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId
 		categoryToCreateMap[id] = true
 	}
 
+	wg := &sync.WaitGroup{}
 	for _, cMap := range supplierCategoryMappings {
-		query := database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id = ?", cMap.ID)
+		delFunc := func(id uint64, t *time.Time) {
+			defer wg.Done()
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id = ?", id).Update("deleted_at", t)
+		}
+
 		if _, ok := categoryToCreateMap[cMap.ID]; ok {
-			query.Update("deleted_at", nil)
+			wg.Add(1)
+			go delFunc(cMap.ID, nil)
 			categoryToCreateMap[cMap.ID] = false
 		} else if cMap.DeletedAt == nil {
+			wg.Add(1)
 			t := time.Now()
-			query.Update("deleted_at", &t)
+			go delFunc(cMap.ID, &t)
 		}
 	}
 
@@ -156,6 +164,7 @@ func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId
 		}
 	}
 
+	wg.Wait()
 	return ss.prepareCategoreMapping(newIds)
 }
 
@@ -171,21 +180,17 @@ func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.Supplie
 }
 
 func (ss *SupplierService) prepareResponse(suppliers []models.Supplier) supplierpb.ListResponse {
-	data := []supplierpb.SupplierObject{}
+	data := []*supplierpb.SupplierObject{}
 	for _, supplier := range suppliers {
 		temp, _ := json.Marshal(supplier)
-		so := supplierpb.SupplierObject{}
-		json.Unmarshal(temp, &so)
+		so := &supplierpb.SupplierObject{}
+		json.Unmarshal(temp, so)
 		for _, cMap := range supplier.SupplierCategoryMappings {
 			so.CategoryIds = append(so.CategoryIds, cMap.CategoryID)
 		}
 
 		data = append(data, so)
-
 	}
 
-	resp := supplierpb.ListResponse{}
-	temp, _ := json.Marshal(data)
-	json.Unmarshal(temp, &resp.Data)
-	return resp
+	return supplierpb.ListResponse{Data: data}
 }
