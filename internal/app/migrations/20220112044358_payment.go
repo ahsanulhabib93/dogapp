@@ -40,20 +40,12 @@ func init() {
 	migrator.Register(&gormigrate.Migration{
 		ID: "20220126055358",
 		Migrate: func(tx *gorm.DB) error {
-			err := tx.AutoMigrate(&models.Supplier{})
-			if err != nil {
-				log.Printf("ERROR: %v", err)
-			}
-			return nil
+			return tx.AutoMigrate(&models.Supplier{}).Error
 		},
 		Rollback: func(tx *gorm.DB) error {
-			err := tx.Model(
+			return tx.Model(
 				&models.Supplier{},
 			).DropColumn("status").Error
-			if err != nil {
-				log.Printf("ERROR: %v", err)
-			}
-			return nil
 		},
 	})
 }
