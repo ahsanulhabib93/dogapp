@@ -182,7 +182,6 @@ func (ss *SupplierService) getResponseField() string {
 		"suppliers.supplier_type",
 		"suppliers.name",
 		"suppliers.email",
-		"suppliers.status",
 		"GROUP_CONCAT(supplier_category_mappings.category_id) as category_ids",
 	}
 
