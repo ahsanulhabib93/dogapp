@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"sync"
+	"strconv"
+	"strings"
 	"time"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
@@ -20,8 +21,8 @@ type SupplierService struct{}
 // List ...
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	log.Printf("ListSupplierParams: %+v", params)
-	suppliers := []models.Supplier{}
-	database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").Find(&suppliers)
+	suppliers := []supplierDBResponse{}
+	database.DBAPM(ctx).Model(&models.Supplier{}).Joins("left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").Group("id").Select(ss.getResponseField()).Scan(&suppliers)
 	resp := ss.prepareResponse(suppliers)
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
@@ -133,30 +134,27 @@ func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId
 	}
 
 	supplierCategoryMappings := []models.SupplierCategoryMapping{}
-	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplierId).Find(&supplierCategoryMappings)
+	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_id = ?", supplierId).Find(&supplierCategoryMappings)
 	categoryToCreateMap := map[uint64]bool{}
 	for _, id := range newIds {
 		categoryToCreateMap[id] = true
 	}
 
-	wg := &sync.WaitGroup{}
+	mapToDelete := []uint64{}
+	mapToRestore := []uint64{}
 	for _, cMap := range supplierCategoryMappings {
-		delFunc := func(id uint64, t *time.Time) {
-			defer wg.Done()
-			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id = ?", id).Update("deleted_at", t)
-		}
-
-		if _, ok := categoryToCreateMap[cMap.ID]; ok {
-			wg.Add(1)
-			go delFunc(cMap.ID, nil)
+		_, inNewList := categoryToCreateMap[cMap.ID]
+		if !inNewList {
+			mapToDelete = append(mapToDelete, cMap.ID)
+		} else {
 			categoryToCreateMap[cMap.ID] = false
-		} else if cMap.DeletedAt == nil {
-			wg.Add(1)
-			t := time.Now()
-			go delFunc(cMap.ID, &t)
+			mapToRestore = append(mapToRestore, cMap.ID)
 		}
 	}
 
+	currentTime := time.Now()
+	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id IN (?)", mapToRestore).Update("deleted_at", nil)
+	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id IN (?)", mapToDelete).Update("deleted_at", &currentTime)
 	newIds = []uint64{}
 	for k, v := range categoryToCreateMap {
 		if v {
@@ -164,7 +162,6 @@ func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId
 		}
 	}
 
-	wg.Wait()
 	return ss.prepareCategoreMapping(newIds)
 }
 
@@ -179,18 +176,43 @@ func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.Supplie
 	return categories
 }
 
-func (ss *SupplierService) prepareResponse(suppliers []models.Supplier) supplierpb.ListResponse {
+func (ss *SupplierService) getResponseField() string {
+	s := []string{
+		"suppliers.id",
+		"suppliers.supplier_type",
+		"suppliers.name",
+		"suppliers.email",
+		"suppliers.status",
+		"GROUP_CONCAT(supplier_category_mappings.category_id) as category_ids",
+	}
+
+	return strings.Join(s, ",")
+}
+
+func (ss *SupplierService) prepareResponse(suppliers []supplierDBResponse) supplierpb.ListResponse {
 	data := []*supplierpb.SupplierObject{}
 	for _, supplier := range suppliers {
 		temp, _ := json.Marshal(supplier)
 		so := &supplierpb.SupplierObject{}
 		json.Unmarshal(temp, so)
-		for _, cMap := range supplier.SupplierCategoryMappings {
-			so.CategoryIds = append(so.CategoryIds, cMap.CategoryID)
+		so.CategoryIds = []uint64{}
+		for _, cId := range strings.Split(supplier.CategoryIds, ",") {
+			cId = strings.TrimSpace(cId)
+			if cId == "" {
+				continue
+			}
+
+			v, _ := strconv.Atoi(cId)
+			so.CategoryIds = append(so.CategoryIds, uint64(v))
 		}
 
 		data = append(data, so)
 	}
 
 	return supplierpb.ListResponse{Data: data}
+}
+
+type supplierDBResponse struct {
+	models.Supplier
+	CategoryIds string `json:"category_ids,omitempty"`
 }
