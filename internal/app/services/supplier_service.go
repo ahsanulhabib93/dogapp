@@ -80,12 +80,8 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 			IsDefault: true,
 		}},
 	}
-	if supplier.Status == "" {
-		supplier.Status = models.SupplierStatusPending
-	}
 
 	err := database.DBAPM(ctx).Save(&supplier)
-
 	if err != nil && err.Error != nil {
 		resp.Message = fmt.Sprintf("Error while creating Supplier: %s", err.Error)
 	} else {
