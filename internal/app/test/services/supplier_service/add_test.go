@@ -50,6 +50,7 @@ var _ = Describe("AddSupplier", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).First(&supplier)
 			Expect(supplier.Email).To(Equal(param.Email))
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 
 			addresses := []*models.SupplierAddress{{}}
 			database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Find(&addresses)

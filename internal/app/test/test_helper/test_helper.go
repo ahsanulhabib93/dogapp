@@ -19,6 +19,10 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 	if supplier.SupplierType == 0 {
 		supplier.SupplierType = utils.Hlc
 	}
+	if supplier.Status == "" {
+		supplier.Status = models.SupplierStatusPending
+	}
+
 	database.DBAPM(ctx).Save(supplier)
 	return supplier
 }

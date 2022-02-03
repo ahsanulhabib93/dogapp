@@ -37,4 +37,15 @@ func init() {
 			return nil
 		},
 	})
+	migrator.Register(&gormigrate.Migration{
+		ID: "20220126055358",
+		Migrate: func(tx *gorm.DB) error {
+			return tx.AutoMigrate(&models.Supplier{}).Error
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return tx.Model(
+				&models.Supplier{},
+			).DropColumn("status").Error
+		},
+	})
 }

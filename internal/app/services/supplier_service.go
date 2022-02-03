@@ -63,6 +63,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	supplier := models.Supplier{
 		Name:         params.GetName(),
 		Email:        params.GetEmail(),
+		Status:       params.GetStatus(),
 		SupplierType: utils.SupplierType(params.GetSupplierType()),
 		SupplierAddresses: []models.SupplierAddress{{
 			Firstname: params.GetFirstname(),
@@ -79,8 +80,8 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 			IsDefault: true,
 		}},
 	}
-	err := database.DBAPM(ctx).Save(&supplier)
 
+	err := database.DBAPM(ctx).Save(&supplier)
 	if err != nil && err.Error != nil {
 		resp.Message = fmt.Sprintf("Error while creating Supplier: %s", err.Error)
 	} else {
@@ -104,6 +105,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Name:         params.GetName(),
 			Email:        params.GetEmail(),
+			Status:       params.GetStatus(),
 			SupplierType: utils.SupplierType(params.GetSupplierType()),
 		})
 		if err != nil && err.Error != nil {
