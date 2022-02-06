@@ -142,8 +142,8 @@ var _ = Describe("EditSupplier", func() {
 		It("Should delete old mapping", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
-					{CategoryID: 1},
-					{CategoryID: 2},
+					{CategoryID: 101},
+					{CategoryID: 201},
 				},
 			})
 			updatedSupplier := models.Supplier{}
@@ -155,7 +155,7 @@ var _ = Describe("EditSupplier", func() {
 				Name:         "Name",
 				Email:        "Email",
 				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{101, 102, 2},
+				CategoryIds:  []uint64{101, 102, 100},
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 			Expect(err).To(BeNil())
@@ -165,7 +165,7 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier = models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
-			Expect(updatedSupplier.SupplierCategoryMappings[0].CategoryID).To(Equal(uint64(2)))
+			Expect(updatedSupplier.SupplierCategoryMappings[0].CategoryID).To(Equal(uint64(101)))
 
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
@@ -176,10 +176,10 @@ var _ = Describe("EditSupplier", func() {
 			t := time.Now()
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
-					{CategoryID: 1},
-					{CategoryID: 2},
+					{CategoryID: 101},
+					{CategoryID: 200},
 					{
-						CategoryID: 3,
+						CategoryID: 567,
 						DeletedAt:  &t,
 					},
 				},
@@ -193,7 +193,7 @@ var _ = Describe("EditSupplier", func() {
 				Name:         "Name",
 				Email:        "Email",
 				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{1, 2, 3},
+				CategoryIds:  []uint64{101, 200, 567},
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 			Expect(err).To(BeNil())
@@ -203,7 +203,11 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier = models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
-			Expect(updatedSupplier.SupplierCategoryMappings[2].CategoryID).To(Equal(uint64(3)))
+			Expect(updatedSupplier.SupplierCategoryMappings[2].CategoryID).To(Equal(uint64(567)))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
+			Expect(count).To(Equal(3))
 		})
 	})
 })

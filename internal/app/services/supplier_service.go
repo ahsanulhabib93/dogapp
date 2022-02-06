@@ -145,11 +145,11 @@ func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId
 	mapToDelete := []uint64{}
 	mapToRestore := []uint64{}
 	for _, cMap := range supplierCategoryMappings {
-		_, inNewList := categoryToCreateMap[cMap.ID]
+		_, inNewList := categoryToCreateMap[cMap.CategoryID]
 		if !inNewList {
 			mapToDelete = append(mapToDelete, cMap.ID)
 		} else {
-			categoryToCreateMap[cMap.ID] = false
+			categoryToCreateMap[cMap.CategoryID] = false
 			mapToRestore = append(mapToRestore, cMap.ID)
 		}
 	}
