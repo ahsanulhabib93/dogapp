@@ -23,7 +23,13 @@ var _ = Describe("ListSupplier", func() {
 
 	Context("Supplier List", func() {
 		It("Should Respond with all the suppliers", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierCategoryMappings: []models.SupplierCategoryMapping{
+					{CategoryID: 1},
+					{CategoryID: 2},
+				},
+				SupplierType: utils.Hlc,
+			})
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
@@ -33,11 +39,13 @@ var _ = Describe("ListSupplier", func() {
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
 			Expect(supplierData1.Name).To(Equal(supplier1.Name))
+			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 
 			supplierData2 := res.Data[1]
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
+			Expect(supplierData2.CategoryIds).To(Equal([]uint64{}))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
 		})
 	})

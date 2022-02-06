@@ -2,6 +2,7 @@ package supplier_service_test
 
 import (
 	"context"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,7 +25,13 @@ var _ = Describe("EditSupplier", func() {
 
 	Context("Editing existing Supplier", func() {
 		It("Should update supplier and return success response", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierCategoryMappings: []models.SupplierCategoryMapping{
+					{CategoryID: 1},
+					{CategoryID: 2},
+					{CategoryID: 3},
+				},
+			})
 			param := &supplierpb.SupplierObject{
 				Id:           supplier.ID,
 				Name:         "Name",
@@ -37,10 +44,13 @@ var _ = Describe("EditSupplier", func() {
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
 
-			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
-			Expect(supplier.Email).To(Equal(param.Email))
-			Expect(supplier.Name).To(Equal(param.Name))
-			Expect(supplier.SupplierType).To(Equal(utils.L1))
+			updatedSupplier := models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
+			Expect(updatedSupplier.Email).To(Equal(param.Email))
+			Expect(updatedSupplier.Name).To(Equal(param.Name))
+			Expect(updatedSupplier.SupplierType).To(Equal(utils.L1))
+			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
+			Expect(updatedSupplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(2)))
 		})
 	})
 
@@ -125,6 +135,79 @@ var _ = Describe("EditSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while updating Supplier: Name should be unique"))
+		})
+	})
+
+	Context("Editing with category ids", func() {
+		It("Should delete old mapping", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierCategoryMappings: []models.SupplierCategoryMapping{
+					{CategoryID: 101},
+					{CategoryID: 201},
+				},
+			})
+			updatedSupplier := models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
+			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(2))
+
+			param := &supplierpb.SupplierObject{
+				Id:           supplier.ID,
+				Name:         "Name",
+				Email:        "Email",
+				SupplierType: uint64(utils.L1),
+				CategoryIds:  []uint64{101, 102, 100},
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
+
+			updatedSupplier = models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
+			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
+			Expect(updatedSupplier.SupplierCategoryMappings[0].CategoryID).To(Equal(uint64(101)))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
+			Expect(count).To(Equal(4))
+		})
+
+		It("Should restore deleted mapping", func() {
+			t := time.Now()
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierCategoryMappings: []models.SupplierCategoryMapping{
+					{CategoryID: 101},
+					{CategoryID: 200},
+					{
+						CategoryID: 567,
+						DeletedAt:  &t,
+					},
+				},
+			})
+			updatedSupplier := models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
+			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(2))
+
+			param := &supplierpb.SupplierObject{
+				Id:           supplier.ID,
+				Name:         "Name",
+				Email:        "Email",
+				SupplierType: uint64(utils.L1),
+				CategoryIds:  []uint64{101, 200, 567},
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
+
+			updatedSupplier = models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
+			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
+			Expect(updatedSupplier.SupplierCategoryMappings[2].CategoryID).To(Equal(uint64(567)))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
+			Expect(count).To(Equal(3))
 		})
 	})
 })

@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
+	"time"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
@@ -18,8 +21,9 @@ type SupplierService struct{}
 // List ...
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	log.Printf("ListSupplierParams: %+v", params)
-	resp := supplierpb.ListResponse{}
-	database.DBAPM(ctx).Model(&models.Supplier{}).Scan(&resp.Data)
+	suppliers := []supplierDBResponse{}
+	database.DBAPM(ctx).Model(&models.Supplier{}).Joins("left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").Group("id").Select(ss.getResponseField()).Scan(&suppliers)
+	resp := ss.prepareResponse(suppliers)
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
 }
@@ -61,10 +65,11 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	log.Printf("AddSupplierParams: %+v", params)
 	resp := supplierpb.BasicApiResponse{Success: false}
 	supplier := models.Supplier{
-		Name:         params.GetName(),
-		Email:        params.GetEmail(),
-		Status:       params.GetStatus(),
-		SupplierType: utils.SupplierType(params.GetSupplierType()),
+		Name:                     params.GetName(),
+		Email:                    params.GetEmail(),
+		Status:                   params.GetStatus(),
+		SupplierType:             utils.SupplierType(params.GetSupplierType()),
+		SupplierCategoryMappings: ss.prepareCategoreMapping(params.GetCategoryIds()),
 		SupplierAddresses: []models.SupplierAddress{{
 			Firstname: params.GetFirstname(),
 			Lastname:  params.GetLastname(),
@@ -98,15 +103,21 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	resp := supplierpb.BasicApiResponse{Success: false}
 
 	supplier := models.Supplier{}
-	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetId())
+	query := database.DBAPM(ctx).Model(&models.Supplier{})
+	if params.GetCategoryIds() != nil {
+		query = query.Preload("SupplierCategoryMappings")
+	}
+
+	result := query.First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
 	} else {
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
-			Name:         params.GetName(),
-			Email:        params.GetEmail(),
-			Status:       params.GetStatus(),
-			SupplierType: utils.SupplierType(params.GetSupplierType()),
+			Name:                     params.GetName(),
+			Email:                    params.GetEmail(),
+			Status:                   params.GetStatus(),
+			SupplierType:             utils.SupplierType(params.GetSupplierType()),
+			SupplierCategoryMappings: ss.updateCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
@@ -117,4 +128,92 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	}
 	log.Printf("EditSupplierResponse: %+v", resp)
 	return &resp, nil
+}
+
+func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId uint64, newIds []uint64) []models.SupplierCategoryMapping {
+	if len(newIds) == 0 {
+		return nil
+	}
+
+	supplierCategoryMappings := []models.SupplierCategoryMapping{}
+	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_id = ?", supplierId).Find(&supplierCategoryMappings)
+	categoryToCreateMap := map[uint64]bool{}
+	for _, id := range newIds {
+		categoryToCreateMap[id] = true
+	}
+
+	mapToDelete := []uint64{}
+	mapToRestore := []uint64{}
+	for _, cMap := range supplierCategoryMappings {
+		_, inNewList := categoryToCreateMap[cMap.CategoryID]
+		if !inNewList {
+			mapToDelete = append(mapToDelete, cMap.ID)
+		} else {
+			categoryToCreateMap[cMap.CategoryID] = false
+			mapToRestore = append(mapToRestore, cMap.ID)
+		}
+	}
+
+	currentTime := time.Now()
+	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id IN (?)", mapToRestore).Update("deleted_at", nil)
+	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id IN (?)", mapToDelete).Update("deleted_at", &currentTime)
+	newIds = []uint64{}
+	for k, v := range categoryToCreateMap {
+		if v {
+			newIds = append(newIds, k)
+		}
+	}
+
+	return ss.prepareCategoreMapping(newIds)
+}
+
+func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
+	categories := []models.SupplierCategoryMapping{}
+	for _, id := range ids {
+		categories = append(categories, models.SupplierCategoryMapping{
+			CategoryID: id,
+		})
+	}
+
+	return categories
+}
+
+func (ss *SupplierService) getResponseField() string {
+	s := []string{
+		"suppliers.id",
+		"suppliers.supplier_type",
+		"suppliers.name",
+		"suppliers.email",
+		"GROUP_CONCAT(supplier_category_mappings.category_id) as category_ids",
+	}
+
+	return strings.Join(s, ",")
+}
+
+func (ss *SupplierService) prepareResponse(suppliers []supplierDBResponse) supplierpb.ListResponse {
+	data := []*supplierpb.SupplierObject{}
+	for _, supplier := range suppliers {
+		temp, _ := json.Marshal(supplier)
+		so := &supplierpb.SupplierObject{}
+		json.Unmarshal(temp, so)
+		so.CategoryIds = []uint64{}
+		for _, cId := range strings.Split(supplier.CategoryIds, ",") {
+			cId = strings.TrimSpace(cId)
+			if cId == "" {
+				continue
+			}
+
+			v, _ := strconv.Atoi(cId)
+			so.CategoryIds = append(so.CategoryIds, uint64(v))
+		}
+
+		data = append(data, so)
+	}
+
+	return supplierpb.ListResponse{Data: data}
+}
+
+type supplierDBResponse struct {
+	models.Supplier
+	CategoryIds string `json:"category_ids,omitempty"`
 }
