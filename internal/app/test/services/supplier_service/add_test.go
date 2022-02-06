@@ -53,6 +53,7 @@ var _ = Describe("AddSupplier", func() {
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 
 			addresses := []*models.SupplierAddress{{}}
 			database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Find(&addresses)

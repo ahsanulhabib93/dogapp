@@ -54,8 +54,8 @@ var _ = Describe("EditSupplier", func() {
 		})
 	})
 
-	Context("Editing only name of existing Supplier", func() {
-		It("Should update supplier and return success response", func() {
+	Context("Editing only one field of existing Supplier", func() {
+		It("Should update supplier name and return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierObject{
 				Id:   supplier.ID,
@@ -72,6 +72,42 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
 			Expect(updatedSupplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+
+		It("Should update supplier status and return success response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				Name: "test-supplier",
+			})
+			param := &supplierpb.SupplierObject{
+				Id:     supplier.ID,
+				Status: models.SupplierStatusActive,
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
+
+			updatedSupplier := &models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
+			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
+			Expect(updatedSupplier.SupplierType).To(Equal(utils.Hlc))
+			Expect(updatedSupplier.Name).To(Equal(supplier.Name))
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusActive))
+		})
+
+		It("Should return error on invalid status", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			param := &supplierpb.SupplierObject{
+				Id:     supplier.ID,
+				Status: "no idea",
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while updating Supplier: Status should be Active/Pending"))
 		})
 	})
 
