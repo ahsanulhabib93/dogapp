@@ -2,6 +2,7 @@ package supplier_service_test
 
 import (
 	"context"
+	"log"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,6 +24,7 @@ var _ = Describe("ListSupplier", func() {
 
 	Context("Supplier List", func() {
 		It("Should Respond with all the suppliers", func() {
+			log.Println("Supplier List")
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 1},
@@ -30,10 +32,13 @@ var _ = Describe("ListSupplier", func() {
 				},
 				SupplierType: utils.Hlc,
 			})
+			log.Println("Supplier1 List", supplier1)
+
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
+			log.Println("List Response", res.Data)
 			Expect(len(res.Data)).To(Equal(2))
 
 			supplierData1 := res.Data[0]

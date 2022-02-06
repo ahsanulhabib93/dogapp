@@ -5,9 +5,10 @@ go 1.16
 require (
 	github.com/alexflint/go-filemutex v1.1.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/jinzhu/gorm v1.9.16
 	github.com/khaiql/dbcleaner v2.3.0+incompatible
-	github.com/onsi/ginkgo v1.15.0
+	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.10.5
 	github.com/qor/qor v1.2.0 // indirect
 	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46

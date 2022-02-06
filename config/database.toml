@@ -1,6 +1,6 @@
 [databaseconfig]
 user="root"
 password=""
-name="ss2"
+name="shopup_ss2"
 host="localhost"
 port="3306"
