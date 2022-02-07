@@ -38,8 +38,11 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	if params.GetId() != 0 {
 		query = query.Where("suppliers.id = ?", params.GetId())
 	}
+	if len(params.GetSupplierIds()) != 0 {
+		query = query.Where("suppliers.id IN (?)", params.GetSupplierIds())
+	}
 	if params.GetName() != "" {
-		query = query.Where("suppliers.name like ?", fmt.Sprintf("%s%%", params.GetName()))
+		query = query.Where("suppliers.name LIKE ?", fmt.Sprintf("%s%%", params.GetName()))
 	}
 	if params.GetEmail() != "" {
 		query = query.Where("suppliers.email = ?", params.GetEmail())
@@ -92,6 +95,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	} else {
 		resp.Message = "Supplier Added Successfully"
 		resp.Success = true
+		resp.Id = supplier.ID
 	}
 	log.Printf("AddSupplierResponse: %+v", resp)
 	return &resp, nil

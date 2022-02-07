@@ -49,6 +49,7 @@ var _ = Describe("AddSupplier", func() {
 
 			supplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierCategoryMappings").First(&supplier)
+			Expect(res.Id).To(Equal(supplier.ID))
 			Expect(supplier.Email).To(Equal(param.Email))
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
