@@ -2,7 +2,7 @@ package supplier_service_test
 
 import (
 	"context"
-	"log"
+	//"log"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,7 +24,7 @@ var _ = Describe("ListSupplier", func() {
 
 	Context("Supplier List", func() {
 		It("Should Respond with all the suppliers", func() {
-			log.Println("Supplier List")
+			//log.Println("Supplier List")
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 1},
@@ -36,13 +36,13 @@ var _ = Describe("ListSupplier", func() {
 					{SourcingAssociateId: 4},
 				},
 			})
-			log.Println("Supplier1 List", supplier1)
+			//log.Println("Supplier1 List", supplier1)
 
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
-			log.Println("List Response", res.Data)
+			//log.Println("List Response", res.Data)
 			Expect(len(res.Data)).To(Equal(2))
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
@@ -50,7 +50,6 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.SaIds).To(Equal([]uint64{2, 4}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
-
 			supplierData2 := res.Data[1]
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
