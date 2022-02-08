@@ -109,7 +109,10 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	supplier := models.Supplier{}
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	if params.GetCategoryIds() != nil {
-		query = query.Preload("SupplierCategoryMappings")
+		query = query.Preload("SupplierSaMappings")
+	}
+	if params.GetSaIds() != nil {
+		query = query.Preload("SupplierSa")
 	}
 	result := query.First(&supplier, params.GetId())
 	if result.RecordNotFound() {
@@ -121,6 +124,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			Status:                   params.GetStatus(),
 			SupplierType:             utils.SupplierType(params.GetSupplierType()),
 			SupplierCategoryMappings: ss.updateCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
+			SupplierSaMappings:       ss.updateSaMapping(ctx, supplier.ID, params.GetSaIds()),
 		})
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
@@ -170,6 +174,43 @@ func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId
 	return ss.prepareCategoreMapping(newIds)
 }
 
+func (ss *SupplierService) updateSaMapping(ctx context.Context, supplierId uint64, newIds []uint64) []models.SupplierSaMapping {
+	if len(newIds) == 0 {
+		return nil
+	}
+
+	sourcingAssociateMappings := []models.SupplierSaMapping{}
+	database.DBAPM(ctx).Model(&models.SupplierSaMapping{}).Unscoped().Where("supplier_id = ?", supplierId).Find(&sourcingAssociateMappings)
+	saCreateMap := map[uint64]bool{}
+	for _, id := range newIds {
+		saCreateMap[id] = true
+	}
+
+	mapToDelete := []uint64{}
+	mapToRestore := []uint64{}
+	for _, sMap := range sourcingAssociateMappings {
+		_, inNewList := saCreateMap[sMap.SourcingAssociateId]
+		if !inNewList {
+			mapToDelete = append(mapToDelete, sMap.ID)
+		} else {
+			saCreateMap[sMap.SourcingAssociateId] = false
+			mapToRestore = append(mapToRestore, sMap.ID)
+		}
+	}
+
+	currentTime := time.Now()
+	database.DBAPM(ctx).Model(&models.SupplierSaMapping{}).Unscoped().Where("id IN (?)", mapToRestore).Update("deleted_at", nil)
+	database.DBAPM(ctx).Model(&models.SupplierSaMapping{}).Unscoped().Where("id IN (?)", mapToDelete).Update("deleted_at", &currentTime)
+	newIds = []uint64{}
+	for k, v := range saCreateMap {
+		if v {
+			newIds = append(newIds, k)
+		}
+	}
+
+	return ss.prepareSaMapping(newIds)
+}
+
 func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
 	categories := []models.SupplierCategoryMapping{}
 	for _, id := range ids {
@@ -187,7 +228,6 @@ func (ss *SupplierService) prepareSaMapping(ids []uint64) []models.SupplierSaMap
 			SourcingAssociateId: id,
 		})
 	}
-
 	return sourcing_associates
 }
 
