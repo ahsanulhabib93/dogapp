@@ -163,4 +163,19 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
 		})
 	})
+
+	Context("With SupplierIds filter", func() {
+		It("Should return corresponding suppliers", func() {
+			supplier1 := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+			supplier2 := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+
+			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{SupplierIds: []uint64{supplier1.ID, supplier2.ID}})
+			Expect(err).To(BeNil())
+			Expect(len(res.Data)).To(Equal(2))
+
+			Expect(res.Data[0].Email).To(Equal(supplier1.Email))
+			Expect(res.Data[1].Email).To(Equal(supplier2.Email))
+		})
+	})
 })
