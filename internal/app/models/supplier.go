@@ -23,7 +23,7 @@ type Supplier struct {
 	PaymentAccountDetails    []PaymentAccountDetail
 	KeyAccountManagers       []KeyAccountManager
 	SupplierCategoryMappings []SupplierCategoryMapping
-	//SupplierSaMappings       []SupplierSaMapping
+	SupplierSaMappings       []SupplierSaMapping
 }
 
 func (supplier Supplier) Validate(db *gorm.DB) {
