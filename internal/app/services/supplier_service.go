@@ -109,10 +109,10 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	supplier := models.Supplier{}
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	if params.GetCategoryIds() != nil {
-		query = query.Preload("SupplierSaMappings")
+		query = query.Preload("SupplierCategoryMappings")
 	}
 	if params.GetSaIds() != nil {
-		query = query.Preload("SupplierSa")
+		query = query.Preload("SupplierSaMappings")
 	}
 	result := query.First(&supplier, params.GetId())
 	if result.RecordNotFound() {
