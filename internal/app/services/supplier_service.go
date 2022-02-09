@@ -185,6 +185,7 @@ func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.Supplie
 func (ss *SupplierService) getResponseField() string {
 	s := []string{
 		"suppliers.id",
+		"suppliers.status",
 		"suppliers.supplier_type",
 		"suppliers.name",
 		"suppliers.email",
