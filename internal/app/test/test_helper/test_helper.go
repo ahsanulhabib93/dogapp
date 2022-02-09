@@ -5,13 +5,19 @@ import (
 	"fmt"
 	"math/rand"
 
+	"github.com/google/uuid"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
+func getUniqueID() string {
+	id := uuid.New()
+	return id.String()
+}
+
 func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supplier {
-	id := rand.Intn(100)
+	id := getUniqueID()
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
 	if supplier.Name == "" {
 		supplier.Name = fmt.Sprintf("Test-%v", id)
@@ -34,7 +40,7 @@ func CreateSupplierWithAddress(ctx context.Context, supplier *models.Supplier) *
 }
 
 func CreateSupplierAddress(ctx context.Context, supplierAddress *models.SupplierAddress) *models.SupplierAddress {
-	id := rand.Intn(100)
+	id := getUniqueID()
 	supplierAddress.Firstname = fmt.Sprintf("Firstname-%v", id)
 	supplierAddress.Lastname = fmt.Sprintf("Lastname-%v", id)
 	supplierAddress.Address1 = fmt.Sprintf("Address1-%v", id)
@@ -44,14 +50,14 @@ func CreateSupplierAddress(ctx context.Context, supplierAddress *models.Supplier
 	supplierAddress.State = fmt.Sprintf("State-%v", id)
 	supplierAddress.Country = fmt.Sprintf("Country-%v", id)
 	supplierAddress.Zipcode = fmt.Sprintf("Zipcode-%v", id)
-	supplierAddress.Phone = fmt.Sprintf("Phone-%v", id)
+	supplierAddress.Phone = fmt.Sprintf("011245689%v%v", rand.Intn(10), rand.Intn(10))
 	supplierAddress.GstNumber = fmt.Sprintf("GstNumber-%v", id)
 	database.DBAPM(ctx).Save(supplierAddress)
 	return supplierAddress
 }
 
 func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.PaymentAccountDetail) *models.PaymentAccountDetail {
-	id := rand.Intn(100)
+	id := getUniqueID()
 	paymentAccount.AccountName = fmt.Sprintf("AccountName-%v", id)
 	paymentAccount.AccountNumber = fmt.Sprintf("AccountNumber-%v", id)
 
@@ -73,7 +79,7 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 }
 
 func CreateKeyAccountManager(ctx context.Context, accountManager *models.KeyAccountManager) *models.KeyAccountManager {
-	id := rand.Intn(100)
+	id := getUniqueID()
 	accountManager.Name = fmt.Sprintf("Test-%v", id)
 	accountManager.Email = fmt.Sprintf("test-%v@shopup.org", id)
 	accountManager.Email = fmt.Sprintf("Phone-%v", id)
@@ -82,7 +88,7 @@ func CreateKeyAccountManager(ctx context.Context, accountManager *models.KeyAcco
 }
 
 func CreateBank(ctx context.Context, bank *models.Bank) *models.Bank {
-	id := rand.Intn(100)
+	id := getUniqueID()
 	bank.Name = fmt.Sprintf("TestBank-%v", id)
 	database.DBAPM(ctx).Save(bank)
 	return bank

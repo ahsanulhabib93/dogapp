@@ -20,7 +20,7 @@ type SupplierAddress struct {
 	State      string
 	Country    string
 	Zipcode    string `gorm:"not null" valid:"required"`
-	Phone      string `gorm:"not null" valid:"required"`
+	Phone      string
 	GstNumber  string `json:"gst_number"`
 	IsDefault  bool   `json:"is_default"`
 }

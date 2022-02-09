@@ -37,7 +37,7 @@ var _ = Describe("AddSupplier", func() {
 				State:        "State",
 				Country:      "Country",
 				Zipcode:      "Zipcode",
-				Phone:        "Phone",
+				Phone:        "01123456789",
 				GstNumber:    "GstNumber",
 				CategoryIds:  []uint64{1, 30},
 			}
@@ -81,6 +81,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Email:        "Email",
 				SupplierType: uint64(utils.Hlc),
+				Phone:        "1234567890",
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
 			}
@@ -98,6 +99,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:         supplier1.Name,
 				Email:        "Email",
+				Phone:        "1234567890",
 				SupplierType: uint64(utils.Hlc),
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
@@ -114,6 +116,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
 				Email:    "Email",
+				Phone:    "1234567890",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
 			}

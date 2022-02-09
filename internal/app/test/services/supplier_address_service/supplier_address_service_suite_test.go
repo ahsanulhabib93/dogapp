@@ -14,5 +14,5 @@ func TestSupplierAddressService(t *testing.T) {
 }
 
 var _ = AfterEach(func() {
-	test.Cleaner.Clean("suppliers", "supplier_addresses")
+	test.Cleaner.Clean("suppliers", "supplier_addresses", "supplier_category_mappings")
 })
