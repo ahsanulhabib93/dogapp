@@ -31,7 +31,7 @@ func (sas *SupplierAddressService) Add(ctx context.Context, params *addresspb.Su
 	supplier := &models.Supplier{}
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(supplier, params.GetSupplierId())
 	if result.RecordNotFound() {
-		resp.Message = "Supplier Not Found"
+		resp.Message = "SupplierAddress Not Found"
 	} else {
 		supplierAddress := models.SupplierAddress{
 			SupplierID: supplier.ID,

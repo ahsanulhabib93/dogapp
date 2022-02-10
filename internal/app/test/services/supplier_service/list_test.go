@@ -50,12 +50,15 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.SaIds).To(Equal([]uint64{2, 4}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
+			Expect(supplierData1.Status).To(Equal(models.SupplierStatusPending))
+
 			supplierData2 := res.Data[1]
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
 			Expect(supplierData2.CategoryIds).To(Equal([]uint64{}))
 			Expect(supplierData2.SaIds).To(Equal([]uint64{}))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
+			Expect(supplierData2.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
 })

@@ -37,7 +37,7 @@ var _ = Describe("AddSupplier", func() {
 				State:        "State",
 				Country:      "Country",
 				Zipcode:      "Zipcode",
-				Phone:        "Phone",
+				Phone:        "01123456789",
 				GstNumber:    "GstNumber",
 				CategoryIds:  []uint64{1, 30},
 				SaIds:        []uint64{5000, 6000},
@@ -50,6 +50,7 @@ var _ = Describe("AddSupplier", func() {
 
 			supplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierCategoryMappings").Preload("SupplierSaMappings").First(&supplier)
+			Expect(res.Id).To(Equal(supplier.ID))
 			Expect(supplier.Email).To(Equal(param.Email))
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
@@ -83,6 +84,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Email:        "Email",
 				SupplierType: uint64(utils.Hlc),
+				Phone:        "1234567890",
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
 			}
@@ -100,6 +102,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:         supplier1.Name,
 				Email:        "Email",
+				Phone:        "1234567890",
 				SupplierType: uint64(utils.Hlc),
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
@@ -116,6 +119,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
 				Email:    "Email",
+				Phone:    "1234567890",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
 			}
