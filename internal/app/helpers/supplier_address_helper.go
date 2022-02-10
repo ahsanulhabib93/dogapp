@@ -8,12 +8,15 @@ import (
 )
 
 func UpdateDefaultAddress(ctx context.Context, address *models.SupplierAddress) error {
-	if address.IsDefault {
-		otherDefaultAddress := &models.SupplierAddress{}
-		database.DBAPM(ctx).Model(address).Where("supplier_id = ? and is_default = ? and id != ?", address.SupplierID, true, address.ID).First(&otherDefaultAddress)
-		if otherDefaultAddress != nil {
-			database.DBAPM(ctx).Model(otherDefaultAddress).Update("is_default", false)
-		}
+	otherDefaultAddress := &models.SupplierAddress{}
+	err := database.DBAPM(ctx).Model(address).Where("supplier_id = ? and is_default = ? and id != ?", address.SupplierID, true, address.ID).First(&otherDefaultAddress).Error
+	if err != nil && err.Error() == "record not found" {
+		database.DBAPM(ctx).Model(address).Update("is_default", true)
+		return nil
+	}
+
+	if address.IsDefault && otherDefaultAddress != nil {
+		database.DBAPM(ctx).Model(otherDefaultAddress).Update("is_default", false)
 	}
 	return nil
 }

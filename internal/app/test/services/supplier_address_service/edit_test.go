@@ -108,11 +108,12 @@ var _ = Describe("EditSupplierAddress", func() {
 	Context("Editing only name of existing record", func() {
 		It("Should update address and return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			address := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
+			address := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
 			param := &addresspb.SupplierAddressObject{
 				Id:        address.ID,
 				Firstname: "Firstname",
 				Lastname:  "Lastname",
+				IsDefault: true,
 			}
 			res, err := new(services.SupplierAddressService).Edit(ctx, param)
 
