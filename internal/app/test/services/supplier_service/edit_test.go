@@ -209,7 +209,9 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier = models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
-			Expect(updatedSupplier.SupplierCategoryMappings[2].CategoryID).To(Equal(uint64(567)))
+			Expect(utils.Int64Min(updatedSupplier.SupplierCategoryMappings[0].CategoryID,
+				utils.Int64Min(updatedSupplier.SupplierCategoryMappings[1].CategoryID,
+					updatedSupplier.SupplierCategoryMappings[2].CategoryID))).To(Equal(uint64(101)))
 
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
@@ -243,7 +245,9 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier = models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierSaMappings").First(&updatedSupplier, supplier.ID)
 			Expect(len(updatedSupplier.SupplierSaMappings)).To(Equal(3))
-			Expect(updatedSupplier.SupplierSaMappings[0].SourcingAssociateId).To(Equal(uint64(503)))
+			Expect(utils.Int64Min(updatedSupplier.SupplierSaMappings[0].SourcingAssociateId,
+				utils.Int64Min(updatedSupplier.SupplierSaMappings[1].SourcingAssociateId,
+					updatedSupplier.SupplierSaMappings[2].SourcingAssociateId))).To(Equal(uint64(503)))
 
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierSaMapping{}).Unscoped().Where("supplier_sa_mappings.supplier_id = ?", supplier.ID).Count(&count)
