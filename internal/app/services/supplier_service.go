@@ -77,20 +77,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		SupplierType:             utils.SupplierType(params.GetSupplierType()),
 		SupplierCategoryMappings: ss.prepareCategoreMapping(params.GetCategoryIds()),
 		SupplierSaMappings:       ss.prepareSaMapping(params.GetSaIds()),
-		SupplierAddresses: []models.SupplierAddress{{
-			Firstname: params.GetFirstname(),
-			Lastname:  params.GetLastname(),
-			Address1:  params.GetAddress1(),
-			Address2:  params.GetAddress2(),
-			Landmark:  params.GetLandmark(),
-			City:      params.GetCity(),
-			State:     params.GetState(),
-			Country:   params.GetCountry(),
-			Zipcode:   params.GetZipcode(),
-			Phone:     params.GetPhone(),
-			GstNumber: params.GetGstNumber(),
-			IsDefault: true,
-		}},
+		SupplierAddresses:        ss.prepareSupplierAddress(params),
 	}
 
 	err := database.DBAPM(ctx).Save(&supplier)
@@ -279,6 +266,29 @@ func (ss *SupplierService) prepareResponse(suppliers []supplierDBResponse) suppl
 	}
 
 	return supplierpb.ListResponse{Data: data}
+}
+
+func (ss *SupplierService) prepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierAddress {
+	if params.GetFirstname() == "" && params.GetLastname() == "" && params.GetAddress1() == "" && params.GetAddress2() == "" &&
+		params.GetLandmark() == "" && params.GetCity() == "" && params.GetState() == "" && params.GetCountry() == "" &&
+		params.GetZipcode() == "" && params.GetPhone() == "" && params.GetGstNumber() == "" {
+		return []models.SupplierAddress{}
+	}
+
+	return []models.SupplierAddress{{
+		Firstname: params.GetFirstname(),
+		Lastname:  params.GetLastname(),
+		Address1:  params.GetAddress1(),
+		Address2:  params.GetAddress2(),
+		Landmark:  params.GetLandmark(),
+		City:      params.GetCity(),
+		State:     params.GetState(),
+		Country:   params.GetCountry(),
+		Zipcode:   params.GetZipcode(),
+		Phone:     params.GetPhone(),
+		GstNumber: params.GetGstNumber(),
+		IsDefault: true,
+	}}
 }
 
 type supplierDBResponse struct {
