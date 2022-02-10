@@ -37,7 +37,7 @@ var _ = Describe("EditSupplierAddress", func() {
 				State:     "State",
 				Country:   "Country",
 				Zipcode:   "Zipcode",
-				Phone:     "Phone",
+				Phone:     "01123456789",
 				GstNumber: "GstNumber",
 				IsDefault: false,
 			}
@@ -145,6 +145,23 @@ var _ = Describe("EditSupplierAddress", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("SupplierAddress Not Found"))
+		})
+	})
+
+	Context("Editing supplier address with invalid number", func() {
+		It("Should return error response", func() {
+			suplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: suplier.ID})
+			param := &addresspb.SupplierAddressObject{
+				Id:    supplierAddress.ID,
+				Phone: "123789",
+			}
+
+			res, err := new(services.SupplierAddressService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while updating SupplierAddress: Invalid Phone Number"))
 		})
 	})
 })

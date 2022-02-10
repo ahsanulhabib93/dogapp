@@ -35,7 +35,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				State:      "State",
 				Country:    "Country",
 				Zipcode:    "Zipcode",
-				Phone:      "Phone",
+				Phone:      "01123456789",
 				GstNumber:  "GstNumber",
 				IsDefault:  false,
 			}
@@ -84,7 +84,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				State:      "State",
 				Country:    "Country",
 				Zipcode:    "Zipcode",
-				Phone:      "Phone",
+				Phone:      "01123456789",
 				GstNumber:  "GstNumber",
 				IsDefault:  true,
 			}
@@ -125,12 +125,13 @@ var _ = Describe("AddSupplierAddress", func() {
 				SupplierId: 1000,
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
+				Phone:      "01123456789",
 			}
 			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Supplier Not Found"))
+			Expect(res.Message).To(Equal("SupplierAddress Not Found"))
 		})
 	})
 
@@ -142,6 +143,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
 				Address1:   "Address1",
+				Phone:      "01123456789",
 			}
 			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
@@ -153,18 +155,55 @@ var _ = Describe("AddSupplierAddress", func() {
 
 	Context("While adding address without address1", func() {
 		It("Should return error response", func() {
-			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &addresspb.SupplierAddressParam{
 				SupplierId: supplier.ID,
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
 				Zipcode:    "Zipcode",
+				Phone:      "01123456789",
 			}
 			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier Address: Address1 can't be blank"))
+		})
+	})
+
+	Context("While adding phone number", func() {
+		It("Should return error response on invalid phone number", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			param := &addresspb.SupplierAddressParam{
+				SupplierId: supplier.ID,
+				Firstname:  "Firstname",
+				Lastname:   "Lastname",
+				Zipcode:    "Zipcode",
+				Address1:   "Address1",
+				Phone:      "123456789",
+			}
+
+			res, err := new(services.SupplierAddressService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier Address: Invalid Phone Number"))
+		})
+
+		It("Should return error response on empty phone number", func() {
+			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+			param := &addresspb.SupplierAddressParam{
+				SupplierId: supplier.ID,
+				Firstname:  "Firstname",
+				Lastname:   "Lastname",
+				Zipcode:    "Zipcode",
+				Address1:   "Address1",
+			}
+			res, err := new(services.SupplierAddressService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier Address: Phone Number can't be blank"))
 		})
 	})
 })
