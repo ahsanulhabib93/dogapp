@@ -22,7 +22,10 @@ type SupplierService struct{}
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	log.Printf("ListSupplierParams: %+v", params)
 	suppliers := []supplierDBResponse{}
-	database.DBAPM(ctx).Model(&models.Supplier{}).Joins("left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").Group("id").Select(ss.getResponseField()).Scan(&suppliers)
+	database.DBAPM(ctx).Model(&models.Supplier{}).
+		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").Group("id").
+		Joins(" left join supplier_sa_mappings on supplier_sa_mappings.supplier_id=suppliers.id").Group("id").
+		Select(ss.getResponseField()).Scan(&suppliers)
 	resp := ss.prepareResponse(suppliers)
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
@@ -73,6 +76,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		Status:                   params.GetStatus(),
 		SupplierType:             utils.SupplierType(params.GetSupplierType()),
 		SupplierCategoryMappings: ss.prepareCategoreMapping(params.GetCategoryIds()),
+		SupplierSaMappings:       ss.prepareSaMapping(params.GetSaIds()),
 		SupplierAddresses: []models.SupplierAddress{{
 			Firstname: params.GetFirstname(),
 			Lastname:  params.GetLastname(),
@@ -111,7 +115,9 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	if params.GetCategoryIds() != nil {
 		query = query.Preload("SupplierCategoryMappings")
 	}
-
+	if params.GetSaIds() != nil {
+		query = query.Preload("SupplierSaMappings")
+	}
 	result := query.First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
@@ -122,6 +128,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			Status:                   params.GetStatus(),
 			SupplierType:             utils.SupplierType(params.GetSupplierType()),
 			SupplierCategoryMappings: ss.updateCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
+			SupplierSaMappings:       ss.updateSaMapping(ctx, supplier.ID, params.GetSaIds()),
 		})
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
@@ -171,6 +178,43 @@ func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId
 	return ss.prepareCategoreMapping(newIds)
 }
 
+func (ss *SupplierService) updateSaMapping(ctx context.Context, supplierId uint64, newIds []uint64) []models.SupplierSaMapping {
+	if len(newIds) == 0 {
+		return nil
+	}
+
+	sourcingAssociateMappings := []models.SupplierSaMapping{}
+	database.DBAPM(ctx).Model(&models.SupplierSaMapping{}).Unscoped().Where("supplier_id = ?", supplierId).Find(&sourcingAssociateMappings)
+	saCreateMap := map[uint64]bool{}
+	for _, id := range newIds {
+		saCreateMap[id] = true
+	}
+
+	mapToDelete := []uint64{}
+	mapToRestore := []uint64{}
+	for _, sMap := range sourcingAssociateMappings {
+		_, inNewList := saCreateMap[sMap.SourcingAssociateId]
+		if !inNewList {
+			mapToDelete = append(mapToDelete, sMap.ID)
+		} else {
+			saCreateMap[sMap.SourcingAssociateId] = false
+			mapToRestore = append(mapToRestore, sMap.ID)
+		}
+	}
+
+	currentTime := time.Now()
+	database.DBAPM(ctx).Model(&models.SupplierSaMapping{}).Unscoped().Where("id IN (?)", mapToRestore).Update("deleted_at", nil)
+	database.DBAPM(ctx).Model(&models.SupplierSaMapping{}).Unscoped().Where("id IN (?)", mapToDelete).Update("deleted_at", &currentTime)
+	newIds = []uint64{}
+	for k, v := range saCreateMap {
+		if v {
+			newIds = append(newIds, k)
+		}
+	}
+
+	return ss.prepareSaMapping(newIds)
+}
+
 func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
 	categories := []models.SupplierCategoryMapping{}
 	for _, id := range ids {
@@ -181,6 +225,15 @@ func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.Supplie
 
 	return categories
 }
+func (ss *SupplierService) prepareSaMapping(ids []uint64) []models.SupplierSaMapping {
+	sourcing_associates := []models.SupplierSaMapping{}
+	for _, id := range ids {
+		sourcing_associates = append(sourcing_associates, models.SupplierSaMapping{
+			SourcingAssociateId: id,
+		})
+	}
+	return sourcing_associates
+}
 
 func (ss *SupplierService) getResponseField() string {
 	s := []string{
@@ -189,7 +242,8 @@ func (ss *SupplierService) getResponseField() string {
 		"suppliers.supplier_type",
 		"suppliers.name",
 		"suppliers.email",
-		"GROUP_CONCAT(supplier_category_mappings.category_id) as category_ids",
+		"GROUP_CONCAT( DISTINCT supplier_category_mappings.category_id) as category_ids",
+		"GROUP_CONCAT( DISTINCT supplier_sa_mappings.sourcing_associate_id) as sa_ids",
 	}
 
 	return strings.Join(s, ",")
@@ -211,6 +265,15 @@ func (ss *SupplierService) prepareResponse(suppliers []supplierDBResponse) suppl
 			v, _ := strconv.Atoi(cId)
 			so.CategoryIds = append(so.CategoryIds, uint64(v))
 		}
+		so.SaIds = []uint64{}
+		for _, saId := range strings.Split(supplier.SaIds, ",") {
+			saId = strings.TrimSpace(saId)
+			if saId == "" {
+				continue
+			}
+			v, _ := strconv.Atoi(saId)
+			so.SaIds = append(so.SaIds, uint64(v))
+		}
 
 		data = append(data, so)
 	}
@@ -221,4 +284,5 @@ func (ss *SupplierService) prepareResponse(suppliers []supplierDBResponse) suppl
 type supplierDBResponse struct {
 	models.Supplier
 	CategoryIds string `json:"category_ids,omitempty"`
+	SaIds       string `json:"sa_ids,omitempty"`
 }

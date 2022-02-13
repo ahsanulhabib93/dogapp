@@ -20,4 +20,17 @@ func init() {
 			return nil
 		},
 	})
+
+	migrator.Register(&gormigrate.Migration{
+		ID: "20220201045200",
+		Migrate: func(tx *gorm.DB) error {
+			return tx.AutoMigrate(
+				models.Supplier{},
+				models.SupplierSaMapping{},
+			).Error
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	})
 }
