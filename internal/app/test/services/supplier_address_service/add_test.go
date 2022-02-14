@@ -68,6 +68,49 @@ var _ = Describe("AddSupplierAddress", func() {
 		})
 	})
 
+	Context("While adding address for existing Supplier without previous address", func() {
+		It("Should create address and return success response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			param := &addresspb.SupplierAddressParam{
+				SupplierId: supplier.ID,
+				Firstname:  "Firstname",
+				Lastname:   "Lastname",
+				Address1:   "Address1",
+				Address2:   "Address2",
+				Landmark:   "Landmark",
+				City:       "City",
+				State:      "State",
+				Country:    "Country",
+				Zipcode:    "Zipcode",
+				Phone:      "01123456789",
+				GstNumber:  "GstNumber",
+			}
+			res, err := new(services.SupplierAddressService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("SupplierAddress Added Successfully"))
+
+			addresses := []*models.SupplierAddress{{}}
+			database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Find(&addresses)
+			Expect(len(addresses)).To(Equal(1))
+
+			address1 := addresses[0]
+			Expect(address1.Firstname).To(Equal(param.Firstname))
+			Expect(address1.Lastname).To(Equal(param.Lastname))
+			Expect(address1.Address1).To(Equal(param.Address1))
+			Expect(address1.Address2).To(Equal(param.Address2))
+			Expect(address1.Landmark).To(Equal(param.Landmark))
+			Expect(address1.City).To(Equal(param.City))
+			Expect(address1.State).To(Equal(param.State))
+			Expect(address1.Country).To(Equal(param.Country))
+			Expect(address1.Zipcode).To(Equal(param.Zipcode))
+			Expect(address1.Phone).To(Equal(param.Phone))
+			Expect(address1.GstNumber).To(Equal(param.GstNumber))
+			Expect(address1.IsDefault).To(Equal(true))
+		})
+	})
+
 	Context("While adding default address for existing Supplier", func() {
 		It("Should create address and return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})

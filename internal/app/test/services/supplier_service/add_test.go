@@ -77,6 +77,23 @@ var _ = Describe("AddSupplier", func() {
 			Expect(address.GstNumber).To(Equal(param.GstNumber))
 			Expect(address.IsDefault).To(Equal(true))
 		})
+
+		It("Adding Supplier without Address and should return success", func() {
+			param := &supplierpb.SupplierParam{
+				Name:         "Name",
+				Email:        "Email",
+				SupplierType: uint64(utils.Hlc),
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Added Successfully"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", res.Id).Count(&count)
+			Expect(count).To(Equal(1))
+		})
 	})
 
 	Context("Adding Supplier without name", func() {
