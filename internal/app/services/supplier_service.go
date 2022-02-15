@@ -21,7 +21,8 @@ type SupplierService struct{}
 func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSupplierParam) (*supplierpb.SupplierObject, error) {
 	log.Printf("GetSupplierParam: %+v", params)
 	supplier := models.Supplier{}
-	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetId())
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses").
+		Preload("PaymentAccountDetails").First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		return nil, NotFound
 	}
@@ -32,6 +33,8 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 		Joins(" left join supplier_sa_mappings on supplier_sa_mappings.supplier_id=suppliers.id").Group("id").
 		Select(ss.getResponseField()).Scan(&resp)
 
+	resp.SupplierAddresses = supplier.SupplierAddresses
+	resp.PaymentAccountDetails = supplier.PaymentAccountDetails
 	log.Printf("GetSupplierResponse: %+v", resp)
 	return ss.prepareSupplierResponse(resp), nil
 }

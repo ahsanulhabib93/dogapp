@@ -34,13 +34,20 @@ var _ = Describe("GetSupplier", func() {
 					{SourcingAssociateId: 4},
 				},
 			})
+			supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
+			paymentDetails := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 
 			resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{Id: supplier.ID})
+
 			Expect(err).To(BeNil())
 			Expect(resp.Email).To(Equal(supplier.Email))
 			Expect(resp.Name).To(Equal(supplier.Name))
 			Expect(resp.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(resp.SaIds).To(Equal([]uint64{3, 4}))
+			Expect(len(resp.SupplierAddresses)).To(Equal(1))
+			Expect(len(resp.PaymentAccountDetails)).To(Equal(1))
+			Expect(resp.SupplierAddresses[0].Id).To(Equal(supplierAddress.ID))
+			Expect(resp.PaymentAccountDetails[0].Id).To(Equal(paymentDetails.ID))
 			Expect(resp.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(resp.Status).To(Equal(models.SupplierStatusPending))
 		})
