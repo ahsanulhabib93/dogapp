@@ -60,25 +60,7 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	resp := supplierpb.ListResponse{}
 
 	query := database.DBAPM(ctx).Model(&models.Supplier{}).Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id")
-
-	if params.GetId() != 0 {
-		query = query.Where("suppliers.id = ?", params.GetId())
-	}
-	if len(params.GetSupplierIds()) != 0 {
-		query = query.Where("suppliers.id IN (?)", params.GetSupplierIds())
-	}
-	if params.GetName() != "" {
-		query = query.Where("suppliers.name LIKE ?", fmt.Sprintf("%s%%", params.GetName()))
-	}
-	if params.GetEmail() != "" {
-		query = query.Where("suppliers.email = ?", params.GetEmail())
-	}
-	if params.GetPhone() != "" {
-		query = query.Where("supplier_addresses.phone = ?", params.GetPhone())
-	}
-	if params.GetCity() != "" {
-		query = query.Where("supplier_addresses.city = ?", params.GetCity())
-	}
+	query = ss.prepareFilter(query, params)
 
 	suppliersWithAddresses := []models.Supplier{{}}
 	query.Select("distinct suppliers.*").Preload("SupplierAddresses").Find(&suppliersWithAddresses)
@@ -223,6 +205,42 @@ func (ss *SupplierService) updateSaMapping(ctx context.Context, supplierId uint6
 	}
 
 	return ss.prepareSaMapping(newIds)
+}
+
+func (ss *SupplierService) prepareFilter(query *gorm.DB, params *supplierpb.ListParams) *gorm.DB {
+	if params.GetId() != 0 {
+		query = query.Where("suppliers.id = ?", params.GetId())
+	}
+	if len(params.GetSupplierIds()) != 0 {
+		query = query.Where("suppliers.id IN (?)", params.GetSupplierIds())
+	}
+	if params.GetName() != "" {
+		query = query.Where("suppliers.name LIKE ?", fmt.Sprintf("%s%%", params.GetName()))
+	}
+	if params.GetEmail() != "" {
+		query = query.Where("suppliers.email = ?", params.GetEmail())
+	}
+	if status := params.GetStatus(); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
+		query = query.Where("suppliers.status = ?", params.GetStatus())
+	}
+	if params.GetPhone() != "" {
+		query = query.Where("supplier_addresses.phone = ?", params.GetPhone())
+	}
+	if params.GetCity() != "" {
+		query = query.Where("supplier_addresses.city = ?", params.GetCity())
+	}
+
+	if params.GetPage() < 0 {
+		params.Page = 0
+	}
+	if params.GetPerPage() <= 0 || params.GetPerPage() > 20 {
+		params.PerPage = utils.DEFAULT_PER_PAGE
+	}
+
+	offset := params.GetPage() * params.GetPerPage()
+	query = query.Offset(offset).Limit(params.GetPerPage())
+
+	return query
 }
 
 func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
