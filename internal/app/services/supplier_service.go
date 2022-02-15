@@ -18,13 +18,13 @@ import (
 // SupplierService ...
 type SupplierService struct{}
 
-func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSupplierParam) (*supplierpb.SupplierObject, error) {
+func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSupplierParam) (*supplierpb.SupplierResponse, error) {
 	log.Printf("GetSupplierParam: %+v", params)
 	supplier := models.Supplier{}
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses").
 		Preload("PaymentAccountDetails").First(&supplier, params.GetId())
 	if result.RecordNotFound() {
-		return nil, NotFound
+		return &supplierpb.SupplierResponse{Success: false}, nil
 	}
 
 	resp := supplierDBResponse{}
@@ -36,7 +36,9 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	resp.SupplierAddresses = supplier.SupplierAddresses
 	resp.PaymentAccountDetails = supplier.PaymentAccountDetails
 	log.Printf("GetSupplierResponse: %+v", resp)
-	return ss.prepareSupplierResponse(resp), nil
+	return &supplierpb.SupplierResponse{
+		Success: true,
+		Data:    ss.prepareSupplierResponse(resp)}, nil
 }
 
 // List ...
