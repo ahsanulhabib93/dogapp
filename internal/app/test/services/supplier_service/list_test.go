@@ -57,4 +57,49 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
+
+	It("Should Respond with all active suppliers", func() {
+		supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
+			SupplierCategoryMappings: []models.SupplierCategoryMapping{
+				{CategoryID: 1},
+				{CategoryID: 2},
+			},
+			SupplierType: utils.Hlc,
+			SupplierSaMappings: []models.SupplierSaMapping{
+				{SourcingAssociateId: 3},
+				{SourcingAssociateId: 4},
+			},
+			Status: models.SupplierStatusActive,
+		})
+
+		test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Status: models.SupplierStatusActive})
+		Expect(err).To(BeNil())
+		Expect(len(res.Data)).To(Equal(1))
+		supplierData1 := res.Data[0]
+		Expect(supplierData1.Email).To(Equal(supplier1.Email))
+		Expect(supplierData1.Name).To(Equal(supplier1.Name))
+		Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
+		Expect(supplierData1.SaIds).To(Equal([]uint64{3, 4}))
+		Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
+		Expect(supplierData1.Status).To(Equal(models.SupplierStatusActive))
+	})
+
+	It("Should Respond with success for pagination", func() {
+		suppliers := []*models.Supplier{
+			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1}),
+		}
+
+		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
+			Page:    1,
+			PerPage: 2,
+		})
+		Expect(err).To(BeNil())
+		Expect(len(res.Data)).To(Equal(2))
+		Expect(res.Data[0].Id).To(Equal(suppliers[2].ID))
+		Expect(res.Data[1].Id).To(Equal(suppliers[3].ID))
+	})
 })
