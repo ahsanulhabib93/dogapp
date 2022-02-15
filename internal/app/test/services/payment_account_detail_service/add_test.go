@@ -118,7 +118,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: AccountName can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: account_name can't be blank"))
 		})
 	})
 
@@ -134,7 +134,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: Invalid Account SubType; AccountType can't be blank; AccountSubType can't be blank; AccountNumber can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: Invalid Account SubType; account_type can't be blank; account_sub_type can't be blank; account_number can't be blank"))
 		})
 	})
 

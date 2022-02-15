@@ -18,9 +18,9 @@ type Supplier struct {
 	Name                     string `gorm:"not null" valid:"required"`
 	Status                   string `gorm:"default:'Pending'"`
 	Email                    string
-	SupplierType             utils.SupplierType `json:"supplier_type" valid:"required"`
-	SupplierAddresses        []SupplierAddress  `json:"supplier_addresses"`
-	PaymentAccountDetails    []PaymentAccountDetail
+	SupplierType             utils.SupplierType     `json:"supplier_type" valid:"required"`
+	SupplierAddresses        []SupplierAddress      `json:"supplier_addresses"`
+	PaymentAccountDetails    []PaymentAccountDetail `json:"payment_account_details"`
 	KeyAccountManagers       []KeyAccountManager
 	SupplierCategoryMappings []SupplierCategoryMapping
 	SupplierSaMappings       []SupplierSaMapping

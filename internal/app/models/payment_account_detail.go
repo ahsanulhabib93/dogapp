@@ -11,14 +11,14 @@ import (
 type PaymentAccountDetail struct {
 	database.VaccountGorm
 	SupplierID     uint64               `gorm:"index:idx_supplier_id" valid:"required"`
-	AccountType    utils.AccountType    `valid:"required"`
-	AccountSubType utils.AccountSubType `valid:"required"`
-	AccountName    string               `gorm:"not null" valid:"required"`
-	AccountNumber  string               `gorm:"not null" valid:"required"`
-	BankID         uint64
-	BranchName     string
-	RoutingNumber  string
-	IsDefault      bool
+	AccountType    utils.AccountType    `valid:"required" json:"account_type,omitempty"`
+	AccountSubType utils.AccountSubType `valid:"required" json:"account_sub_type,omitempty"`
+	AccountName    string               `gorm:"not null" valid:"required" json:"account_name,omitempty"`
+	AccountNumber  string               `gorm:"not null" valid:"required" json:"account_number,omitempty"`
+	BankID         uint64               `json:"bank_id,omitempty"`
+	BranchName     string               `json:"branch_name,omitempty"`
+	RoutingNumber  string               `json:"routing_number,omitempty"`
+	IsDefault      bool                 `json:"is_default,omitempty"`
 }
 
 func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {

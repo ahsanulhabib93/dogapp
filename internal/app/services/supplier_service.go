@@ -18,6 +18,29 @@ import (
 // SupplierService ...
 type SupplierService struct{}
 
+func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSupplierParam) (*supplierpb.SupplierResponse, error) {
+	log.Printf("GetSupplierParam: %+v", params)
+	supplier := models.Supplier{}
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses").
+		Preload("PaymentAccountDetails").First(&supplier, params.GetId())
+	if result.RecordNotFound() {
+		return &supplierpb.SupplierResponse{Success: false}, nil
+	}
+
+	resp := supplierDBResponse{}
+	database.DBAPM(ctx).Model(&models.Supplier{}).Where("suppliers.id = ?", supplier.ID).
+		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
+		Joins(" left join supplier_sa_mappings on supplier_sa_mappings.supplier_id=suppliers.id").Group("id").
+		Select(ss.getResponseField()).Scan(&resp)
+
+	resp.SupplierAddresses = supplier.SupplierAddresses
+	resp.PaymentAccountDetails = supplier.PaymentAccountDetails
+	log.Printf("GetSupplierResponse: %+v", resp)
+	return &supplierpb.SupplierResponse{
+		Success: true,
+		Data:    ss.prepareSupplierResponse(resp)}, nil
+}
+
 // List ...
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	log.Printf("ListSupplierParams: %+v", params)
@@ -26,7 +49,7 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").Group("id").
 		Joins(" left join supplier_sa_mappings on supplier_sa_mappings.supplier_id=suppliers.id").Group("id").
 		Select(ss.getResponseField()).Scan(&suppliers)
-	resp := ss.prepareResponse(suppliers)
+	resp := ss.prepareListResponse(suppliers)
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
 }
@@ -236,36 +259,40 @@ func (ss *SupplierService) getResponseField() string {
 	return strings.Join(s, ",")
 }
 
-func (ss *SupplierService) prepareResponse(suppliers []supplierDBResponse) supplierpb.ListResponse {
+func (ss *SupplierService) prepareListResponse(suppliers []supplierDBResponse) supplierpb.ListResponse {
 	data := []*supplierpb.SupplierObject{}
 	for _, supplier := range suppliers {
-		temp, _ := json.Marshal(supplier)
-		so := &supplierpb.SupplierObject{}
-		json.Unmarshal(temp, so)
-		so.CategoryIds = []uint64{}
-		for _, cId := range strings.Split(supplier.CategoryIds, ",") {
-			cId = strings.TrimSpace(cId)
-			if cId == "" {
-				continue
-			}
-
-			v, _ := strconv.Atoi(cId)
-			so.CategoryIds = append(so.CategoryIds, uint64(v))
-		}
-		so.SaIds = []uint64{}
-		for _, saId := range strings.Split(supplier.SaIds, ",") {
-			saId = strings.TrimSpace(saId)
-			if saId == "" {
-				continue
-			}
-			v, _ := strconv.Atoi(saId)
-			so.SaIds = append(so.SaIds, uint64(v))
-		}
-
-		data = append(data, so)
+		data = append(data, ss.prepareSupplierResponse(supplier))
 	}
 
 	return supplierpb.ListResponse{Data: data}
+}
+
+func (ss *SupplierService) prepareSupplierResponse(supplier supplierDBResponse) *supplierpb.SupplierObject {
+	temp, _ := json.Marshal(supplier)
+	so := &supplierpb.SupplierObject{}
+	json.Unmarshal(temp, so)
+	so.CategoryIds = []uint64{}
+	for _, cId := range strings.Split(supplier.CategoryIds, ",") {
+		cId = strings.TrimSpace(cId)
+		if cId == "" {
+			continue
+		}
+
+		v, _ := strconv.Atoi(cId)
+		so.CategoryIds = append(so.CategoryIds, uint64(v))
+	}
+	so.SaIds = []uint64{}
+	for _, saId := range strings.Split(supplier.SaIds, ",") {
+		saId = strings.TrimSpace(saId)
+		if saId == "" {
+			continue
+		}
+		v, _ := strconv.Atoi(saId)
+		so.SaIds = append(so.SaIds, uint64(v))
+	}
+
+	return so
 }
 
 func (ss *SupplierService) prepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierAddress {

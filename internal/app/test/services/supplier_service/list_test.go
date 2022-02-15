@@ -30,7 +30,7 @@ var _ = Describe("ListSupplier", func() {
 				},
 				SupplierType: utils.Hlc,
 				SupplierSaMappings: []models.SupplierSaMapping{
-					{SourcingAssociateId: 2},
+					{SourcingAssociateId: 3},
 					{SourcingAssociateId: 4},
 				},
 			})
@@ -44,7 +44,7 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
 			Expect(supplierData1.Name).To(Equal(supplier1.Name))
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
-			Expect(supplierData1.SaIds).To(Equal([]uint64{2, 4}))
+			Expect(supplierData1.SaIds).To(Equal([]uint64{3, 4}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(supplierData1.Status).To(Equal(models.SupplierStatusPending))
 

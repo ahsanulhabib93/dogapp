@@ -1,1 +1,25 @@
-{}
+{
+    "route_permissions": [
+        {
+            "route": "/supplier/info",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 1
+        },
+        {
+            "route": "/supplier/info",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/supplier/info",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 11
+        }
+    ]
+}
