@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
@@ -45,11 +46,17 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	log.Printf("ListSupplierParams: %+v", params)
 	suppliers := []supplierDBResponse{}
-	database.DBAPM(ctx).Model(&models.Supplier{}).
-		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").Group("id").
+	query := database.DBAPM(ctx).Model(&models.Supplier{})
+	query = ss.prepareFilter(query, params)
+	var total uint64
+	query.Count(&total)
+
+	ss.setPage(query, params)
+	query.Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").Group("id").
 		Joins(" left join supplier_sa_mappings on supplier_sa_mappings.supplier_id=suppliers.id").Group("id").
 		Select(ss.getResponseField()).Scan(&suppliers)
-	resp := ss.prepareListResponse(suppliers)
+
+	resp := ss.prepareListResponse(suppliers, total)
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
 }
@@ -59,32 +66,19 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	log.Printf("ListwithAddressParams: %+v", params)
 	resp := supplierpb.ListResponse{}
 
-	query := database.DBAPM(ctx).Model(&models.Supplier{}).Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id")
+	query := database.DBAPM(ctx).Model(&models.Supplier{})
+	query = ss.prepareFilter(query, params)
 
-	if params.GetId() != 0 {
-		query = query.Where("suppliers.id = ?", params.GetId())
-	}
-	if len(params.GetSupplierIds()) != 0 {
-		query = query.Where("suppliers.id IN (?)", params.GetSupplierIds())
-	}
-	if params.GetName() != "" {
-		query = query.Where("suppliers.name LIKE ?", fmt.Sprintf("%s%%", params.GetName()))
-	}
-	if params.GetEmail() != "" {
-		query = query.Where("suppliers.email = ?", params.GetEmail())
-	}
-	if params.GetPhone() != "" {
-		query = query.Where("supplier_addresses.phone = ?", params.GetPhone())
-	}
-	if params.GetCity() != "" {
-		query = query.Where("supplier_addresses.city = ?", params.GetCity())
-	}
-
+	var total uint64
+	query.Count(&total)
+	ss.setPage(query, params)
 	suppliersWithAddresses := []models.Supplier{{}}
-	query.Select("distinct suppliers.*").Preload("SupplierAddresses").Find(&suppliersWithAddresses)
+	query.Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id").
+		Select("distinct suppliers.*").Preload("SupplierAddresses").Find(&suppliersWithAddresses)
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
 	json.Unmarshal(temp, &resp.Data)
+	resp.TotalCount = total
 	log.Printf("ListwithAddressResponse: %+v", resp)
 	return &resp, nil
 }
@@ -225,6 +219,41 @@ func (ss *SupplierService) updateSaMapping(ctx context.Context, supplierId uint6
 	return ss.prepareSaMapping(newIds)
 }
 
+func (ss *SupplierService) prepareFilter(query *gorm.DB, params *supplierpb.ListParams) *gorm.DB {
+	if params.GetId() != 0 {
+		query = query.Where("suppliers.id = ?", params.GetId())
+	}
+	if len(params.GetSupplierIds()) != 0 {
+		query = query.Where("suppliers.id IN (?)", params.GetSupplierIds())
+	}
+	if params.GetName() != "" {
+		query = query.Where("suppliers.name LIKE ?", fmt.Sprintf("%s%%", params.GetName()))
+	}
+	if params.GetEmail() != "" {
+		query = query.Where("suppliers.email = ?", params.GetEmail())
+	}
+	if status := params.GetStatus(); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
+		query = query.Where("suppliers.status = ?", params.GetStatus())
+	}
+	if params.GetPhone() != "" {
+		query = query.Where("supplier_addresses.phone = ?", params.GetPhone())
+	}
+	if params.GetCity() != "" {
+		query = query.Where("supplier_addresses.city = ?", params.GetCity())
+	}
+
+	return query
+}
+
+func (ss *SupplierService) setPage(query *gorm.DB, params *supplierpb.ListParams) {
+	if params.GetPerPage() <= 0 || params.GetPerPage() > 20 {
+		params.PerPage = utils.DEFAULT_PER_PAGE
+	}
+
+	offset := params.GetPage() * params.GetPerPage()
+	*query = *query.Offset(offset).Limit(params.GetPerPage())
+}
+
 func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
 	categories := []models.SupplierCategoryMapping{}
 	for _, id := range ids {
@@ -259,13 +288,13 @@ func (ss *SupplierService) getResponseField() string {
 	return strings.Join(s, ",")
 }
 
-func (ss *SupplierService) prepareListResponse(suppliers []supplierDBResponse) supplierpb.ListResponse {
+func (ss *SupplierService) prepareListResponse(suppliers []supplierDBResponse, total uint64) supplierpb.ListResponse {
 	data := []*supplierpb.SupplierObject{}
 	for _, supplier := range suppliers {
 		data = append(data, ss.prepareSupplierResponse(supplier))
 	}
 
-	return supplierpb.ListResponse{Data: data}
+	return supplierpb.ListResponse{Data: data, TotalCount: total}
 }
 
 func (ss *SupplierService) prepareSupplierResponse(supplier supplierDBResponse) *supplierpb.SupplierObject {
