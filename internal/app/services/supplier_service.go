@@ -48,10 +48,15 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	suppliers := []supplierDBResponse{}
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = ss.prepareFilter(query, params)
+	var total uint64
+	query.Count(&total)
+
+	ss.setPage(query, params)
 	query.Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").Group("id").
 		Joins(" left join supplier_sa_mappings on supplier_sa_mappings.supplier_id=suppliers.id").Group("id").
 		Select(ss.getResponseField()).Scan(&suppliers)
-	resp := ss.prepareListResponse(suppliers)
+
+	resp := ss.prepareListResponse(suppliers, total)
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
 }
@@ -61,14 +66,19 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	log.Printf("ListwithAddressParams: %+v", params)
 	resp := supplierpb.ListResponse{}
 
-	query := database.DBAPM(ctx).Model(&models.Supplier{}).Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id")
+	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = ss.prepareFilter(query, params)
 
+	var total uint64
+	query.Count(&total)
+	ss.setPage(query, params)
 	suppliersWithAddresses := []models.Supplier{{}}
-	query.Select("distinct suppliers.*").Preload("SupplierAddresses").Find(&suppliersWithAddresses)
+	query.Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id").
+		Select("distinct suppliers.*").Preload("SupplierAddresses").Find(&suppliersWithAddresses)
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
 	json.Unmarshal(temp, &resp.Data)
+	resp.TotalCount = total
 	log.Printf("ListwithAddressResponse: %+v", resp)
 	return &resp, nil
 }
@@ -232,17 +242,16 @@ func (ss *SupplierService) prepareFilter(query *gorm.DB, params *supplierpb.List
 		query = query.Where("supplier_addresses.city = ?", params.GetCity())
 	}
 
-	if params.GetPage() < 0 {
-		params.Page = 0
-	}
+	return query
+}
+
+func (ss *SupplierService) setPage(query *gorm.DB, params *supplierpb.ListParams) {
 	if params.GetPerPage() <= 0 || params.GetPerPage() > 20 {
 		params.PerPage = utils.DEFAULT_PER_PAGE
 	}
 
 	offset := params.GetPage() * params.GetPerPage()
-	query = query.Offset(offset).Limit(params.GetPerPage())
-
-	return query
+	*query = *query.Offset(offset).Limit(params.GetPerPage())
 }
 
 func (ss *SupplierService) prepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
@@ -279,13 +288,13 @@ func (ss *SupplierService) getResponseField() string {
 	return strings.Join(s, ",")
 }
 
-func (ss *SupplierService) prepareListResponse(suppliers []supplierDBResponse) supplierpb.ListResponse {
+func (ss *SupplierService) prepareListResponse(suppliers []supplierDBResponse, total uint64) supplierpb.ListResponse {
 	data := []*supplierpb.SupplierObject{}
 	for _, supplier := range suppliers {
 		data = append(data, ss.prepareSupplierResponse(supplier))
 	}
 
-	return supplierpb.ListResponse{Data: data}
+	return supplierpb.ListResponse{Data: data, TotalCount: total}
 }
 
 func (ss *SupplierService) prepareSupplierResponse(supplier supplierDBResponse) *supplierpb.SupplierObject {

@@ -31,6 +31,7 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(2)))
 			Expect(len(res.Data)).To(Equal(2))
 
 			supplierData1 := res.Data[0]
@@ -74,6 +75,7 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Id: supplier2.ID})
 			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
 			Expect(len(res.Data)).To(Equal(1))
 
 			supplierData1 := res.Data[0]
@@ -94,6 +96,7 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Name: "str"})
 			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
 			Expect(len(res.Data)).To(Equal(1))
 
 			supplierData1 := res.Data[0]
@@ -172,6 +175,7 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{SupplierIds: []uint64{supplier1.ID, supplier2.ID}})
 			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(2)))
 			Expect(len(res.Data)).To(Equal(2))
 
 			Expect(res.Data[0].Email).To(Equal(supplier1.Email))

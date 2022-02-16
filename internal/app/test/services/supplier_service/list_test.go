@@ -39,6 +39,7 @@ var _ = Describe("ListSupplier", func() {
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(2)))
 			Expect(len(res.Data)).To(Equal(2))
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
@@ -75,6 +76,7 @@ var _ = Describe("ListSupplier", func() {
 		test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
 		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Status: models.SupplierStatusActive})
 		Expect(err).To(BeNil())
+		Expect(res.TotalCount).To(Equal(uint64(1)))
 		Expect(len(res.Data)).To(Equal(1))
 		supplierData1 := res.Data[0]
 		Expect(supplierData1.Email).To(Equal(supplier1.Email))
@@ -99,7 +101,28 @@ var _ = Describe("ListSupplier", func() {
 		})
 		Expect(err).To(BeNil())
 		Expect(len(res.Data)).To(Equal(2))
+		Expect(res.TotalCount).To(Equal(uint64(4)))
 		Expect(res.Data[0].Id).To(Equal(suppliers[2].ID))
 		Expect(res.Data[1].Id).To(Equal(suppliers[3].ID))
+	})
+
+	It("Should Respond with success for pagination with filter", func() {
+		suppliers := []*models.Supplier{
+			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusPending}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+		}
+
+		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
+			Page:    0,
+			PerPage: 2,
+			Status:  models.SupplierStatusActive,
+		})
+		Expect(err).To(BeNil())
+		Expect(len(res.Data)).To(Equal(2))
+		Expect(res.TotalCount).To(Equal(uint64(3)))
+		Expect(res.Data[0].Id).To(Equal(suppliers[0].ID))
+		Expect(res.Data[1].Id).To(Equal(suppliers[1].ID))
 	})
 })
