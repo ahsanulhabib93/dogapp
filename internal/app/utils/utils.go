@@ -1,7 +1,7 @@
 package utils
 
 const (
-	DEFAULT_PER_PAGE = uint64(20)
+	DEFAULT_PER_PAGE = uint64(5000)
 )
 
 func Int64Min(a, b uint64) uint64 {

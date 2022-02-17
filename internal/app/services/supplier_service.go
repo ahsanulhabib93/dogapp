@@ -246,7 +246,7 @@ func (ss *SupplierService) prepareFilter(query *gorm.DB, params *supplierpb.List
 }
 
 func (ss *SupplierService) setPage(query *gorm.DB, params *supplierpb.ListParams) {
-	if params.GetPerPage() <= 0 || params.GetPerPage() > 20 {
+	if params.GetPerPage() <= 0 || params.GetPerPage() > utils.DEFAULT_PER_PAGE {
 		params.PerPage = utils.DEFAULT_PER_PAGE
 	}
 
