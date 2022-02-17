@@ -93,8 +93,8 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		Status:                   params.GetStatus(),
 		SupplierType:             utils.SupplierType(params.GetSupplierType()),
 		SupplierCategoryMappings: ss.prepareCategoreMapping(params.GetCategoryIds()),
-		SupplierSaMappings:       ss.prepareSaMapping(params.GetSaIds()),
-		SupplierAddresses:        ss.prepareSupplierAddress(params),
+		// SupplierSaMappings:       ss.prepareSaMapping(params.GetSaIds()),
+		SupplierAddresses: ss.prepareSupplierAddress(params),
 	}
 
 	err := database.DBAPM(ctx).Save(&supplier)
@@ -119,9 +119,9 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	if params.GetCategoryIds() != nil {
 		query = query.Preload("SupplierCategoryMappings")
 	}
-	if params.GetSaIds() != nil {
-		query = query.Preload("SupplierSaMappings")
-	}
+	// if params.GetSaIds() != nil {
+	// 	query = query.Preload("SupplierSaMappings")
+	// }
 	result := query.First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
@@ -132,7 +132,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			Status:                   params.GetStatus(),
 			SupplierType:             utils.SupplierType(params.GetSupplierType()),
 			SupplierCategoryMappings: ss.updateCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
-			SupplierSaMappings:       ss.updateSaMapping(ctx, supplier.ID, params.GetSaIds()),
+			// SupplierSaMappings:       ss.updateSaMapping(ctx, supplier.ID, params.GetSaIds()),
 		})
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
@@ -282,7 +282,7 @@ func (ss *SupplierService) getResponseField() string {
 		"suppliers.name",
 		"suppliers.email",
 		"GROUP_CONCAT( DISTINCT supplier_category_mappings.category_id) as category_ids",
-		"GROUP_CONCAT( DISTINCT supplier_sa_mappings.sourcing_associate_id) as sa_ids",
+		// "GROUP_CONCAT( DISTINCT supplier_sa_mappings.sourcing_associate_id) as sa_ids",
 	}
 
 	return strings.Join(s, ",")
@@ -311,15 +311,15 @@ func (ss *SupplierService) prepareSupplierResponse(supplier supplierDBResponse) 
 		v, _ := strconv.Atoi(cId)
 		so.CategoryIds = append(so.CategoryIds, uint64(v))
 	}
-	so.SaIds = []uint64{}
-	for _, saId := range strings.Split(supplier.SaIds, ",") {
-		saId = strings.TrimSpace(saId)
-		if saId == "" {
-			continue
-		}
-		v, _ := strconv.Atoi(saId)
-		so.SaIds = append(so.SaIds, uint64(v))
-	}
+	// so.SaIds = []uint64{}
+	// for _, saId := range strings.Split(supplier.SaIds, ",") {
+	// 	saId = strings.TrimSpace(saId)
+	// 	if saId == "" {
+	// 		continue
+	// 	}
+	// 	v, _ := strconv.Atoi(saId)
+	// 	so.SaIds = append(so.SaIds, uint64(v))
+	// }
 
 	return so
 }
@@ -350,5 +350,5 @@ func (ss *SupplierService) prepareSupplierAddress(params *supplierpb.SupplierPar
 type supplierDBResponse struct {
 	models.Supplier
 	CategoryIds string `json:"category_ids,omitempty"`
-	SaIds       string `json:"sa_ids,omitempty"`
+	// SaIds       string `json:"sa_ids,omitempty"`
 }

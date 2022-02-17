@@ -40,7 +40,7 @@ var _ = Describe("AddSupplier", func() {
 				Phone:        "01123456789",
 				GstNumber:    "GstNumber",
 				CategoryIds:  []uint64{1, 30},
-				SaIds:        []uint64{5000, 6000},
+				// SaIds:        []uint64{5000, 6000},
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -56,8 +56,8 @@ var _ = Describe("AddSupplier", func() {
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
-			Expect(len(supplier.SupplierSaMappings)).To(Equal(2))
-			Expect(supplier.SupplierSaMappings[1].SourcingAssociateId).To(Equal(uint64(6000)))
+			// Expect(len(supplier.SupplierSaMappings)).To(Equal(2))
+			// Expect(supplier.SupplierSaMappings[1].SourcingAssociateId).To(Equal(uint64(6000)))
 
 			addresses := []*models.SupplierAddress{{}}
 			database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Find(&addresses)
@@ -154,7 +154,7 @@ var _ = Describe("AddSupplier", func() {
 				Email:    "Email",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
-				SaIds:    []uint64{5000, 6000},
+				// SaIds:    []uint64{5000, 6000},
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			supplier := &models.Supplier{}
@@ -162,7 +162,7 @@ var _ = Describe("AddSupplier", func() {
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierSaMappings").First(&supplier)
-			Expect(len(supplier.SupplierSaMappings)).To(Equal(0))
+			// Expect(len(supplier.SupplierSaMappings)).To(Equal(0))
 
 		})
 	})
