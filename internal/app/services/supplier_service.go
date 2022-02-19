@@ -145,6 +145,45 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	return &resp, nil
 }
 
+func (ss *SupplierService) Map(ctx context.Context, params *supplierpb.SupplierMappingParams) (*supplierpb.BasicApiResponse, error) {
+	isDeleting := false
+	if strings.ToLower(params.OperationType) == "delete" {
+		isDeleting = true
+	}
+
+	switch strings.ToLower(params.MapWith) {
+	case "opc":
+		return ss.opcMapping(ctx, params.SupplierId, params.Id, isDeleting), nil
+	}
+
+	return &supplierpb.BasicApiResponse{Message: "Invalid mapping pair"}, nil
+}
+
+func (ss *SupplierService) opcMapping(ctx context.Context, id, opcId uint64, delete bool) *supplierpb.BasicApiResponse {
+	resp := &supplierpb.BasicApiResponse{Success: true}
+
+	opcMap := &models.SupplierOpcMapping{}
+	result := database.DBAPM(ctx).Model(&opcMap).Unscoped().First(opcMap, "processing_center_id = ? AND supplier_id = ?", opcId, id)
+	if notFound := result.RecordNotFound(); (notFound && delete) ||
+		(!notFound && opcMap.DeletedAt != nil && delete) {
+		return resp
+	}
+
+	opcMap.DeletedAt = nil
+	opcMap.SupplierID = id
+	opcMap.ProcessingCenterID = opcId
+	if now := time.Now(); delete {
+		opcMap.DeletedAt = &now
+	}
+
+	if err := database.DBAPM(ctx).Unscoped().Save(&opcMap).Error; err != nil {
+		resp.Success = false
+		resp.Message = fmt.Sprintf("Error while processing Supplier-OPC mapping: %s", err.Error())
+	}
+
+	return resp
+}
+
 func (ss *SupplierService) updateCategoryMapping(ctx context.Context, supplierId uint64, newIds []uint64) []models.SupplierCategoryMapping {
 	if len(newIds) == 0 {
 		return nil

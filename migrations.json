@@ -20,6 +20,27 @@
             "service": "ss2",
             "required_permission_id": "supplierpanel:supplierlistapi:view",
             "vaccount_id": 11
+        },
+        {
+            "route": "/supplier/map",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 1
+        },
+        {
+            "route": "/supplier/map",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/supplier/map",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 11
         }
     ]
 }
