@@ -29,10 +29,10 @@ var _ = Describe("ListSupplier", func() {
 					{CategoryID: 2},
 				},
 				SupplierType: utils.Hlc,
-				// SupplierSaMappings: []models.SupplierSaMapping{
-				// 	{SourcingAssociateId: 3},
-				// 	{SourcingAssociateId: 4},
-				// },
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 3},
+					{ProcessingCenterID: 4},
+				},
 			})
 
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
@@ -45,7 +45,7 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
 			Expect(supplierData1.Name).To(Equal(supplier1.Name))
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
-			// Expect(supplierData1.SaIds).To(Equal([]uint64{3, 4}))
+			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(supplierData1.Status).To(Equal(models.SupplierStatusPending))
 
@@ -53,7 +53,7 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
 			Expect(supplierData2.CategoryIds).To(Equal([]uint64{}))
-			// Expect(supplierData2.SaIds).To(Equal([]uint64{}))
+			Expect(supplierData2.OpcIds).To(Equal([]uint64{}))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(supplierData2.Status).To(Equal(models.SupplierStatusPending))
 		})
@@ -66,10 +66,10 @@ var _ = Describe("ListSupplier", func() {
 				{CategoryID: 2},
 			},
 			SupplierType: utils.Hlc,
-			// SupplierSaMappings: []models.SupplierSaMapping{
-			// 	{SourcingAssociateId: 3},
-			// 	{SourcingAssociateId: 4},
-			// },
+			SupplierOpcMappings: []models.SupplierOpcMapping{
+				{ProcessingCenterID: 3},
+				{ProcessingCenterID: 4},
+			},
 			Status: models.SupplierStatusActive,
 		})
 
@@ -82,7 +82,7 @@ var _ = Describe("ListSupplier", func() {
 		Expect(supplierData1.Email).To(Equal(supplier1.Email))
 		Expect(supplierData1.Name).To(Equal(supplier1.Name))
 		Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
-		// Expect(supplierData1.SaIds).To(Equal([]uint64{3, 4}))
+		Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
 		Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 		Expect(supplierData1.Status).To(Equal(models.SupplierStatusActive))
 	})
