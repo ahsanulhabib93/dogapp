@@ -142,6 +142,12 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 }
 
 func (ss *SupplierService) Map(ctx context.Context, params *supplierpb.SupplierMappingParams) (*supplierpb.BasicApiResponse, error) {
+	supplier := &models.Supplier{}
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(supplier, params.GetSupplierId())
+	if result.RecordNotFound() {
+		return &supplierpb.BasicApiResponse{Message: "Supplier Not Found"}, nil
+	}
+
 	isDeleting := false
 	if strings.ToLower(params.OperationType) == "delete" {
 		isDeleting = true

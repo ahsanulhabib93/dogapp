@@ -88,6 +88,19 @@ var _ = Describe("MapSupplier", func() {
 			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Where("processing_center_id = ? AND supplier_id = ?", opcId, supplier.ID).Count(&count)
 			Expect(count).To(Equal(1))
 		})
+		It("Should Respond with error for invalid supplier ID", func() {
+			opcId := 101
+			resp, err := new(services.SupplierService).Map(ctx, &supplierpb.SupplierMappingParams{
+				SupplierId:    123,
+				Id:            uint64(opcId),
+				MapWith:       "OPC",
+				OperationType: "Add",
+			})
+
+			Expect(err).To(BeNil())
+			Expect(resp.Success).To(Equal(false))
+			Expect(resp.Message).To(Equal("Supplier Not Found"))
+		})
 	})
 
 	Context("Supplier-OPC map delete", func() {

@@ -174,7 +174,7 @@ var _ = Describe("AddSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("SupplierAddress Not Found"))
+			Expect(res.Message).To(Equal("Supplier Not Found"))
 		})
 	})
 
