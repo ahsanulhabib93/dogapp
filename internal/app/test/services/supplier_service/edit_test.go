@@ -140,7 +140,7 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while updating Supplier: Name should be unique"))
+			Expect(res.Message).To(Equal("Error while updating Supplier: Supplier Already Exists, please contact with the admin team to get access"))
 		})
 	})
 

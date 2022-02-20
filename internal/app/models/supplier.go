@@ -30,7 +30,7 @@ func (supplier Supplier) Validate(db *gorm.DB) {
 	s := &Supplier{}
 	result := db.Model(&supplier).First(s, "name = ?", supplier.Name)
 	if !result.RecordNotFound() && s.ID != supplier.ID {
-		db.AddError(errors.New("Name should be unique"))
+		db.AddError(errors.New("Supplier Already Exists, please contact with the admin team to get access"))
 	}
 
 	if !(supplier.Status == SupplierStatusActive || supplier.Status == SupplierStatusPending) &&

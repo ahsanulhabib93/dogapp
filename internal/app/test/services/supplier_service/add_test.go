@@ -127,7 +127,7 @@ var _ = Describe("AddSupplier", func() {
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: Name should be unique"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: Supplier Already Exists, please contact with the admin team to get access"))
 		})
 	})
 
