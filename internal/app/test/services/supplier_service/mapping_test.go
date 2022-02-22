@@ -26,7 +26,7 @@ var _ = Describe("MapSupplier", func() {
 		It("Should Respond with success while mapping with OPC", func() {
 			opcId := 101
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			resp, err := new(services.SupplierService).Map(ctx, &supplierpb.SupplierMappingParams{
+			resp, err := new(services.SupplierService).SupplierMap(ctx, &supplierpb.SupplierMappingParams{
 				SupplierId:    supplier.ID,
 				Id:            uint64(opcId),
 				MapWith:       "OPC",
@@ -48,7 +48,7 @@ var _ = Describe("MapSupplier", func() {
 					},
 				},
 			})
-			resp, err := new(services.SupplierService).Map(ctx, &supplierpb.SupplierMappingParams{
+			resp, err := new(services.SupplierService).SupplierMap(ctx, &supplierpb.SupplierMappingParams{
 				SupplierId:    supplier.ID,
 				Id:            uint64(opcId),
 				MapWith:       "OPC",
@@ -76,7 +76,7 @@ var _ = Describe("MapSupplier", func() {
 			database.DBAPM(ctx).Unscoped().Model(&models.SupplierOpcMapping{}).Where("processing_center_id = ? AND supplier_id = ?", opcId, supplier.ID).Count(&count)
 			Expect(count).To(Equal(1))
 
-			resp, err := new(services.SupplierService).Map(ctx, &supplierpb.SupplierMappingParams{
+			resp, err := new(services.SupplierService).SupplierMap(ctx, &supplierpb.SupplierMappingParams{
 				SupplierId:    supplier.ID,
 				Id:            uint64(opcId),
 				MapWith:       "OPC",
@@ -90,7 +90,7 @@ var _ = Describe("MapSupplier", func() {
 		})
 		It("Should Respond with error for invalid supplier ID", func() {
 			opcId := 101
-			resp, err := new(services.SupplierService).Map(ctx, &supplierpb.SupplierMappingParams{
+			resp, err := new(services.SupplierService).SupplierMap(ctx, &supplierpb.SupplierMappingParams{
 				SupplierId:    123,
 				Id:            uint64(opcId),
 				MapWith:       "OPC",
@@ -113,7 +113,7 @@ var _ = Describe("MapSupplier", func() {
 					},
 				},
 			})
-			resp, err := new(services.SupplierService).Map(ctx, &supplierpb.SupplierMappingParams{
+			resp, err := new(services.SupplierService).SupplierMap(ctx, &supplierpb.SupplierMappingParams{
 				SupplierId:    supplier.ID,
 				Id:            uint64(opcId),
 				MapWith:       "OPC",
@@ -129,7 +129,7 @@ var _ = Describe("MapSupplier", func() {
 		It("Should Respond with success while deleting non-existing OPC mapping", func() {
 			opcId := 101
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			resp, err := new(services.SupplierService).Map(ctx, &supplierpb.SupplierMappingParams{
+			resp, err := new(services.SupplierService).SupplierMap(ctx, &supplierpb.SupplierMappingParams{
 				SupplierId:    supplier.ID,
 				Id:            uint64(opcId),
 				MapWith:       "OPC",
@@ -157,7 +157,7 @@ var _ = Describe("MapSupplier", func() {
 			database.DBAPM(ctx).Unscoped().Model(&models.SupplierOpcMapping{}).Where("processing_center_id = ? AND supplier_id = ?", opcId, supplier.ID).Count(&count)
 			Expect(count).To(Equal(1))
 
-			resp, err := new(services.SupplierService).Map(ctx, &supplierpb.SupplierMappingParams{
+			resp, err := new(services.SupplierService).SupplierMap(ctx, &supplierpb.SupplierMappingParams{
 				SupplierId:    supplier.ID,
 				Id:            uint64(opcId),
 				MapWith:       "OPC",

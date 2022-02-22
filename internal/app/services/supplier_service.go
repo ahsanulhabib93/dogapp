@@ -139,7 +139,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	return &resp, nil
 }
 
-func (ss *SupplierService) Map(ctx context.Context, params *supplierpb.SupplierMappingParams) (*supplierpb.BasicApiResponse, error) {
+func (ss *SupplierService) SupplierMap(ctx context.Context, params *supplierpb.SupplierMappingParams) (*supplierpb.BasicApiResponse, error) {
 	supplier := &models.Supplier{}
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(supplier, params.GetSupplierId())
 	if result.RecordNotFound() {
