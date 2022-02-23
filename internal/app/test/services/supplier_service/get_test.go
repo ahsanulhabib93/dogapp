@@ -29,9 +29,9 @@ var _ = Describe("GetSupplier", func() {
 					{CategoryID: 2},
 				},
 				SupplierType: utils.Hlc,
-				SupplierSaMappings: []models.SupplierSaMapping{
-					{SourcingAssociateId: 3},
-					{SourcingAssociateId: 4},
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 3},
+					{ProcessingCenterID: 4},
 				},
 			})
 			supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
@@ -44,7 +44,7 @@ var _ = Describe("GetSupplier", func() {
 			Expect(resp.Data.Email).To(Equal(supplier.Email))
 			Expect(resp.Data.Name).To(Equal(supplier.Name))
 			Expect(resp.Data.CategoryIds).To(Equal([]uint64{1, 2}))
-			Expect(resp.Data.SaIds).To(Equal([]uint64{3, 4}))
+			Expect(resp.Data.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(resp.Data.Status).To(Equal(models.SupplierStatusPending))
 

@@ -40,7 +40,7 @@ var _ = Describe("AddSupplier", func() {
 				Phone:        "01123456789",
 				GstNumber:    "GstNumber",
 				CategoryIds:  []uint64{1, 30},
-				SaIds:        []uint64{5000, 6000},
+				OpcIds:       []uint64{5000, 6000},
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -49,15 +49,15 @@ var _ = Describe("AddSupplier", func() {
 			Expect(res.Message).To(Equal("Supplier Added Successfully"))
 
 			supplier := &models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierCategoryMappings").Preload("SupplierSaMappings").First(&supplier)
+			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierCategoryMappings").Preload("SupplierOpcMappings").First(&supplier)
 			Expect(res.Id).To(Equal(supplier.ID))
 			Expect(supplier.Email).To(Equal(param.Email))
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
-			Expect(len(supplier.SupplierSaMappings)).To(Equal(2))
-			Expect(supplier.SupplierSaMappings[1].SourcingAssociateId).To(Equal(uint64(6000)))
+			Expect(len(supplier.SupplierOpcMappings)).To(Equal(2))
+			Expect(supplier.SupplierOpcMappings[1].ProcessingCenterID).To(Equal(uint64(6000)))
 
 			addresses := []*models.SupplierAddress{{}}
 			database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Find(&addresses)
@@ -127,7 +127,7 @@ var _ = Describe("AddSupplier", func() {
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: Name should be unique"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: Supplier Already Exists, please contact with the admin team to get access"))
 		})
 	})
 
@@ -154,15 +154,15 @@ var _ = Describe("AddSupplier", func() {
 				Email:    "Email",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
-				SaIds:    []uint64{5000, 6000},
+				OpcIds:   []uint64{5000, 6000},
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			supplier := &models.Supplier{}
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
-			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierSaMappings").First(&supplier)
-			Expect(len(supplier.SupplierSaMappings)).To(Equal(0))
+			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierOpcMappings").First(&supplier)
+			Expect(len(supplier.SupplierOpcMappings)).To(Equal(0))
 
 		})
 	})

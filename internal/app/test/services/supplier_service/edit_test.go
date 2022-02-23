@@ -31,9 +31,9 @@ var _ = Describe("EditSupplier", func() {
 					{CategoryID: 2},
 					{CategoryID: 3},
 				},
-				SupplierSaMappings: []models.SupplierSaMapping{
-					{SourcingAssociateId: 4},
-					{SourcingAssociateId: 5},
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 4},
+					{ProcessingCenterID: 5},
 				},
 			})
 			param := &supplierpb.SupplierObject{
@@ -49,13 +49,13 @@ var _ = Describe("EditSupplier", func() {
 			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
 
 			updatedSupplier := models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").Preload("SupplierSaMappings").
+			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").Preload("SupplierOpcMappings").
 				First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Email).To(Equal(param.Email))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
 			Expect(updatedSupplier.SupplierType).To(Equal(utils.L1))
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
-			Expect(len(updatedSupplier.SupplierSaMappings)).To(Equal(2))
+			Expect(len(updatedSupplier.SupplierOpcMappings)).To(Equal(2))
 			Expect(updatedSupplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(2)))
 		})
 	})
@@ -140,7 +140,7 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while updating Supplier: Name should be unique"))
+			Expect(res.Message).To(Equal("Error while updating Supplier: Supplier Already Exists, please contact with the admin team to get access"))
 		})
 	})
 
@@ -215,82 +215,6 @@ var _ = Describe("EditSupplier", func() {
 
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
-			Expect(count).To(Equal(3))
-		})
-	})
-	Context("Editing with Sourcing Associate Id ids", func() {
-		It("Should delete old mapping", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierSaMappings: []models.SupplierSaMapping{
-					{SourcingAssociateId: 202},
-					{SourcingAssociateId: 203},
-				},
-			})
-			updatedSupplier := models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierSaMappings").First(&updatedSupplier, supplier.ID)
-			Expect(len(updatedSupplier.SupplierSaMappings)).To(Equal(2))
-
-			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				SaIds:        []uint64{503, 504, 505},
-			}
-			res, err := new(services.SupplierService).Edit(ctx, param)
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
-
-			updatedSupplier = models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierSaMappings").First(&updatedSupplier, supplier.ID)
-			Expect(len(updatedSupplier.SupplierSaMappings)).To(Equal(3))
-			Expect(utils.Int64Min(updatedSupplier.SupplierSaMappings[0].SourcingAssociateId,
-				utils.Int64Min(updatedSupplier.SupplierSaMappings[1].SourcingAssociateId,
-					updatedSupplier.SupplierSaMappings[2].SourcingAssociateId))).To(Equal(uint64(503)))
-
-			var count int
-			database.DBAPM(ctx).Model(&models.SupplierSaMapping{}).Unscoped().Where("supplier_sa_mappings.supplier_id = ?", supplier.ID).Count(&count)
-			// so the data will be 202, 203, 503, 504, 505
-			Expect(count).To(Equal(5))
-		})
-
-		It("Should restore deleted mapping", func() {
-			t := time.Now()
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-
-				SupplierSaMappings: []models.SupplierSaMapping{
-					{SourcingAssociateId: 10001},
-					{SourcingAssociateId: 10002},
-					{
-						SourcingAssociateId: 10009,
-						DeletedAt:           &t,
-					},
-				},
-			})
-			updatedSupplier := models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierSaMappings").First(&updatedSupplier, supplier.ID)
-			Expect(len(updatedSupplier.SupplierSaMappings)).To(Equal(2))
-
-			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{101, 200, 567},
-				SaIds:        []uint64{10001, 10002, 10009},
-			}
-			res, err := new(services.SupplierService).Edit(ctx, param)
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
-
-			updatedSupplier = models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierSaMappings").First(&updatedSupplier, supplier.ID)
-			Expect(len(updatedSupplier.SupplierSaMappings)).To(Equal(3))
-			Expect(updatedSupplier.SupplierSaMappings[2].SourcingAssociateId).To(Equal(uint64(10009)))
-			var count int
-			database.DBAPM(ctx).Model(&models.SupplierSaMapping{}).Unscoped().Where("supplier_sa_mappings.supplier_id = ?", supplier.ID).Count(&count)
 			Expect(count).To(Equal(3))
 		})
 	})
