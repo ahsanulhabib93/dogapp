@@ -11,6 +11,7 @@ import (
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -147,7 +148,7 @@ var _ = Describe("AddSupplier", func() {
 		})
 	})
 
-	Context("Adding Supplier with Sa Mapping", func() {
+	Context("Adding Supplier with OPC Mapping", func() {
 		It("Should return error response", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
@@ -167,4 +168,23 @@ var _ = Describe("AddSupplier", func() {
 		})
 	})
 
+	Context("Adding Supplier by SA user", func() {
+		It("Should return with success response", func() {
+			mocks.SetOpcMock()
+			defer mocks.UnsetOpcMock()
+			param := &supplierpb.SupplierParam{
+				Name:         "Name",
+				SupplierType: uint64(utils.Hlc),
+				OpcIds:       []uint64{5000, 6000},
+				IsSaUser:     true,
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Where("supplier_id = ?", res.Id).Count(&count)
+			Expect(count).To(Equal(4))
+		})
+	})
 })

@@ -16,7 +16,7 @@ func InjectMockOpcClientInstance(mockObj OpcClientInterface) {
 }
 
 type OpcClientInterface interface {
-	processingCenterList(ctx context.Context) (*opcPb.ProcessingCenterListResponse, error)
+	ProcessingCenterList(ctx context.Context) (*opcPb.ProcessingCenterListResponse, error)
 }
 
 func getOpcClient() OpcClientInterface {
@@ -26,6 +26,6 @@ func getOpcClient() OpcClientInterface {
 	return opcClient
 }
 
-func (s *OpcHelper) processingCenterList(ctx context.Context) (*opcPb.ProcessingCenterListResponse, error) {
+func (s *OpcHelper) ProcessingCenterList(ctx context.Context) (*opcPb.ProcessingCenterListResponse, error) {
 	return opcService.ProcessingCenter().ProcessingCenterList(ctx, &opcPb.EmptyParams{})
 }

@@ -201,7 +201,7 @@ func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierA
 func GetOPCListForCurrentUser(ctx context.Context) []uint64 {
 	opcList := []uint64{}
 
-	resp, err := getOpcClient().processingCenterList(ctx)
+	resp, err := getOpcClient().ProcessingCenterList(ctx)
 	if err != nil {
 		log.Printf("GetOPCListForCurrentUser: Failed to fetch OPC list. Error: %v\n", err)
 		return opcList
