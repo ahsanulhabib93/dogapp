@@ -109,7 +109,8 @@ func SetPage(query *gorm.DB, params *supplierpb.ListParams) {
 		params.PerPage = utils.DEFAULT_PER_PAGE
 	}
 
-	offset := params.GetPage() * params.GetPerPage()
+	params.Page = utils.Int64Max(utils.DEFAULT_PAGE, params.GetPage())
+	offset := (params.GetPage() - 1) * params.GetPerPage()
 	*query = *query.Offset(offset).Limit(params.GetPerPage())
 }
 

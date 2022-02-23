@@ -96,7 +96,7 @@ var _ = Describe("ListSupplier", func() {
 		}
 
 		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
-			Page:    1,
+			Page:    2,
 			PerPage: 2,
 		})
 		Expect(err).To(BeNil())
@@ -115,7 +115,7 @@ var _ = Describe("ListSupplier", func() {
 		}
 
 		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
-			Page:    0,
+			Page:    1,
 			PerPage: 2,
 			Status:  models.SupplierStatusActive,
 		})
