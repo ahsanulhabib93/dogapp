@@ -16,7 +16,7 @@ import (
 )
 
 func UpdateSupplierOpcMapping(ctx context.Context, id, opcId uint64, delete bool) *supplierpb.BasicApiResponse {
-	resp := &supplierpb.BasicApiResponse{Success: true}
+	resp := &supplierpb.BasicApiResponse{Success: true, Message: "Supplier Mapped with OPC"}
 
 	opcMap := &models.SupplierOpcMapping{}
 	result := database.DBAPM(ctx).Model(&opcMap).Unscoped().First(opcMap, "processing_center_id = ? AND supplier_id = ?", opcId, id)
@@ -30,6 +30,7 @@ func UpdateSupplierOpcMapping(ctx context.Context, id, opcId uint64, delete bool
 	opcMap.ProcessingCenterID = opcId
 	if now := time.Now(); delete {
 		opcMap.DeletedAt = &now
+		resp.Message = "Supplier Unmapped with OPC"
 	}
 
 	if err := database.DBAPM(ctx).Unscoped().Save(&opcMap).Error; err != nil {

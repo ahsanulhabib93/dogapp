@@ -34,6 +34,7 @@ var _ = Describe("MapSupplier", func() {
 			})
 			Expect(err).To(BeNil())
 			Expect(resp.Success).To(Equal(true))
+			Expect(resp.Message).To(Equal("Supplier Mapped with OPC"))
 
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Where("processing_center_id = ? AND supplier_id = ?", opcId, supplier.ID).Count(&count)

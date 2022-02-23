@@ -156,7 +156,7 @@ func (ss *SupplierService) SupplierMap(ctx context.Context, params *supplierpb.S
 		return helpers.UpdateSupplierOpcMapping(ctx, params.SupplierId, params.Id, isDeleting), nil
 	}
 
-	return &supplierpb.BasicApiResponse{Message: "Invalid mapping pair"}, nil
+	return &supplierpb.BasicApiResponse{Message: "Invalid mapping option"}, nil
 }
 
 func (ss *SupplierService) getResponseField() string {
