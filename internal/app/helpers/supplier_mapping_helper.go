@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
+	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	opcService "github.com/voonik/goConnect/oms/processing_center"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
@@ -125,7 +128,11 @@ func PrepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
 	return categories
 }
 
-func PrepareOpcMapping(ids []uint64) []models.SupplierOpcMapping {
+func PrepareOpcMapping(ids []uint64, isSa bool) []models.SupplierOpcMapping {
+	if isSa {
+		ids = append(ids, GetOPCListForCurrentUser(context.Background())...)
+	}
+
 	processCenters := []models.SupplierOpcMapping{}
 	for _, id := range ids {
 		processCenters = append(processCenters, models.SupplierOpcMapping{
@@ -189,6 +196,22 @@ func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierA
 		GstNumber: params.GetGstNumber(),
 		IsDefault: true,
 	}}
+}
+
+func GetOPCListForCurrentUser(ctx context.Context) []uint64 {
+	opcList := []uint64{}
+
+	resp, err := opcService.ProcessingCenter().ProcessingCenterList(ctx, &opcPb.EmptyParams{})
+	if err != nil {
+		log.Printf("GetOPCListForCurrentUser: Failed to fetch OPC list. Error: %v\n", err)
+		return opcList
+	}
+
+	for _, opc := range resp.Data {
+		opcList = append(opcList, opc.OpcId)
+	}
+
+	return opcList
 }
 
 type SupplierDBResponse struct {
