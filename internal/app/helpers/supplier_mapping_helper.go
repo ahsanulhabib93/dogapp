@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
+
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
-	opcService "github.com/voonik/goConnect/oms/processing_center"
+
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
@@ -201,7 +201,7 @@ func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierA
 func GetOPCListForCurrentUser(ctx context.Context) []uint64 {
 	opcList := []uint64{}
 
-	resp, err := opcService.ProcessingCenter().ProcessingCenterList(ctx, &opcPb.EmptyParams{})
+	resp, err := getOpcClient().processingCenterList(ctx)
 	if err != nil {
 		log.Printf("GetOPCListForCurrentUser: Failed to fetch OPC list. Error: %v\n", err)
 		return opcList
