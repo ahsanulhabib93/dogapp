@@ -12,7 +12,7 @@ require (
 	github.com/onsi/gomega v1.10.5
 	github.com/qor/qor v1.2.0 // indirect
 	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46
-	github.com/voonik/goConnect v0.0.0-20220223125242-ed870763dec9
+	github.com/voonik/goConnect v0.0.0-20220224024909-467ad0db7a6a
 	github.com/voonik/goFramework v0.0.0-20211130104727-69c728d98d93
 	google.golang.org/grpc v1.42.0
 	gopkg.in/gormigrate.v1 v1.6.0
