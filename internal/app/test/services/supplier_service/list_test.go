@@ -2,6 +2,7 @@ package supplier_service_test
 
 import (
 	"context"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -56,6 +57,38 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.OpcIds).To(Equal([]uint64{}))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(supplierData2.Status).To(Equal(models.SupplierStatusPending))
+		})
+
+		It("Should Respond with all the suppliers and non-deleted opc/category ids", func() {
+			deletedAt := time.Now()
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierCategoryMappings: []models.SupplierCategoryMapping{
+					{CategoryID: 1},
+					{CategoryID: 2, DeletedAt: &deletedAt},
+					{CategoryID: 3},
+				},
+				SupplierType: utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 3},
+					{ProcessingCenterID: 4, DeletedAt: &deletedAt},
+				},
+			})
+
+			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(2)))
+			Expect(len(res.Data)).To(Equal(2))
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier1.Email))
+			Expect(supplierData1.Name).To(Equal(supplier1.Name))
+			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 3}))
+			Expect(supplierData1.OpcIds).To(Equal([]uint64{3}))
+
+			supplierData2 := res.Data[1]
+			Expect(supplierData2.CategoryIds).To(Equal([]uint64{}))
+			Expect(supplierData2.OpcIds).To(Equal([]uint64{}))
 		})
 	})
 
