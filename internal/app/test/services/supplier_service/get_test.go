@@ -2,6 +2,7 @@ package supplier_service_test
 
 import (
 	"context"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -63,6 +64,32 @@ var _ = Describe("GetSupplier", func() {
 			Expect(resp.Data.PaymentAccountDetails[0].IsDefault).To(Equal(paymentDetails.IsDefault))
 			Expect(resp.Data.PaymentAccountDetails[0].AccountType).To(Equal(uint64(paymentDetails.AccountType)))
 			Expect(resp.Data.PaymentAccountDetails[0].AccountSubType).To(Equal(uint64(paymentDetails.AccountSubType)))
+		})
+
+		It("Should Respond with only non-deleted mapping", func() {
+			deletedAt := time.Now()
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierCategoryMappings: []models.SupplierCategoryMapping{
+					{CategoryID: 1, DeletedAt: &deletedAt},
+					{CategoryID: 2},
+				},
+				SupplierType: utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 2},
+					{ProcessingCenterID: 3, DeletedAt: &deletedAt},
+					{ProcessingCenterID: 4},
+				},
+			})
+
+			resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{Id: supplier.ID})
+
+			Expect(err).To(BeNil())
+			Expect(resp.Success).To(Equal(true))
+			Expect(resp.Data.Email).To(Equal(supplier.Email))
+			Expect(resp.Data.Name).To(Equal(supplier.Name))
+			Expect(resp.Data.CategoryIds).To(Equal([]uint64{2}))
+			Expect(resp.Data.OpcIds).To(Equal([]uint64{2, 4}))
+			Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
 		})
 	})
 

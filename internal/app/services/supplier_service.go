@@ -30,6 +30,7 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	database.DBAPM(ctx).Model(&models.Supplier{}).Where("suppliers.id = ?", supplier.ID).
 		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
 		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("id").
+		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL").
 		Select(ss.getResponseField()).Scan(&resp)
 
 	resp.SupplierAddresses = supplier.SupplierAddresses
@@ -50,8 +51,9 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	query.Count(&total)
 
 	helpers.SetPage(query, params)
-	query.Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").Group("id").
+	query.Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
 		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("id").
+		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL").
 		Select(ss.getResponseField()).Scan(&suppliers)
 
 	resp := helpers.PrepareListResponse(suppliers, total)
