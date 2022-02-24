@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"reflect"
 
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	opcService "github.com/voonik/goConnect/oms/processing_center"
@@ -20,7 +21,7 @@ type OpcClientInterface interface {
 }
 
 func getOpcClient() OpcClientInterface {
-	if opcClient == nil {
+	if opcClient == nil || reflect.ValueOf(opcClient).IsNil() {
 		return new(OpcHelper)
 	}
 	return opcClient

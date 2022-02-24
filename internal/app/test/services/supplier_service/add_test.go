@@ -2,10 +2,12 @@ package supplier_service_test
 
 import (
 	"context"
+	"errors"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
@@ -21,6 +23,7 @@ var _ = Describe("AddSupplier", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
+		mocks.UnsetOpcMock()
 	})
 
 	Context("Adding new Supplier", func() {
@@ -170,8 +173,14 @@ var _ = Describe("AddSupplier", func() {
 
 	Context("Adding Supplier by SA user", func() {
 		It("Should return with success response", func() {
-			mocks.SetOpcMock()
-			defer mocks.UnsetOpcMock()
+			mockOpc := mocks.SetOpcMock()
+			mockOpc.On("ProcessingCenterList", context.Background()).Return(&opcPb.ProcessingCenterListResponse{
+				Data: []*opcPb.OpcDetail{
+					{OpcId: 201},
+					{OpcId: 202},
+				},
+			}, nil)
+
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				SupplierType: uint64(utils.Hlc),
@@ -185,6 +194,27 @@ var _ = Describe("AddSupplier", func() {
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Where("supplier_id = ?", res.Id).Count(&count)
 			Expect(count).To(Equal(4))
+		})
+
+		It("Should return with success response on OMS remote call error", func() {
+			mockOpc := mocks.SetOpcMock()
+			mockOpc.On("ProcessingCenterList", context.Background()).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
+
+			param := &supplierpb.SupplierParam{
+				Name:         "Name",
+				SupplierType: uint64(utils.Hlc),
+				OpcIds:       []uint64{1000, 2000},
+				IsSaUser:     true,
+			}
+
+			res, err := new(services.SupplierService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Where("supplier_id = ?", res.Id).Count(&count)
+			Expect(count).To(Equal(2))
 		})
 	})
 })

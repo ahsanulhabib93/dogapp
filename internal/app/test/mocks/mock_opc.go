@@ -5,24 +5,26 @@ import (
 
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	"github.com/voonik/ss2/internal/app/helpers"
+
+	mock "github.com/stretchr/testify/mock"
 )
 
-type MockOpcHelper struct{}
+type MockOpcHelper struct {
+	mock.Mock
+}
 
-func SetOpcMock() {
+func SetOpcMock() *MockOpcHelper {
 	mock := &MockOpcHelper{}
 	helpers.InjectMockOpcClientInstance(mock)
+
+	return mock
 }
 
 func UnsetOpcMock() {
 	helpers.InjectMockOpcClientInstance(nil)
 }
 
-func (s *MockOpcHelper) ProcessingCenterList(ctx context.Context) (*opcPb.ProcessingCenterListResponse, error) {
-	return &opcPb.ProcessingCenterListResponse{
-		Data: []*opcPb.OpcDetail{
-			{OpcId: 201},
-			{OpcId: 202},
-		},
-	}, nil
+func (_m *MockOpcHelper) ProcessingCenterList(ctx context.Context) (*opcPb.ProcessingCenterListResponse, error) {
+	args := _m.Called(ctx)
+	return args.Get(0).(*opcPb.ProcessingCenterListResponse), args.Error(1)
 }
