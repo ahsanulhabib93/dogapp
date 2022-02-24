@@ -29,7 +29,7 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	resp := helpers.SupplierDBResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).Where("suppliers.id = ?", supplier.ID).
 		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
-		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("id").
+		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("suppliers.id").
 		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL").
 		Select(ss.getResponseField()).Scan(&resp)
 
@@ -46,16 +46,15 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	log.Printf("ListSupplierParams: %+v", params)
 	suppliers := []helpers.SupplierDBResponse{}
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
-	query = helpers.PrepareFilter(query, params)
+	query = helpers.PrepareFilter(ctx, query, params).
+		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
+		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("suppliers.id").
+		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL")
+
 	var total uint64
 	query.Count(&total)
-
 	helpers.SetPage(query, params)
-	query.Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
-		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("id").
-		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL").
-		Select(ss.getResponseField()).Scan(&suppliers)
-
+	query.Select(ss.getResponseField()).Scan(&suppliers)
 	resp := helpers.PrepareListResponse(suppliers, total)
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
@@ -67,7 +66,7 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	resp := supplierpb.ListResponse{}
 
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
-	query = helpers.PrepareFilter(query, params)
+	query = helpers.PrepareFilter(ctx, query, params)
 
 	var total uint64
 	query.Count(&total)

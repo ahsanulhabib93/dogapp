@@ -6,11 +6,14 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 
+	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -19,6 +22,7 @@ var _ = Describe("ListSupplier", func() {
 	var ctx context.Context
 
 	BeforeEach(func() {
+		mocks.UnsetOpcMock()
 		test_utils.GetContext(&ctx)
 	})
 
@@ -157,5 +161,47 @@ var _ = Describe("ListSupplier", func() {
 		Expect(res.TotalCount).To(Equal(uint64(3)))
 		Expect(res.Data[0].Id).To(Equal(suppliers[0].ID))
 		Expect(res.Data[1].Id).To(Equal(suppliers[1].ID))
+	})
+
+	It("Should Respond with SA user related supplier", func() {
+		mockOpc := mocks.SetOpcMock()
+		mockOpc.On("ProcessingCenterList", mock.Anything).Return(&opcPb.ProcessingCenterListResponse{
+			Data: []*opcPb.OpcDetail{{OpcId: 1}, {OpcId: 2}, {OpcId: 3}}}, nil)
+
+		deletedAt := time.Now()
+		suppliers := []*models.Supplier{
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				Status: models.SupplierStatusActive,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 1},
+					{ProcessingCenterID: 2},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				Status: models.SupplierStatusActive,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 3, DeletedAt: &deletedAt},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				Status: models.SupplierStatusActive,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 3},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+		}
+
+		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
+			IsSaUser: true,
+		})
+
+		Expect(err).To(BeNil())
+		Expect(len(res.Data)).To(Equal(2))
+		Expect(res.TotalCount).To(Equal(uint64(2)))
+		Expect(res.Data[0].Id).To(Equal(suppliers[0].ID))
+		Expect(res.Data[0].OpcIds).To(Equal([]uint64{1, 2}))
+		Expect(res.Data[1].Id).To(Equal(suppliers[2].ID))
+		Expect(res.Data[1].OpcIds).To(Equal([]uint64{3}))
 	})
 })

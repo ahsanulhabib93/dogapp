@@ -81,7 +81,7 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 	return PrepareCategoreMapping(newIds)
 }
 
-func PrepareFilter(query *gorm.DB, params *supplierpb.ListParams) *gorm.DB {
+func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams) *gorm.DB {
 	if params.GetId() != 0 {
 		query = query.Where("suppliers.id = ?", params.GetId())
 	}
@@ -93,6 +93,9 @@ func PrepareFilter(query *gorm.DB, params *supplierpb.ListParams) *gorm.DB {
 	}
 	if params.GetEmail() != "" {
 		query = query.Where("suppliers.email = ?", params.GetEmail())
+	}
+	if params.IsSaUser {
+		query = query.Where("supplier_opc_mappings.processing_center_id IN (?)", GetOPCListForCurrentUser(ctx))
 	}
 	if status := params.GetStatus(); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
 		query = query.Where("suppliers.status = ?", params.GetStatus())
