@@ -214,6 +214,7 @@ func GetOPCListForCurrentUser(ctx context.Context) []uint64 {
 		opcList = append(opcList, opc.OpcId)
 	}
 
+	log.Printf("GetOPCListForCurrentUser: opc list = %v\n", opcList)
 	return opcList
 }
 
