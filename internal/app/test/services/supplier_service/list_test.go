@@ -193,7 +193,7 @@ var _ = Describe("ListSupplier", func() {
 		}
 
 		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
-			IsSaUser: true,
+			AssociatedWithCurrentUser: true,
 		})
 
 		Expect(err).To(BeNil())

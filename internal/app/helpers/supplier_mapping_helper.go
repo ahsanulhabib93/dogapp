@@ -94,7 +94,7 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	if params.GetEmail() != "" {
 		query = query.Where("suppliers.email = ?", params.GetEmail())
 	}
-	if params.IsSaUser {
+	if params.AssociatedWithCurrentUser {
 		query = query.Where("supplier_opc_mappings.processing_center_id IN (?)", GetOPCListForCurrentUser(ctx))
 	}
 	if status := params.GetStatus(); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
@@ -131,8 +131,8 @@ func PrepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
 	return categories
 }
 
-func PrepareOpcMapping(ids []uint64, isSa bool) []models.SupplierOpcMapping {
-	if isSa {
+func PrepareOpcMapping(ids []uint64, fetchOpc bool) []models.SupplierOpcMapping {
+	if fetchOpc {
 		ids = append(ids, GetOPCListForCurrentUser(context.Background())...)
 	}
 

@@ -182,10 +182,10 @@ var _ = Describe("AddSupplier", func() {
 			}, nil)
 
 			param := &supplierpb.SupplierParam{
-				Name:         "Name",
-				SupplierType: uint64(utils.Hlc),
-				OpcIds:       []uint64{5000, 6000},
-				IsSaUser:     true,
+				Name:                 "Name",
+				SupplierType:         uint64(utils.Hlc),
+				OpcIds:               []uint64{5000, 6000},
+				CreateWithOpcMapping: true,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -201,10 +201,10 @@ var _ = Describe("AddSupplier", func() {
 			mockOpc.On("ProcessingCenterList", context.Background()).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
 
 			param := &supplierpb.SupplierParam{
-				Name:         "Name",
-				SupplierType: uint64(utils.Hlc),
-				OpcIds:       []uint64{1000, 2000},
-				IsSaUser:     true,
+				Name:                 "Name",
+				SupplierType:         uint64(utils.Hlc),
+				OpcIds:               []uint64{1000, 2000},
+				CreateWithOpcMapping: true,
 			}
 
 			res, err := new(services.SupplierService).Add(ctx, param)
