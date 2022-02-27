@@ -27,8 +27,12 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	if params.GetEmail() != "" {
 		query = query.Where("suppliers.email = ?", params.GetEmail())
 	}
+	ids := params.GetOpcIds()
 	if params.AssociatedWithCurrentUser {
-		query = query.Where("supplier_opc_mappings.processing_center_id IN (?)", GetOPCListForCurrentUser(ctx))
+		ids = append(ids, GetOPCListForCurrentUser(ctx)...)
+	}
+	if len(ids) > 0 {
+		query = query.Where("supplier_opc_mappings.processing_center_id IN (?)", ids)
 	}
 	if status := params.GetStatus(); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
 		query = query.Where("suppliers.status = ?", params.GetStatus())

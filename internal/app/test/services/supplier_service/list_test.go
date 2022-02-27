@@ -96,6 +96,45 @@ var _ = Describe("ListSupplier", func() {
 		})
 	})
 
+	It("Should Respond with success with OPC filter", func() {
+		deletedAt := time.Now()
+		suppliers := []*models.Supplier{
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType: utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 1},
+					{ProcessingCenterID: 2},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType: utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 2},
+					{ProcessingCenterID: 3, DeletedAt: &deletedAt},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType:        utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{{ProcessingCenterID: 3}},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType:        utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{{ProcessingCenterID: 4}},
+			}),
+		}
+
+		test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{OpcIds: []uint64{1, 3}})
+		Expect(err).To(BeNil())
+		Expect(res.TotalCount).To(Equal(uint64(2)))
+		Expect(len(res.Data)).To(Equal(2))
+
+		Expect(res.Data[0].Id).To(Equal(suppliers[0].ID))
+		Expect(res.Data[0].OpcIds).To(Equal([]uint64{1}))
+		Expect(res.Data[1].Id).To(Equal(suppliers[2].ID))
+		Expect(res.Data[1].OpcIds).To(Equal([]uint64{3}))
+	})
+
 	It("Should Respond with all active suppliers", func() {
 		supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
 			SupplierCategoryMappings: []models.SupplierCategoryMapping{
