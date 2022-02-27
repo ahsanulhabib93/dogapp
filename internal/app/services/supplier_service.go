@@ -90,6 +90,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		Name:                     params.GetName(),
 		Email:                    params.GetEmail(),
 		Status:                   params.GetStatus(),
+		UserID:                   utils.GetCurrentUserID(ctx),
 		SupplierType:             utils.SupplierType(params.GetSupplierType()),
 		SupplierCategoryMappings: helpers.PrepareCategoreMapping(params.GetCategoryIds()),
 		SupplierOpcMappings:      helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),

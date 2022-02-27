@@ -3,6 +3,7 @@ package supplier_service_test
 import (
 	"context"
 	"errors"
+	"math/rand"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -11,6 +12,7 @@ import (
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
@@ -25,6 +27,20 @@ var _ = Describe("AddSupplier", func() {
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
 		mocks.UnsetOpcMock()
+
+		threadObject := &misc.ThreadObject{
+			VaccountId:    1,
+			PortalId:      1,
+			CurrentActId:  1,
+			XForwardedFor: "5079327",
+			UserData: &misc.UserData{
+				UserId: uint64(rand.Intn(100)),
+				Name:   "John",
+				Email:  "john@gmail.com",
+				Phone:  "8801855533367",
+			},
+		}
+		ctx = misc.SetInContextThreadObject(ctx, threadObject)
 	})
 
 	Context("Adding new Supplier", func() {
@@ -58,6 +74,7 @@ var _ = Describe("AddSupplier", func() {
 			Expect(res.Id).To(Equal(supplier.ID))
 			Expect(supplier.Email).To(Equal(param.Email))
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
+			Expect(supplier.UserID).To(Equal(utils.GetCurrentUserID(ctx)))
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
