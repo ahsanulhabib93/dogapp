@@ -31,7 +31,7 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	if params.AssociatedWithCurrentUser {
 		ids = append(ids, GetOPCListForCurrentUser(ctx)...)
 	}
-	if len(ids) > 0 {
+	if len(ids) > 0 || params.AssociatedWithCurrentUser {
 		query = query.Where("supplier_opc_mappings.processing_center_id IN (?)", ids)
 	}
 	if status := params.GetStatus(); status == models.SupplierStatusActive || status == models.SupplierStatusPending {

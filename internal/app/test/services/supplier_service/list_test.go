@@ -243,4 +243,39 @@ var _ = Describe("ListSupplier", func() {
 		Expect(res.Data[1].Id).To(Equal(suppliers[2].ID))
 		Expect(res.Data[1].OpcIds).To(Equal([]uint64{3}))
 	})
+
+	It("Should Respond with no supplier for user with no opc mapped", func() {
+		mockOpc := mocks.SetOpcMock()
+		mockOpc.On("ProcessingCenterList", mock.Anything).Return(&opcPb.ProcessingCenterListResponse{
+			Data: []*opcPb.OpcDetail{{OpcId: 1}, {OpcId: 2}, {OpcId: 3}}}, nil)
+
+		test_helper.CreateSupplier(ctx, &models.Supplier{
+			Status: models.SupplierStatusActive,
+			SupplierOpcMappings: []models.SupplierOpcMapping{
+				{ProcessingCenterID: 11},
+				{ProcessingCenterID: 12},
+			},
+		})
+		test_helper.CreateSupplier(ctx, &models.Supplier{
+			Status: models.SupplierStatusActive,
+			SupplierOpcMappings: []models.SupplierOpcMapping{
+				{ProcessingCenterID: 13},
+			},
+		})
+		test_helper.CreateSupplier(ctx, &models.Supplier{
+			Status: models.SupplierStatusActive,
+			SupplierOpcMappings: []models.SupplierOpcMapping{
+				{ProcessingCenterID: 13},
+			},
+		})
+		test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive})
+
+		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
+			AssociatedWithCurrentUser: true,
+		})
+
+		Expect(err).To(BeNil())
+		Expect(len(res.Data)).To(Equal(0))
+		Expect(res.TotalCount).To(Equal(uint64(0)))
+	})
 })
