@@ -37,7 +37,6 @@ var _ = Describe("GetSupplier", func() {
 			})
 			supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
 			paymentDetails := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
-
 			resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{Id: supplier.ID})
 
 			Expect(err).To(BeNil())
@@ -60,6 +59,7 @@ var _ = Describe("GetSupplier", func() {
 			Expect(resp.Data.PaymentAccountDetails[0].AccountNumber).To(Equal(paymentDetails.AccountNumber))
 			Expect(resp.Data.PaymentAccountDetails[0].BankId).To(Equal(paymentDetails.BankID))
 			Expect(resp.Data.PaymentAccountDetails[0].BranchName).To(Equal(paymentDetails.BranchName))
+			Expect(resp.Data.PaymentAccountDetails[0].BankName).To(Equal(resp.Data.PaymentAccountDetails[0].BankName))
 			Expect(resp.Data.PaymentAccountDetails[0].RoutingNumber).To(Equal(paymentDetails.RoutingNumber))
 			Expect(resp.Data.PaymentAccountDetails[0].IsDefault).To(Equal(paymentDetails.IsDefault))
 			Expect(resp.Data.PaymentAccountDetails[0].AccountType).To(Equal(uint64(paymentDetails.AccountType)))

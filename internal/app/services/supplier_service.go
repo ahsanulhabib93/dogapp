@@ -20,11 +20,15 @@ type SupplierService struct{}
 func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSupplierParam) (*supplierpb.SupplierResponse, error) {
 	log.Printf("GetSupplierParam: %+v", params)
 	supplier := models.Supplier{}
-	result := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses").
-		Preload("PaymentAccountDetails").First(&supplier, params.GetId())
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses").First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		return &supplierpb.SupplierResponse{Success: false}, nil
 	}
+
+	paymentDetails := []*supplierpb.PaymentAccountDetailObject{}
+	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Where("supplier_id = ?", params.GetId()).
+		Joins(models.GetBankJoinStr()).Select("payment_account_details.*, banks.name bank_name").
+		Scan(&paymentDetails)
 
 	resp := helpers.SupplierDBResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).Where("suppliers.id = ?", supplier.ID).
@@ -34,11 +38,11 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 		Select(ss.getResponseField()).Scan(&resp)
 
 	resp.SupplierAddresses = supplier.SupplierAddresses
-	resp.PaymentAccountDetails = supplier.PaymentAccountDetails
+	supplierResp := helpers.PrepareSupplierResponse(resp)
+	supplierResp.PaymentAccountDetails = paymentDetails
 	log.Printf("GetSupplierResponse: %+v", resp)
 	return &supplierpb.SupplierResponse{
-		Success: true,
-		Data:    helpers.PrepareSupplierResponse(resp)}, nil
+		Success: true, Data: supplierResp}, nil
 }
 
 // List ...
