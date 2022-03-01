@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
@@ -174,7 +175,7 @@ var _ = Describe("AddSupplier", func() {
 	Context("Adding Supplier by SA user", func() {
 		It("Should return with success response", func() {
 			mockOpc := mocks.SetOpcMock()
-			mockOpc.On("ProcessingCenterList", context.Background()).Return(&opcPb.ProcessingCenterListResponse{
+			mockOpc.On("ProcessingCenterList", mock.Anything).Return(&opcPb.ProcessingCenterListResponse{
 				Data: []*opcPb.OpcDetail{
 					{OpcId: 201},
 					{OpcId: 202},
@@ -198,7 +199,7 @@ var _ = Describe("AddSupplier", func() {
 
 		It("Should return with success response on OMS remote call error", func() {
 			mockOpc := mocks.SetOpcMock()
-			mockOpc.On("ProcessingCenterList", context.Background()).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
+			mockOpc.On("ProcessingCenterList", mock.Anything).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
 
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",

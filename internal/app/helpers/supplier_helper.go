@@ -68,9 +68,9 @@ func PrepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
 	return categories
 }
 
-func PrepareOpcMapping(ids []uint64, fetchOpc bool) []models.SupplierOpcMapping {
+func PrepareOpcMapping(ctx context.Context, ids []uint64, fetchOpc bool) []models.SupplierOpcMapping {
 	if fetchOpc {
-		ids = append(ids, GetOPCListForCurrentUser(context.Background())...)
+		ids = append(ids, GetOPCListForCurrentUser(ctx)...)
 	}
 
 	processCenters := []models.SupplierOpcMapping{}
