@@ -3,11 +3,9 @@ package supplier_service_test
 import (
 	"context"
 	"errors"
-	"math/rand"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/mock"
 
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
@@ -23,6 +21,7 @@ import (
 
 var _ = Describe("AddSupplier", func() {
 	var ctx context.Context
+	var userId uint64 = uint64(101)
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
@@ -34,7 +33,7 @@ var _ = Describe("AddSupplier", func() {
 			CurrentActId:  1,
 			XForwardedFor: "5079327",
 			UserData: &misc.UserData{
-				UserId: uint64(rand.Intn(100)),
+				UserId: userId,
 				Name:   "John",
 				Email:  "john@gmail.com",
 				Phone:  "8801855533367",
@@ -74,7 +73,7 @@ var _ = Describe("AddSupplier", func() {
 			Expect(res.Id).To(Equal(supplier.ID))
 			Expect(supplier.Email).To(Equal(param.Email))
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
-			Expect(supplier.UserID).To(Equal(utils.GetCurrentUserID(ctx)))
+			Expect(*supplier.UserID).To(Equal(userId))
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
@@ -192,7 +191,7 @@ var _ = Describe("AddSupplier", func() {
 	Context("Adding Supplier by SA user", func() {
 		It("Should return with success response", func() {
 			mockOpc := mocks.SetOpcMock()
-			mockOpc.On("ProcessingCenterList", mock.Anything).Return(&opcPb.ProcessingCenterListResponse{
+			mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
 				Data: []*opcPb.OpcDetail{
 					{OpcId: 201},
 					{OpcId: 202},
@@ -216,7 +215,7 @@ var _ = Describe("AddSupplier", func() {
 
 		It("Should return with success response on OMS remote call error", func() {
 			mockOpc := mocks.SetOpcMock()
-			mockOpc.On("ProcessingCenterList", mock.Anything).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
+			mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
 
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",

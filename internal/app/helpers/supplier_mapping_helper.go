@@ -9,6 +9,7 @@ import (
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
+	"github.com/voonik/ss2/internal/app/utils"
 )
 
 func UpdateSupplierOpcMapping(ctx context.Context, id, opcId uint64, delete bool) *supplierpb.BasicApiResponse {
@@ -77,7 +78,8 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 func GetOPCListForCurrentUser(ctx context.Context) []uint64 {
 	opcList := []uint64{}
 
-	resp, err := getOpcClient().ProcessingCenterList(ctx)
+	userId := *utils.GetCurrentUserID(ctx)
+	resp, err := getOpcClient().ProcessingCenterList(ctx, userId)
 	if err != nil {
 		log.Printf("GetOPCListForCurrentUser: Failed to fetch OPC list. Error: %v\n", err)
 		return opcList
