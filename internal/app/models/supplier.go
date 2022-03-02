@@ -18,6 +18,7 @@ type Supplier struct {
 	Name                     string `gorm:"not null" valid:"required"`
 	Status                   string `gorm:"default:'Pending'"`
 	Email                    string
+	UserID                   *uint64                `json:"user_id"`
 	SupplierType             utils.SupplierType     `json:"supplier_type" valid:"required"`
 	SupplierAddresses        []SupplierAddress      `json:"supplier_addresses"`
 	PaymentAccountDetails    []PaymentAccountDetail `json:"payment_account_details"`

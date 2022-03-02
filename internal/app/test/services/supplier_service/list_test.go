@@ -7,19 +7,38 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	"github.com/voonik/goFramework/pkg/misc"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("ListSupplier", func() {
 	var ctx context.Context
+	var userId uint64 = uint64(101)
 
 	BeforeEach(func() {
+		mocks.UnsetOpcMock()
 		test_utils.GetContext(&ctx)
+
+		threadObject := &misc.ThreadObject{
+			VaccountId:    1,
+			PortalId:      1,
+			CurrentActId:  1,
+			XForwardedFor: "5079327",
+			UserData: &misc.UserData{
+				UserId: userId,
+				Name:   "John",
+				Email:  "john@gmail.com",
+				Phone:  "8801855533367",
+			},
+		}
+		ctx = misc.SetInContextThreadObject(ctx, threadObject)
 	})
 
 	Context("Supplier List", func() {
@@ -92,6 +111,45 @@ var _ = Describe("ListSupplier", func() {
 		})
 	})
 
+	It("Should Respond with success with OPC filter", func() {
+		deletedAt := time.Now()
+		suppliers := []*models.Supplier{
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType: utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 1},
+					{ProcessingCenterID: 2},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType: utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 2},
+					{ProcessingCenterID: 3, DeletedAt: &deletedAt},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType:        utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{{ProcessingCenterID: 3}},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType:        utils.Hlc,
+				SupplierOpcMappings: []models.SupplierOpcMapping{{ProcessingCenterID: 4}},
+			}),
+		}
+
+		test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{OpcIds: []uint64{1, 3}})
+		Expect(err).To(BeNil())
+		Expect(res.TotalCount).To(Equal(uint64(2)))
+		Expect(len(res.Data)).To(Equal(2))
+
+		Expect(res.Data[0].Id).To(Equal(suppliers[0].ID))
+		Expect(res.Data[0].OpcIds).To(Equal([]uint64{1}))
+		Expect(res.Data[1].Id).To(Equal(suppliers[2].ID))
+		Expect(res.Data[1].OpcIds).To(Equal([]uint64{3}))
+	})
+
 	It("Should Respond with all active suppliers", func() {
 		supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
 			SupplierCategoryMappings: []models.SupplierCategoryMapping{
@@ -157,5 +215,82 @@ var _ = Describe("ListSupplier", func() {
 		Expect(res.TotalCount).To(Equal(uint64(3)))
 		Expect(res.Data[0].Id).To(Equal(suppliers[0].ID))
 		Expect(res.Data[1].Id).To(Equal(suppliers[1].ID))
+	})
+
+	It("Should Respond with SA user related supplier", func() {
+		mockOpc := mocks.SetOpcMock()
+		mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
+			Data: []*opcPb.OpcDetail{{OpcId: 1}, {OpcId: 2}, {OpcId: 3}}}, nil)
+
+		deletedAt := time.Now()
+		suppliers := []*models.Supplier{
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				Status: models.SupplierStatusActive,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 1},
+					{ProcessingCenterID: 2},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				Status: models.SupplierStatusActive,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 3, DeletedAt: &deletedAt},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{
+				Status: models.SupplierStatusActive,
+				SupplierOpcMappings: []models.SupplierOpcMapping{
+					{ProcessingCenterID: 3},
+				},
+			}),
+			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+		}
+
+		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
+			AssociatedWithCurrentUser: true,
+		})
+
+		Expect(err).To(BeNil())
+		Expect(len(res.Data)).To(Equal(2))
+		Expect(res.TotalCount).To(Equal(uint64(2)))
+		Expect(res.Data[0].Id).To(Equal(suppliers[0].ID))
+		Expect(res.Data[0].OpcIds).To(Equal([]uint64{1, 2}))
+		Expect(res.Data[1].Id).To(Equal(suppliers[2].ID))
+		Expect(res.Data[1].OpcIds).To(Equal([]uint64{3}))
+	})
+
+	It("Should Respond with no supplier for user with no opc mapped", func() {
+		mockOpc := mocks.SetOpcMock()
+		mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
+			Data: []*opcPb.OpcDetail{{OpcId: 1}, {OpcId: 2}, {OpcId: 3}}}, nil)
+
+		test_helper.CreateSupplier(ctx, &models.Supplier{
+			Status: models.SupplierStatusActive,
+			SupplierOpcMappings: []models.SupplierOpcMapping{
+				{ProcessingCenterID: 11},
+				{ProcessingCenterID: 12},
+			},
+		})
+		test_helper.CreateSupplier(ctx, &models.Supplier{
+			Status: models.SupplierStatusActive,
+			SupplierOpcMappings: []models.SupplierOpcMapping{
+				{ProcessingCenterID: 13},
+			},
+		})
+		test_helper.CreateSupplier(ctx, &models.Supplier{
+			Status: models.SupplierStatusActive,
+			SupplierOpcMappings: []models.SupplierOpcMapping{
+				{ProcessingCenterID: 13},
+			},
+		})
+		test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive})
+
+		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
+			AssociatedWithCurrentUser: true,
+		})
+
+		Expect(err).To(BeNil())
+		Expect(len(res.Data)).To(Equal(0))
+		Expect(res.TotalCount).To(Equal(uint64(0)))
 	})
 })

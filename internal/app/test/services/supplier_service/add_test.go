@@ -2,24 +2,44 @@ package supplier_service_test
 
 import (
 	"context"
+	"errors"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("AddSupplier", func() {
 	var ctx context.Context
+	var userId uint64 = uint64(101)
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
+		mocks.UnsetOpcMock()
+
+		threadObject := &misc.ThreadObject{
+			VaccountId:    1,
+			PortalId:      1,
+			CurrentActId:  1,
+			XForwardedFor: "5079327",
+			UserData: &misc.UserData{
+				UserId: userId,
+				Name:   "John",
+				Email:  "john@gmail.com",
+				Phone:  "8801855533367",
+			},
+		}
+		ctx = misc.SetInContextThreadObject(ctx, threadObject)
 	})
 
 	Context("Adding new Supplier", func() {
@@ -53,6 +73,7 @@ var _ = Describe("AddSupplier", func() {
 			Expect(res.Id).To(Equal(supplier.ID))
 			Expect(supplier.Email).To(Equal(param.Email))
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
+			Expect(*supplier.UserID).To(Equal(userId))
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
@@ -147,7 +168,7 @@ var _ = Describe("AddSupplier", func() {
 		})
 	})
 
-	Context("Adding Supplier with Sa Mapping", func() {
+	Context("Adding Supplier with OPC Mapping", func() {
 		It("Should return error response", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
@@ -167,4 +188,50 @@ var _ = Describe("AddSupplier", func() {
 		})
 	})
 
+	Context("Adding Supplier by SA user", func() {
+		It("Should return with success response", func() {
+			mockOpc := mocks.SetOpcMock()
+			mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
+				Data: []*opcPb.OpcDetail{
+					{OpcId: 201},
+					{OpcId: 202},
+				},
+			}, nil)
+
+			param := &supplierpb.SupplierParam{
+				Name:                 "Name",
+				SupplierType:         uint64(utils.Hlc),
+				OpcIds:               []uint64{5000, 6000},
+				CreateWithOpcMapping: true,
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Where("supplier_id = ?", res.Id).Count(&count)
+			Expect(count).To(Equal(4))
+		})
+
+		It("Should return with success response on OMS remote call error", func() {
+			mockOpc := mocks.SetOpcMock()
+			mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
+
+			param := &supplierpb.SupplierParam{
+				Name:                 "Name",
+				SupplierType:         uint64(utils.Hlc),
+				OpcIds:               []uint64{1000, 2000},
+				CreateWithOpcMapping: true,
+			}
+
+			res, err := new(services.SupplierService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Where("supplier_id = ?", res.Id).Count(&count)
+			Expect(count).To(Equal(2))
+		})
+	})
 })

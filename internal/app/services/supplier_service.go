@@ -20,25 +20,29 @@ type SupplierService struct{}
 func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSupplierParam) (*supplierpb.SupplierResponse, error) {
 	log.Printf("GetSupplierParam: %+v", params)
 	supplier := models.Supplier{}
-	result := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses").
-		Preload("PaymentAccountDetails").First(&supplier, params.GetId())
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses").First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		return &supplierpb.SupplierResponse{Success: false}, nil
 	}
 
+	paymentDetails := []*supplierpb.PaymentAccountDetailObject{}
+	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Where("supplier_id = ?", params.GetId()).
+		Joins(models.GetBankJoinStr()).Select("payment_account_details.*, banks.name bank_name").
+		Scan(&paymentDetails)
+
 	resp := helpers.SupplierDBResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).Where("suppliers.id = ?", supplier.ID).
 		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
-		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("id").
+		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("suppliers.id").
 		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL").
 		Select(ss.getResponseField()).Scan(&resp)
 
 	resp.SupplierAddresses = supplier.SupplierAddresses
-	resp.PaymentAccountDetails = supplier.PaymentAccountDetails
+	supplierResp := helpers.PrepareSupplierResponse(resp)
+	supplierResp.PaymentAccountDetails = paymentDetails
 	log.Printf("GetSupplierResponse: %+v", resp)
 	return &supplierpb.SupplierResponse{
-		Success: true,
-		Data:    helpers.PrepareSupplierResponse(resp)}, nil
+		Success: true, Data: supplierResp}, nil
 }
 
 // List ...
@@ -46,16 +50,15 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	log.Printf("ListSupplierParams: %+v", params)
 	suppliers := []helpers.SupplierDBResponse{}
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
-	query = helpers.PrepareFilter(query, params)
+	query = helpers.PrepareFilter(ctx, query, params).
+		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
+		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("suppliers.id").
+		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL")
+
 	var total uint64
 	query.Count(&total)
-
 	helpers.SetPage(query, params)
-	query.Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
-		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("id").
-		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL").
-		Select(ss.getResponseField()).Scan(&suppliers)
-
+	query.Select(ss.getResponseField()).Scan(&suppliers)
 	resp := helpers.PrepareListResponse(suppliers, total)
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
@@ -67,7 +70,7 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	resp := supplierpb.ListResponse{}
 
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
-	query = helpers.PrepareFilter(query, params)
+	query = helpers.PrepareFilter(ctx, query, params)
 
 	var total uint64
 	query.Count(&total)
@@ -91,9 +94,10 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		Name:                     params.GetName(),
 		Email:                    params.GetEmail(),
 		Status:                   params.GetStatus(),
+		UserID:                   utils.GetCurrentUserID(ctx),
 		SupplierType:             utils.SupplierType(params.GetSupplierType()),
 		SupplierCategoryMappings: helpers.PrepareCategoreMapping(params.GetCategoryIds()),
-		SupplierOpcMappings:      helpers.PrepareOpcMapping(params.GetOpcIds()),
+		SupplierOpcMappings:      helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
 		SupplierAddresses:        helpers.PrepareSupplierAddress(params),
 	}
 

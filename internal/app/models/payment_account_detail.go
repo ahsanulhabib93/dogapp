@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 	"github.com/voonik/goFramework/pkg/database"
@@ -38,6 +39,11 @@ func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 		if result.RecordNotFound() {
 			db.AddError(errors.New("Invalid Bank Name"))
 		}
+	}
+
+	if paymentAccount.AccountType == utils.Bank &&
+		(paymentAccount.BankID == 0 || len(strings.TrimSpace(paymentAccount.BranchName)) == 0) {
+		db.AddError(errors.New("For Bank account type BankID and BranchName needed"))
 	}
 }
 
