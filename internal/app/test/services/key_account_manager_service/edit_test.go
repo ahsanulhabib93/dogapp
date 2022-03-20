@@ -35,7 +35,7 @@ var _ = Describe("EditKeyAccountManager", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("KeyAccountManager Edited Successfully"))
+			Expect(res.Message).To(Equal("Key Account Manager Edited Successfully"))
 
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&accountManager, accountManager.ID)
 			Expect(accountManager.Email).To(Equal(param.Email))
@@ -56,7 +56,7 @@ var _ = Describe("EditKeyAccountManager", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("KeyAccountManager Edited Successfully"))
+			Expect(res.Message).To(Equal("Key Account Manager Edited Successfully"))
 
 			updatedMananager := &models.KeyAccountManager{}
 			database.DBAPM(ctx).Model(accountManager).First(&updatedMananager, accountManager.ID)
@@ -73,7 +73,7 @@ var _ = Describe("EditKeyAccountManager", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("KeyAccountManager Not Found"))
+			Expect(res.Message).To(Equal("Key Account Manager Not Found"))
 		})
 	})
 })

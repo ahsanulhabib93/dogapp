@@ -43,7 +43,7 @@ var _ = Describe("AddSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("SupplierAddress Added Successfully"))
+			Expect(res.Message).To(Equal("Supplier Address Added Successfully"))
 
 			addresses := []*models.SupplierAddress{{}}
 			database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Find(&addresses)
@@ -89,7 +89,7 @@ var _ = Describe("AddSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("SupplierAddress Added Successfully"))
+			Expect(res.Message).To(Equal("Supplier Address Added Successfully"))
 
 			addresses := []*models.SupplierAddress{{}}
 			database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Find(&addresses)
@@ -135,7 +135,7 @@ var _ = Describe("AddSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("SupplierAddress Added Successfully"))
+			Expect(res.Message).To(Equal("Supplier Address Added Successfully"))
 
 			addresses := []*models.SupplierAddress{{}}
 			database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Find(&addresses)

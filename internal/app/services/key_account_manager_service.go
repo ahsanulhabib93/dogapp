@@ -41,9 +41,9 @@ func (kams *KeyAccountManagerService) Add(ctx context.Context, params *kampb.Key
 		err := database.DBAPM(ctx).Save(&keyAccountManager)
 
 		if err != nil && err.Error != nil {
-			resp.Message = fmt.Sprintf("Error while creating KeyAccountManager: %s", err.Error)
+			resp.Message = fmt.Sprintf("Error while creating Key Account Manager: %s", err.Error)
 		} else {
-			resp.Message = "KeyAccountManager Added Successfully"
+			resp.Message = "Key Account Manager Added Successfully"
 			resp.Success = true
 		}
 	}
@@ -59,7 +59,7 @@ func (kams *KeyAccountManagerService) Edit(ctx context.Context, params *kampb.Ke
 	keyAccountManager := models.KeyAccountManager{}
 	result := database.DBAPM(ctx).Model(&models.KeyAccountManager{}).First(&keyAccountManager, params.GetId())
 	if result.RecordNotFound() {
-		resp.Message = "KeyAccountManager Not Found"
+		resp.Message = "Key Account Manager Not Found"
 	} else {
 		err := database.DBAPM(ctx).Model(&keyAccountManager).Updates(models.KeyAccountManager{
 			Name:  params.GetName(),
@@ -67,9 +67,9 @@ func (kams *KeyAccountManagerService) Edit(ctx context.Context, params *kampb.Ke
 			Phone: params.GetPhone(),
 		})
 		if err != nil && err.Error != nil {
-			resp.Message = fmt.Sprintf("Error while updating KeyAccountManager: %s", err.Error)
+			resp.Message = fmt.Sprintf("Error while updating Key Account Manager: %s", err.Error)
 		} else {
-			resp.Message = "KeyAccountManager Edited Successfully"
+			resp.Message = "Key Account Manager Edited Successfully"
 			resp.Success = true
 		}
 	}
