@@ -191,7 +191,7 @@ var _ = Describe("AddSupplier", func() {
 	Context("Adding Supplier by SA user", func() {
 		It("Should return with success response", func() {
 			mockOpc := mocks.SetOpcMock()
-			mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
+			mockOpc.On("GetProcessingCenterListWithUserId", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
 				Data: []*opcPb.OpcDetail{
 					{OpcId: 201},
 					{OpcId: 202},
@@ -215,7 +215,7 @@ var _ = Describe("AddSupplier", func() {
 
 		It("Should return with success response on OMS remote call error", func() {
 			mockOpc := mocks.SetOpcMock()
-			mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
+			mockOpc.On("GetProcessingCenterListWithUserId", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
 
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",

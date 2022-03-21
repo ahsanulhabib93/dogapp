@@ -79,7 +79,7 @@ func GetOPCListForCurrentUser(ctx context.Context) []uint64 {
 	opcList := []uint64{}
 
 	userId := *utils.GetCurrentUserID(ctx)
-	resp, err := getOpcClient().ProcessingCenterList(ctx, userId)
+	resp, err := getOpcClient().GetProcessingCenterListWithUserId(ctx, userId)
 	if err != nil {
 		log.Printf("GetOPCListForCurrentUser: Failed to fetch OPC list. Error: %v\n", err)
 		return opcList
