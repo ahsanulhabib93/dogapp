@@ -49,10 +49,10 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 		if err != nil && err.Error != nil {
-			resp.Message = fmt.Sprintf("Error while creating PaymentAccountDetail: %s", err.Error)
+			resp.Message = fmt.Sprintf("Error while creating Payment Account Detail: %s", err.Error)
 		} else {
 			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
-			resp.Message = "PaymentAccountDetail Added Successfully"
+			resp.Message = "Payment Account Detail Added Successfully"
 			resp.Success = true
 		}
 	}

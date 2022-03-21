@@ -180,7 +180,7 @@ var _ = Describe("ListSupplier", func() {
 		test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
 		res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{OpcId: uint64(1)})
 		Expect(err).To(BeNil())
-		Expect(res.TotalCount).To(Equal(uint64(2)))
+		Expect(res.TotalCount).To(Equal(uint64(1)))
 		Expect(len(res.Data)).To(Equal(1))
 
 		Expect(res.Data[0].Id).To(Equal(suppliers[0].ID))

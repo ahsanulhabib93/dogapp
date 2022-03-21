@@ -45,7 +45,7 @@ var _ = Describe("EditSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("SupplierAddress Edited Successfully"))
+			Expect(res.Message).To(Equal("Supplier Address Edited Successfully"))
 
 			database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&address, address.ID)
 			Expect(address.Firstname).To(Equal(param.Firstname))
@@ -95,7 +95,7 @@ var _ = Describe("EditSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("SupplierAddress Edited Successfully"))
+			Expect(res.Message).To(Equal("Supplier Address Edited Successfully"))
 
 			database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&address2, address2.ID)
 			Expect(address2.IsDefault).To(Equal(true))
@@ -119,7 +119,7 @@ var _ = Describe("EditSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("SupplierAddress Edited Successfully"))
+			Expect(res.Message).To(Equal("Supplier Address Edited Successfully"))
 
 			updatedAddress := &models.SupplierAddress{}
 			database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&updatedAddress, address.ID)
@@ -145,7 +145,7 @@ var _ = Describe("EditSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("SupplierAddress Not Found"))
+			Expect(res.Message).To(Equal("Supplier Address Not Found"))
 		})
 	})
 
@@ -162,7 +162,7 @@ var _ = Describe("EditSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while updating SupplierAddress: Invalid Phone Number"))
+			Expect(res.Message).To(Equal("Error while updating Supplier Address: Invalid Phone Number"))
 		})
 	})
 })

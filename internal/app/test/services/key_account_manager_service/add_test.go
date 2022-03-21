@@ -34,7 +34,7 @@ var _ = Describe("AddKeyAccountManager", func() {
 			res, err := new(services.KeyAccountManagerService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("KeyAccountManager Added Successfully"))
+			Expect(res.Message).To(Equal("Key Account Manager Added Successfully"))
 
 			accountManagers := []*models.KeyAccountManager{{}}
 			database.DBAPM(ctx).Model(supplier).Association("KeyAccountManagers").Find(&accountManagers)
@@ -71,7 +71,7 @@ var _ = Describe("AddKeyAccountManager", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating KeyAccountManager: Name can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Key Account Manager: Name can't be blank"))
 		})
 	})
 })

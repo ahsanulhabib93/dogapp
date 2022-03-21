@@ -40,7 +40,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("PaymentAccountDetail Added Successfully"))
+			Expect(res.Message).To(Equal("Payment Account Detail Added Successfully"))
 
 			paymentAccounts := []*models.PaymentAccountDetail{{}}
 			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
@@ -78,7 +78,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("PaymentAccountDetail Added Successfully"))
+			Expect(res.Message).To(Equal("Payment Account Detail Added Successfully"))
 
 			paymentAccounts := []*models.PaymentAccountDetail{{}}
 			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
@@ -124,7 +124,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: account_name can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: account_name can't be blank"))
 		})
 	})
 
@@ -140,7 +140,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: Invalid Account SubType; account_type can't be blank; account_sub_type can't be blank; account_number can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: Invalid Account SubType; account_type can't be blank; account_sub_type can't be blank; account_number can't be blank"))
 		})
 	})
 
@@ -162,7 +162,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: Default Payment Account is required"))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: Default Payment Account is required"))
 		})
 	})
 
@@ -183,7 +183,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: Invalid Account SubType"))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: Invalid Account SubType"))
 		})
 	})
 
@@ -203,7 +203,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: Invalid Bank Name"))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: Invalid Bank Name"))
 		})
 	})
 
@@ -224,7 +224,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: For Bank account type BankID and BranchName needed"))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: For Bank account type BankID and BranchName needed"))
 		})
 		It("Should return error response for empty branch name", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
@@ -242,7 +242,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating PaymentAccountDetail: For Bank account type BankID and BranchName needed"))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: For Bank account type BankID and BranchName needed"))
 		})
 	})
 })

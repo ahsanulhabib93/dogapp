@@ -54,7 +54,7 @@ func (sas *SupplierAddressService) Add(ctx context.Context, params *addresspb.Su
 			resp.Message = fmt.Sprintf("Error while creating Supplier Address: %s", err.Error)
 		} else {
 			helpers.UpdateDefaultAddress(ctx, &supplierAddress)
-			resp.Message = "SupplierAddress Added Successfully"
+			resp.Message = "Supplier Address Added Successfully"
 			resp.Success = true
 		}
 	}
@@ -70,7 +70,7 @@ func (sas *SupplierAddressService) Edit(ctx context.Context, params *addresspb.S
 	supplierAddress := models.SupplierAddress{}
 	result := database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&supplierAddress, params.GetId())
 	if result.RecordNotFound() {
-		resp.Message = "SupplierAddress Not Found"
+		resp.Message = "Supplier Address Not Found"
 	} else {
 		if supplierAddress.IsDefault && !params.GetIsDefault() {
 			resp.Message = "Default address is required"
@@ -91,10 +91,10 @@ func (sas *SupplierAddressService) Edit(ctx context.Context, params *addresspb.S
 			})
 
 			if err != nil && err.Error != nil {
-				resp.Message = fmt.Sprintf("Error while updating SupplierAddress: %s", err.Error)
+				resp.Message = fmt.Sprintf("Error while updating Supplier Address: %s", err.Error)
 			} else {
 				helpers.UpdateDefaultAddress(ctx, &supplierAddress)
-				resp.Message = "SupplierAddress Edited Successfully"
+				resp.Message = "Supplier Address Edited Successfully"
 				resp.Success = true
 			}
 		}
