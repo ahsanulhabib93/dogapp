@@ -90,6 +90,11 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierParam) (*supplierpb.BasicApiResponse, error) {
 	log.Printf("AddSupplierParams: %+v", params)
 	resp := supplierpb.BasicApiResponse{Success: false}
+	if err := helpers.IsOpcListValid(ctx, params.GetOpcIds()); err != nil {
+		resp.Message = err.Error()
+		return &resp, nil
+	}
+
 	supplier := models.Supplier{
 		Name:                     params.GetName(),
 		Email:                    params.GetEmail(),

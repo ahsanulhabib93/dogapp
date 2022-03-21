@@ -99,6 +99,10 @@ func GetOPCListForCurrentUser(ctx context.Context) []uint64 {
 }
 
 func IsOpcListValid(ctx context.Context, opcIds []uint64) error {
+	if len(opcIds) == 0 {
+		return nil
+	}
+
 	resp, err := getOpcClient().GetProcessingCenterListWithOpcIds(ctx, opcIds)
 	if err != nil {
 		log.Printf("IsOpcListValid: failed to fetch opc list. Error: %v\n", err)

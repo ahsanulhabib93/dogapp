@@ -44,6 +44,13 @@ var _ = Describe("AddSupplier", func() {
 
 	Context("Adding new Supplier", func() {
 		It("Should create supplier and return success response", func() {
+			opcIds := []uint64{5000, 6000}
+			mockOpc := mocks.SetOpcMock()
+			mockOpc.On("GetProcessingCenterListWithOpcIds", ctx, opcIds).Return(&opcPb.ProcessingCenterListResponse{Data: []*opcPb.OpcDetail{
+				{OpcId: 5000},
+				{OpcId: 6000},
+			}}, nil)
+
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				Email:        "Email",
@@ -60,7 +67,7 @@ var _ = Describe("AddSupplier", func() {
 				Phone:        "01123456789",
 				GstNumber:    "GstNumber",
 				CategoryIds:  []uint64{1, 30},
-				OpcIds:       []uint64{5000, 6000},
+				OpcIds:       opcIds,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -170,12 +177,19 @@ var _ = Describe("AddSupplier", func() {
 
 	Context("Adding Supplier with OPC Mapping", func() {
 		It("Should return error response", func() {
+			opcIds := []uint64{5000, 6000}
+			mockOpc := mocks.SetOpcMock()
+			mockOpc.On("GetProcessingCenterListWithOpcIds", ctx, opcIds).Return(&opcPb.ProcessingCenterListResponse{Data: []*opcPb.OpcDetail{
+				{OpcId: 5000},
+				{OpcId: 6000},
+			}}, nil)
+
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
 				Email:    "Email",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
-				OpcIds:   []uint64{5000, 6000},
+				OpcIds:   opcIds,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			supplier := &models.Supplier{}
@@ -184,13 +198,36 @@ var _ = Describe("AddSupplier", func() {
 			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierOpcMappings").First(&supplier)
 			Expect(len(supplier.SupplierOpcMappings)).To(Equal(0))
+		})
 
+		It("Should return error response for invalid OPC ids", func() {
+			opcIds := []uint64{5000, 6000}
+			mockOpc := mocks.SetOpcMock()
+			mockOpc.On("GetProcessingCenterListWithOpcIds", ctx, opcIds).Return(&opcPb.ProcessingCenterListResponse{Data: []*opcPb.OpcDetail{}}, nil)
+
+			param := &supplierpb.SupplierParam{
+				Name:     "Name",
+				Email:    "Email",
+				Address1: "Address1",
+				Zipcode:  "Zipcode",
+				OpcIds:   opcIds,
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("invalid opc id #(5000)"))
 		})
 	})
 
 	Context("Adding Supplier by SA user", func() {
 		It("Should return with success response", func() {
+			opcIds := []uint64{5000, 6000}
 			mockOpc := mocks.SetOpcMock()
+			mockOpc.On("GetProcessingCenterListWithOpcIds", ctx, opcIds).Return(&opcPb.ProcessingCenterListResponse{Data: []*opcPb.OpcDetail{
+				{OpcId: 5000},
+				{OpcId: 6000},
+			}}, nil)
+
 			mockOpc.On("GetProcessingCenterListWithUserId", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
 				Data: []*opcPb.OpcDetail{
 					{OpcId: 201},
@@ -201,7 +238,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
 				SupplierType:         uint64(utils.Hlc),
-				OpcIds:               []uint64{5000, 6000},
+				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
@@ -214,13 +251,18 @@ var _ = Describe("AddSupplier", func() {
 		})
 
 		It("Should return with success response on OMS remote call error", func() {
+			opcIds := []uint64{5000, 6000}
 			mockOpc := mocks.SetOpcMock()
 			mockOpc.On("GetProcessingCenterListWithUserId", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{}, errors.New("Failing here"))
+			mockOpc.On("GetProcessingCenterListWithOpcIds", ctx, opcIds).Return(&opcPb.ProcessingCenterListResponse{Data: []*opcPb.OpcDetail{
+				{OpcId: 5000},
+				{OpcId: 6000},
+			}}, nil)
 
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
 				SupplierType:         uint64(utils.Hlc),
-				OpcIds:               []uint64{1000, 2000},
+				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
 			}
 
