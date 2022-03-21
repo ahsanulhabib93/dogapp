@@ -18,6 +18,7 @@ func InjectMockOpcClientInstance(mockObj OpcClientInterface) {
 
 type OpcClientInterface interface {
 	GetProcessingCenterListWithUserId(ctx context.Context, userId uint64) (*opcPb.ProcessingCenterListResponse, error)
+	GetProcessingCenterListWithOpcIds(ctx context.Context, opcIds []uint64) (*opcPb.ProcessingCenterListResponse, error)
 }
 
 func getOpcClient() OpcClientInterface {
@@ -29,4 +30,8 @@ func getOpcClient() OpcClientInterface {
 
 func (s *OpcHelper) GetProcessingCenterListWithUserId(ctx context.Context, userId uint64) (*opcPb.ProcessingCenterListResponse, error) {
 	return opcService.ProcessingCenter().ProcessingCenterList(ctx, &opcPb.OpcListParams{UserId: userId})
+}
+
+func (s *OpcHelper) GetProcessingCenterListWithOpcIds(ctx context.Context, opcIds []uint64) (*opcPb.ProcessingCenterListResponse, error) {
+	return opcService.ProcessingCenter().ProcessingCenterList(ctx, &opcPb.OpcListParams{OpcId: opcIds})
 }

@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -13,6 +14,10 @@ import (
 )
 
 func UpdateSupplierOpcMapping(ctx context.Context, id, opcId uint64, delete bool) *supplierpb.BasicApiResponse {
+	if err := IsOpcListValid(ctx, []uint64{opcId}); delete == false && err != nil {
+		return &supplierpb.BasicApiResponse{Message: err.Error()}
+	}
+
 	resp := &supplierpb.BasicApiResponse{Success: true, Message: "Supplier Mapped with OPC"}
 
 	opcMap := &models.SupplierOpcMapping{}
@@ -91,4 +96,25 @@ func GetOPCListForCurrentUser(ctx context.Context) []uint64 {
 
 	log.Printf("GetOPCListForCurrentUser: opc list = %v\n", opcList)
 	return opcList
+}
+
+func IsOpcListValid(ctx context.Context, opcIds []uint64) error {
+	resp, err := getOpcClient().GetProcessingCenterListWithOpcIds(ctx, opcIds)
+	if err != nil {
+		log.Printf("IsOpcListValid: failed to fetch opc list. Error: %v\n", err)
+		return errors.New("failed to fetch opc list")
+	}
+
+	opcMap := map[uint64]bool{}
+	for _, opc := range resp.Data {
+		opcMap[opc.OpcId] = true
+	}
+
+	for _, id := range opcIds {
+		if _, found := opcMap[id]; !found {
+			return fmt.Errorf("invalid opc id #(%v)", id)
+		}
+	}
+
+	return nil
 }
