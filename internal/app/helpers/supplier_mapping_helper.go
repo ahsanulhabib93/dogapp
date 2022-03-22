@@ -3,16 +3,18 @@ package helpers
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
-	"github.com/voonik/ss2/internal/app/utils"
 )
 
 func UpdateSupplierOpcMapping(ctx context.Context, id, opcId uint64, delete bool) *supplierpb.BasicApiResponse {
+	if err := IsOpcListValid(ctx, []uint64{opcId}); delete == false && err != nil {
+		return &supplierpb.BasicApiResponse{Message: err.Error()}
+	}
+
 	resp := &supplierpb.BasicApiResponse{Success: true, Message: "Supplier Mapped with OPC"}
 
 	opcMap := &models.SupplierOpcMapping{}
@@ -73,22 +75,4 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 	}
 
 	return PrepareCategoreMapping(newIds)
-}
-
-func GetOPCListForCurrentUser(ctx context.Context) []uint64 {
-	opcList := []uint64{}
-
-	userId := *utils.GetCurrentUserID(ctx)
-	resp, err := getOpcClient().ProcessingCenterList(ctx, userId)
-	if err != nil {
-		log.Printf("GetOPCListForCurrentUser: Failed to fetch OPC list. Error: %v\n", err)
-		return opcList
-	}
-
-	for _, opc := range resp.Data {
-		opcList = append(opcList, opc.OpcId)
-	}
-
-	log.Printf("GetOPCListForCurrentUser: opc list = %v\n", opcList)
-	return opcList
 }

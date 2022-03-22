@@ -24,7 +24,12 @@ func UnsetOpcMock() {
 	helpers.InjectMockOpcClientInstance(nil)
 }
 
-func (_m *MockOpcHelper) ProcessingCenterList(ctx context.Context, userId uint64) (*opcPb.ProcessingCenterListResponse, error) {
+func (_m *MockOpcHelper) GetProcessingCenterListWithUserId(ctx context.Context, userId uint64) (*opcPb.ProcessingCenterListResponse, error) {
 	args := _m.Called(ctx, userId)
+	return args.Get(0).(*opcPb.ProcessingCenterListResponse), args.Error(1)
+}
+
+func (_m *MockOpcHelper) GetProcessingCenterListWithOpcIds(ctx context.Context, opcIds []uint64) (*opcPb.ProcessingCenterListResponse, error) {
+	args := _m.Called(ctx, opcIds)
 	return args.Get(0).(*opcPb.ProcessingCenterListResponse), args.Error(1)
 }

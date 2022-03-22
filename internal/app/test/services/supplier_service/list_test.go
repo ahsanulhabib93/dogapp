@@ -256,7 +256,7 @@ var _ = Describe("ListSupplier", func() {
 
 	It("Should Respond with SA user related supplier", func() {
 		mockOpc := mocks.SetOpcMock()
-		mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
+		mockOpc.On("GetProcessingCenterListWithUserId", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
 			Data: []*opcPb.OpcDetail{{OpcId: 1}, {OpcId: 2}, {OpcId: 3}}}, nil)
 
 		deletedAt := time.Now()
@@ -298,7 +298,7 @@ var _ = Describe("ListSupplier", func() {
 
 	It("Should Respond with no supplier for user with no opc mapped", func() {
 		mockOpc := mocks.SetOpcMock()
-		mockOpc.On("ProcessingCenterList", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
+		mockOpc.On("GetProcessingCenterListWithUserId", ctx, userId).Return(&opcPb.ProcessingCenterListResponse{
 			Data: []*opcPb.OpcDetail{{OpcId: 1}, {OpcId: 2}, {OpcId: 3}}}, nil)
 
 		test_helper.CreateSupplier(ctx, &models.Supplier{
