@@ -32,7 +32,7 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 
 	resp := helpers.SupplierDBResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).
-		Joins("left "+models.GetCategoryMappingJoinStr()).Joins("left "+models.GetOpcMappingJoinStr()).
+		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
 		Where("suppliers.id = ?", supplier.ID).Group("suppliers.id").
 		Select(ss.getResponseField()).Scan(&resp)
 
@@ -49,7 +49,7 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	suppliers := []helpers.SupplierDBResponse{}
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = helpers.PrepareFilter(ctx, query, params).
-		Joins("left " + models.GetCategoryMappingJoinStr()).Joins("left " + models.GetOpcMappingJoinStr()).
+		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
 		Group("suppliers.id")
 
 	var total uint64
