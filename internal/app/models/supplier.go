@@ -8,11 +8,13 @@ import (
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
+// SupplierStatusConstants ...
 const (
 	SupplierStatusActive  = "Active"
 	SupplierStatusPending = "Pending"
 )
 
+// Supplier ...
 type Supplier struct {
 	database.VaccountGorm
 	Name                     string `gorm:"not null" valid:"required"`
@@ -27,6 +29,7 @@ type Supplier struct {
 	SupplierOpcMappings      []SupplierOpcMapping
 }
 
+// Validate ...
 func (supplier Supplier) Validate(db *gorm.DB) {
 	s := &Supplier{}
 	result := db.Model(&supplier).First(s, "name = ?", supplier.Name)
@@ -38,4 +41,14 @@ func (supplier Supplier) Validate(db *gorm.DB) {
 		len(supplier.Status) > 0 {
 		db.AddError(errors.New("Status should be Active/Pending"))
 	}
+}
+
+// GetCategoryMappingJoinStr ...
+func GetCategoryMappingJoinStr() string {
+	return "LEFT JOIN supplier_category_mappings on supplier_category_mappings.supplier_id = suppliers.id and supplier_category_mappings.deleted_at IS NULL and supplier_category_mappings.vaccount_id = suppliers.vaccount_id"
+}
+
+// GetOpcMappingJoinStr ...
+func GetOpcMappingJoinStr() string {
+	return "LEFT JOIN supplier_opc_mappings on supplier_opc_mappings.supplier_id = suppliers.id and supplier_opc_mappings.deleted_at IS NULL and supplier_opc_mappings.vaccount_id = suppliers.vaccount_id"
 }

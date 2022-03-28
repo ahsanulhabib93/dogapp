@@ -31,18 +31,16 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 		Scan(&paymentDetails)
 
 	resp := helpers.SupplierDBResponse{}
-	database.DBAPM(ctx).Model(&models.Supplier{}).Where("suppliers.id = ?", supplier.ID).
-		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
-		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("suppliers.id").
-		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL").
+	database.DBAPM(ctx).Model(&models.Supplier{}).
+		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
+		Where("suppliers.id = ?", supplier.ID).Group("suppliers.id").
 		Select(ss.getResponseField()).Scan(&resp)
 
 	resp.SupplierAddresses = supplier.SupplierAddresses
 	supplierResp := helpers.PrepareSupplierResponse(resp)
 	supplierResp.PaymentAccountDetails = paymentDetails
 	log.Printf("GetSupplierResponse: %+v", resp)
-	return &supplierpb.SupplierResponse{
-		Success: true, Data: supplierResp}, nil
+	return &supplierpb.SupplierResponse{Success: true, Data: supplierResp}, nil
 }
 
 // List ...
@@ -51,9 +49,8 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	suppliers := []helpers.SupplierDBResponse{}
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = helpers.PrepareFilter(ctx, query, params).
-		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
-		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("suppliers.id").
-		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL")
+		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
+		Group("suppliers.id")
 
 	var total uint64
 	query.Count(&total)
@@ -70,14 +67,15 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	resp := supplierpb.ListResponse{}
 
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
-	query = helpers.PrepareFilter(ctx, query, params)
+	query = helpers.PrepareFilter(ctx, query, params).
+		Preload("SupplierAddresses").Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id").
+		Group("suppliers.id")
 
 	var total uint64
 	query.Count(&total)
 	helpers.SetPage(query, params)
 	suppliersWithAddresses := []models.Supplier{{}}
-	query.Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id").
-		Select("distinct suppliers.*").Preload("SupplierAddresses").Find(&suppliersWithAddresses)
+	query.Select("suppliers.*").Find(&suppliersWithAddresses)
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
 	json.Unmarshal(temp, &resp.Data)
