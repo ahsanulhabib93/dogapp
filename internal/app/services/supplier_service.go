@@ -31,10 +31,9 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 		Scan(&paymentDetails)
 
 	resp := helpers.SupplierDBResponse{}
-	database.DBAPM(ctx).Model(&models.Supplier{}).Where("suppliers.id = ?", supplier.ID).
-		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
-		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("suppliers.id").
-		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL").
+	database.DBAPM(ctx).Model(&models.Supplier{}).
+		Joins("left "+models.GetCategoryMappingJoinStr()).Joins("left "+models.GetOpcMappingJoinStr()).
+		Where("suppliers.id = ?", supplier.ID).Group("suppliers.id").
 		Select(ss.getResponseField()).Scan(&resp)
 
 	resp.SupplierAddresses = supplier.SupplierAddresses
@@ -51,9 +50,8 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	suppliers := []helpers.SupplierDBResponse{}
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = helpers.PrepareFilter(ctx, query, params).
-		Joins(" left join supplier_category_mappings on supplier_category_mappings.supplier_id=suppliers.id").
-		Joins(" left join supplier_opc_mappings on supplier_opc_mappings.supplier_id=suppliers.id").Group("suppliers.id").
-		Where("supplier_category_mappings.deleted_at IS NULL").Where("supplier_opc_mappings.deleted_at IS NULL")
+		Joins("left " + models.GetCategoryMappingJoinStr()).Joins("left " + models.GetOpcMappingJoinStr()).
+		Group("suppliers.id")
 
 	var total uint64
 	query.Count(&total)
