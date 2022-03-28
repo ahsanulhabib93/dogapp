@@ -117,6 +117,7 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Email: supplier2.Email})
 			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
 			Expect(len(res.Data)).To(Equal(1))
 
 			supplierData1 := res.Data[0]
@@ -137,6 +138,7 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Phone: address1.Phone})
 			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
 			Expect(len(res.Data)).To(Equal(1))
 
 			supplierData1 := res.Data[0]
@@ -157,6 +159,7 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{City: address1.City})
 			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
 			Expect(len(res.Data)).To(Equal(1))
 
 			supplierData1 := res.Data[0]

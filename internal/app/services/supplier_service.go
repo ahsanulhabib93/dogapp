@@ -40,8 +40,7 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	supplierResp := helpers.PrepareSupplierResponse(resp)
 	supplierResp.PaymentAccountDetails = paymentDetails
 	log.Printf("GetSupplierResponse: %+v", resp)
-	return &supplierpb.SupplierResponse{
-		Success: true, Data: supplierResp}, nil
+	return &supplierpb.SupplierResponse{Success: true, Data: supplierResp}, nil
 }
 
 // List ...
@@ -68,14 +67,15 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	resp := supplierpb.ListResponse{}
 
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
-	query = helpers.PrepareFilter(ctx, query, params)
+	query = helpers.PrepareFilter(ctx, query, params).
+		Preload("SupplierAddresses").Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id").
+		Group("suppliers.id")
 
 	var total uint64
 	query.Count(&total)
 	helpers.SetPage(query, params)
 	suppliersWithAddresses := []models.Supplier{{}}
-	query.Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id").
-		Select("distinct suppliers.*").Preload("SupplierAddresses").Find(&suppliersWithAddresses)
+	query.Select("suppliers.*").Find(&suppliersWithAddresses)
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
 	json.Unmarshal(temp, &resp.Data)
