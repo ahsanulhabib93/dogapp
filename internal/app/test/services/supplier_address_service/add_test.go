@@ -179,7 +179,7 @@ var _ = Describe("AddSupplierAddress", func() {
 	})
 
 	Context("While adding address without zipcode", func() {
-		It("Should return error response", func() {
+		It("Should return success response", func() {
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
 			param := &addresspb.SupplierAddressParam{
 				SupplierId: supplier.ID,
@@ -191,8 +191,8 @@ var _ = Describe("AddSupplierAddress", func() {
 			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
 			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier Address: Zipcode can't be blank"))
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Address Added Successfully"))
 		})
 	})
 
