@@ -107,13 +107,13 @@ var _ = Describe("EditSupplier", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierObject{
 				Id:     supplier.ID,
-				Status: "no idea",
+				Status: string(models.SupplierStatusDeactivate),
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while updating Supplier: Status should be Active/Pending"))
+			Expect(res.Message).To(Equal("Status change from 'Pending' to 'Deactivated' not allowed"))
 		})
 	})
 

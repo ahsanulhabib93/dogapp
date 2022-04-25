@@ -129,6 +129,8 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	result := query.First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
+	} else if status := models.SupplierStatus(params.GetStatus()); len(status) > 0 && !supplier.Status.IsTransitionAllowed(status) {
+		resp.Message = fmt.Sprintf("Status change from '%s' to '%s' not allowed", supplier.Status, status)
 	} else {
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Name:                     params.GetName(),

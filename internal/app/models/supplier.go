@@ -62,9 +62,11 @@ var supplierStatusOrder = map[SupplierStatus]SupplierStatus{
 }
 
 func (s SupplierStatus) IsValid() bool {
-	if _, found := supplierStatusOrder[s]; !found {
-		return false
-	}
+	_, found := supplierStatusOrder[s]
+	return found
+}
 
-	return true
+func (s SupplierStatus) IsTransitionAllowed(status SupplierStatus) bool {
+	next, found := supplierStatusOrder[s]
+	return found && (next == status || s == status)
 }
