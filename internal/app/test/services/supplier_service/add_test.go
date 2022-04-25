@@ -68,6 +68,7 @@ var _ = Describe("AddSupplier", func() {
 				GstNumber:    "GstNumber",
 				CategoryIds:  []uint64{1, 30},
 				OpcIds:       opcIds,
+				Status:       models.SupplierStatusPending,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -111,6 +112,7 @@ var _ = Describe("AddSupplier", func() {
 				Name:         "Name",
 				Email:        "Email",
 				SupplierType: uint64(utils.Hlc),
+				Status:       models.SupplierStatusPending,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -132,6 +134,7 @@ var _ = Describe("AddSupplier", func() {
 				Phone:        "1234567890",
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
+				Status:       models.SupplierStatusPending,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -151,6 +154,7 @@ var _ = Describe("AddSupplier", func() {
 				SupplierType: uint64(utils.Hlc),
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
+				Status:       models.SupplierStatusPending,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -167,11 +171,29 @@ var _ = Describe("AddSupplier", func() {
 				Phone:    "1234567890",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
+				Status:   models.SupplierStatusPending,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
+		})
+	})
+
+	Context("Adding Supplier without supplier status", func() {
+		It("Should return error response", func() {
+			param := &supplierpb.SupplierParam{
+				Name:         "Name",
+				Email:        "Email",
+				Phone:        "1234567890",
+				Address1:     "Address1",
+				Zipcode:      "Zipcode",
+				SupplierType: uint64(utils.Hlc),
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: Status should be Active/Pending"))
 		})
 	})
 
@@ -190,6 +212,7 @@ var _ = Describe("AddSupplier", func() {
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
 				OpcIds:   opcIds,
+				Status:   models.SupplierStatusPending,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			supplier := &models.Supplier{}
@@ -240,6 +263,7 @@ var _ = Describe("AddSupplier", func() {
 				SupplierType:         uint64(utils.Hlc),
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
+				Status:               models.SupplierStatusPending,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -264,6 +288,7 @@ var _ = Describe("AddSupplier", func() {
 				SupplierType:         uint64(utils.Hlc),
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
+				Status:               models.SupplierStatusPending,
 			}
 
 			res, err := new(services.SupplierService).Add(ctx, param)

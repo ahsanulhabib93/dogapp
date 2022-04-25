@@ -10,8 +10,9 @@ import (
 
 // SupplierStatusConstants ...
 const (
-	SupplierStatusActive  = "Active"
-	SupplierStatusPending = "Pending"
+	SupplierStatusActive     = "Active"
+	SupplierStatusPending    = "Pending"
+	SupplierStatusDeactivate = "Deactivated"
 )
 
 // Supplier ...
@@ -37,8 +38,7 @@ func (supplier Supplier) Validate(db *gorm.DB) {
 		db.AddError(errors.New("Supplier Already Exists, please contact with the admin team to get access"))
 	}
 
-	if !(supplier.Status == SupplierStatusActive || supplier.Status == SupplierStatusPending) &&
-		len(supplier.Status) > 0 {
+	if !(supplier.Status == SupplierStatusActive || supplier.Status == SupplierStatusPending) {
 		db.AddError(errors.New("Status should be Active/Pending"))
 	}
 }
