@@ -46,7 +46,7 @@ var _ = Describe("GetSupplier", func() {
 			Expect(resp.Data.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(resp.Data.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
-			Expect(resp.Data.Status).To(Equal(models.SupplierStatusPending))
+			Expect(resp.Data.Status).To(Equal(string(models.SupplierStatusPending)))
 
 			Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))
 			Expect(resp.Data.SupplierAddresses[0].Firstname).To(Equal(supplierAddress.Firstname))

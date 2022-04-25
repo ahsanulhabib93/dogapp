@@ -37,7 +37,7 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	if params.GetOpcId() != 0 {
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
 	}
-	if status := params.GetStatus(); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
+	if status := models.SupplierStatus(params.GetStatus()); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
 		query = query.Where("suppliers.status = ?", params.GetStatus())
 	}
 	if params.GetPhone() != "" {

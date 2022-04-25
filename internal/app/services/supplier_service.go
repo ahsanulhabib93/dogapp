@@ -96,8 +96,8 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	supplier := models.Supplier{
 		Name:                     params.GetName(),
 		Email:                    params.GetEmail(),
-		Status:                   params.GetStatus(),
 		UserID:                   utils.GetCurrentUserID(ctx),
+		Status:                   models.SupplierStatus(params.GetStatus()),
 		SupplierType:             utils.SupplierType(params.GetSupplierType()),
 		SupplierCategoryMappings: helpers.PrepareCategoreMapping(params.GetCategoryIds()),
 		SupplierOpcMappings:      helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
@@ -133,7 +133,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Name:                     params.GetName(),
 			Email:                    params.GetEmail(),
-			Status:                   params.GetStatus(),
+			Status:                   models.SupplierStatus(params.GetStatus()),
 			SupplierType:             utils.SupplierType(params.GetSupplierType()),
 			SupplierCategoryMappings: helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})

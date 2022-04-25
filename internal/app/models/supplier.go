@@ -9,17 +9,19 @@ import (
 )
 
 // SupplierStatusConstants ...
+type SupplierStatus string
+
 const (
-	SupplierStatusActive     = "Active"
-	SupplierStatusPending    = "Pending"
-	SupplierStatusDeactivate = "Deactivated"
+	SupplierStatusActive     SupplierStatus = "Active"
+	SupplierStatusPending    SupplierStatus = "Pending"
+	SupplierStatusDeactivate SupplierStatus = "Deactivated"
 )
 
 // Supplier ...
 type Supplier struct {
 	database.VaccountGorm
-	Name                     string `gorm:"not null" valid:"required"`
-	Status                   string `gorm:"default:'Pending'"`
+	Name                     string         `gorm:"not null" valid:"required"`
+	Status                   SupplierStatus `gorm:"default:'Pending'"`
 	Email                    string
 	UserID                   *uint64                `json:"user_id"`
 	SupplierType             utils.SupplierType     `json:"supplier_type" valid:"required"`
@@ -38,8 +40,8 @@ func (supplier Supplier) Validate(db *gorm.DB) {
 		db.AddError(errors.New("Supplier Already Exists, please contact with the admin team to get access"))
 	}
 
-	if !(supplier.Status == SupplierStatusActive || supplier.Status == SupplierStatusPending) {
-		db.AddError(errors.New("Status should be Active/Pending"))
+	if !supplier.Status.IsValid() {
+		db.AddError(errors.New("Status should be Active/Pending/Deactivated"))
 	}
 }
 
@@ -51,4 +53,18 @@ func GetCategoryMappingJoinStr() string {
 // GetOpcMappingJoinStr ...
 func GetOpcMappingJoinStr() string {
 	return "LEFT JOIN supplier_opc_mappings on supplier_opc_mappings.supplier_id = suppliers.id and supplier_opc_mappings.deleted_at IS NULL and supplier_opc_mappings.vaccount_id = suppliers.vaccount_id"
+}
+
+var supplierStatusOrder = map[SupplierStatus]SupplierStatus{
+	SupplierStatusPending:    SupplierStatusActive,
+	SupplierStatusActive:     SupplierStatusDeactivate,
+	SupplierStatusDeactivate: SupplierStatusActive,
+}
+
+func (s SupplierStatus) IsValid() bool {
+	if _, found := supplierStatusOrder[s]; !found {
+		return false
+	}
+
+	return true
 }

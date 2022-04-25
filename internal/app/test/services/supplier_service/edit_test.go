@@ -87,7 +87,7 @@ var _ = Describe("EditSupplier", func() {
 			})
 			param := &supplierpb.SupplierObject{
 				Id:     supplier.ID,
-				Status: models.SupplierStatusActive,
+				Status: string(models.SupplierStatusActive),
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
