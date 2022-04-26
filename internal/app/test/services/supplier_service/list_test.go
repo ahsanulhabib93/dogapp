@@ -61,7 +61,7 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
-			Expect(supplierData1.Status).To(Equal(models.SupplierStatusPending))
+			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusPending)))
 
 			supplierData2 := res.Data[1]
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
@@ -69,7 +69,7 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.CategoryIds).To(Equal([]uint64{}))
 			Expect(supplierData2.OpcIds).To(Equal([]uint64{}))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
-			Expect(supplierData2.Status).To(Equal(models.SupplierStatusPending))
+			Expect(supplierData2.Status).To(Equal(string(models.SupplierStatusPending)))
 		})
 	})
 
@@ -231,7 +231,7 @@ var _ = Describe("ListSupplier", func() {
 			})
 
 			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
-			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Status: models.SupplierStatusActive})
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Status: string(models.SupplierStatusActive)})
 			Expect(err).To(BeNil())
 			Expect(res.TotalCount).To(Equal(uint64(1)))
 			Expect(len(res.Data)).To(Equal(1))
@@ -241,7 +241,7 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
-			Expect(supplierData1.Status).To(Equal(models.SupplierStatusActive))
+			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusActive)))
 		})
 	})
 
@@ -278,7 +278,7 @@ var _ = Describe("ListSupplier", func() {
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
 				Page:    1,
 				PerPage: 2,
-				Status:  models.SupplierStatusActive,
+				Status:  string(models.SupplierStatusActive),
 			})
 			Expect(err).To(BeNil())
 			Expect(len(res.Data)).To(Equal(2))
