@@ -55,18 +55,27 @@ func GetOpcMappingJoinStr() string {
 	return "LEFT JOIN supplier_opc_mappings on supplier_opc_mappings.supplier_id = suppliers.id and supplier_opc_mappings.deleted_at IS NULL and supplier_opc_mappings.vaccount_id = suppliers.vaccount_id"
 }
 
-var supplierStatusOrder = map[SupplierStatus]SupplierStatus{
-	SupplierStatusPending:    SupplierStatusActive,
-	SupplierStatusActive:     SupplierStatusDeactivate,
-	SupplierStatusDeactivate: SupplierStatusActive,
+var supplierStatusTransitionState = map[SupplierStatus][]SupplierStatus{
+	SupplierStatusPending:    {SupplierStatusActive, SupplierStatusDeactivate},
+	SupplierStatusActive:     {SupplierStatusDeactivate},
+	SupplierStatusDeactivate: {SupplierStatusActive},
 }
 
 func (s SupplierStatus) IsValid() bool {
-	_, found := supplierStatusOrder[s]
+	_, found := supplierStatusTransitionState[s]
 	return len(s) == 0 || found
 }
 
 func (s SupplierStatus) IsTransitionAllowed(status SupplierStatus) bool {
-	next, found := supplierStatusOrder[s]
-	return found && (next == status || s == status)
+	if s == status {
+		return true
+	}
+
+	for _, next := range supplierStatusTransitionState[s] {
+		if next == status {
+			return true
+		}
+	}
+
+	return false
 }
