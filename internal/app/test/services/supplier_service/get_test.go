@@ -25,15 +25,10 @@ var _ = Describe("GetSupplier", func() {
 	Context("Get valid supplier", func() {
 		It("Should Respond with success", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierCategoryMappings: []models.SupplierCategoryMapping{
-					{CategoryID: 1},
-					{CategoryID: 2},
-				},
-				SupplierType: utils.Hlc,
-				SupplierOpcMappings: []models.SupplierOpcMapping{
-					{ProcessingCenterID: 3},
-					{ProcessingCenterID: 4},
-				},
+				SupplierType:             utils.Hlc,
+				IsPhoneVerified:          true,
+				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
+				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 			})
 			supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
 			paymentDetails := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
@@ -43,6 +38,12 @@ var _ = Describe("GetSupplier", func() {
 			Expect(resp.Success).To(Equal(true))
 			Expect(resp.Data.Email).To(Equal(supplier.Email))
 			Expect(resp.Data.Name).To(Equal(supplier.Name))
+			Expect(resp.Data.Phone).To(Equal(supplier.Phone))
+			Expect(resp.Data.AlternatePhone).To(Equal(supplier.AlternatePhone))
+			Expect(resp.Data.BusinessName).To(Equal(supplier.BusinessName))
+			Expect(resp.Data.ShopImageUrl).To(Equal(supplier.ShopImageURL))
+			Expect(resp.Data.Reason).To(Equal(supplier.Reason))
+			Expect(resp.Data.IsPhoneVerified).To(Equal(true))
 			Expect(resp.Data.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(resp.Data.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))

@@ -17,6 +17,7 @@ import (
 // SupplierService ...
 type SupplierService struct{}
 
+// Get Supplier Info
 func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSupplierParam) (*supplierpb.SupplierResponse, error) {
 	log.Printf("GetSupplierParam: %+v", params)
 	supplier := models.Supplier{}
@@ -43,7 +44,7 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	return &supplierpb.SupplierResponse{Success: true, Data: supplierResp}, nil
 }
 
-// List ...
+// List Suppliers
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	log.Printf("ListSupplierParams: %+v", params)
 	suppliers := []helpers.SupplierDBResponse{}
@@ -84,7 +85,7 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	return &resp, nil
 }
 
-// Add ...
+// Add Supplier
 func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierParam) (*supplierpb.BasicApiResponse, error) {
 	log.Printf("AddSupplierParams: %+v", params)
 	resp := supplierpb.BasicApiResponse{Success: false}
@@ -116,7 +117,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	return &resp, nil
 }
 
-// Edit ...
+// Edit Supplier Details
 func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.SupplierObject) (*supplierpb.BasicApiResponse, error) {
 	log.Printf("EditSupplierParams: %+v", params)
 	resp := supplierpb.BasicApiResponse{Success: false}
@@ -150,6 +151,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	return &resp, nil
 }
 
+// SupplierMap - Supplier OPC mapping
 func (ss *SupplierService) SupplierMap(ctx context.Context, params *supplierpb.SupplierMappingParams) (*supplierpb.BasicApiResponse, error) {
 	supplier := &models.Supplier{}
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(supplier, params.GetSupplierId())
@@ -177,6 +179,12 @@ func (ss *SupplierService) getResponseField() string {
 		"suppliers.supplier_type",
 		"suppliers.name",
 		"suppliers.email",
+		"suppliers.phone",
+		"suppliers.alternate_phone",
+		"suppliers.is_phone_verified",
+		"suppliers.business_name",
+		"suppliers.shop_image_url",
+		"suppliers.reason",
 		"GROUP_CONCAT( DISTINCT supplier_category_mappings.category_id) as category_ids",
 		"GROUP_CONCAT( DISTINCT supplier_opc_mappings.processing_center_id) as opc_ids",
 	}

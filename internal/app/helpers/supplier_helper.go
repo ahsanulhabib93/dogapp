@@ -27,6 +27,23 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	if params.GetEmail() != "" {
 		query = query.Where("suppliers.email = ?", params.GetEmail())
 	}
+	if params.GetPhone() != "" {
+		query = query.Where("suppliers.phone = ?", params.GetPhone())
+	}
+	if params.GetCreatedAtGte() != "" {
+		query = query.Where("date(suppliers.created_at) >= ?", params.GetCreatedAtGte())
+	}
+	if params.GetCreatedAtLte() != "" {
+		query = query.Where("date(suppliers.created_at) <= ?", params.GetCreatedAtLte())
+	}
+	if status := models.SupplierStatus(params.GetStatus()); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
+		query = query.Where("suppliers.status = ?", params.GetStatus())
+	}
+
+	if params.GetCity() != "" {
+		query = query.Where("supplier_addresses.city = ?", params.GetCity())
+	}
+
 	OpcIds := params.GetOpcIds()
 	if params.AssociatedWithCurrentUser {
 		OpcIds = append(OpcIds, GetOPCListForCurrentUser(ctx)...)
@@ -36,15 +53,6 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	}
 	if params.GetOpcId() != 0 {
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
-	}
-	if status := models.SupplierStatus(params.GetStatus()); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
-		query = query.Where("suppliers.status = ?", params.GetStatus())
-	}
-	if params.GetPhone() != "" {
-		query = query.Where("supplier_addresses.phone = ?", params.GetPhone())
-	}
-	if params.GetCity() != "" {
-		query = query.Where("supplier_addresses.city = ?", params.GetCity())
 	}
 
 	return query
