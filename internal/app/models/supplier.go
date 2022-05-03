@@ -22,7 +22,13 @@ type Supplier struct {
 	database.VaccountGorm
 	Name                     string         `gorm:"not null" valid:"required"`
 	Status                   SupplierStatus `gorm:"default:'Pending'"`
+	Reason                   string
 	Email                    string
+	Phone                    string
+	AlternatePhone           string                 `json:"alternate_phone"`
+	BusinessName             string                 `json:"business_name"`
+	IsPhoneVerified          bool                   `gorm:"default:false" json:"is_phone_verified"`
+	ShopImageURL             string                 `json:"shop_image_url"`
 	UserID                   *uint64                `json:"user_id"`
 	SupplierType             utils.SupplierType     `json:"supplier_type" valid:"required"`
 	SupplierAddresses        []SupplierAddress      `json:"supplier_addresses"`
