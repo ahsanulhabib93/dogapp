@@ -98,7 +98,6 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		Name:                     params.GetName(),
 		Email:                    params.GetEmail(),
 		UserID:                   utils.GetCurrentUserID(ctx),
-		Status:                   models.SupplierStatus(params.GetStatus()),
 		SupplierType:             utils.SupplierType(params.GetSupplierType()),
 		SupplierCategoryMappings: helpers.PrepareCategoreMapping(params.GetCategoryIds()),
 		SupplierOpcMappings:      helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
@@ -130,13 +129,10 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	result := query.First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if status := models.SupplierStatus(params.GetStatus()); len(status) > 0 && !supplier.Status.IsTransitionAllowed(status) {
-		resp.Message = fmt.Sprintf("Status change from '%s' to '%s' not allowed", supplier.Status, status)
 	} else {
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Name:                     params.GetName(),
 			Email:                    params.GetEmail(),
-			Status:                   models.SupplierStatus(params.GetStatus()),
 			SupplierType:             utils.SupplierType(params.GetSupplierType()),
 			SupplierCategoryMappings: helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
@@ -148,6 +144,30 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		}
 	}
 	log.Printf("EditSupplierResponse: %+v", resp)
+	return &resp, nil
+}
+
+// UpdateStatus of Supplier
+func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.UpdateStatusParam) (*supplierpb.BasicApiResponse, error) {
+	log.Printf("UpdateStatusParams: %+v", params)
+	resp := supplierpb.BasicApiResponse{Success: false}
+
+	supplier := models.Supplier{}
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetId())
+	if result.RecordNotFound() {
+		resp.Message = "Supplier Not Found"
+	} else {
+		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
+			Status: models.SupplierStatus(params.GetStatus()),
+		})
+		if err != nil && err.Error != nil {
+			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
+		} else {
+			resp.Message = "Supplier status updated successfully"
+			resp.Success = true
+		}
+	}
+	log.Printf("UpdateStatusResponse: %+v", resp)
 	return &resp, nil
 }
 
@@ -170,6 +190,35 @@ func (ss *SupplierService) SupplierMap(ctx context.Context, params *supplierpb.S
 	}
 
 	return &supplierpb.BasicApiResponse{Message: "Invalid mapping option"}, nil
+}
+
+// GetUploadURL for uploading supplier shop image
+func (ss *SupplierService) GetUploadURL(ctx context.Context, params *supplierpb.GetUploadUrlParam) (*supplierpb.UrlResponse, error) {
+	log.Printf("GetUploadUrlParams: %+v", params)
+	resp := &supplierpb.UrlResponse{Success: false}
+
+	if params.GetUploadType() != "SupplierShopImage" {
+		resp.Message = "Invalid Upload Type"
+	} else {
+		object := utils.GetObjectName("shop_images", "", "")
+		bucketName := utils.GetBucketName(ctx)
+		fileURL, err := utils.GetUploadURL(ctx, bucketName, object)
+
+		log.Printf("GetUploadUrl: %+v", fileURL)
+		if err != nil {
+			resp.Message = err.Error()
+		} else {
+			resp = &supplierpb.UrlResponse{
+				Url:     fileURL,
+				Path:    object,
+				Success: true,
+				Message: "Fetched upload url successfully",
+			}
+		}
+	}
+
+	log.Printf("GetUploadUrlResponse: %+v", resp)
+	return resp, nil
 }
 
 func (ss *SupplierService) getResponseField() string {

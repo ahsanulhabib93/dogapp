@@ -82,28 +82,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 
-		It("Should update supplier status and return success response", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				Name: "test-supplier",
-			})
-			param := &supplierpb.SupplierObject{
-				Id:     supplier.ID,
-				Status: string(models.SupplierStatusActive),
-			}
-			res, err := new(services.SupplierService).Edit(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
-
-			updatedSupplier := &models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
-			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
-			Expect(updatedSupplier.SupplierType).To(Equal(utils.Hlc))
-			Expect(updatedSupplier.Name).To(Equal(supplier.Name))
-			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusActive))
-		})
-
 		It("Should return success on deactivating pending user", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierObject{
@@ -114,19 +92,6 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-		})
-
-		It("Should return error on invalid status transition", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive})
-			param := &supplierpb.SupplierObject{
-				Id:     supplier.ID,
-				Status: string(models.SupplierStatusPending),
-			}
-			res, err := new(services.SupplierService).Edit(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Status change from 'Active' to 'Pending' not allowed"))
 		})
 
 		It("Should return success on deactivating user", func() {

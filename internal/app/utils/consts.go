@@ -23,3 +23,7 @@ const (
 	Bkash
 	Nagada
 )
+
+const (
+	BucketFolder = "ss2"
+)
