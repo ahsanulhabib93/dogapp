@@ -26,7 +26,7 @@ var _ = Describe("UpdateStatus", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.UpdateStatusParam{
 				Id:     supplier.ID,
-				Status: string(models.SupplierStatusActive),
+				Status: string(models.SupplierStatusVerified),
 			}
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
@@ -36,7 +36,7 @@ var _ = Describe("UpdateStatus", func() {
 
 			updatedSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
-			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusActive))
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
 		})
 	})
 
@@ -44,7 +44,7 @@ var _ = Describe("UpdateStatus", func() {
 		It("Should return error response", func() {
 			param := &supplierpb.UpdateStatusParam{
 				Id:     1000,
-				Status: string(models.SupplierStatusActive),
+				Status: string(models.SupplierStatusVerified),
 			}
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 

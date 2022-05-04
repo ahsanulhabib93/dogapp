@@ -12,9 +12,10 @@ import (
 type SupplierStatus string
 
 const (
-	SupplierStatusActive     SupplierStatus = "Active"
-	SupplierStatusPending    SupplierStatus = "Pending"
-	SupplierStatusDeactivate SupplierStatus = "Deactivated"
+	SupplierStatusPending  SupplierStatus = "Pending"
+	SupplierStatusVerified SupplierStatus = "Verified"
+	SupplierStatusFailed   SupplierStatus = "Failed"
+	SupplierStatusBlocked  SupplierStatus = "Blocked"
 )
 
 // Supplier ...
@@ -46,9 +47,9 @@ func (supplier Supplier) Validate(db *gorm.DB) {
 		db.AddError(errors.New("Supplier Already Exists, please contact with the admin team to get access"))
 	}
 
-	if !supplier.Status.IsValid() {
-		db.AddError(errors.New("Status should be Active/Pending/Deactivated"))
-	}
+	// if !supplier.Status.IsValid() {
+	// 	db.AddError(errors.New("Status should be Active/Pending/Deactivated"))
+	// }
 }
 
 // GetCategoryMappingJoinStr ...
@@ -61,27 +62,27 @@ func GetOpcMappingJoinStr() string {
 	return "LEFT JOIN supplier_opc_mappings on supplier_opc_mappings.supplier_id = suppliers.id and supplier_opc_mappings.deleted_at IS NULL and supplier_opc_mappings.vaccount_id = suppliers.vaccount_id"
 }
 
-var supplierStatusTransitionState = map[SupplierStatus][]SupplierStatus{
-	SupplierStatusPending:    {SupplierStatusActive, SupplierStatusDeactivate},
-	SupplierStatusActive:     {SupplierStatusDeactivate},
-	SupplierStatusDeactivate: {SupplierStatusActive},
-}
+// var supplierStatusTransitionState = map[SupplierStatus][]SupplierStatus{
+// 	SupplierStatusPending:    {SupplierStatusActive, SupplierStatusDeactivate},
+// 	SupplierStatusActive:     {SupplierStatusDeactivate},
+// 	SupplierStatusDeactivate: {SupplierStatusActive},
+// }
 
-func (s SupplierStatus) IsValid() bool {
-	_, found := supplierStatusTransitionState[s]
-	return len(s) == 0 || found
-}
+// func (s SupplierStatus) IsValid() bool {
+// 	_, found := supplierStatusTransitionState[s]
+// 	return len(s) == 0 || found
+// }
 
-func (s SupplierStatus) IsTransitionAllowed(status SupplierStatus) bool {
-	if s == status {
-		return true
-	}
+// func (s SupplierStatus) IsTransitionAllowed(status SupplierStatus) bool {
+// 	if s == status {
+// 		return true
+// 	}
 
-	for _, next := range supplierStatusTransitionState[s] {
-		if next == status {
-			return true
-		}
-	}
+// 	for _, next := range supplierStatusTransitionState[s] {
+// 		if next == status {
+// 			return true
+// 		}
+// 	}
 
-	return false
-}
+// 	return false
+// }

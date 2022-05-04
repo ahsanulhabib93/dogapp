@@ -41,7 +41,6 @@ var _ = Describe("EditSupplier", func() {
 				Name:         "Name",
 				Email:        "Email",
 				SupplierType: uint64(utils.L1),
-				Status:       string(models.SupplierStatusPending),
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -82,29 +81,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 
-		It("Should return success on deactivating pending user", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			param := &supplierpb.SupplierObject{
-				Id:     supplier.ID,
-				Status: string(models.SupplierStatusDeactivate),
-			}
-			res, err := new(services.SupplierService).Edit(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(true))
-		})
-
-		It("Should return success on deactivating user", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive})
-			param := &supplierpb.SupplierObject{
-				Id:     supplier.ID,
-				Status: string(models.SupplierStatusDeactivate),
-			}
-			res, err := new(services.SupplierService).Edit(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(true))
-		})
 	})
 
 	Context("Editing invalid supplier", func() {

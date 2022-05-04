@@ -36,7 +36,7 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	if params.GetCreatedAtLte() != "" {
 		query = query.Where("date(suppliers.created_at) <= ?", params.GetCreatedAtLte())
 	}
-	if status := models.SupplierStatus(params.GetStatus()); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
+	if params.GetStatus() != "" {
 		query = query.Where("suppliers.status = ?", params.GetStatus())
 	}
 

@@ -243,11 +243,11 @@ var _ = Describe("ListSupplier", func() {
 					{ProcessingCenterID: 3},
 					{ProcessingCenterID: 4},
 				},
-				Status: models.SupplierStatusActive,
+				Status: models.SupplierStatusVerified,
 			})
 
 			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
-			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Status: string(models.SupplierStatusActive)})
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Status: string(models.SupplierStatusVerified)})
 			Expect(err).To(BeNil())
 			Expect(res.TotalCount).To(Equal(uint64(1)))
 			Expect(len(res.Data)).To(Equal(1))
@@ -257,7 +257,7 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
-			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusActive)))
+			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusVerified)))
 		})
 	})
 
@@ -285,16 +285,16 @@ var _ = Describe("ListSupplier", func() {
 	Context("When status filter is applied with pagination", func() {
 		It("Should Respond with corresponding suppliers", func() {
 			suppliers := []*models.Supplier{
-				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusPending}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
 			}
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
 				Page:    1,
 				PerPage: 2,
-				Status:  string(models.SupplierStatusActive),
+				Status:  string(models.SupplierStatusVerified),
 			})
 			Expect(err).To(BeNil())
 			Expect(len(res.Data)).To(Equal(2))
@@ -313,25 +313,25 @@ var _ = Describe("ListSupplier", func() {
 			deletedAt := time.Now()
 			suppliers := []*models.Supplier{
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					Status: models.SupplierStatusActive,
+					Status: models.SupplierStatusVerified,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 1},
 						{ProcessingCenterID: 2},
 					},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					Status: models.SupplierStatusActive,
+					Status: models.SupplierStatusVerified,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 3, DeletedAt: &deletedAt},
 					},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					Status: models.SupplierStatusActive,
+					Status: models.SupplierStatusVerified,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 3},
 					},
 				}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
 			}
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{AssociatedWithCurrentUser: true})
@@ -353,25 +353,25 @@ var _ = Describe("ListSupplier", func() {
 				Data: []*opcPb.OpcDetail{{OpcId: 1}, {OpcId: 2}, {OpcId: 3}}}, nil)
 
 			test_helper.CreateSupplier(ctx, &models.Supplier{
-				Status: models.SupplierStatusActive,
+				Status: models.SupplierStatusVerified,
 				SupplierOpcMappings: []models.SupplierOpcMapping{
 					{ProcessingCenterID: 11},
 					{ProcessingCenterID: 12},
 				},
 			})
 			test_helper.CreateSupplier(ctx, &models.Supplier{
-				Status: models.SupplierStatusActive,
+				Status: models.SupplierStatusVerified,
 				SupplierOpcMappings: []models.SupplierOpcMapping{
 					{ProcessingCenterID: 13},
 				},
 			})
 			test_helper.CreateSupplier(ctx, &models.Supplier{
-				Status: models.SupplierStatusActive,
+				Status: models.SupplierStatusVerified,
 				SupplierOpcMappings: []models.SupplierOpcMapping{
 					{ProcessingCenterID: 13},
 				},
 			})
-			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive})
+			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
 				AssociatedWithCurrentUser: true,
