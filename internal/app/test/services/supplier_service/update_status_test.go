@@ -27,6 +27,7 @@ var _ = Describe("UpdateStatus", func() {
 			param := &supplierpb.UpdateStatusParam{
 				Id:     supplier.ID,
 				Status: string(models.SupplierStatusVerified),
+				Reason: "test reason",
 			}
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
@@ -37,6 +38,7 @@ var _ = Describe("UpdateStatus", func() {
 			updatedSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
+			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
 		})
 	})
 

@@ -167,6 +167,7 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 	} else {
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Status: models.SupplierStatus(params.GetStatus()),
+			Reason: params.GetReason(),
 		})
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
