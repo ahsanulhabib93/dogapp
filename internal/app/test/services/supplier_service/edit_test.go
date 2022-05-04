@@ -37,10 +37,14 @@ var _ = Describe("EditSupplier", func() {
 				},
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
+				Id:             supplier.ID,
+				Name:           "Name",
+				Email:          "Email",
+				SupplierType:   uint64(utils.L1),
+				BusinessName:   "BusinessName",
+				Phone:          "01123456789",
+				AlternatePhone: "01123456111",
+				ShopImageUrl:   "ss2/shop_images/test.png",
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -51,9 +55,15 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").Preload("SupplierOpcMappings").
 				First(&updatedSupplier, supplier.ID)
+
 			Expect(updatedSupplier.Email).To(Equal(param.Email))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
 			Expect(updatedSupplier.SupplierType).To(Equal(utils.L1))
+			Expect(updatedSupplier.BusinessName).To(Equal(param.BusinessName))
+			Expect(updatedSupplier.Phone).To(Equal(param.Phone))
+			Expect(updatedSupplier.AlternatePhone).To(Equal(param.AlternatePhone))
+			Expect(updatedSupplier.ShopImageURL).To(Equal(param.ShopImageUrl))
+
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
 			Expect(len(updatedSupplier.SupplierOpcMappings)).To(Equal(2))
 			Expect(updatedSupplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(2)))

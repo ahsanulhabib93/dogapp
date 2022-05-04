@@ -52,22 +52,25 @@ var _ = Describe("AddSupplier", func() {
 			}}, nil)
 
 			param := &supplierpb.SupplierParam{
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.Hlc),
-				Firstname:    "Firstname",
-				Lastname:     "Lastname",
-				Address1:     "Address1",
-				Address2:     "Address2",
-				Landmark:     "Landmark",
-				City:         "City",
-				State:        "State",
-				Country:      "Country",
-				Zipcode:      "Zipcode",
-				Phone:        "01123456789",
-				GstNumber:    "GstNumber",
-				CategoryIds:  []uint64{1, 30},
-				OpcIds:       opcIds,
+				Name:           "Name",
+				Email:          "Email",
+				SupplierType:   uint64(utils.Hlc),
+				BusinessName:   "BusinessName",
+				Phone:          "01123456789",
+				AlternatePhone: "01123456111",
+				ShopImageUrl:   "ss2/shop_images/test.png",
+				Firstname:      "Firstname",
+				Lastname:       "Lastname",
+				Address1:       "Address1",
+				Address2:       "Address2",
+				Landmark:       "Landmark",
+				City:           "City",
+				State:          "State",
+				Country:        "Country",
+				Zipcode:        "Zipcode",
+				GstNumber:      "GstNumber",
+				CategoryIds:    []uint64{1, 30},
+				OpcIds:         opcIds,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -81,9 +84,15 @@ var _ = Describe("AddSupplier", func() {
 			Expect(supplier.Email).To(Equal(param.Email))
 			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(*supplier.UserID).To(Equal(userId))
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+			Expect(supplier.BusinessName).To(Equal(param.BusinessName))
+			Expect(supplier.Phone).To(Equal(param.Phone))
+			Expect(supplier.AlternatePhone).To(Equal(param.AlternatePhone))
+			Expect(supplier.ShopImageURL).To(Equal(param.ShopImageUrl))
+
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
-			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+
 			Expect(len(supplier.SupplierOpcMappings)).To(Equal(2))
 			Expect(supplier.SupplierOpcMappings[1].ProcessingCenterID).To(Equal(uint64(6000)))
 

@@ -37,7 +37,8 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 		query = query.Where("date(suppliers.created_at) <= ?", params.GetCreatedAtLte())
 	}
 	if params.GetStatus() != "" {
-		query = query.Where("suppliers.status = ?", params.GetStatus())
+		status := strings.Split(params.GetStatus(), ",")
+		query = query.Where("suppliers.status IN (?)", status)
 	}
 
 	if params.GetCity() != "" {
@@ -129,7 +130,7 @@ func PrepareSupplierResponse(supplier SupplierDBResponse) *supplierpb.SupplierOb
 func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierAddress {
 	if params.GetFirstname() == "" && params.GetLastname() == "" && params.GetAddress1() == "" && params.GetAddress2() == "" &&
 		params.GetLandmark() == "" && params.GetCity() == "" && params.GetState() == "" && params.GetCountry() == "" &&
-		params.GetZipcode() == "" && params.GetPhone() == "" && params.GetGstNumber() == "" {
+		params.GetZipcode() == "" && params.GetGstNumber() == "" {
 		return []models.SupplierAddress{}
 	}
 

@@ -286,15 +286,14 @@ var _ = Describe("ListSupplier", func() {
 		It("Should Respond with corresponding suppliers", func() {
 			suppliers := []*models.Supplier{
 				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusFailed}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusPending}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
 			}
-
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
 				Page:    1,
 				PerPage: 2,
-				Status:  string(models.SupplierStatusVerified),
+				Status:  string(models.SupplierStatusVerified) + "," + string(models.SupplierStatusFailed),
 			})
 			Expect(err).To(BeNil())
 			Expect(len(res.Data)).To(Equal(2))
