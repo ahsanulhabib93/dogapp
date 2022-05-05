@@ -14,6 +14,12 @@ import (
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
+type SupplierDBResponse struct {
+	models.Supplier
+	CategoryIds string `json:"category_ids,omitempty"`
+	OpcIds      string `json:"opc_ids,omitempty"`
+}
+
 func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams) *gorm.DB {
 	if params.GetId() != 0 {
 		query = query.Where("suppliers.id = ?", params.GetId())
@@ -150,8 +156,15 @@ func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierA
 	}}
 }
 
-type SupplierDBResponse struct {
-	models.Supplier
-	CategoryIds string `json:"category_ids,omitempty"`
-	OpcIds      string `json:"opc_ids,omitempty"`
+//IsValidStatusTransition ...
+func IsValidStatusTransition(supplier models.Supplier, newStatus models.SupplierStatus) (valid bool, message string) {
+	valid = true
+	// message = "Status Transition not allowed" - have to implement state transition rules
+	if supplier.Status == models.SupplierStatusPending && newStatus == models.SupplierStatusVerified {
+		if !(supplier.IsPhoneVerified && len(supplier.PaymentAccountDetails) > 0 && len(supplier.SupplierAddresses) > 0) {
+			valid = false
+			message = "Required details for verification are not present"
+		}
+	}
+	return
 }

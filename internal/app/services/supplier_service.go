@@ -134,6 +134,13 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
 	} else {
+
+		if params.GetPhone() != "" && params.GetPhone() != supplier.Phone {
+			params.IsPhoneVerified = false
+		} else {
+			params.IsPhoneVerified = supplier.IsPhoneVerified
+		}
+
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Name:                     params.GetName(),
 			Email:                    params.GetEmail(),
@@ -141,6 +148,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			BusinessName:             params.GetBusinessName(),
 			Phone:                    params.GetPhone(),
 			AlternatePhone:           params.GetAlternatePhone(),
+			IsPhoneVerified:          params.GetIsPhoneVerified(),
 			ShopImageURL:             params.GetShopImageUrl(),
 			SupplierCategoryMappings: helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
@@ -161,12 +169,17 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 	resp := supplierpb.BasicApiResponse{Success: false}
 
 	supplier := models.Supplier{}
+	newSupplierStatus := models.SupplierStatus(params.GetStatus())
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
+	} else if newSupplierStatus == "" {
+		resp.Message = "Supplier Status is required"
+	} else if valid, message := helpers.IsValidStatusTransition(supplier, newSupplierStatus); !valid {
+		resp.Message = message
 	} else {
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
-			Status: models.SupplierStatus(params.GetStatus()),
+			Status: newSupplierStatus,
 			Reason: params.GetReason(),
 		})
 		if err != nil && err.Error != nil {

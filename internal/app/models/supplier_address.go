@@ -8,6 +8,7 @@ import (
 	"github.com/voonik/goFramework/pkg/database"
 )
 
+// SupplierAddress ...
 type SupplierAddress struct {
 	database.VaccountGorm
 	SupplierID uint64 `gorm:"index:idx_supplier_id"`
@@ -25,7 +26,8 @@ type SupplierAddress struct {
 	IsDefault  bool   `json:"is_default"`
 }
 
-func (supplierAddress SupplierAddress) Validate(db *gorm.DB) {
+// Validate ...
+func (supplierAddress *SupplierAddress) Validate(db *gorm.DB) {
 	if supplierAddress.SupplierID == 0 {
 		db.AddError(errors.New("SupplierID can't be blank"))
 	}

@@ -119,6 +119,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				Email:        "Email",
+				Phone:        "8801234567890",
 				SupplierType: uint64(utils.Hlc),
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
@@ -164,7 +165,7 @@ var _ = Describe("AddSupplier", func() {
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: Supplier Already Exists, please contact with the admin team to get access"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: Supplier Already Exists"))
 		})
 	})
 
@@ -173,7 +174,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
 				Email:    "Email",
-				Phone:    "1234567890",
+				Phone:    "01123456789",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
 			}
@@ -196,6 +197,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
 				Email:    "Email",
+				Phone:    "01123456789",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
 				OpcIds:   opcIds,
@@ -246,6 +248,7 @@ var _ = Describe("AddSupplier", func() {
 
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
+				Phone:                "01123456789",
 				SupplierType:         uint64(utils.Hlc),
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
@@ -271,6 +274,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
 				SupplierType:         uint64(utils.Hlc),
+				Phone:                "01123456789",
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
 			}
