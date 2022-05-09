@@ -9,6 +9,7 @@ import (
 
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/goFramework/pkg/misc"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
@@ -48,7 +49,10 @@ var _ = Describe("ListSupplier", func() {
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 			})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType:    utils.L1,
+				IsPhoneVerified: true,
+			})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
@@ -58,6 +62,12 @@ var _ = Describe("ListSupplier", func() {
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
 			Expect(supplierData1.Name).To(Equal(supplier1.Name))
+			Expect(supplierData1.Phone).To(Equal(supplier1.Phone))
+			Expect(supplierData1.AlternatePhone).To(Equal(supplier1.AlternatePhone))
+			Expect(supplierData1.BusinessName).To(Equal(supplier1.BusinessName))
+			Expect(supplierData1.ShopImageUrl).To(Equal(supplier1.ShopImageURL))
+			Expect(supplierData1.Reason).To(Equal(supplier1.Reason))
+			Expect(supplierData1.IsPhoneVerified).To(Equal(false))
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
@@ -66,6 +76,12 @@ var _ = Describe("ListSupplier", func() {
 			supplierData2 := res.Data[1]
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
+			Expect(supplierData2.Phone).To(Equal(supplier2.Phone))
+			Expect(supplierData2.AlternatePhone).To(Equal(supplier2.AlternatePhone))
+			Expect(supplierData2.BusinessName).To(Equal(supplier2.BusinessName))
+			Expect(supplierData2.ShopImageUrl).To(Equal(supplier2.ShopImageURL))
+			Expect(supplierData2.Reason).To(Equal(supplier2.Reason))
+			Expect(supplierData2.IsPhoneVerified).To(Equal(true))
 			Expect(supplierData2.CategoryIds).To(Equal([]uint64{}))
 			Expect(supplierData2.OpcIds).To(Equal([]uint64{}))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
@@ -227,11 +243,11 @@ var _ = Describe("ListSupplier", func() {
 					{ProcessingCenterID: 3},
 					{ProcessingCenterID: 4},
 				},
-				Status: models.SupplierStatusActive,
+				Status: models.SupplierStatusVerified,
 			})
 
 			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
-			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Status: string(models.SupplierStatusActive)})
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Status: string(models.SupplierStatusVerified)})
 			Expect(err).To(BeNil())
 			Expect(res.TotalCount).To(Equal(uint64(1)))
 			Expect(len(res.Data)).To(Equal(1))
@@ -241,7 +257,7 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
-			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusActive)))
+			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusVerified)))
 		})
 	})
 
@@ -269,16 +285,15 @@ var _ = Describe("ListSupplier", func() {
 	Context("When status filter is applied with pagination", func() {
 		It("Should Respond with corresponding suppliers", func() {
 			suppliers := []*models.Supplier{
-				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusFailed}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusPending}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
 			}
-
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
 				Page:    1,
 				PerPage: 2,
-				Status:  string(models.SupplierStatusActive),
+				Status:  string(models.SupplierStatusVerified) + "," + string(models.SupplierStatusFailed),
 			})
 			Expect(err).To(BeNil())
 			Expect(len(res.Data)).To(Equal(2))
@@ -297,25 +312,25 @@ var _ = Describe("ListSupplier", func() {
 			deletedAt := time.Now()
 			suppliers := []*models.Supplier{
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					Status: models.SupplierStatusActive,
+					Status: models.SupplierStatusVerified,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 1},
 						{ProcessingCenterID: 2},
 					},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					Status: models.SupplierStatusActive,
+					Status: models.SupplierStatusVerified,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 3, DeletedAt: &deletedAt},
 					},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					Status: models.SupplierStatusActive,
+					Status: models.SupplierStatusVerified,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 3},
 					},
 				}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified}),
 			}
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{AssociatedWithCurrentUser: true})
@@ -337,25 +352,25 @@ var _ = Describe("ListSupplier", func() {
 				Data: []*opcPb.OpcDetail{{OpcId: 1}, {OpcId: 2}, {OpcId: 3}}}, nil)
 
 			test_helper.CreateSupplier(ctx, &models.Supplier{
-				Status: models.SupplierStatusActive,
+				Status: models.SupplierStatusVerified,
 				SupplierOpcMappings: []models.SupplierOpcMapping{
 					{ProcessingCenterID: 11},
 					{ProcessingCenterID: 12},
 				},
 			})
 			test_helper.CreateSupplier(ctx, &models.Supplier{
-				Status: models.SupplierStatusActive,
+				Status: models.SupplierStatusVerified,
 				SupplierOpcMappings: []models.SupplierOpcMapping{
 					{ProcessingCenterID: 13},
 				},
 			})
 			test_helper.CreateSupplier(ctx, &models.Supplier{
-				Status: models.SupplierStatusActive,
+				Status: models.SupplierStatusVerified,
 				SupplierOpcMappings: []models.SupplierOpcMapping{
 					{ProcessingCenterID: 13},
 				},
 			})
-			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusActive})
+			test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{
 				AssociatedWithCurrentUser: true,
@@ -364,6 +379,23 @@ var _ = Describe("ListSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(len(res.Data)).To(Equal(0))
 			Expect(res.TotalCount).To(Equal(uint64(0)))
+		})
+	})
+
+	Context("When created_at filter is applied", func() {
+		It("Should Respond with corresponding suppliers", func() {
+			test_helper.CreateSupplier(ctx, &models.Supplier{VaccountGorm: database.VaccountGorm{VModel: database.VModel{CreatedAt: time.Date(2021, 01, 10, 10, 0, 0, 0, time.UTC)}}})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{VaccountGorm: database.VaccountGorm{VModel: database.VModel{CreatedAt: time.Date(2021, 01, 12, 10, 0, 0, 0, time.UTC)}}})
+			test_helper.CreateSupplier(ctx, &models.Supplier{VaccountGorm: database.VaccountGorm{VModel: database.VModel{CreatedAt: time.Date(2021, 01, 14, 10, 0, 0, 0, time.UTC)}}})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{CreatedAtGte: "2021-01-12", CreatedAtLte: "2021-01-13"})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData := res.Data[0]
+			Expect(supplierData.Email).To(Equal(supplier.Email))
+			Expect(supplierData.Name).To(Equal(supplier.Name))
 		})
 	})
 })

@@ -25,7 +25,7 @@ var _ = Describe("ListSupplierWithAddress", func() {
 		It("Should return all the suppliers with addresses", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1, IsPhoneVerified: true})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
@@ -38,6 +38,12 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
 			Expect(supplierData1.Name).To(Equal(supplier1.Name))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
+			Expect(supplierData1.Phone).To(Equal(supplier1.Phone))
+			Expect(supplierData1.AlternatePhone).To(Equal(supplier1.AlternatePhone))
+			Expect(supplierData1.BusinessName).To(Equal(supplier1.BusinessName))
+			Expect(supplierData1.ShopImageUrl).To(Equal(supplier1.ShopImageURL))
+			Expect(supplierData1.Reason).To(Equal(supplier1.Reason))
+			Expect(supplierData1.IsPhoneVerified).To(Equal(false))
 
 			Expect(len(supplierData1.SupplierAddresses)).To(Equal(1))
 			addressData := supplierData1.SupplierAddresses[0]
@@ -58,6 +64,12 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
+			Expect(supplierData2.Phone).To(Equal(supplier2.Phone))
+			Expect(supplierData2.AlternatePhone).To(Equal(supplier2.AlternatePhone))
+			Expect(supplierData2.BusinessName).To(Equal(supplier2.BusinessName))
+			Expect(supplierData2.ShopImageUrl).To(Equal(supplier2.ShopImageURL))
+			Expect(supplierData2.Reason).To(Equal(supplier2.Reason))
+			Expect(supplierData2.IsPhoneVerified).To(Equal(true))
 
 			Expect(len(supplierData2.SupplierAddresses)).To(Equal(2))
 			Expect(supplierData2.SupplierAddresses[0].IsDefault).To(Equal(false))
@@ -133,10 +145,10 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
-			address1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
-			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Phone: address1.Phone})
+			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Phone: supplier2.Phone})
 			Expect(err).To(BeNil())
 			Expect(res.TotalCount).To(Equal(uint64(1)))
 			Expect(len(res.Data)).To(Equal(1))
@@ -144,6 +156,7 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier2.Email))
 			Expect(supplierData1.Name).To(Equal(supplier2.Name))
+			Expect(supplierData1.Phone).To(Equal(supplier2.Phone))
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
 		})

@@ -27,6 +27,24 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	if params.GetEmail() != "" {
 		query = query.Where("suppliers.email = ?", params.GetEmail())
 	}
+	if params.GetPhone() != "" {
+		query = query.Where("suppliers.phone = ?", params.GetPhone())
+	}
+	if params.GetCreatedAtGte() != "" {
+		query = query.Where("date(suppliers.created_at) >= ?", params.GetCreatedAtGte())
+	}
+	if params.GetCreatedAtLte() != "" {
+		query = query.Where("date(suppliers.created_at) <= ?", params.GetCreatedAtLte())
+	}
+	if params.GetStatus() != "" {
+		status := strings.Split(params.GetStatus(), ",")
+		query = query.Where("suppliers.status IN (?)", status)
+	}
+
+	if params.GetCity() != "" {
+		query = query.Where("supplier_addresses.city = ?", params.GetCity())
+	}
+
 	OpcIds := params.GetOpcIds()
 	if params.AssociatedWithCurrentUser {
 		OpcIds = append(OpcIds, GetOPCListForCurrentUser(ctx)...)
@@ -36,15 +54,6 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	}
 	if params.GetOpcId() != 0 {
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
-	}
-	if status := models.SupplierStatus(params.GetStatus()); status == models.SupplierStatusActive || status == models.SupplierStatusPending {
-		query = query.Where("suppliers.status = ?", params.GetStatus())
-	}
-	if params.GetPhone() != "" {
-		query = query.Where("supplier_addresses.phone = ?", params.GetPhone())
-	}
-	if params.GetCity() != "" {
-		query = query.Where("supplier_addresses.city = ?", params.GetCity())
 	}
 
 	return query
@@ -121,7 +130,7 @@ func PrepareSupplierResponse(supplier SupplierDBResponse) *supplierpb.SupplierOb
 func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierAddress {
 	if params.GetFirstname() == "" && params.GetLastname() == "" && params.GetAddress1() == "" && params.GetAddress2() == "" &&
 		params.GetLandmark() == "" && params.GetCity() == "" && params.GetState() == "" && params.GetCountry() == "" &&
-		params.GetZipcode() == "" && params.GetPhone() == "" && params.GetGstNumber() == "" {
+		params.GetZipcode() == "" && params.GetGstNumber() == "" {
 		return []models.SupplierAddress{}
 	}
 

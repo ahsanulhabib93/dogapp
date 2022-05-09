@@ -18,7 +18,14 @@ func getUniqueID() string {
 
 func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supplier {
 	id := getUniqueID()
+
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
+	supplier.Phone = fmt.Sprintf("01811122206%v", id)
+	supplier.AlternatePhone = fmt.Sprintf("01811122233%v", id)
+	supplier.BusinessName = fmt.Sprintf("Test Business %v", id)
+	supplier.Reason = fmt.Sprintf("Test reason %v", id)
+	supplier.ShopImageURL = fmt.Sprintf("/ss2/test_shop_image_url/%v", id)
+
 	if supplier.Name == "" {
 		supplier.Name = fmt.Sprintf("Test-%v", id)
 	}
