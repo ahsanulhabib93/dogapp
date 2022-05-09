@@ -46,12 +46,7 @@ func SendOtpAPI(ctx context.Context, supplierID uint64, phone string, content st
 
 //SendOtpAPI ...
 func (apiHelper *APIHelper) SendOtpAPI(ctx context.Context, otpParam otpPb.OtpParam) *otpPb.OtpResponse {
-	resp := &otpPb.OtpResponse{Success: false}
-	if otpParam.Resend {
-		resp, _ = Vigeon2Service.Otp().CreateOtp(ctx, &otpParam)
-	} else {
-		resp, _ = Vigeon2Service.Otp().ResendOtp(ctx, &otpParam)
-	}
+	resp, _ := Vigeon2Service.Otp().ResendOtp(ctx, &otpParam)
 	return resp
 }
 
