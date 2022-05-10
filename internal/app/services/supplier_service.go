@@ -243,7 +243,7 @@ func (ss *SupplierService) SendVerificationOtp(ctx context.Context, params *supp
 	} else if supplier.IsPhoneVerified {
 		resp.Message = "Phone number is already verified"
 	} else {
-		content := ""
+		content := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_phone_verification_otp_content", "OTP for supplier verification: $otp").(string)
 		otpResponse := helpers.SendOtpAPI(ctx, supplierID, supplier.Phone, content, params.Resend)
 
 		if !otpResponse.Success {
@@ -276,6 +276,7 @@ func (ss *SupplierService) VerifyOtp(ctx context.Context, params *supplierpb.Ver
 		if !otpResponse.Success {
 			resp.Message = otpResponse.Message
 		} else {
+			database.DBAPM(ctx).Model(&supplier).Update("IsPhoneVerified", true)
 			resp.Message = otpResponse.Message
 			resp.Success = true
 		}

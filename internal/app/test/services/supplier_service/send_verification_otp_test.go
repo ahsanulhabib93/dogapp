@@ -58,7 +58,7 @@ var _ = Describe("SendVerificationOtp", func() {
 				SourceType: "SupplierVerification",
 				SourceId:   supplier.ID,
 				Phone:      supplier.Phone,
-				Content:    "",
+				Content:    "OTP for supplier verification: $otp",
 				Resend:     false,
 			}
 			resp := otpPb.OtpResponse{
@@ -90,7 +90,7 @@ var _ = Describe("SendVerificationOtp", func() {
 				SourceType: "SupplierVerification",
 				SourceId:   supplier.ID,
 				Phone:      supplier.Phone,
-				Content:    "",
+				Content:    "OTP for supplier verification: $otp",
 				Resend:     true,
 			}
 			resp := otpPb.OtpResponse{
@@ -122,7 +122,7 @@ var _ = Describe("SendVerificationOtp", func() {
 				SourceType: "SupplierVerification",
 				SourceId:   supplier.ID,
 				Phone:      supplier.Phone,
-				Content:    "",
+				Content:    "OTP for supplier verification: $otp",
 				Resend:     false,
 			}
 			resp := otpPb.OtpResponse{

@@ -8,6 +8,7 @@ import (
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	otpPb "github.com/voonik/goConnect/api/go/vigeon2/otp"
+	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
@@ -74,6 +75,10 @@ var _ = Describe("VerifyOtp", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Verified OTP successfully"))
+
+			updatedSupplier := &models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
+			Expect(updatedSupplier.IsPhoneVerified).To(Equal(true))
 		})
 	})
 
@@ -103,6 +108,10 @@ var _ = Describe("VerifyOtp", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Invalid OTP"))
+
+			updatedSupplier := &models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
+			Expect(updatedSupplier.IsPhoneVerified).To(Equal(false))
 		})
 	})
 })
