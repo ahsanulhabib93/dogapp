@@ -35,6 +35,18 @@
             "description": "supplier Status update API",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:supplierphoneverificationpi:admin",
+            "description": "supplier phone verification API",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 1
+        },
+        {
+            "id": "supplierpanel:supplierphoneverificationpi:admin",
+            "description": "supplier phone verification API",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
         }
     ],
     "route_permissions": [
@@ -64,6 +76,34 @@
             "request_method": "GET",
             "service": "ss2",
             "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/supplier/send_verfication_otp",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierphoneverificationpi:admin",
+            "vaccount_id": 1
+        },
+        {
+            "route": "/supplier/send_verfication_otp",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierphoneverificationpi:admin",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/supplier/verify_otp",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierphoneverificationpi:admin",
+            "vaccount_id": 1
+        },
+        {
+            "route": "/supplier/verify_otp",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierphoneverificationpi:admin",
             "vaccount_id": 2
         }
     ],
@@ -106,6 +146,16 @@
         {
             "role_name": "Digital Credit Team",
             "permission_id": "supplierpanel:pendingsuppliermodule:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "supplierpanel:supplierphoneverificationpi:admin",
+            "vaccount_id": 1
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "supplierpanel:supplierphoneverificationpi:admin",
             "vaccount_id": 2
         }
     ]
