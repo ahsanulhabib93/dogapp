@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
