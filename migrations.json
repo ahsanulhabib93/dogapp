@@ -79,14 +79,14 @@
             "vaccount_id": 2
         },
         {
-            "route": "/supplier/send_verfication_otp",
+            "route": "/supplier/send_verification_otp",
             "request_method": "POST",
             "service": "ss2",
             "required_permission_id": "supplierpanel:supplierphoneverificationpi:admin",
             "vaccount_id": 1
         },
         {
-            "route": "/supplier/send_verfication_otp",
+            "route": "/supplier/send_verification_otp",
             "request_method": "POST",
             "service": "ss2",
             "required_permission_id": "supplierpanel:supplierphoneverificationpi:admin",
