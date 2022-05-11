@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
@@ -240,6 +241,62 @@ func (ss *SupplierService) GetUploadURL(ctx context.Context, params *supplierpb.
 	}
 
 	log.Printf("GetUploadUrlResponse: %+v", resp)
+	return resp, nil
+}
+
+// SendVerificationOtp ...
+func (ss *SupplierService) SendVerificationOtp(ctx context.Context, params *supplierpb.SendOtpParam) (*supplierpb.BasicApiResponse, error) {
+	log.Printf("SendVerificationOtpParams: %+v", params)
+	resp := &supplierpb.BasicApiResponse{Success: false}
+
+	supplierID := params.GetSupplierId()
+	supplier := models.Supplier{}
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplierID)
+	if result.RecordNotFound() {
+		resp.Message = "Supplier Not Found"
+	} else if supplier.IsPhoneVerified {
+		resp.Message = "Phone number is already verified"
+	} else {
+		content := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_phone_verification_otp_content", "OTP for supplier verification: $otp").(string)
+		otpResponse := helpers.SendOtpAPI(ctx, supplierID, supplier.Phone, content, params.Resend)
+
+		if !otpResponse.Success {
+			resp.Message = otpResponse.Message
+		} else {
+			resp.Message = otpResponse.Message
+			resp.Success = true
+		}
+	}
+
+	log.Printf("SendVerificationOtpResponse: %+v", resp)
+	return resp, nil
+}
+
+// VerifyOtp ...
+func (ss *SupplierService) VerifyOtp(ctx context.Context, params *supplierpb.VerifyOtpParam) (*supplierpb.BasicApiResponse, error) {
+	log.Printf("VerifyOtpParams: %+v", params)
+	resp := &supplierpb.BasicApiResponse{Success: false}
+
+	supplierID := params.GetSupplierId()
+	supplier := models.Supplier{}
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplierID)
+	if result.RecordNotFound() {
+		resp.Message = "Supplier Not Found"
+	} else if supplier.IsPhoneVerified {
+		resp.Message = "Phone number is already verified"
+	} else {
+		otpResponse := helpers.VerifyOtpAPI(ctx, supplierID, params.OtpCode)
+
+		if !otpResponse.Success {
+			resp.Message = otpResponse.Message
+		} else {
+			database.DBAPM(ctx).Model(&supplier).Update("IsPhoneVerified", true)
+			resp.Message = otpResponse.Message
+			resp.Success = true
+		}
+	}
+
+	log.Printf("VerifyOtpResponse: %+v", resp)
 	return resp, nil
 }
 
