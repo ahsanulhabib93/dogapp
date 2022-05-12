@@ -10,6 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -156,14 +157,50 @@ func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierA
 	}}
 }
 
-//IsValidStatusTransition ...
-func IsValidStatusTransition(supplier models.Supplier, newStatus models.SupplierStatus) (valid bool, message string) {
-	valid = true
-	// message = "Status Transition not allowed" - have to implement state transition rules
-	if supplier.Status == models.SupplierStatusPending && newStatus == models.SupplierStatusVerified {
-		if !(*supplier.IsPhoneVerified && len(supplier.PaymentAccountDetails) > 0 && len(supplier.SupplierAddresses) > 0) {
-			valid = false
+//IsValidStatusUpdate ...
+func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatus models.SupplierStatus) (valid bool, message string) {
+	if !isValidStatus(newStatus) {
+		message = "Invalid Status"
+	} else if !isValidStatusTransition(supplier.Status, newStatus) {
+		message = "Status transition not allowed"
+	} else if newStatus == models.SupplierStatusVerified {
+		paymentAccountsCount := database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Count()
+		addressesCount := database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Count()
+		if !(*supplier.IsPhoneVerified && paymentAccountsCount > 0 && addressesCount > 0) {
 			message = "Required details for verification are not present"
+		}
+	}
+
+	if message == "" {
+		valid = true
+	}
+	return
+}
+
+func isValidStatus(newStatus models.SupplierStatus) (valid bool) {
+	validStates := []models.SupplierStatus{models.SupplierStatusPending, models.SupplierStatusVerified, models.SupplierStatusFailed, models.SupplierStatusBlocked}
+	for _, status := range validStates {
+		if status == newStatus {
+			valid = true
+			break
+		}
+	}
+	return
+}
+
+func isValidStatusTransition(oldStatus, newStatus models.SupplierStatus) (valid bool) {
+	validStateTransitions := map[models.SupplierStatus][]models.SupplierStatus{
+		models.SupplierStatusPending:  {models.SupplierStatusVerified, models.SupplierStatusFailed, models.SupplierStatusBlocked},
+		models.SupplierStatusVerified: {models.SupplierStatusBlocked},
+		models.SupplierStatusBlocked:  {models.SupplierStatusVerified},
+	}
+	for fromStatus, toStates := range validStateTransitions {
+		if oldStatus == fromStatus {
+			for _, toStatus := range toStates {
+				if newStatus == toStatus {
+					valid = true
+				}
+			}
 		}
 	}
 	return

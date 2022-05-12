@@ -171,17 +171,14 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 	supplier := models.Supplier{}
 	newSupplierStatus := models.SupplierStatus(params.GetStatus())
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetId())
+	fmt.Printf("newSupplierStatus %+v", newSupplierStatus)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if newSupplierStatus == "" {
-		resp.Message = "Supplier Status is required"
-	} else if valid, message := helpers.IsValidStatusTransition(supplier, newSupplierStatus); !valid {
+	} else if valid, message := helpers.IsValidStatusUpdate(ctx, supplier, newSupplierStatus); !valid {
 		resp.Message = message
 	} else {
-		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
-			Status: newSupplierStatus,
-			Reason: params.GetReason(),
-		})
+		updateDetails := map[string]interface{}{"status": newSupplierStatus, "reason": params.GetReason()} //to allow empty string update for reason
+		err := database.DBAPM(ctx).Model(&supplier).Updates(updateDetails)
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
 		} else {
