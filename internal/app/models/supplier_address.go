@@ -40,3 +40,13 @@ func (supplierAddress *SupplierAddress) Validate(db *gorm.DB) {
 		db.AddError(errors.New("Invalid Phone Number"))
 	}
 }
+
+//AfterSave ...
+func (supplierAddress *SupplierAddress) AfterSave(db *gorm.DB) error {
+	supplier := Supplier{}
+	db.Model(&supplier).First(&supplier, "id = ? ", supplierAddress.SupplierID)
+	if supplier.Status == SupplierStatusVerified || supplier.Status == SupplierStatusFailed {
+		db.Model(&supplier).Update("status", SupplierStatusPending)
+	}
+	return nil
+}

@@ -53,12 +53,15 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount.BranchName).To(Equal(param.BranchName))
 			Expect(paymentAccount.RoutingNumber).To(Equal(param.RoutingNumber))
 			Expect(paymentAccount.IsDefault).To(Equal(true))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
 
 	Context("Updating non-default address as default", func() {
 		It("Should update other default address as non-default and return success response", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusFailed})
 			paymentAccount1 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 			paymentAccount2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
 			paymentAccount3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
@@ -78,6 +81,9 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount2.IsDefault).To(Equal(false))
 			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccount3, paymentAccount3.ID)
 			Expect(paymentAccount3.IsDefault).To(Equal(true))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
 

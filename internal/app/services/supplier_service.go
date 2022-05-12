@@ -135,20 +135,27 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
 	} else {
+		var isPhoneVerified bool
 		if params.GetPhone() != "" && params.GetPhone() != supplier.Phone {
-			params.IsPhoneVerified = false
+			isPhoneVerified = false
 		} else {
-			params.IsPhoneVerified = *supplier.IsPhoneVerified
+			isPhoneVerified = *supplier.IsPhoneVerified
+		}
+
+		var status models.SupplierStatus
+		if supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed {
+			status = models.SupplierStatusPending // Moving to Pending if any data is updated
 		}
 
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
+			Status:                   status,
 			Name:                     params.GetName(),
 			Email:                    params.GetEmail(),
 			SupplierType:             utils.SupplierType(params.GetSupplierType()),
 			BusinessName:             params.GetBusinessName(),
 			Phone:                    params.GetPhone(),
 			AlternatePhone:           params.GetAlternatePhone(),
-			IsPhoneVerified:          &params.IsPhoneVerified,
+			IsPhoneVerified:          &isPhoneVerified,
 			ShopImageURL:             params.GetShopImageUrl(),
 			SupplierCategoryMappings: helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})

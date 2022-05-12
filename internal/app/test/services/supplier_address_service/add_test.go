@@ -65,12 +65,15 @@ var _ = Describe("AddSupplierAddress", func() {
 			Expect(address2.Phone).To(Equal(param.Phone))
 			Expect(address2.GstNumber).To(Equal(param.GstNumber))
 			Expect(address2.IsDefault).To(Equal(false))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
 
 	Context("While adding address for existing Supplier without previous address", func() {
 		It("Should create address and return success response", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusFailed})
 			param := &addresspb.SupplierAddressParam{
 				SupplierId: supplier.ID,
 				Firstname:  "Firstname",
@@ -108,6 +111,9 @@ var _ = Describe("AddSupplierAddress", func() {
 			Expect(address1.Phone).To(Equal(param.Phone))
 			Expect(address1.GstNumber).To(Equal(param.GstNumber))
 			Expect(address1.IsDefault).To(Equal(true))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
 
