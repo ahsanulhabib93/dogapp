@@ -26,10 +26,10 @@ type Supplier struct {
 	Status                   SupplierStatus `gorm:"default:'Pending'"`
 	Reason                   string
 	Email                    string
-	Phone                    string                 `valid:"required"`
+	Phone                    string
 	AlternatePhone           string                 `json:"alternate_phone"`
 	BusinessName             string                 `json:"business_name"`
-	IsPhoneVerified          bool                   `gorm:"default:false" json:"is_phone_verified"`
+	IsPhoneVerified          *bool                  `gorm:"default:false" json:"is_phone_verified"` // using pointer to update false value in Edit API
 	ShopImageURL             string                 `json:"shop_image_url"`
 	UserID                   *uint64                `json:"user_id"`
 	SupplierType             utils.SupplierType     `json:"supplier_type" valid:"required"`

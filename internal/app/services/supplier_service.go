@@ -135,11 +135,10 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
 	} else {
-
 		if params.GetPhone() != "" && params.GetPhone() != supplier.Phone {
 			params.IsPhoneVerified = false
 		} else {
-			params.IsPhoneVerified = supplier.IsPhoneVerified
+			params.IsPhoneVerified = *supplier.IsPhoneVerified
 		}
 
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
@@ -149,7 +148,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			BusinessName:             params.GetBusinessName(),
 			Phone:                    params.GetPhone(),
 			AlternatePhone:           params.GetAlternatePhone(),
-			IsPhoneVerified:          params.GetIsPhoneVerified(),
+			IsPhoneVerified:          &params.IsPhoneVerified,
 			ShopImageURL:             params.GetShopImageUrl(),
 			SupplierCategoryMappings: helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
@@ -254,7 +253,7 @@ func (ss *SupplierService) SendVerificationOtp(ctx context.Context, params *supp
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplierID)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if supplier.IsPhoneVerified {
+	} else if *supplier.IsPhoneVerified {
 		resp.Message = "Phone number is already verified"
 	} else {
 		content := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_phone_verification_otp_content", "OTP for supplier verification: $otp").(string)
@@ -282,7 +281,7 @@ func (ss *SupplierService) VerifyOtp(ctx context.Context, params *supplierpb.Ver
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplierID)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if supplier.IsPhoneVerified {
+	} else if *supplier.IsPhoneVerified {
 		resp.Message = "Phone number is already verified"
 	} else {
 		otpResponse := helpers.VerifyOtpAPI(ctx, supplierID, params.OtpCode)

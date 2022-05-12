@@ -20,7 +20,6 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 	id := getUniqueID()
 
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
-	supplier.Phone = fmt.Sprintf("8801%v", id[:9])
 	supplier.AlternatePhone = fmt.Sprintf("01811122233%v", id)
 	supplier.BusinessName = fmt.Sprintf("Test Business %v", id)
 	supplier.Reason = fmt.Sprintf("Test reason %v", id)
@@ -34,6 +33,9 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 	}
 	if supplier.Status == "" {
 		supplier.Status = models.SupplierStatusPending
+	}
+	if supplier.Phone == "" {
+		supplier.Phone = fmt.Sprintf("8801%v", id[:9])
 	}
 
 	database.DBAPM(ctx).Save(supplier)

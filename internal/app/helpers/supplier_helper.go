@@ -161,7 +161,7 @@ func IsValidStatusTransition(supplier models.Supplier, newStatus models.Supplier
 	valid = true
 	// message = "Status Transition not allowed" - have to implement state transition rules
 	if supplier.Status == models.SupplierStatusPending && newStatus == models.SupplierStatusVerified {
-		if !(supplier.IsPhoneVerified && len(supplier.PaymentAccountDetails) > 0 && len(supplier.SupplierAddresses) > 0) {
+		if !(*supplier.IsPhoneVerified && len(supplier.PaymentAccountDetails) > 0 && len(supplier.SupplierAddresses) > 0) {
 			valid = false
 			message = "Required details for verification are not present"
 		}

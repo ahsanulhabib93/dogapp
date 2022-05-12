@@ -214,8 +214,8 @@ var _ = Describe("AddSupplierAddress", func() {
 		})
 	})
 
-	Context("While adding phone number", func() {
-		It("Should return error response on invalid phone number", func() {
+	Context("While adding address with invalid phone number", func() {
+		It("Should return error response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &addresspb.SupplierAddressParam{
 				SupplierId: supplier.ID,
@@ -232,8 +232,10 @@ var _ = Describe("AddSupplierAddress", func() {
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier Address: Invalid Phone Number"))
 		})
+	})
 
-		It("Should return error response on empty phone number", func() {
+	Context("While adding address with empty phone number", func() {
+		It("Should return error response", func() {
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
 			param := &addresspb.SupplierAddressParam{
 				SupplierId: supplier.ID,
