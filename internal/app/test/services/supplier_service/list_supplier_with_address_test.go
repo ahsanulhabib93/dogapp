@@ -25,7 +25,8 @@ var _ = Describe("ListSupplierWithAddress", func() {
 		It("Should return all the suppliers with addresses", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1, IsPhoneVerified: true})
+			isPhoneVerified := true
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1, IsPhoneVerified: &isPhoneVerified})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 

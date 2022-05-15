@@ -24,9 +24,10 @@ var _ = Describe("GetSupplier", func() {
 
 	Context("Get valid supplier", func() {
 		It("Should Respond with success", func() {
+			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierType:             utils.Hlc,
-				IsPhoneVerified:          true,
+				IsPhoneVerified:          &isPhoneVerified,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 			})

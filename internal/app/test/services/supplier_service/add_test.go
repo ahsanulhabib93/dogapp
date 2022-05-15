@@ -114,11 +114,14 @@ var _ = Describe("AddSupplier", func() {
 			Expect(address.GstNumber).To(Equal(param.GstNumber))
 			Expect(address.IsDefault).To(Equal(true))
 		})
+	})
 
-		It("Adding Supplier without Address and should return success", func() {
+	Context("Adding new Supplier without address", func() {
+		It("should create supplier and return success", func() {
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				Email:        "Email",
+				Phone:        "8801234567890",
 				SupplierType: uint64(utils.Hlc),
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
@@ -127,9 +130,9 @@ var _ = Describe("AddSupplier", func() {
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier Added Successfully"))
 
-			var count int
-			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", res.Id).Count(&count)
-			Expect(count).To(Equal(1))
+			supplier := &models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", res.Id).First(&supplier)
+			Expect(supplier.Email).To(Equal(param.Email))
 		})
 	})
 
@@ -164,7 +167,7 @@ var _ = Describe("AddSupplier", func() {
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: Supplier Already Exists, please contact with the admin team to get access"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: Supplier Already Exists"))
 		})
 	})
 
@@ -173,7 +176,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
 				Email:    "Email",
-				Phone:    "1234567890",
+				Phone:    "01123456789",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
 			}
@@ -196,6 +199,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
 				Email:    "Email",
+				Phone:    "01123456789",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
 				OpcIds:   opcIds,
@@ -246,6 +250,7 @@ var _ = Describe("AddSupplier", func() {
 
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
+				Phone:                "01123456789",
 				SupplierType:         uint64(utils.Hlc),
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
@@ -271,6 +276,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
 				SupplierType:         uint64(utils.Hlc),
+				Phone:                "01123456789",
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
 			}
@@ -283,6 +289,54 @@ var _ = Describe("AddSupplier", func() {
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Where("supplier_id = ?", res.Id).Count(&count)
 			Expect(count).To(Equal(2))
+		})
+	})
+
+	Context("Adding Supplier with invalid phone number", func() {
+		It("Should return error response", func() {
+			param := &supplierpb.SupplierParam{
+				Name:         "Name",
+				Email:        "Email",
+				Phone:        "1234",
+				SupplierType: uint64(utils.Hlc),
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: Invalid Phone Number"))
+		})
+	})
+
+	Context("Adding Supplier with empty phone number", func() {
+		It("Should return error response", func() {
+			param := &supplierpb.SupplierParam{
+				Name:         "Name",
+				Email:        "Email",
+				SupplierType: uint64(utils.Hlc),
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: Phone Number can't be blank"))
+		})
+	})
+
+	Context("Adding Supplier with duplicate phone number", func() {
+		It("Should return error response", func() {
+			test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567890"})
+			param := &supplierpb.SupplierParam{
+				Name:         "Name",
+				Email:        "Email",
+				SupplierType: uint64(utils.Hlc),
+				Phone:        "8801234567890",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: Supplier Already Exists"))
 		})
 	})
 })

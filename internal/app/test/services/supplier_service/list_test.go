@@ -49,9 +49,10 @@ var _ = Describe("ListSupplier", func() {
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 			})
+			isPhoneVerified := true
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierType:    utils.L1,
-				IsPhoneVerified: true,
+				IsPhoneVerified: &isPhoneVerified,
 			})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})

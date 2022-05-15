@@ -55,12 +55,15 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			Expect(paymentAccount.BranchName).To(Equal(param.BranchName))
 			Expect(paymentAccount.RoutingNumber).To(Equal(param.RoutingNumber))
 			Expect(paymentAccount.IsDefault).To(Equal(true))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
 
 	Context("While adding default payment account", func() {
 		It("Should return success response and other default payment should be updated as non-default", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc, Status: models.SupplierStatusVerified})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
@@ -90,6 +93,9 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			Expect(paymentAccount2.IsDefault).To(Equal(false))
 			paymentAccount3 := paymentAccounts[2]
 			Expect(paymentAccount3.IsDefault).To(Equal(true))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
 

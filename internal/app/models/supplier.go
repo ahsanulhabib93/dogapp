@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 	"github.com/voonik/goFramework/pkg/database"
@@ -28,7 +29,7 @@ type Supplier struct {
 	Phone                    string
 	AlternatePhone           string                 `json:"alternate_phone"`
 	BusinessName             string                 `json:"business_name"`
-	IsPhoneVerified          bool                   `gorm:"default:false" json:"is_phone_verified"`
+	IsPhoneVerified          *bool                  `gorm:"default:false" json:"is_phone_verified"` // using pointer to update false value in Edit API
 	ShopImageURL             string                 `json:"shop_image_url"`
 	UserID                   *uint64                `json:"user_id"`
 	SupplierType             utils.SupplierType     `json:"supplier_type" valid:"required"`
@@ -40,16 +41,19 @@ type Supplier struct {
 }
 
 // Validate ...
-func (supplier Supplier) Validate(db *gorm.DB) {
-	s := &Supplier{}
-	result := db.Model(&supplier).First(s, "name = ?", supplier.Name)
-	if !result.RecordNotFound() && s.ID != supplier.ID {
-		db.AddError(errors.New("Supplier Already Exists, please contact with the admin team to get access"))
+func (supplier *Supplier) Validate(db *gorm.DB) {
+	result := db.Model(&supplier).First(&Supplier{}, "id != ? and (name = ? or phone = ?)", supplier.ID, supplier.Name, supplier.Phone)
+	if !result.RecordNotFound() {
+		db.AddError(errors.New("Supplier Already Exists"))
 	}
 
-	// if !supplier.Status.IsValid() {
-	// 	db.AddError(errors.New("Status should be Active/Pending/Deactivated"))
-	// }
+	if phoneNumber := strings.TrimSpace(supplier.Phone); len(phoneNumber) == 0 {
+		db.AddError(errors.New("Phone Number can't be blank"))
+	} else if !((strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) ||
+		(strings.HasPrefix(phoneNumber, "01") && len(phoneNumber) == 11) ||
+		(strings.HasPrefix(phoneNumber, "1") && len(phoneNumber) == 10)) {
+		db.AddError(errors.New("Invalid Phone Number"))
+	}
 }
 
 // GetCategoryMappingJoinStr ...
@@ -61,28 +65,3 @@ func GetCategoryMappingJoinStr() string {
 func GetOpcMappingJoinStr() string {
 	return "LEFT JOIN supplier_opc_mappings on supplier_opc_mappings.supplier_id = suppliers.id and supplier_opc_mappings.deleted_at IS NULL and supplier_opc_mappings.vaccount_id = suppliers.vaccount_id"
 }
-
-// var supplierStatusTransitionState = map[SupplierStatus][]SupplierStatus{
-// 	SupplierStatusPending:    {SupplierStatusActive, SupplierStatusDeactivate},
-// 	SupplierStatusActive:     {SupplierStatusDeactivate},
-// 	SupplierStatusDeactivate: {SupplierStatusActive},
-// }
-
-// func (s SupplierStatus) IsValid() bool {
-// 	_, found := supplierStatusTransitionState[s]
-// 	return len(s) == 0 || found
-// }
-
-// func (s SupplierStatus) IsTransitionAllowed(status SupplierStatus) bool {
-// 	if s == status {
-// 		return true
-// 	}
-
-// 	for _, next := range supplierStatusTransitionState[s] {
-// 		if next == status {
-// 			return true
-// 		}
-// 	}
-
-// 	return false
-// }

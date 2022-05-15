@@ -37,7 +37,8 @@ var _ = Describe("SendVerificationOtp", func() {
 
 	Context("For Supplier with phone verified already", func() {
 		It("Should return error", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{IsPhoneVerified: true})
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{IsPhoneVerified: &isPhoneVerified})
 			param := &supplierpb.SendOtpParam{SupplierId: supplier.ID}
 			res, err := new(services.SupplierService).SendVerificationOtp(ctx, param)
 

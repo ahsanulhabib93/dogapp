@@ -25,7 +25,9 @@ var _ = Describe("EditSupplier", func() {
 
 	Context("Editing existing Supplier", func() {
 		It("Should update supplier and return success response", func() {
+			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				IsPhoneVerified: &isPhoneVerified,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 1},
 					{CategoryID: 2},
@@ -63,6 +65,8 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.Phone).To(Equal(param.Phone))
 			Expect(updatedSupplier.AlternatePhone).To(Equal(param.AlternatePhone))
 			Expect(updatedSupplier.ShopImageURL).To(Equal(param.ShopImageUrl))
+			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(false))
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
 			Expect(len(updatedSupplier.SupplierOpcMappings)).To(Equal(2))
@@ -72,7 +76,38 @@ var _ = Describe("EditSupplier", func() {
 
 	Context("Editing only one field of existing Supplier", func() {
 		It("Should update supplier name and return success response", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				IsPhoneVerified: &isPhoneVerified,
+				Status:          models.SupplierStatusBlocked,
+			})
+			param := &supplierpb.SupplierObject{
+				Id:   supplier.ID,
+				Name: "Name",
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
+
+			updatedSupplier := &models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
+			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
+			Expect(updatedSupplier.SupplierType).To(Equal(utils.Hlc))
+			Expect(updatedSupplier.Name).To(Equal(param.Name))
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusBlocked))
+			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
+		})
+	})
+
+	Context("Editing Supplier details in Verified status", func() {
+		It("Should update supplier details and update status as Pending and return success response", func() {
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				IsPhoneVerified: &isPhoneVerified,
+				Status:          models.SupplierStatusVerified,
+			})
 			param := &supplierpb.SupplierObject{
 				Id:   supplier.ID,
 				Name: "Name",
@@ -89,8 +124,8 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
+			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
 		})
-
 	})
 
 	Context("Editing invalid supplier", func() {
@@ -116,21 +151,18 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while updating Supplier: Supplier Already Exists, please contact with the admin team to get access"))
+			Expect(res.Message).To(Equal("Error while updating Supplier: Supplier Already Exists"))
 		})
 	})
 
-	Context("Editing with category ids", func() {
-		It("Should delete old mapping", func() {
+	Context("Editing with new set of category ids", func() {
+		It("Should delete old mapping and add new mapping", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 101},
 					{CategoryID: 201},
 				},
 			})
-			updatedSupplier := models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
-			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(2))
 
 			param := &supplierpb.SupplierObject{
 				Id:           supplier.ID,
@@ -144,31 +176,27 @@ var _ = Describe("EditSupplier", func() {
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
 
-			updatedSupplier = models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
-			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
-			Expect(updatedSupplier.SupplierCategoryMappings[0].CategoryID).To(Equal(uint64(101)))
+			var categoryIds []uint64
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Pluck("category_id", &categoryIds)
+			Expect(len(categoryIds)).To(Equal(3))
+			Expect(categoryIds).To(ContainElements([]uint64{100, 101, 102}))
 
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
 			Expect(count).To(Equal(4))
 		})
+	})
 
+	Context("Editing with new set of category ids which got removed before", func() {
 		It("Should restore deleted mapping", func() {
 			t := time.Now()
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 101},
 					{CategoryID: 200},
-					{
-						CategoryID: 567,
-						DeletedAt:  &t,
-					},
+					{CategoryID: 567, DeletedAt: &t},
 				},
 			})
-			updatedSupplier := models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
-			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(2))
 
 			param := &supplierpb.SupplierObject{
 				Id:           supplier.ID,
@@ -177,21 +205,56 @@ var _ = Describe("EditSupplier", func() {
 				SupplierType: uint64(utils.L1),
 				CategoryIds:  []uint64{101, 200, 567},
 			}
+
 			res, err := new(services.SupplierService).Edit(ctx, param)
+
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
 
-			updatedSupplier = models.Supplier{}
+			updatedSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierCategoryMappings").First(&updatedSupplier, supplier.ID)
-			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
-			Expect(utils.Int64Min(updatedSupplier.SupplierCategoryMappings[0].CategoryID,
-				utils.Int64Min(updatedSupplier.SupplierCategoryMappings[1].CategoryID,
-					updatedSupplier.SupplierCategoryMappings[2].CategoryID))).To(Equal(uint64(101)))
+
+			categoryMappings := updatedSupplier.SupplierCategoryMappings
+			Expect(len(categoryMappings)).To(Equal(3))
+			Expect(categoryMappings[0].CategoryID).To(Equal(uint64(101)))
+			Expect(categoryMappings[1].CategoryID).To(Equal(uint64(200)))
+			Expect(categoryMappings[2].CategoryID).To(Equal(uint64(567)))
 
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
 			Expect(count).To(Equal(3))
+		})
+	})
+
+	Context("Editing with invalid phone number", func() {
+		It("Should return error response", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			param := &supplierpb.SupplierObject{
+				Id:    supplier1.ID,
+				Phone: "1234",
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while updating Supplier: Invalid Phone Number"))
+		})
+	})
+
+	Context("Editing Supplier with duplicate phone number", func() {
+		It("Should return error response", func() {
+			test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567890"})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567800"})
+			param := &supplierpb.SupplierObject{
+				Id:    supplier1.ID,
+				Phone: "8801234567890",
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while updating Supplier: Supplier Already Exists"))
 		})
 	})
 })

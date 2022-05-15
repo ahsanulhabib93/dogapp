@@ -135,13 +135,27 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
 	} else {
+		var isPhoneVerified bool
+		if params.GetPhone() != "" && params.GetPhone() != supplier.Phone {
+			isPhoneVerified = false
+		} else {
+			isPhoneVerified = *supplier.IsPhoneVerified
+		}
+
+		var status models.SupplierStatus
+		if supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed {
+			status = models.SupplierStatusPending // Moving to Pending if any data is updated
+		}
+
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
+			Status:                   status,
 			Name:                     params.GetName(),
 			Email:                    params.GetEmail(),
 			SupplierType:             utils.SupplierType(params.GetSupplierType()),
 			BusinessName:             params.GetBusinessName(),
 			Phone:                    params.GetPhone(),
 			AlternatePhone:           params.GetAlternatePhone(),
+			IsPhoneVerified:          &isPhoneVerified,
 			ShopImageURL:             params.GetShopImageUrl(),
 			SupplierCategoryMappings: helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
@@ -162,14 +176,16 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 	resp := supplierpb.BasicApiResponse{Success: false}
 
 	supplier := models.Supplier{}
+	newSupplierStatus := models.SupplierStatus(params.GetStatus())
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetId())
+	fmt.Printf("newSupplierStatus %+v", newSupplierStatus)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
+	} else if valid, message := helpers.IsValidStatusUpdate(ctx, supplier, newSupplierStatus); !valid {
+		resp.Message = message
 	} else {
-		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
-			Status: models.SupplierStatus(params.GetStatus()),
-			Reason: params.GetReason(),
-		})
+		updateDetails := map[string]interface{}{"status": newSupplierStatus, "reason": params.GetReason()} //to allow empty string update for reason
+		err := database.DBAPM(ctx).Model(&supplier).Updates(updateDetails)
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
 		} else {
@@ -241,7 +257,7 @@ func (ss *SupplierService) SendVerificationOtp(ctx context.Context, params *supp
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplierID)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if supplier.IsPhoneVerified {
+	} else if *supplier.IsPhoneVerified {
 		resp.Message = "Phone number is already verified"
 	} else {
 		content := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_phone_verification_otp_content", "OTP for supplier verification: $otp").(string)
@@ -269,7 +285,7 @@ func (ss *SupplierService) VerifyOtp(ctx context.Context, params *supplierpb.Ver
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplierID)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if supplier.IsPhoneVerified {
+	} else if *supplier.IsPhoneVerified {
 		resp.Message = "Phone number is already verified"
 	} else {
 		otpResponse := helpers.VerifyOtpAPI(ctx, supplierID, params.OtpCode)

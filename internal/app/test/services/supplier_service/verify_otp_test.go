@@ -38,7 +38,8 @@ var _ = Describe("VerifyOtp", func() {
 
 	Context("For Supplier with phone verified already", func() {
 		It("Should return error", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{IsPhoneVerified: true})
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{IsPhoneVerified: &isPhoneVerified})
 			param := &supplierpb.VerifyOtpParam{SupplierId: supplier.ID, OtpCode: "1234"}
 			res, err := new(services.SupplierService).VerifyOtp(ctx, param)
 
@@ -78,7 +79,7 @@ var _ = Describe("VerifyOtp", func() {
 
 			updatedSupplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
-			Expect(updatedSupplier.IsPhoneVerified).To(Equal(true))
+			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
 		})
 	})
 
@@ -111,7 +112,7 @@ var _ = Describe("VerifyOtp", func() {
 
 			updatedSupplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
-			Expect(updatedSupplier.IsPhoneVerified).To(Equal(false))
+			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(false))
 		})
 	})
 })

@@ -22,6 +22,7 @@ type PaymentAccountDetail struct {
 	IsDefault      bool                 `json:"is_default,omitempty"`
 }
 
+// Validate ...
 func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 	if !paymentAccount.IsDefault {
 		result := db.Model(&paymentAccount).Where("supplier_id = ? and is_default = ? and id != ?", paymentAccount.SupplierID, true, paymentAccount.ID).First(&PaymentAccountDetail{})
@@ -45,6 +46,16 @@ func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 		(paymentAccount.BankID == 0 || len(strings.TrimSpace(paymentAccount.BranchName)) == 0) {
 		db.AddError(errors.New("For Bank account type BankID and BranchName needed"))
 	}
+}
+
+//AfterSave ...
+func (paymentAccount *PaymentAccountDetail) AfterSave(db *gorm.DB) error {
+	supplier := Supplier{}
+	db.Model(&supplier).First(&supplier, "id = ? ", paymentAccount.SupplierID)
+	if supplier.Status == SupplierStatusVerified || supplier.Status == SupplierStatusFailed {
+		db.Model(&supplier).Update("status", SupplierStatusPending)
+	}
+	return nil
 }
 
 func (paymentAccount PaymentAccountDetail) validAccountSubType() bool {
