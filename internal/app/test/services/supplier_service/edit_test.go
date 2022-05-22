@@ -139,22 +139,6 @@ var _ = Describe("EditSupplier", func() {
 		})
 	})
 
-	Context("Editing with other supplier name", func() {
-		It("Should return error response", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			param := &supplierpb.SupplierObject{
-				Id:   supplier1.ID,
-				Name: supplier2.Name,
-			}
-			res, err := new(services.SupplierService).Edit(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while updating Supplier: Supplier Already Exists"))
-		})
-	})
-
 	Context("Editing with new set of category ids", func() {
 		It("Should delete old mapping and add new mapping", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{

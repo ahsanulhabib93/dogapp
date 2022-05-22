@@ -154,7 +154,7 @@ var _ = Describe("AddSupplier", func() {
 	})
 
 	Context("Adding Supplier with existing name", func() {
-		It("Should return error response", func() {
+		It("Should create supplier", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			param := &supplierpb.SupplierParam{
 				Name:         supplier1.Name,
@@ -166,8 +166,12 @@ var _ = Describe("AddSupplier", func() {
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: Supplier Already Exists"))
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Added Successfully"))
+
+			supplier := &models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", res.Id).First(&supplier)
+			Expect(supplier.Name).To(Equal(supplier1.Name))
 		})
 	})
 

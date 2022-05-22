@@ -42,7 +42,7 @@ type Supplier struct {
 
 // Validate ...
 func (supplier *Supplier) Validate(db *gorm.DB) {
-	result := db.Model(&supplier).First(&Supplier{}, "id != ? and (name = ? or phone = ?)", supplier.ID, supplier.Name, supplier.Phone)
+	result := db.Model(&supplier).First(&Supplier{}, "id != ? and phone = ?", supplier.ID, supplier.Phone)
 	if !result.RecordNotFound() {
 		db.AddError(errors.New("Supplier Already Exists"))
 	}
