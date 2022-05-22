@@ -29,7 +29,8 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 		query = query.Where("suppliers.id IN (?)", params.GetSupplierIds())
 	}
 	if params.GetName() != "" {
-		query = query.Where("suppliers.name LIKE ?", fmt.Sprintf("%s%%", params.GetName()))
+		searchValue := fmt.Sprintf("%%%s%%", params.GetName())
+		query = query.Where("(suppliers.name LIKE ? or suppliers.business_name LIKE ?)", searchValue, searchValue)
 	}
 	if params.GetEmail() != "" {
 		query = query.Where("suppliers.email = ?", params.GetEmail())
