@@ -15,41 +15,32 @@ import (
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
-var _ = Describe("GetUploadUrl", func() {
+var _ = Describe("GetDownloadUrl", func() {
 	var ctx context.Context
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
 	})
 
-	Context("Get Upload url", func() {
+	Context("Get Download url", func() {
+		var filePath string
+
 		BeforeEach(func() {
+			filePath = "ss2/shop_images/shop_images-1651488390922/433/image.png"
 			cloudStorageInterface := new(mocks.CloudStorageInterface)
 			cloudstorage.InjectGcsMockInstance(cloudStorageInterface)
-			cloudStorageInterface.On("GetUploadURL", ctx, utils.GetBucketName(ctx), mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return("https://test/ss2/image.png", nil)
+			cloudStorageInterface.On("GetObjectSignedURLForDownload", ctx, utils.GetBucketName(ctx), filePath, mock.AnythingOfType("time.Time")).Return("https://test/ss2/image.png", nil)
 		})
 
 		It("Should return path and file url", func() {
-			param := &supplierpb.GetUploadUrlParam{UploadType: "SupplierShopImage"}
-			res, err := new(services.SupplierService).GetUploadURL(ctx, param)
+			param := &supplierpb.GetDownloadUrlParam{Path: "ss2/shop_images/shop_images-1651488390922/433/image.png"}
+			res, err := new(services.SupplierService).GetDownloadURL(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("Fetched upload url successfully"))
-			Expect(res.Path).To(HavePrefix("ss2/shop_images/shop_images-"))
+			Expect(res.Message).To(Equal("Fetched url successfully"))
+			Expect(res.Path).To(HavePrefix(filePath))
 			Expect(res.Url).To(Equal("https://test/ss2/image.png"))
-		})
-	})
-
-	Context("For invalid upload type", func() {
-
-		It("Should return error", func() {
-			param := &supplierpb.GetUploadUrlParam{UploadType: "test"}
-			res, err := new(services.SupplierService).GetUploadURL(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Invalid File Type"))
 		})
 	})
 
