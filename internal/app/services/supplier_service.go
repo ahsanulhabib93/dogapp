@@ -247,6 +247,31 @@ func (ss *SupplierService) GetUploadURL(ctx context.Context, params *supplierpb.
 	return resp, nil
 }
 
+// GetDownloadURL to get supplier shop image
+func (ss *SupplierService) GetDownloadURL(ctx context.Context, params *supplierpb.GetDownloadUrlParam) (*supplierpb.UrlResponse, error) {
+	log.Printf("GetDownloadUrlParams: %+v", params)
+	resp := &supplierpb.UrlResponse{Success: false}
+
+	path := params.GetPath()
+	bucketName := utils.GetBucketName(ctx)
+	fileURL, err := utils.GetUploadURL(ctx, bucketName, path)
+
+	log.Printf("GetDownloadUrl: %+v", fileURL)
+	if err != nil {
+		resp.Message = err.Error()
+	} else {
+		resp = &supplierpb.UrlResponse{
+			Url:     fileURL,
+			Path:    path,
+			Success: true,
+			Message: "Fetched upload url successfully",
+		}
+	}
+
+	log.Printf("GetDownloadUrlResponse: %+v", resp)
+	return resp, nil
+}
+
 // SendVerificationOtp ...
 func (ss *SupplierService) SendVerificationOtp(ctx context.Context, params *supplierpb.SendOtpParam) (*supplierpb.BasicApiResponse, error) {
 	log.Printf("SendVerificationOtpParams: %+v", params)
