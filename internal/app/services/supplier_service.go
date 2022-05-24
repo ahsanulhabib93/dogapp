@@ -10,6 +10,7 @@ import (
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/file_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
@@ -224,11 +225,11 @@ func (ss *SupplierService) GetUploadURL(ctx context.Context, params *supplierpb.
 	resp := &supplierpb.UrlResponse{Success: false}
 
 	if params.GetUploadType() != "SupplierShopImage" {
-		resp.Message = "Invalid Upload Type"
+		resp.Message = "Invalid File Type"
 	} else {
-		object := utils.GetObjectName("shop_images", "", "")
+		filePath := file_helper.GenerateFilePath(utils.BucketFolder, "shop_images", "", "png")
 		bucketName := utils.GetBucketName(ctx)
-		fileURL, err := utils.GetUploadURL(ctx, bucketName, object)
+		fileURL, err := file_helper.GetUploadURL(ctx, bucketName, filePath)
 
 		log.Printf("GetUploadUrl: %+v", fileURL)
 		if err != nil {
@@ -236,7 +237,7 @@ func (ss *SupplierService) GetUploadURL(ctx context.Context, params *supplierpb.
 		} else {
 			resp = &supplierpb.UrlResponse{
 				Url:     fileURL,
-				Path:    object,
+				Path:    filePath,
 				Success: true,
 				Message: "Fetched upload url successfully",
 			}
@@ -252,9 +253,9 @@ func (ss *SupplierService) GetDownloadURL(ctx context.Context, params *supplierp
 	log.Printf("GetDownloadUrlParams: %+v", params)
 	resp := &supplierpb.UrlResponse{Success: false}
 
-	path := params.GetPath()
+	filePath := params.GetPath()
 	bucketName := utils.GetBucketName(ctx)
-	fileURL, err := utils.GetUploadURL(ctx, bucketName, path)
+	fileURL, err := file_helper.GetDownloadURL(ctx, bucketName, filePath)
 
 	log.Printf("GetDownloadUrl: %+v", fileURL)
 	if err != nil {
@@ -262,9 +263,9 @@ func (ss *SupplierService) GetDownloadURL(ctx context.Context, params *supplierp
 	} else {
 		resp = &supplierpb.UrlResponse{
 			Url:     fileURL,
-			Path:    path,
+			Path:    filePath,
 			Success: true,
-			Message: "Fetched upload url successfully",
+			Message: "Fetched url successfully",
 		}
 	}
 
