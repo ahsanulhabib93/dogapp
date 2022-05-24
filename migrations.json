@@ -79,6 +79,13 @@
             "vaccount_id": 2
         },
         {
+            "route": "/supplier/get_download_url",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 2
+        },
+        {
             "route": "/supplier/send_verification_otp",
             "request_method": "POST",
             "service": "ss2",
@@ -111,7 +118,7 @@
         {
             "role_name": "Digital Credit Team",
             "permission_id": "supplierpanel:supplierstatusupdateapi:admin",
-             "vaccount_id": 1
+            "vaccount_id": 1
         },
         {
             "role_name": "Digital Credit Team",
@@ -121,7 +128,7 @@
         {
             "role_name": "Digital Credit Team",
             "permission_id": "supplierpanel:supplierlistapi:view",
-             "vaccount_id": 1
+            "vaccount_id": 1
         },
         {
             "role_name": "Digital Credit Team",
@@ -131,7 +138,7 @@
         {
             "role_name": "Digital Credit Team",
             "permission_id": "supplierpanel:supplierlistadminapi:admin",
-             "vaccount_id": 1
+            "vaccount_id": 1
         },
         {
             "role_name": "Digital Credit Team",
@@ -141,7 +148,7 @@
         {
             "role_name": "Digital Credit Team",
             "permission_id": "supplierpanel:pendingsuppliermodule:admin",
-             "vaccount_id": 1
+            "vaccount_id": 1
         },
         {
             "role_name": "Digital Credit Team",
