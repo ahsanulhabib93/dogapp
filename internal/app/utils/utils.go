@@ -25,7 +25,12 @@ func GetCurrentUserID(ctx context.Context) *uint64 {
 var mockPermissions *[]string
 
 func SetMockPermissions(permission []string) {
-	mockPermissions = &permission
+	if len(permission) > 0 {
+		mockPermissions = &permission
+		return
+	}
+
+	mockPermissions = nil
 }
 
 func GetCurrentUserPermissions(ctx context.Context) []string {
