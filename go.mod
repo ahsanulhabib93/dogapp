@@ -16,7 +16,7 @@ require (
 	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46
 	github.com/stretchr/testify v1.7.0
 	github.com/voonik/goConnect v0.0.0-20220525064336-ac9b2fba22d6
-	github.com/voonik/goFramework v0.0.0-20220525073656-e1aa759c96fb
+	github.com/voonik/goFramework v0.0.0-20220525082050-342a02df1e19
 	google.golang.org/grpc v1.42.0
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0

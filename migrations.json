@@ -77,34 +77,6 @@
             "vaccount_id": 2
         },
         {
-            "route": "/supplier/update_status",
-            "request_method": "POST",
-            "service": "ss2",
-            "required_permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
-            "vaccount_id": 1
-        },
-        {
-            "route": "/supplier/update_status",
-            "request_method": "POST",
-            "service": "ss2",
-            "required_permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
-            "vaccount_id": 2
-        },
-        {
-            "route": "/supplier/edit",
-            "request_method": "POST",
-            "service": "ss2",
-            "required_permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
-            "vaccount_id": 1
-        },
-        {
-            "route": "/supplier/edit",
-            "request_method": "POST",
-            "service": "ss2",
-            "required_permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
-            "vaccount_id": 2
-        },
-        {
             "route": "/supplier/get_upload_url",
             "request_method": "GET",
             "service": "ss2",

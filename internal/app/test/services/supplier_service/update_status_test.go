@@ -19,7 +19,6 @@ var _ = Describe("UpdateStatus", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		test_utils.SetPermission(&ctx, []string{models.AllowedPermission})
 	})
 
 	Context("Update Supplier status", func() {
@@ -193,24 +192,6 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Status transition not allowed"))
-		})
-	})
-
-	Context("Update not allowed w/o permission", func() {
-		It("Should return error for blocked supplier", func() {
-			test_utils.SetPermission(&ctx, []string{})
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				Status: models.SupplierStatusBlocked,
-			})
-			param := &supplierpb.UpdateStatusParam{
-				Id:     supplier.ID,
-				Status: string(models.SupplierStatusVerified),
-				Reason: "test reason",
-			}
-			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Update Not Allowed"))
 		})
 	})
 })

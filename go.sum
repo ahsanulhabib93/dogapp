@@ -588,6 +588,8 @@ github.com/voonik/goFramework v0.0.0-20220510102819-472e6a727566 h1:sgPtLfwZfCcR
 github.com/voonik/goFramework v0.0.0-20220510102819-472e6a727566/go.mod h1:LtjM2yTAnbuRYMK2EzHvQSs6BTTlTTmrFXmUsoBFww0=
 github.com/voonik/goFramework v0.0.0-20220525073656-e1aa759c96fb h1:exr50BEN2b+AHz02LfFZFa7tMj4S3RmcNJiOJyicxA0=
 github.com/voonik/goFramework v0.0.0-20220525073656-e1aa759c96fb/go.mod h1:LtjM2yTAnbuRYMK2EzHvQSs6BTTlTTmrFXmUsoBFww0=
+github.com/voonik/goFramework v0.0.0-20220525082050-342a02df1e19 h1:BB0lDOb693H6fhA4fvijmmOpQjKKZQOBxOdhnEfzGhQ=
+github.com/voonik/goFramework v0.0.0-20220525082050-342a02df1e19/go.mod h1:LtjM2yTAnbuRYMK2EzHvQSs6BTTlTTmrFXmUsoBFww0=
 github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae/go.mod h1:YN6xD/9qJc6zre85Y46CprXqHrPWbzi/67FYvXnHNZE=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
