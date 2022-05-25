@@ -22,10 +22,6 @@ const (
 	SupplierStatusBlocked  SupplierStatus = "Blocked"
 )
 
-const (
-	AllowedPermission = "supplierpanel:editverifiedblockedsupplieronly:admin"
-)
-
 // Supplier ...
 type Supplier struct {
 	database.VaccountGorm
@@ -69,7 +65,7 @@ func (supplier *Supplier) IsUpdateAllowed(ctx context.Context) bool {
 		return true
 	}
 
-	allowedPermission := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_update_allowed_permission", AllowedPermission).(string)
+	allowedPermission := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_update_allowed_permission", "supplierpanel:editverifiedblockedsupplieronly:admin").(string)
 	permissions := utils.GetCurrentUserPermissions(ctx)
 	return utils.IsInclude(permissions, allowedPermission)
 }

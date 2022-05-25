@@ -21,7 +21,7 @@ var _ = Describe("EditSupplier", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		test_utils.SetPermission(&ctx, []string{models.AllowedPermission})
+		test_utils.SetPermission(&ctx, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
 	})
 
 	Context("Editing existing Supplier", func() {
