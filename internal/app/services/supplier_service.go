@@ -184,6 +184,8 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 	fmt.Printf("newSupplierStatus %+v", newSupplierStatus)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
+	} else if !supplier.IsUpdateAllowed(ctx) {
+		resp.Message = "Update Not Allowed"
 	} else if valid, message := helpers.IsValidStatusUpdate(ctx, supplier, newSupplierStatus); !valid {
 		resp.Message = message
 	} else {
