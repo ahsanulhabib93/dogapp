@@ -33,10 +33,6 @@ func GetCurrentUserPermissions(ctx context.Context) []string {
 
 func IsInclude(list, value interface{}) bool {
 	slice := reflect.ValueOf(list)
-	if slice.Kind() == reflect.Ptr {
-		slice = slice.Elem()
-	}
-
 	for i := 0; i < slice.Len(); i++ {
 		if slice.Index(i).Interface() == value {
 			return true

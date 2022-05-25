@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -67,8 +69,9 @@ func (supplier *Supplier) IsUpdateAllowed(ctx context.Context) bool {
 		return true
 	}
 
+	allowedPermission := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_update_allowed_permission", AllowedPermission).(string)
 	permissions := utils.GetCurrentUserPermissions(ctx)
-	return utils.IsInclude(permissions, AllowedPermission)
+	return utils.IsInclude(permissions, allowedPermission)
 }
 
 // GetCategoryMappingJoinStr ...
