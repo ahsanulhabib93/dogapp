@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"reflect"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/misc"
@@ -31,10 +30,9 @@ func GetCurrentUserPermissions(ctx context.Context) []string {
 	return []string{}
 }
 
-func IsInclude(list, value interface{}) bool {
-	slice := reflect.ValueOf(list)
-	for i := 0; i < slice.Len(); i++ {
-		if slice.Index(i).Interface() == value {
+func IsInclude(list []string, value string) bool {
+	for _, v := range list {
+		if v == value {
 			return true
 		}
 	}
