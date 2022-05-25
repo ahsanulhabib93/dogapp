@@ -60,7 +60,7 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 	}
 }
 
-func (supplier *Supplier) IsUpdateAllowed(ctx context.Context) bool {
+func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
 	status := supplier.Status
 	if !(status == SupplierStatusVerified || status == SupplierStatusBlocked) {
 		return true
@@ -69,7 +69,7 @@ func (supplier *Supplier) IsUpdateAllowed(ctx context.Context) bool {
 	allowedPermission := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_update_allowed_permission", "supplierpanel:editverifiedblockedsupplieronly:admin").(string)
 	permissions := utils.GetCurrentUserPermissions(ctx)
 	allowed := utils.IsInclude(permissions, allowedPermission)
-	log.Printf("Is update allowed for supplier %v = %v\n", supplier.ID, allowed)
+	log.Printf("Is change allowed for supplier %v = %v\n", supplier.ID, allowed)
 	return allowed
 }
 

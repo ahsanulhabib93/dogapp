@@ -59,6 +59,28 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
+
+		It("Should return error if user in blocked state", func() {
+			test_utils.SetPermission(&ctx, []string{})
+
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc, Status: models.SupplierStatusBlocked})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:     supplier.ID,
+				AccountType:    uint64(utils.Bank),
+				AccountSubType: uint64(utils.Savings),
+				AccountName:    "AccountName",
+				AccountNumber:  "AccountNumber",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+			}
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Change Not Allowed"))
+		})
 	})
 
 	Context("While adding default payment account", func() {

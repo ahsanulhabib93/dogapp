@@ -34,6 +34,8 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(supplier, params.GetSupplierId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
+	} else if !supplier.IsChangeAllowed(ctx) {
+		resp.Message = "Change Not Allowed"
 	} else {
 		paymentAccountDetail := models.PaymentAccountDetail{
 			SupplierID:     supplier.ID,
@@ -72,8 +74,8 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 	} else {
 		supplier := models.Supplier{}
 		database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, paymentAccountDetail.SupplierID)
-		if !supplier.IsUpdateAllowed(ctx) {
-			resp.Message = "Update Not Allowed"
+		if !supplier.IsChangeAllowed(ctx) {
+			resp.Message = "Change Not Allowed"
 		} else {
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 				AccountType:    utils.AccountType(params.GetAccountType()),

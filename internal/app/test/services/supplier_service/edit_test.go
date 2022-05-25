@@ -144,7 +144,7 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Update Not Allowed"))
+			Expect(res.Message).To(Equal("Change Not Allowed"))
 		})
 
 		It("Should return error on updating blocked supplier", func() {
@@ -162,7 +162,7 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Update Not Allowed"))
+			Expect(res.Message).To(Equal("Change Not Allowed"))
 		})
 	})
 

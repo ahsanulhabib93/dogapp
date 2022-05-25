@@ -247,7 +247,7 @@ var _ = Describe("EditSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Update Not Allowed"))
+			Expect(res.Message).To(Equal("Change Not Allowed"))
 		})
 	})
 })
