@@ -30,16 +30,6 @@ func GetCurrentUserPermissions(ctx context.Context) []string {
 	return []string{}
 }
 
-func IsInclude(list []string, value string) bool {
-	for _, v := range list {
-		if v == value {
-			return true
-		}
-	}
-
-	return false
-}
-
 func Int64Min(a, b uint64) uint64 {
 	if a < b {
 		return a

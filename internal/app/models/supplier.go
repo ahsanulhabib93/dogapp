@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"errors"
-	"log"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -68,9 +67,20 @@ func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
 
 	allowedPermission := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_update_allowed_permission", "supplierpanel:editverifiedblockedsupplieronly:admin").(string)
 	permissions := utils.GetCurrentUserPermissions(ctx)
-	allowed := utils.IsInclude(permissions, allowedPermission)
-	log.Printf("Is change allowed for supplier %v = %v\n", supplier.ID, allowed)
-	return allowed
+	isAllowed := false
+	for _, v := range permissions {
+		for _, p := range strings.Split(v, " ") {
+			if strings.Trim(p, " ") == allowedPermission {
+				isAllowed = true
+				break
+			}
+		}
+		if isAllowed {
+			break
+		}
+	}
+
+	return isAllowed
 }
 
 // GetCategoryMappingJoinStr ...
