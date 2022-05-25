@@ -38,7 +38,11 @@ func GetCurrentUserPermissions(ctx context.Context) []string {
 		return *mockPermissions
 	}
 
-	// TODO: Fetch permission from context
+	threadUser := misc.ExtractThreadObject(ctx).UserData
+	if threadUser != nil && threadUser.GetUserId() != 0 {
+		return threadUser.Permissions
+	}
+
 	return []string{}
 }
 
