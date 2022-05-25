@@ -21,7 +21,7 @@ var _ = Describe("EditSupplier", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		utils.SetMockPermissions([]string{models.AllowedPermission})
+		test_utils.SetPermission(&ctx, []string{models.AllowedPermission})
 	})
 
 	Context("Editing existing Supplier", func() {
@@ -104,7 +104,7 @@ var _ = Describe("EditSupplier", func() {
 
 	Context("Editing allowed for limited permission", func() {
 		It("Should return success on updating pending supplier", func() {
-			utils.SetMockPermissions([]string{})
+			test_utils.SetPermission(&ctx, []string{})
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -130,7 +130,7 @@ var _ = Describe("EditSupplier", func() {
 		})
 
 		It("Should return error on updating verified supplier", func() {
-			utils.SetMockPermissions([]string{})
+			test_utils.SetPermission(&ctx, []string{})
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -148,7 +148,7 @@ var _ = Describe("EditSupplier", func() {
 		})
 
 		It("Should return error on updating blocked supplier", func() {
-			utils.SetMockPermissions([]string{})
+			test_utils.SetPermission(&ctx, []string{})
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,

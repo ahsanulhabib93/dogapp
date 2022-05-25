@@ -22,24 +22,9 @@ func GetCurrentUserID(ctx context.Context) *uint64 {
 	return nil
 }
 
-var mockPermissions *[]string
-
-func SetMockPermissions(permission []string) {
-	if len(permission) > 0 {
-		mockPermissions = &permission
-		return
-	}
-
-	mockPermissions = nil
-}
-
 func GetCurrentUserPermissions(ctx context.Context) []string {
-	if mockPermissions != nil {
-		return *mockPermissions
-	}
-
 	threadUser := misc.ExtractThreadObject(ctx).UserData
-	if threadUser != nil && threadUser.GetUserId() != 0 {
+	if threadUser != nil {
 		return threadUser.Permissions
 	}
 

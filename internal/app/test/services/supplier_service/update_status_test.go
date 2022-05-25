@@ -12,7 +12,6 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
-	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("UpdateStatus", func() {
@@ -20,7 +19,7 @@ var _ = Describe("UpdateStatus", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		utils.SetMockPermissions([]string{models.AllowedPermission})
+		test_utils.SetPermission(&ctx, []string{models.AllowedPermission})
 	})
 
 	Context("Update Supplier status", func() {
@@ -199,7 +198,7 @@ var _ = Describe("UpdateStatus", func() {
 
 	Context("Update not allowed w/o permission", func() {
 		It("Should return error for blocked supplier", func() {
-			utils.SetMockPermissions([]string{})
+			test_utils.SetPermission(&ctx, []string{})
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				Status: models.SupplierStatusBlocked,
 			})
