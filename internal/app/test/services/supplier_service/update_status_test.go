@@ -2,7 +2,6 @@ package supplier_service_test
 
 import (
 	"context"
-	"log"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -57,7 +56,6 @@ var _ = Describe("UpdateStatus", func() {
 				Reason: "test reason",
 			}
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
-			log.Println(res.Message, "===>")
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier status updated successfully"))
