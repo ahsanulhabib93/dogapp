@@ -115,6 +115,31 @@ var _ = Describe("AddSupplierAddress", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
+
+		It("Should return error if supplier in verified state", func() {
+			test_utils.SetPermission(&ctx, []string{})
+
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified})
+			param := &addresspb.SupplierAddressParam{
+				SupplierId: supplier.ID,
+				Firstname:  "Firstname",
+				Lastname:   "Lastname",
+				Address1:   "Address1",
+				Address2:   "Address2",
+				Landmark:   "Landmark",
+				City:       "City",
+				State:      "State",
+				Country:    "Country",
+				Zipcode:    "Zipcode",
+				Phone:      "01123456789",
+				GstNumber:  "GstNumber",
+			}
+			res, err := new(services.SupplierAddressService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Change Not Allowed"))
+		})
 	})
 
 	Context("While adding default address for existing Supplier", func() {

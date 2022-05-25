@@ -47,6 +47,18 @@
             "description": "supplier phone verification API",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:editverifiedblockedsupplieronly:admin",
+            "description": "edit verified/blocked supplier api",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 1
+        },
+        {
+            "id": "supplierpanel:editverifiedblockedsupplieronly:admin",
+            "description": "edit verified/blocked supplier api",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
         }
     ],
     "route_permissions": [
@@ -123,6 +135,16 @@
         {
             "role_name": "Digital Credit Team",
             "permission_id": "supplierpanel:supplierstatusupdateapi:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
+             "vaccount_id": 1
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
             "vaccount_id": 2
         },
         {

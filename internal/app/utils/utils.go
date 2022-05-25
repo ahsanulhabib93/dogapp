@@ -21,6 +21,15 @@ func GetCurrentUserID(ctx context.Context) *uint64 {
 	return nil
 }
 
+func GetCurrentUserPermissions(ctx context.Context) []string {
+	threadUser := misc.ExtractThreadObject(ctx).UserData
+	if threadUser != nil {
+		return threadUser.Permissions
+	}
+
+	return []string{}
+}
+
 func Int64Min(a, b uint64) uint64 {
 	if a < b {
 		return a

@@ -1,10 +1,13 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"strings"
 
 	"github.com/jinzhu/gorm"
+
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -54,6 +57,30 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 		(strings.HasPrefix(phoneNumber, "1") && len(phoneNumber) == 10)) {
 		db.AddError(errors.New("Invalid Phone Number"))
 	}
+}
+
+func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
+	status := supplier.Status
+	if !(status == SupplierStatusVerified || status == SupplierStatusBlocked) {
+		return true
+	}
+
+	allowedPermission := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_update_allowed_permission", "supplierpanel:editverifiedblockedsupplieronly:admin").(string)
+	permissions := utils.GetCurrentUserPermissions(ctx)
+	isAllowed := false
+	for _, v := range permissions {
+		for _, p := range strings.Split(v, " ") {
+			if strings.Trim(p, " ") == allowedPermission {
+				isAllowed = true
+				break
+			}
+		}
+		if isAllowed {
+			break
+		}
+	}
+
+	return isAllowed
 }
 
 // GetCategoryMappingJoinStr ...

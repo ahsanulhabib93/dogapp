@@ -34,6 +34,8 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(supplier, params.GetSupplierId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
+	} else if !supplier.IsChangeAllowed(ctx) {
+		resp.Message = "Change Not Allowed"
 	} else {
 		paymentAccountDetail := models.PaymentAccountDetail{
 			SupplierID:     supplier.ID,
@@ -70,22 +72,28 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 	if result.RecordNotFound() {
 		resp.Message = "PaymentAccountDetail Not Found"
 	} else {
-		err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
-			AccountType:    utils.AccountType(params.GetAccountType()),
-			AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
-			AccountName:    params.GetAccountName(),
-			AccountNumber:  params.GetAccountNumber(),
-			BankID:         params.GetBankId(),
-			BranchName:     params.GetBranchName(),
-			RoutingNumber:  params.GetRoutingNumber(),
-			IsDefault:      params.GetIsDefault(),
-		})
-		if err != nil && err.Error != nil {
-			resp.Message = fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
+		supplier := models.Supplier{}
+		database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, paymentAccountDetail.SupplierID)
+		if !supplier.IsChangeAllowed(ctx) {
+			resp.Message = "Change Not Allowed"
 		} else {
-			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
-			resp.Message = "PaymentAccountDetail Edited Successfully"
-			resp.Success = true
+			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
+				AccountType:    utils.AccountType(params.GetAccountType()),
+				AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
+				AccountName:    params.GetAccountName(),
+				AccountNumber:  params.GetAccountNumber(),
+				BankID:         params.GetBankId(),
+				BranchName:     params.GetBranchName(),
+				RoutingNumber:  params.GetRoutingNumber(),
+				IsDefault:      params.GetIsDefault(),
+			})
+			if err != nil && err.Error != nil {
+				resp.Message = fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
+			} else {
+				helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
+				resp.Message = "PaymentAccountDetail Edited Successfully"
+				resp.Success = true
+			}
 		}
 	}
 	log.Printf("EditPaymentAccountResponse: %+v", resp)

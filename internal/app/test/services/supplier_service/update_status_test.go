@@ -40,6 +40,29 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusFailed))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
 		})
+
+		It("Should update status for blocked user", func() {
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
+				IsPhoneVerified: &isPhoneVerified,
+				Status:          models.SupplierStatusBlocked,
+			})
+			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
+			param := &supplierpb.UpdateStatusParam{
+				Id:     supplier.ID,
+				Status: string(models.SupplierStatusVerified),
+				Reason: "test reason",
+			}
+			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier status updated successfully"))
+
+			updatedSupplier := models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
+			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
+		})
 	})
 
 	Context("Updating without reason", func() {
@@ -171,5 +194,4 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(res.Message).To(Equal("Status transition not allowed"))
 		})
 	})
-
 })

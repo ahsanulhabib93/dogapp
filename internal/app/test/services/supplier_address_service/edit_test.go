@@ -19,6 +19,7 @@ var _ = Describe("EditSupplierAddress", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
+		test_utils.SetPermission(&ctx, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
 	})
 
 	Context("Editing all attributes of existing Supplier address", func() {
@@ -169,6 +170,84 @@ var _ = Describe("EditSupplierAddress", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while updating Supplier Address: Invalid Phone Number"))
+		})
+	})
+
+	Context("Editing supplier in verified state", func() {
+		It("Should update address and return success response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			defaultAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
+			address := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: false})
+			database.DBAPM(ctx).Model(&supplier).Updates(&models.Supplier{Status: models.SupplierStatusVerified})
+			param := &addresspb.SupplierAddressObject{
+				Id:        address.ID,
+				Firstname: "Firstname",
+				Lastname:  "Lastname",
+				Address1:  "Address1",
+				Address2:  "Address2",
+				Landmark:  "Landmark",
+				City:      "City",
+				State:     "State",
+				Country:   "Country",
+				Zipcode:   "Zipcode",
+				Phone:     "01123456789",
+				GstNumber: "GstNumber",
+				IsDefault: false,
+			}
+			res, err := new(services.SupplierAddressService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Address Edited Successfully"))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+
+			database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&address, address.ID)
+			Expect(address.Firstname).To(Equal(param.Firstname))
+			Expect(address.Lastname).To(Equal(param.Lastname))
+			Expect(address.Address1).To(Equal(param.Address1))
+			Expect(address.Address2).To(Equal(param.Address2))
+			Expect(address.Landmark).To(Equal(param.Landmark))
+			Expect(address.City).To(Equal(param.City))
+			Expect(address.State).To(Equal(param.State))
+			Expect(address.Country).To(Equal(param.Country))
+			Expect(address.Zipcode).To(Equal(param.Zipcode))
+			Expect(address.Phone).To(Equal(param.Phone))
+			Expect(address.GstNumber).To(Equal(param.GstNumber))
+			Expect(address.IsDefault).To(Equal(false))
+
+			database.DBAPM(ctx).Model(&models.SupplierAddress{}).First(&defaultAddress, defaultAddress.ID)
+			Expect(defaultAddress.IsDefault).To(Equal(true))
+		})
+
+		It("Should return error", func() {
+			test_utils.SetPermission(&ctx, []string{})
+
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
+			address := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: false})
+			database.DBAPM(ctx).Model(&supplier).Updates(&models.Supplier{Status: models.SupplierStatusVerified})
+			param := &addresspb.SupplierAddressObject{
+				Id:        address.ID,
+				Firstname: "Firstname",
+				Lastname:  "Lastname",
+				Address1:  "Address1",
+				Address2:  "Address2",
+				Landmark:  "Landmark",
+				City:      "City",
+				State:     "State",
+				Country:   "Country",
+				Zipcode:   "Zipcode",
+				Phone:     "01123456789",
+				GstNumber: "GstNumber",
+				IsDefault: false,
+			}
+			res, err := new(services.SupplierAddressService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Change Not Allowed"))
 		})
 	})
 })
