@@ -72,7 +72,11 @@ func (sas *SupplierAddressService) Edit(ctx context.Context, params *addresspb.S
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Address Not Found"
 	} else {
-		if supplierAddress.IsDefault && !params.GetIsDefault() {
+		supplier := models.Supplier{}
+		database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplierAddress.SupplierID)
+		if !supplier.IsUpdateAllowed(ctx) {
+			resp.Message = "Update Not Allowed"
+		} else if supplierAddress.IsDefault && !params.GetIsDefault() {
 			resp.Message = "Default address is required"
 		} else {
 			err := database.DBAPM(ctx).Model(&supplierAddress).Updates(models.SupplierAddress{
