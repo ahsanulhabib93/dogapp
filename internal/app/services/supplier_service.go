@@ -135,6 +135,8 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	result := query.First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
+	} else if !supplier.IsUpdateAllowed(ctx) {
+		resp.Message = "Update Not Allowed"
 	} else {
 		var isPhoneVerified bool
 		if params.GetPhone() != "" && params.GetPhone() != supplier.Phone {

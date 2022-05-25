@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"reflect"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/misc"
@@ -19,6 +20,36 @@ func GetCurrentUserID(ctx context.Context) *uint64 {
 	}
 
 	return nil
+}
+
+var mockPermissions *[]string
+
+func SetMockPermissions(permission []string) {
+	mockPermissions = &permission
+}
+
+func GetCurrentUserPermissions(ctx context.Context) []string {
+	if mockPermissions != nil {
+		return *mockPermissions
+	}
+
+	// TODO: Fetch permission from context
+	return []string{}
+}
+
+func IsInclude(list, value interface{}) bool {
+	slice := reflect.ValueOf(list)
+	if slice.Kind() == reflect.Ptr {
+		slice = slice.Elem()
+	}
+
+	for i := 0; i < slice.Len(); i++ {
+		if slice.Index(i).Interface() == value {
+			return true
+		}
+	}
+
+	return false
 }
 
 func Int64Min(a, b uint64) uint64 {

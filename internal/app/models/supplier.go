@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"strings"
 
@@ -17,6 +18,10 @@ const (
 	SupplierStatusVerified SupplierStatus = "Verified"
 	SupplierStatusFailed   SupplierStatus = "Failed"
 	SupplierStatusBlocked  SupplierStatus = "Blocked"
+)
+
+const (
+	AllowedPermission = "supplierpanel:editverifiedblockedsupplieronly:admin"
 )
 
 // Supplier ...
@@ -54,6 +59,16 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 		(strings.HasPrefix(phoneNumber, "1") && len(phoneNumber) == 10)) {
 		db.AddError(errors.New("Invalid Phone Number"))
 	}
+}
+
+func (supplier *Supplier) IsUpdateAllowed(ctx context.Context) bool {
+	status := supplier.Status
+	if !(status == SupplierStatusVerified || status == SupplierStatusBlocked) {
+		return true
+	}
+
+	permissions := utils.GetCurrentUserPermissions(ctx)
+	return utils.IsInclude(permissions, AllowedPermission)
 }
 
 // GetCategoryMappingJoinStr ...

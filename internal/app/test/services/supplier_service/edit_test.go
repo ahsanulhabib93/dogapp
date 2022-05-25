@@ -21,6 +21,7 @@ var _ = Describe("EditSupplier", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
+		utils.SetMockPermissions([]string{models.AllowedPermission})
 	})
 
 	Context("Editing existing Supplier", func() {
@@ -98,6 +99,70 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusBlocked))
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
+		})
+	})
+
+	Context("Editing allowed for limited permission", func() {
+		It("Should return success on updating pending supplier", func() {
+			utils.SetMockPermissions([]string{})
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				IsPhoneVerified: &isPhoneVerified,
+				Status:          models.SupplierStatusPending,
+			})
+			param := &supplierpb.SupplierObject{
+				Id:   supplier.ID,
+				Name: "Name",
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
+
+			updatedSupplier := &models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
+			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
+			Expect(updatedSupplier.SupplierType).To(Equal(utils.Hlc))
+			Expect(updatedSupplier.Name).To(Equal(param.Name))
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
+			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
+		})
+
+		It("Should return error on updating verified supplier", func() {
+			utils.SetMockPermissions([]string{})
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				IsPhoneVerified: &isPhoneVerified,
+				Status:          models.SupplierStatusVerified,
+			})
+			param := &supplierpb.SupplierObject{
+				Id:   supplier.ID,
+				Name: "Name",
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Update Not Allowed"))
+		})
+
+		It("Should return error on updating blocked supplier", func() {
+			utils.SetMockPermissions([]string{})
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				IsPhoneVerified: &isPhoneVerified,
+				Status:          models.SupplierStatusBlocked,
+			})
+			param := &supplierpb.SupplierObject{
+				Id:   supplier.ID,
+				Name: "Name",
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Update Not Allowed"))
 		})
 	})
 
