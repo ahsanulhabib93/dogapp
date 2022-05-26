@@ -183,6 +183,38 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 	return &resp, nil
 }
 
+// RemoveDocument...
+func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierpb.RemoveDocumentParam) (*supplierpb.BasicApiResponse, error) {
+	log.Printf("RemoveDocumentParam: %+v", params)
+	resp := supplierpb.BasicApiResponse{Success: false}
+
+	supplier := models.Supplier{}
+	query := database.DBAPM(ctx).Model(&models.Supplier{})
+	result := query.First(&supplier, params.GetId())
+	if result.RecordNotFound() {
+		resp.Message = "Supplier Not Found"
+	} else if !supplier.IsChangeAllowed(ctx) {
+		resp.Message = "Change Not Allowed"
+	} else if !utils.IsInclude(utils.SupplierDocumentType, params.GetDocumentType()) {
+		resp.Message = "Invalid Document Type"
+	} else {
+		query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", params.GetId())
+		query = query.Update(params.GetDocumentType(), "")
+		if supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed {
+			query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
+		}
+
+		if err := query.Error; err != nil {
+			resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
+		} else {
+			resp.Message = "Supplier Document Removed Successfully"
+			resp.Success = true
+		}
+	}
+	log.Printf("RemoveDocumentResponse: %+v", resp)
+	return &resp, nil
+}
+
 // UpdateStatus of Supplier
 func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.UpdateStatusParam) (*supplierpb.BasicApiResponse, error) {
 	log.Printf("UpdateStatusParams: %+v", params)

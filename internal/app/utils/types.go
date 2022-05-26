@@ -8,3 +8,10 @@ var AllowedUploadType = map[string][]string{
 	"SupplierTradeLicense":  {"trade_licenses", "", "pdf"},
 	"SupplierAgreement":     {"agreements", "", "pdf"},
 }
+
+var SupplierDocumentType = []string{
+	"nid_front_image_url",
+	"nid_back_image_url",
+	"trade_license_url",
+	"agreement_url",
+}
