@@ -10,6 +10,7 @@ var AllowedUploadType = map[string][]string{
 }
 
 var SupplierDocumentType = []string{
+	"nid_number",
 	"nid_front_image_url",
 	"nid_back_image_url",
 	"trade_license_url",
