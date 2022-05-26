@@ -40,18 +40,18 @@ var _ = Describe("EditSupplier", func() {
 				},
 			})
 			param := &supplierpb.SupplierObject{
-				Id:                   supplier.ID,
-				Name:                 "Name",
-				Email:                "Email",
-				SupplierType:         uint64(utils.L1),
-				BusinessName:         "BusinessName",
-				Phone:                "01123456789",
-				AlternatePhone:       "01123456111",
-				ShopImageUrl:         "ss2/shop_images/test.png",
-				NidNumber:            "12345",
-				NidFrontImageUrl:     "ss2/shop_images/test.png",
-				NidBackImageUrl:      "ss2/shop_images/test.png",
-				TradeLicenseImageUrl: "ss2/shop_images/test.png",
+				Id:               supplier.ID,
+				Name:             "Name",
+				Email:            "Email",
+				SupplierType:     uint64(utils.L1),
+				BusinessName:     "BusinessName",
+				Phone:            "01123456789",
+				AlternatePhone:   "01123456111",
+				ShopImageUrl:     "ss2/shop_images/test.png",
+				NidNumber:        "12345",
+				NidFrontImageUrl: "ss2/shop_images/test.png",
+				NidBackImageUrl:  "ss2/shop_images/test.png",
+				TradeLicenseUrl:  "ss2/shop_images/test.png",
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -73,7 +73,7 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.NidNumber).To(Equal(param.NidNumber))
 			Expect(updatedSupplier.NidFrontImageUrl).To(Equal(param.NidFrontImageUrl))
 			Expect(updatedSupplier.NidBackImageUrl).To(Equal(param.NidBackImageUrl))
-			Expect(updatedSupplier.TradeLicenseImageUrl).To(Equal(param.TradeLicenseImageUrl))
+			Expect(updatedSupplier.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(false))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 
