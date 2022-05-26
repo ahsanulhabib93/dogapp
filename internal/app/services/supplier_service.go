@@ -236,10 +236,10 @@ func (ss *SupplierService) GetUploadURL(ctx context.Context, params *supplierpb.
 	log.Printf("GetUploadUrlParams: %+v", params)
 	resp := &supplierpb.UrlResponse{Success: false}
 
-	if params.GetUploadType() != "SupplierShopImage" {
+	if details, allowed := utils.AllowedUploadType[params.GetUploadType()]; !allowed {
 		resp.Message = "Invalid File Type"
 	} else {
-		filePath := file_helper.GenerateFilePath(utils.BucketFolder, "shop_images", "", "png")
+		filePath := file_helper.GenerateFilePath(utils.BucketFolder, details[0], details[1], details[2])
 		bucketName := utils.GetBucketName(ctx)
 		fileURL, err := file_helper.GetUploadURL(ctx, bucketName, filePath)
 
