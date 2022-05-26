@@ -109,6 +109,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		NidFrontImageUrl:         params.GetNidFrontImageUrl(),
 		NidBackImageUrl:          params.GetNidBackImageUrl(),
 		TradeLicenseUrl:          params.GetTradeLicenseUrl(),
+		AgreementUrl:             params.GetAgreementUrl(),
 		SupplierCategoryMappings: helpers.PrepareCategoreMapping(params.GetCategoryIds()),
 		SupplierOpcMappings:      helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
 		SupplierAddresses:        helpers.PrepareSupplierAddress(params),
@@ -168,6 +169,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			NidFrontImageUrl:         params.GetNidFrontImageUrl(),
 			NidBackImageUrl:          params.GetNidBackImageUrl(),
 			TradeLicenseUrl:          params.GetTradeLicenseUrl(),
+			AgreementUrl:             params.GetAgreementUrl(),
 			SupplierCategoryMappings: helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
 		if err != nil && err.Error != nil {

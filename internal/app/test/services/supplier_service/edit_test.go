@@ -51,7 +51,8 @@ var _ = Describe("EditSupplier", func() {
 				NidNumber:        "12345",
 				NidFrontImageUrl: "ss2/shop_images/test.png",
 				NidBackImageUrl:  "ss2/shop_images/test.png",
-				TradeLicenseUrl:  "ss2/shop_images/test.png",
+				TradeLicenseUrl:  "ss2/shop_images/test.pdf",
+				AgreementUrl:     "ss2/shop_images/test.pdf",
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -74,6 +75,7 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.NidFrontImageUrl).To(Equal(param.NidFrontImageUrl))
 			Expect(updatedSupplier.NidBackImageUrl).To(Equal(param.NidBackImageUrl))
 			Expect(updatedSupplier.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
+			Expect(updatedSupplier.AgreementUrl).To(Equal(param.AgreementUrl))
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(false))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 

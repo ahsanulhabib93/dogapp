@@ -39,6 +39,7 @@ type Supplier struct {
 	NidFrontImageUrl         string                 `gorm:"type:varchar(512)" json:"nid_front_image_url"`
 	NidBackImageUrl          string                 `gorm:"type:varchar(512)" json:"nid_back_image_url"`
 	TradeLicenseUrl          string                 `gorm:"type:varchar(512)" json:"trade_license_url"`
+	AgreementUrl             string                 `gorm:"type:varchar(512)" json:"agreement_url"`
 	SupplierType             utils.SupplierType     `json:"supplier_type" valid:"required"`
 	SupplierAddresses        []SupplierAddress      `json:"supplier_addresses"`
 	PaymentAccountDetails    []PaymentAccountDetail `json:"payment_account_details"`

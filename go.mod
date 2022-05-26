@@ -15,7 +15,7 @@ require (
 	github.com/qor/qor v1.2.0 // indirect
 	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46
 	github.com/stretchr/testify v1.7.0
-	github.com/voonik/goConnect v0.0.0-20220526101346-573114659171
+	github.com/voonik/goConnect v0.0.0-20220526104523-bf4c8c0daf30
 	github.com/voonik/goFramework v0.0.0-20220525082050-342a02df1e19
 	google.golang.org/grpc v1.42.0
 	gopkg.in/gormigrate.v1 v1.6.0
