@@ -71,20 +71,13 @@ func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
 
 	allowedPermission := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "supplier_update_allowed_permission", "supplierpanel:editverifiedblockedsupplieronly:admin").(string)
 	permissions := utils.GetCurrentUserPermissions(ctx)
-	isAllowed := false
 	for _, v := range permissions {
-		for _, p := range strings.Split(v, " ") {
-			if strings.Trim(p, " ") == allowedPermission {
-				isAllowed = true
-				break
-			}
-		}
-		if isAllowed {
-			break
+		if utils.IsInclude(strings.Split(v, " "), allowedPermission) {
+			return true
 		}
 	}
 
-	return isAllowed
+	return false
 }
 
 // GetCategoryMappingJoinStr ...

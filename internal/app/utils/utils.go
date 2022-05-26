@@ -44,6 +44,15 @@ func Int64Max(a, b uint64) uint64 {
 	return b
 }
 
+func IsInclude(list []string, value string) bool {
+	for _, v := range list {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
+
 func GetBucketName(ctx context.Context) string {
 	bucketName := aaaModels.AppPreference.GetValue(
 		aaaModels.AppPreference{}, ctx, "ss2_bucket", "uatvndrs.shopups2.xyz",
