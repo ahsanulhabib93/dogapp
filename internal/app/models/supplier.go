@@ -71,6 +71,24 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 	}
 }
 
+func (supplier *Supplier) IsOTPVerified() bool {
+	if supplier.IsPhoneVerified == nil {
+		return false
+	}
+
+	return *supplier.IsPhoneVerified
+}
+
+func (supplier *Supplier) Verify(ctx context.Context) error {
+	paymentAccountsCount := database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Count()
+	addressesCount := database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Count()
+	if !(supplier.IsOTPVerified() && paymentAccountsCount > 0 && addressesCount > 0) {
+		return errors.New("Required details for verification are not present")
+	}
+
+	return nil
+}
+
 func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
 	status := supplier.Status
 	if !(status == SupplierStatusVerified || status == SupplierStatusBlocked) {

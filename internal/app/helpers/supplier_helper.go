@@ -10,7 +10,6 @@ import (
 	"github.com/jinzhu/gorm"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
-	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -161,21 +160,16 @@ func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierA
 //IsValidStatusUpdate ...
 func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatus models.SupplierStatus) (valid bool, message string) {
 	if !isValidStatus(newStatus) {
-		message = "Invalid Status"
+		return false, "Invalid Status"
 	} else if !isValidStatusTransition(supplier.Status, newStatus) {
-		message = "Status transition not allowed"
+		return false, "Status transition not allowed"
 	} else if newStatus == models.SupplierStatusVerified {
-		paymentAccountsCount := database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Count()
-		addressesCount := database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Count()
-		if !(*supplier.IsPhoneVerified && paymentAccountsCount > 0 && addressesCount > 0) {
-			message = "Required details for verification are not present"
+		err := supplier.Verify(ctx)
+		if err != nil {
+			return false, err.Error()
 		}
 	}
-
-	if message == "" {
-		valid = true
-	}
-	return
+	return true, ""
 }
 
 func isValidStatus(newStatus models.SupplierStatus) (valid bool) {
