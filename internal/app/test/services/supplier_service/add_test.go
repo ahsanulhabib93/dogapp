@@ -52,25 +52,29 @@ var _ = Describe("AddSupplier", func() {
 			}}, nil)
 
 			param := &supplierpb.SupplierParam{
-				Name:           "Name",
-				Email:          "Email",
-				SupplierType:   uint64(utils.Hlc),
-				BusinessName:   "BusinessName",
-				Phone:          "01123456789",
-				AlternatePhone: "01123456111",
-				ShopImageUrl:   "ss2/shop_images/test.png",
-				Firstname:      "Firstname",
-				Lastname:       "Lastname",
-				Address1:       "Address1",
-				Address2:       "Address2",
-				Landmark:       "Landmark",
-				City:           "City",
-				State:          "State",
-				Country:        "Country",
-				Zipcode:        "Zipcode",
-				GstNumber:      "GstNumber",
-				CategoryIds:    []uint64{1, 30},
-				OpcIds:         opcIds,
+				Name:             "Name",
+				Email:            "Email",
+				SupplierType:     uint64(utils.Hlc),
+				BusinessName:     "BusinessName",
+				Phone:            "01123456789",
+				AlternatePhone:   "01123456111",
+				ShopImageUrl:     "ss2/shop_images/test.png",
+				Firstname:        "Firstname",
+				Lastname:         "Lastname",
+				Address1:         "Address1",
+				Address2:         "Address2",
+				Landmark:         "Landmark",
+				City:             "City",
+				State:            "State",
+				Country:          "Country",
+				Zipcode:          "Zipcode",
+				GstNumber:        "GstNumber",
+				NidNumber:        "NidNumber",
+				TradeLicenseUrl:  "TradeLicenseUrl",
+				NidFrontImageUrl: "NidFrontImageUrl",
+				NidBackImageUrl:  "NidBackImageUrl",
+				CategoryIds:      []uint64{1, 30},
+				OpcIds:           opcIds,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -89,6 +93,10 @@ var _ = Describe("AddSupplier", func() {
 			Expect(supplier.Phone).To(Equal(param.Phone))
 			Expect(supplier.AlternatePhone).To(Equal(param.AlternatePhone))
 			Expect(supplier.ShopImageURL).To(Equal(param.ShopImageUrl))
+			Expect(supplier.NidNumber).To(Equal(param.NidNumber))
+			Expect(supplier.NidFrontImageUrl).To(Equal(param.NidFrontImageUrl))
+			Expect(supplier.NidBackImageUrl).To(Equal(param.NidBackImageUrl))
+			Expect(supplier.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
 
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))

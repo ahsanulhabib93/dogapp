@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"strings"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/misc"
@@ -42,6 +43,15 @@ func Int64Max(a, b uint64) uint64 {
 		return a
 	}
 	return b
+}
+
+func IsInclude(list []string, value string) bool {
+	for _, v := range list {
+		if strings.Trim(v, " ") == strings.Trim(value, " ") {
+			return true
+		}
+	}
+	return false
 }
 
 func GetBucketName(ctx context.Context) string {
