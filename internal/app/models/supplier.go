@@ -82,9 +82,13 @@ func (supplier *Supplier) IsOTPVerified() bool {
 
 func (supplier *Supplier) Verify(ctx context.Context) error {
 	paymentAccountsCount := database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Count()
+	if paymentAccountsCount == 0 {
+		return errors.New("At least one payment account details should be present")
+	}
+
 	addressesCount := database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Count()
-	if !(paymentAccountsCount > 0 && addressesCount > 0) {
-		return errors.New("Required details for verification are not present")
+	if addressesCount == 0 {
+		return errors.New("At least one supplier address should be present")
 	}
 
 	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent()) {

@@ -154,7 +154,7 @@ var _ = Describe("UpdateStatus", func() {
 	})
 
 	Context("Update Supplier status as Verified without required details", func() {
-		It("Should return error", func() {
+		It("Should return error for missing payment account", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.UpdateStatusParam{
 				Id:     supplier.ID,
@@ -164,7 +164,21 @@ var _ = Describe("UpdateStatus", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Required details for verification are not present"))
+			Expect(res.Message).To(Equal("At least one payment account details should be present"))
+		})
+
+		It("Should return error for missing address", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
+			param := &supplierpb.UpdateStatusParam{
+				Id:     supplier.ID,
+				Status: string(models.SupplierStatusVerified),
+			}
+			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("At least one supplier address should be present"))
 		})
 	})
 
