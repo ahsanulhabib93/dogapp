@@ -55,6 +55,13 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 		db.AddError(errors.New("Supplier Already Exists"))
 	}
 
+	for _, c := range supplier.NidNumber {
+		if !('0' <= c && c <= '9') {
+			db.AddError(errors.New("NID number should only consist of digits"))
+			break
+		}
+	}
+
 	if phoneNumber := strings.TrimSpace(supplier.Phone); len(phoneNumber) == 0 {
 		db.AddError(errors.New("Phone Number can't be blank"))
 	} else if !((strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) ||

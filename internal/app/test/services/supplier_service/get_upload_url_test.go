@@ -26,7 +26,7 @@ var _ = Describe("GetUploadUrl", func() {
 		BeforeEach(func() {
 			cloudStorageInterface := new(mocks.CloudStorageInterface)
 			cloudstorage.InjectGcsMockInstance(cloudStorageInterface)
-			cloudStorageInterface.On("GetUploadURL", ctx, utils.GetBucketName(ctx), mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return("https://test/ss2/image.png", nil)
+			cloudStorageInterface.On("GetUploadURL", ctx, utils.GetBucketName(ctx), mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return("https://test/ss2/image.xyz", nil)
 		})
 
 		It("Should return path and file url", func() {
@@ -37,7 +37,30 @@ var _ = Describe("GetUploadUrl", func() {
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Fetched upload url successfully"))
 			Expect(res.Path).To(HavePrefix("ss2/shop_images/shop_images-"))
-			Expect(res.Url).To(Equal("https://test/ss2/image.png"))
+			Expect(res.Url).To(Equal("https://test/ss2/image.xyz"))
+		})
+
+		It("Should return path and file url for NID front image", func() {
+			param := &supplierpb.GetUploadUrlParam{UploadType: "SupplierNIDFrontImage"}
+			res, err := new(services.SupplierService).GetUploadURL(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Fetched upload url successfully"))
+			Expect(res.Path).To(HavePrefix("ss2/nid_front_images/nid_front_images-"))
+			Expect(res.Url).To(Equal("https://test/ss2/image.xyz"))
+		})
+
+		It("Should return path and file url for Agreement PDF", func() {
+			param := &supplierpb.GetUploadUrlParam{UploadType: "SupplierAgreement"}
+			res, err := new(services.SupplierService).GetUploadURL(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Fetched upload url successfully"))
+			Expect(res.Path).To(HavePrefix("ss2/agreements/agreements-"))
+			Expect(res.Path).To(HaveSuffix(".pdf"))
+			Expect(res.Url).To(Equal("https://test/ss2/image.xyz"))
 		})
 	})
 

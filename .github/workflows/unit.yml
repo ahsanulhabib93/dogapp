@@ -72,7 +72,7 @@ jobs:
           cd GoLang/src/github.com/voonik/ss2
           go mod download
           go get -u github.com/jstemmer/go-junit-report
-          go get github.com/mikefarah/yq/v4
+          go get github.com/mikefarah/yq/v4@v4.25.1
           go mod vendor
           bash run_tests.sh
 

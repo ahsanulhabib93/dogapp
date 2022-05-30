@@ -124,6 +124,20 @@
             "service": "ss2",
             "required_permission_id": "supplierpanel:supplierphoneverificationpi:admin",
             "vaccount_id": 2
+        },
+        {
+            "route": "/supplier/remove_document",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
+            "vaccount_id": 1
+        },
+        {
+            "route": "/supplier/remove_document",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
+            "vaccount_id": 2
         }
     ],
     "role_permissions": [

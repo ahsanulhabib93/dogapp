@@ -69,7 +69,7 @@ var _ = Describe("AddSupplier", func() {
 				Country:          "Country",
 				Zipcode:          "Zipcode",
 				GstNumber:        "GstNumber",
-				NidNumber:        "NidNumber",
+				NidNumber:        "123456789",
 				TradeLicenseUrl:  "TradeLicenseUrl",
 				NidFrontImageUrl: "NidFrontImageUrl",
 				NidBackImageUrl:  "NidBackImageUrl",
@@ -121,6 +121,40 @@ var _ = Describe("AddSupplier", func() {
 			Expect(address.Phone).To(Equal(param.Phone))
 			Expect(address.GstNumber).To(Equal(param.GstNumber))
 			Expect(address.IsDefault).To(Equal(true))
+		})
+	})
+
+	Context("Should return error", func() {
+		It("When NID number has invalid character", func() {
+			param := &supplierpb.SupplierParam{
+				Name:             "Name",
+				Email:            "Email",
+				SupplierType:     uint64(utils.Hlc),
+				BusinessName:     "BusinessName",
+				Phone:            "01123456789",
+				AlternatePhone:   "01123456111",
+				ShopImageUrl:     "ss2/shop_images/test.png",
+				Firstname:        "Firstname",
+				Lastname:         "Lastname",
+				Address1:         "Address1",
+				Address2:         "Address2",
+				Landmark:         "Landmark",
+				City:             "City",
+				State:            "State",
+				Country:          "Country",
+				Zipcode:          "Zipcode",
+				GstNumber:        "GstNumber",
+				NidNumber:        "nid_number",
+				TradeLicenseUrl:  "TradeLicenseUrl",
+				NidFrontImageUrl: "NidFrontImageUrl",
+				NidBackImageUrl:  "NidBackImageUrl",
+				CategoryIds:      []uint64{1, 30},
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: NID number should only consist of digits"))
 		})
 	})
 
