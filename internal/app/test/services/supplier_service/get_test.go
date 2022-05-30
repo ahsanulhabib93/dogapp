@@ -28,6 +28,9 @@ var _ = Describe("GetSupplier", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierType:             utils.Hlc,
 				IsPhoneVerified:          &isPhoneVerified,
+				NidNumber:                "123456789",
+				NidFrontImageUrl:         "abc.com",
+				AgreementUrl:             "abc.com",
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 			})
@@ -48,6 +51,9 @@ var _ = Describe("GetSupplier", func() {
 			Expect(resp.Data.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(resp.Data.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
+			Expect(resp.Data.NidNumber).To(Equal(supplier.NidNumber))
+			Expect(resp.Data.NidFrontImageUrl).To(Equal(supplier.NidFrontImageUrl))
+			Expect(resp.Data.AgreementUrl).To(Equal(supplier.AgreementUrl))
 			Expect(resp.Data.Status).To(Equal(string(models.SupplierStatusPending)))
 
 			Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))
