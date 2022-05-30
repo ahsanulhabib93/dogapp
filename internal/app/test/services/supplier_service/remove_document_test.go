@@ -47,6 +47,27 @@ var _ = Describe("EditSupplier", func() {
 
 		It("Should return error for invalid document type", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				GuarantorImageUrl: "abc/xyz.jpg",
+			})
+			param := &supplierpb.RemoveDocumentParam{
+				Id:           supplier.ID,
+				DocumentType: "guarantor_images_url",
+			}
+			res, err := new(services.SupplierService).RemoveDocument(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier guarantor_images_url Removed Successfully"))
+
+			updatedSupplier := models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
+
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
+			Expect(updatedSupplier.GuarantorImageUrl).To(Equal(""))
+		})
+
+		It("Should return error for invalid document type", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				AgreementUrl: "abc/xyz.pdf",
 			})
 			param := &supplierpb.RemoveDocumentParam{

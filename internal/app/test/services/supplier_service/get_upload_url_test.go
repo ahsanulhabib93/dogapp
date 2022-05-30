@@ -37,6 +37,7 @@ var _ = Describe("GetUploadUrl", func() {
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Fetched upload url successfully"))
 			Expect(res.Path).To(HavePrefix("ss2/shop_images/shop_images-"))
+			Expect(res.Path).To(HaveSuffix(".jpg"))
 			Expect(res.Url).To(Equal("https://test/ss2/image.xyz"))
 		})
 
@@ -60,6 +61,18 @@ var _ = Describe("GetUploadUrl", func() {
 			Expect(res.Message).To(Equal("Fetched upload url successfully"))
 			Expect(res.Path).To(HavePrefix("ss2/agreements/agreements-"))
 			Expect(res.Path).To(HaveSuffix(".pdf"))
+			Expect(res.Url).To(Equal("https://test/ss2/image.xyz"))
+		})
+
+		It("Should return path and file url for Guarantor image", func() {
+			param := &supplierpb.GetUploadUrlParam{UploadType: "GuarantorImage"}
+			res, err := new(services.SupplierService).GetUploadURL(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Fetched upload url successfully"))
+			Expect(res.Path).To(HavePrefix("ss2/guarantor_images/guarantor_images-"))
+			Expect(res.Path).To(HaveSuffix(".jpg"))
 			Expect(res.Url).To(Equal("https://test/ss2/image.xyz"))
 		})
 	})
