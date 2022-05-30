@@ -33,6 +33,7 @@ var _ = Describe("GetSupplier", func() {
 				AgreementUrl:             "abc.com",
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
+				GuarantorImageUrl:        "abc.xyz",
 			})
 			supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
 			paymentDetails := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
@@ -54,6 +55,7 @@ var _ = Describe("GetSupplier", func() {
 			Expect(resp.Data.NidNumber).To(Equal(supplier.NidNumber))
 			Expect(resp.Data.NidFrontImageUrl).To(Equal(supplier.NidFrontImageUrl))
 			Expect(resp.Data.AgreementUrl).To(Equal(supplier.AgreementUrl))
+			Expect(resp.Data.GuarantorImageUrl).To(Equal(supplier.GuarantorImageUrl))
 			Expect(resp.Data.Status).To(Equal(string(models.SupplierStatusPending)))
 
 			Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))

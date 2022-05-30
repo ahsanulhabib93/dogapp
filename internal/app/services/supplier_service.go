@@ -110,6 +110,9 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		NidBackImageUrl:          params.GetNidBackImageUrl(),
 		TradeLicenseUrl:          params.GetTradeLicenseUrl(),
 		AgreementUrl:             params.GetAgreementUrl(),
+		ShopOwnerImageUrl:        params.GetShopOwnerImageUrl(),
+		GuarantorImageUrl:        params.GetGuarantorImageUrl(),
+		ChequeImageUrl:           params.GetChequeImageUrl(),
 		SupplierCategoryMappings: helpers.PrepareCategoreMapping(params.GetCategoryIds()),
 		SupplierOpcMappings:      helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
 		SupplierAddresses:        helpers.PrepareSupplierAddress(params),
@@ -170,6 +173,9 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			NidBackImageUrl:          params.GetNidBackImageUrl(),
 			TradeLicenseUrl:          params.GetTradeLicenseUrl(),
 			AgreementUrl:             params.GetAgreementUrl(),
+			ShopOwnerImageUrl:        params.GetShopOwnerImageUrl(),
+			GuarantorImageUrl:        params.GetGuarantorImageUrl(),
+			ChequeImageUrl:           params.GetChequeImageUrl(),
 			SupplierCategoryMappings: helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
 		if err != nil && err.Error != nil {
@@ -391,6 +397,9 @@ func (ss *SupplierService) getResponseField() string {
 		"suppliers.trade_license_url",
 		"suppliers.agreement_url",
 		"suppliers.reason",
+		"suppliers.shop_owner_image_url",
+		"suppliers.guarantor_image_url",
+		"suppliers.cheque_image_url",
 		"GROUP_CONCAT( DISTINCT supplier_category_mappings.category_id) as category_ids",
 		"GROUP_CONCAT( DISTINCT supplier_opc_mappings.processing_center_id) as opc_ids",
 	}

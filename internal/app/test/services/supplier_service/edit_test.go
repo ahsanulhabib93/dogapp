@@ -40,19 +40,22 @@ var _ = Describe("EditSupplier", func() {
 				},
 			})
 			param := &supplierpb.SupplierObject{
-				Id:               supplier.ID,
-				Name:             "Name",
-				Email:            "Email",
-				SupplierType:     uint64(utils.L1),
-				BusinessName:     "BusinessName",
-				Phone:            "01123456789",
-				AlternatePhone:   "01123456111",
-				ShopImageUrl:     "ss2/shop_images/test.png",
-				NidNumber:        "12345",
-				NidFrontImageUrl: "ss2/shop_images/test.png",
-				NidBackImageUrl:  "ss2/shop_images/test.png",
-				TradeLicenseUrl:  "ss2/shop_images/test.pdf",
-				AgreementUrl:     "ss2/shop_images/test.pdf",
+				Id:                supplier.ID,
+				Name:              "Name",
+				Email:             "Email",
+				SupplierType:      uint64(utils.L1),
+				BusinessName:      "BusinessName",
+				Phone:             "01123456789",
+				AlternatePhone:    "01123456111",
+				ShopImageUrl:      "ss2/shop_images/test.png",
+				NidNumber:         "12345",
+				NidFrontImageUrl:  "ss2/shop_images/test.png",
+				NidBackImageUrl:   "ss2/shop_images/test.png",
+				TradeLicenseUrl:   "ss2/shop_images/test.pdf",
+				AgreementUrl:      "ss2/shop_images/test.pdf",
+				ShopOwnerImageUrl: "ss2/shop_images/test.png",
+				GuarantorImageUrl: "ss2/shop_images/test.png",
+				ChequeImageUrl:    "ss2/shop_images/test.png",
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -76,6 +79,9 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.NidBackImageUrl).To(Equal(param.NidBackImageUrl))
 			Expect(updatedSupplier.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
 			Expect(updatedSupplier.AgreementUrl).To(Equal(param.AgreementUrl))
+			Expect(updatedSupplier.ShopOwnerImageUrl).To(Equal(param.ShopOwnerImageUrl))
+			Expect(updatedSupplier.GuarantorImageUrl).To(Equal(param.GuarantorImageUrl))
+			Expect(updatedSupplier.ChequeImageUrl).To(Equal(param.ChequeImageUrl))
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(false))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 
