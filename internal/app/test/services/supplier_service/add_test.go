@@ -52,32 +52,34 @@ var _ = Describe("AddSupplier", func() {
 			}}, nil)
 
 			param := &supplierpb.SupplierParam{
-				Name:              "Name",
-				Email:             "Email",
-				SupplierType:      uint64(utils.Hlc),
-				BusinessName:      "BusinessName",
-				Phone:             "01123456789",
-				AlternatePhone:    "01123456111",
-				ShopImageUrl:      "ss2/shop_images/test.png",
-				Firstname:         "Firstname",
-				Lastname:          "Lastname",
-				Address1:          "Address1",
-				Address2:          "Address2",
-				Landmark:          "Landmark",
-				City:              "City",
-				State:             "State",
-				Country:           "Country",
-				Zipcode:           "Zipcode",
-				GstNumber:         "GstNumber",
-				NidNumber:         "123456789",
-				TradeLicenseUrl:   "TradeLicenseUrl",
-				NidFrontImageUrl:  "NidFrontImageUrl",
-				NidBackImageUrl:   "NidBackImageUrl",
-				ShopOwnerImageUrl: "ShopOwnerImageUrl",
-				GuarantorImageUrl: "GuarantorImageUrl",
-				ChequeImageUrl:    "ChequeImageUrl",
-				CategoryIds:       []uint64{1, 30},
-				OpcIds:            opcIds,
+				Name:                     "Name",
+				Email:                    "Email",
+				SupplierType:             uint64(utils.Hlc),
+				BusinessName:             "BusinessName",
+				Phone:                    "01123456789",
+				AlternatePhone:           "01123456111",
+				ShopImageUrl:             "ss2/shop_images/test.png",
+				Firstname:                "Firstname",
+				Lastname:                 "Lastname",
+				Address1:                 "Address1",
+				Address2:                 "Address2",
+				Landmark:                 "Landmark",
+				City:                     "City",
+				State:                    "State",
+				Country:                  "Country",
+				Zipcode:                  "Zipcode",
+				GstNumber:                "GstNumber",
+				NidNumber:                "123456789",
+				TradeLicenseUrl:          "TradeLicenseUrl",
+				NidFrontImageUrl:         "NidFrontImageUrl",
+				NidBackImageUrl:          "NidBackImageUrl",
+				ShopOwnerImageUrl:        "ShopOwnerImageUrl",
+				GuarantorImageUrl:        "GuarantorImageUrl",
+				GuarantorNidNumber:       "12345",
+				GuarantorNidBackImageUrl: "GuarantorNidFrontImageUrl",
+				ChequeImageUrl:           "ChequeImageUrl",
+				CategoryIds:              []uint64{1, 30},
+				OpcIds:                   opcIds,
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -102,6 +104,8 @@ var _ = Describe("AddSupplier", func() {
 			Expect(supplier.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
 			Expect(supplier.ShopOwnerImageUrl).To(Equal(param.ShopOwnerImageUrl))
 			Expect(supplier.GuarantorImageUrl).To(Equal(param.GuarantorImageUrl))
+			Expect(supplier.GuarantorNidNumber).To(Equal(param.GuarantorNidNumber))
+			Expect(supplier.GuarantorNidBackImageUrl).To(Equal(param.GuarantorNidBackImageUrl))
 			Expect(supplier.ChequeImageUrl).To(Equal(param.ChequeImageUrl))
 
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))

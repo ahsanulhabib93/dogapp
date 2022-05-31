@@ -26,30 +26,33 @@ const (
 // Supplier ...
 type Supplier struct {
 	database.VaccountGorm
-	Name                     string         `gorm:"not null" valid:"required"`
-	Status                   SupplierStatus `gorm:"default:'Pending'"`
-	Reason                   string
-	Email                    string
-	Phone                    string
-	AlternatePhone           string                 `json:"alternate_phone"`
-	BusinessName             string                 `json:"business_name"`
-	IsPhoneVerified          *bool                  `gorm:"default:false" json:"is_phone_verified"` // using pointer to update false value in Edit API
-	ShopImageURL             string                 `json:"shop_image_url"`
-	UserID                   *uint64                `json:"user_id"`
-	NidNumber                string                 `json:"nid_number"`
-	NidFrontImageUrl         string                 `gorm:"type:varchar(512)" json:"nid_front_image_url"`
-	NidBackImageUrl          string                 `gorm:"type:varchar(512)" json:"nid_back_image_url"`
-	TradeLicenseUrl          string                 `gorm:"type:varchar(512)" json:"trade_license_url"`
-	AgreementUrl             string                 `gorm:"type:varchar(512)" json:"agreement_url"`
-	ShopOwnerImageUrl        string                 `gorm:"type:varchar(512)" json:"shop_owner_image_url"`
-	GuarantorImageUrl        string                 `gorm:"type:varchar(512)" json:"guarantor_image_url"`
-	ChequeImageUrl           string                 `gorm:"type:varchar(512)" json:"cheque_image_url"`
-	SupplierType             utils.SupplierType     `json:"supplier_type" valid:"required"`
-	SupplierAddresses        []SupplierAddress      `json:"supplier_addresses"`
-	PaymentAccountDetails    []PaymentAccountDetail `json:"payment_account_details"`
-	KeyAccountManagers       []KeyAccountManager
-	SupplierCategoryMappings []SupplierCategoryMapping
-	SupplierOpcMappings      []SupplierOpcMapping
+	Name                      string         `gorm:"not null" valid:"required"`
+	Status                    SupplierStatus `gorm:"default:'Pending'"`
+	Reason                    string
+	Email                     string
+	Phone                     string
+	AlternatePhone            string                 `json:"alternate_phone"`
+	BusinessName              string                 `json:"business_name"`
+	IsPhoneVerified           *bool                  `gorm:"default:false" json:"is_phone_verified"` // using pointer to update false value in Edit API
+	ShopImageURL              string                 `json:"shop_image_url"`
+	UserID                    *uint64                `json:"user_id"`
+	NidNumber                 string                 `json:"nid_number"`
+	NidFrontImageUrl          string                 `gorm:"type:varchar(512)" json:"nid_front_image_url"`
+	NidBackImageUrl           string                 `gorm:"type:varchar(512)" json:"nid_back_image_url"`
+	TradeLicenseUrl           string                 `gorm:"type:varchar(512)" json:"trade_license_url"`
+	AgreementUrl              string                 `gorm:"type:varchar(512)" json:"agreement_url"`
+	ShopOwnerImageUrl         string                 `gorm:"type:varchar(512)" json:"shop_owner_image_url"`
+	GuarantorImageUrl         string                 `gorm:"type:varchar(512)" json:"guarantor_image_url"`
+	GuarantorNidNumber        string                 `json:"guarantor_nid_number"`
+	GuarantorNidFrontImageUrl string                 `gorm:"type:varchar(512)" json:"guarantor_nid_front_image_url"`
+	GuarantorNidBackImageUrl  string                 `gorm:"type:varchar(512)" json:"guarantor_nid_back_image_url"`
+	ChequeImageUrl            string                 `gorm:"type:varchar(512)" json:"cheque_image_url"`
+	SupplierType              utils.SupplierType     `json:"supplier_type" valid:"required"`
+	SupplierAddresses         []SupplierAddress      `json:"supplier_addresses"`
+	PaymentAccountDetails     []PaymentAccountDetail `json:"payment_account_details"`
+	KeyAccountManagers        []KeyAccountManager
+	SupplierCategoryMappings  []SupplierCategoryMapping
+	SupplierOpcMappings       []SupplierOpcMapping
 }
 
 // Validate ...
@@ -59,11 +62,17 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 		db.AddError(errors.New("Supplier Already Exists"))
 	}
 
+	isNIDInvalid := false
 	for _, c := range supplier.NidNumber {
-		if !('0' <= c && c <= '9') {
-			db.AddError(errors.New("NID number should only consist of digits"))
-			break
-		}
+		isNIDInvalid = isNIDInvalid || !('0' <= c && c <= '9')
+	}
+
+	for _, c := range supplier.GuarantorNidNumber {
+		isNIDInvalid = isNIDInvalid || !('0' <= c && c <= '9')
+	}
+
+	if isNIDInvalid {
+		db.AddError(errors.New("NID number should only consist of digits"))
 	}
 
 	if phoneNumber := strings.TrimSpace(supplier.Phone); len(phoneNumber) == 0 {

@@ -586,8 +586,8 @@ github.com/voonik/goConnect v0.0.0-20220526104523-bf4c8c0daf30 h1:tSMs7KgfChr0mH
 github.com/voonik/goConnect v0.0.0-20220526104523-bf4c8c0daf30/go.mod h1:k1WyeCaaNrjomaFKEK96jc9TsVC0NJVXVGmx0+8NeRM=
 github.com/voonik/goConnect v0.0.0-20220526114431-e7ffafb44f8e h1:EClW/LefBXYdZE1QVmkNy0DrtqVG/fYkSG3AH1YqZug=
 github.com/voonik/goConnect v0.0.0-20220526114431-e7ffafb44f8e/go.mod h1:k1WyeCaaNrjomaFKEK96jc9TsVC0NJVXVGmx0+8NeRM=
-github.com/voonik/goConnect v0.0.0-20220530183952-023b63be556d h1:1a1aG3djSaY84WBYyITsFkAtF6a/RfO5s/n/krGRPJg=
-github.com/voonik/goConnect v0.0.0-20220530183952-023b63be556d/go.mod h1:k1WyeCaaNrjomaFKEK96jc9TsVC0NJVXVGmx0+8NeRM=
+github.com/voonik/goConnect v0.0.0-20220531063434-30927c74365c h1:5PqUJMCm5WQBH+ZJqh7UuIslfnJvMBrn9yO9fp0jsKc=
+github.com/voonik/goConnect v0.0.0-20220531063434-30927c74365c/go.mod h1:k1WyeCaaNrjomaFKEK96jc9TsVC0NJVXVGmx0+8NeRM=
 github.com/voonik/goFramework v0.0.0-20211130104727-69c728d98d93 h1:VwnbvO+Ha8UWb/sjfy5FPC/gvhx0VYLnELDrtXI2rYs=
 github.com/voonik/goFramework v0.0.0-20211130104727-69c728d98d93/go.mod h1:Qrj0/jptqwWQYs+kbrLYimG3iaugb2Hkwn27ljHNqQg=
 github.com/voonik/goFramework v0.0.0-20220510102819-472e6a727566 h1:sgPtLfwZfCcRrIKYSlUX7DvlAoZJopHhvPDFAJtg74U=
