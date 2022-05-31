@@ -2,6 +2,7 @@ package supplier_service_test
 
 import (
 	"context"
+	"log"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -23,7 +24,7 @@ var _ = Describe("EditSupplier", func() {
 	})
 
 	Context("Removing supplier document", func() {
-		It("Should remove document successfully", func() {
+		It("Should remove primary document successfully", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				AgreementUrl: "abc/xyz.pdf",
 				Status:       models.SupplierStatusVerified,
@@ -45,24 +46,25 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.AgreementUrl).To(Equal(""))
 		})
 
-		It("Should return error for invalid document type", func() {
+		It("Should remove secondary document successfully", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				GuarantorImageUrl: "abc/xyz.jpg",
+				Status:            models.SupplierStatusVerified,
 			})
 			param := &supplierpb.RemoveDocumentParam{
 				Id:           supplier.ID,
-				DocumentType: "guarantor_images_url",
+				DocumentType: "guarantor_image_url",
 			}
 			res, err := new(services.SupplierService).RemoveDocument(ctx, param)
-
+			log.Println("======>", res.Message)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("Supplier guarantor_images_url Removed Successfully"))
+			Expect(res.Message).To(Equal("Supplier guarantor_image_url Removed Successfully"))
 
 			updatedSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 
-			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
 			Expect(updatedSupplier.GuarantorImageUrl).To(Equal(""))
 		})
 

@@ -12,13 +12,17 @@ var AllowedUploadType = map[string][]string{
 	"ChequeImage":           {"cheque_images", "", "jpg"},
 }
 
-var SupplierDocumentType = []string{
+var SupplierPrimaryDocumentType = []string{
 	"nid_number",
 	"nid_front_image_url",
 	"nid_back_image_url",
 	"trade_license_url",
 	"agreement_url",
-	"shop_owner_images_url",
-	"guarantor_images_url",
-	"cheque_images_url",
+}
+
+var SupplierSecondaryDocumentType = []string{
+	"shop_image_url",
+	"shop_owner_image_url",
+	"guarantor_image_url",
+	"cheque_image_url",
 }

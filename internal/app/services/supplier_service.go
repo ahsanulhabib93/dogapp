@@ -201,20 +201,25 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 		resp.Message = "Supplier Not Found"
 	} else if !supplier.IsChangeAllowed(ctx) {
 		resp.Message = "Change Not Allowed"
-	} else if !utils.IsInclude(utils.SupplierDocumentType, params.GetDocumentType()) {
-		resp.Message = "Invalid Document Type"
 	} else {
-		query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", params.GetId())
-		query = query.Update(params.GetDocumentType(), "")
-		if supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed {
-			query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
-		}
-
-		if err := query.Error; err != nil {
-			resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
+		isPrimaryDoc := utils.IsInclude(utils.SupplierPrimaryDocumentType, params.GetDocumentType())
+		isSecondaryDoc := utils.IsInclude(utils.SupplierSecondaryDocumentType, params.GetDocumentType())
+		if !(isPrimaryDoc || isSecondaryDoc) {
+			resp.Message = "Invalid Document Type"
 		} else {
-			resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
-			resp.Success = true
+			query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", params.GetId())
+			query = query.Update(params.GetDocumentType(), "")
+			if isPrimaryDoc &&
+				(supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed) {
+				query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
+			}
+
+			if err := query.Error; err != nil {
+				resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
+			} else {
+				resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
+				resp.Success = true
+			}
 		}
 	}
 	log.Printf("RemoveDocumentResponse: %+v", resp)
