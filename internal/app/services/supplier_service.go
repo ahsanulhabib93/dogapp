@@ -207,7 +207,7 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 		if err := query.Error; err != nil {
 			resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
 		} else {
-			resp.Message = "Supplier Document Removed Successfully"
+			resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
 			resp.Success = true
 		}
 	}

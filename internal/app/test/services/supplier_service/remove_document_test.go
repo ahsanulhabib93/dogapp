@@ -36,7 +36,7 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
-			Expect(res.Message).To(Equal("Supplier Document Removed Successfully"))
+			Expect(res.Message).To(Equal("Supplier agreement_url Removed Successfully"))
 
 			updatedSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)

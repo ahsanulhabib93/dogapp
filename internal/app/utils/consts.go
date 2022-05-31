@@ -12,6 +12,14 @@ const (
 	Hlc
 )
 
+var SupplierTypeValue = map[SupplierType]string{
+	L0:  "L0",
+	L1:  "L1",
+	L2:  "L2",
+	L3:  "L3",
+	Hlc: "Hlc",
+}
+
 const (
 	Bank AccountType = 1 + iota
 	Mfs

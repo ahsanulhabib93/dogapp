@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -69,6 +70,50 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 		(strings.HasPrefix(phoneNumber, "1") && len(phoneNumber) == 10)) {
 		db.AddError(errors.New("Invalid Phone Number"))
 	}
+}
+
+func (supplier *Supplier) IsOTPVerified() bool {
+	if supplier.IsPhoneVerified == nil {
+		return false
+	}
+
+	return *supplier.IsPhoneVerified
+}
+
+func (supplier *Supplier) Verify(ctx context.Context) error {
+	paymentAccountsCount := database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Count()
+	if paymentAccountsCount == 0 {
+		return errors.New("At least one payment account details should be present")
+	}
+
+	addressesCount := database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Count()
+	if addressesCount == 0 {
+		return errors.New("At least one supplier address should be present")
+	}
+
+	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent()) {
+		return errors.New("At least one primary document or OTP verification needed")
+	}
+
+	typeValue := utils.SupplierTypeValue[supplier.SupplierType]
+	otpTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_otp_verification", []string{}).([]string)
+	if utils.IsInclude(otpTypeVerificationList, typeValue) && !supplier.IsOTPVerified() {
+		msg := fmt.Sprint("OTP verification required for supplier type: ", typeValue)
+		return errors.New(msg)
+	}
+
+	docTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_primary_doc_verification", []string{}).([]string)
+	if utils.IsInclude(docTypeVerificationList, typeValue) && !supplier.IsAnyDocumentPresent() {
+		msg := fmt.Sprint("At least one primary document required for supplier type: ", typeValue)
+		return errors.New(msg)
+	}
+
+	return nil
+}
+
+func (supplier *Supplier) IsAnyDocumentPresent() bool {
+	return !(supplier.NidNumber == "" && supplier.NidFrontImageUrl == "" && supplier.NidBackImageUrl == "" &&
+		supplier.TradeLicenseUrl == "" && supplier.AgreementUrl == "")
 }
 
 func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
