@@ -66,25 +66,19 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
 		})
-	})
 
-	Context("Updating without reason", func() {
-		It("Should be updated", func() {
+		It("Updating status to block with reason reason", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.UpdateStatusParam{
 				Id:     supplier.ID,
 				Status: string(models.SupplierStatusBlocked),
+				Reason: "no reason",
 			}
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier status updated successfully"))
-
-			updatedSupplier := models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
-			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusBlocked))
-			Expect(updatedSupplier.Reason).To(Equal(""))
 		})
 	})
 
@@ -197,9 +191,23 @@ var _ = Describe("UpdateStatus", func() {
 		})
 	})
 
-	Context("Updating with status for which transition not allowed", func() {
-		It("Should return error", func() {
+	Context("Should return error", func() {
+		It("Updating with status for which transition not allowed", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusFailed})
+			param := &supplierpb.UpdateStatusParam{
+				Id:     supplier.ID,
+				Status: string(models.SupplierStatusBlocked),
+				Reason: "here take the reason",
+			}
+			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Status transition not allowed"))
+		})
+
+		It("Updating status to block without reason", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.UpdateStatusParam{
 				Id:     supplier.ID,
 				Status: string(models.SupplierStatusBlocked),
@@ -208,11 +216,9 @@ var _ = Describe("UpdateStatus", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Status transition not allowed"))
+			Expect(res.Message).To(Equal("Status change reason missing"))
 		})
-	})
 
-	Context("Should return error", func() {
 		It("When no OTP verification or primary document given", func() {
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
 				Status: models.SupplierStatusBlocked,

@@ -243,6 +243,9 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 	fmt.Printf("newSupplierStatus %+v", newSupplierStatus)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
+	} else if params.GetReason() == EmptyString &&
+		(newSupplierStatus == models.SupplierStatusBlocked || newSupplierStatus == models.SupplierStatusFailed) {
+		resp.Message = "Status change reason missing"
 	} else if valid, message := helpers.IsValidStatusUpdate(ctx, supplier, newSupplierStatus); !valid {
 		resp.Message = message
 	} else {
