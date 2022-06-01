@@ -97,22 +97,28 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	}
 
 	supplier := models.Supplier{
-		Name:                     params.GetName(),
-		Email:                    params.GetEmail(),
-		UserID:                   utils.GetCurrentUserID(ctx),
-		SupplierType:             utils.SupplierType(params.GetSupplierType()),
-		BusinessName:             params.GetBusinessName(),
-		Phone:                    params.GetPhone(),
-		AlternatePhone:           params.GetAlternatePhone(),
-		ShopImageURL:             params.GetShopImageUrl(),
-		NidNumber:                params.GetNidNumber(),
-		NidFrontImageUrl:         params.GetNidFrontImageUrl(),
-		NidBackImageUrl:          params.GetNidBackImageUrl(),
-		TradeLicenseUrl:          params.GetTradeLicenseUrl(),
-		AgreementUrl:             params.GetAgreementUrl(),
-		SupplierCategoryMappings: helpers.PrepareCategoreMapping(params.GetCategoryIds()),
-		SupplierOpcMappings:      helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
-		SupplierAddresses:        helpers.PrepareSupplierAddress(params),
+		Name:                      params.GetName(),
+		Email:                     params.GetEmail(),
+		UserID:                    utils.GetCurrentUserID(ctx),
+		SupplierType:              utils.SupplierType(params.GetSupplierType()),
+		BusinessName:              params.GetBusinessName(),
+		Phone:                     params.GetPhone(),
+		AlternatePhone:            params.GetAlternatePhone(),
+		ShopImageURL:              params.GetShopImageUrl(),
+		NidNumber:                 params.GetNidNumber(),
+		NidFrontImageUrl:          params.GetNidFrontImageUrl(),
+		NidBackImageUrl:           params.GetNidBackImageUrl(),
+		TradeLicenseUrl:           params.GetTradeLicenseUrl(),
+		AgreementUrl:              params.GetAgreementUrl(),
+		ShopOwnerImageUrl:         params.GetShopOwnerImageUrl(),
+		GuarantorImageUrl:         params.GetGuarantorImageUrl(),
+		GuarantorNidNumber:        params.GetGuarantorNidNumber(),
+		GuarantorNidFrontImageUrl: params.GetGuarantorNidFrontImageUrl(),
+		GuarantorNidBackImageUrl:  params.GetGuarantorNidBackImageUrl(),
+		ChequeImageUrl:            params.GetChequeImageUrl(),
+		SupplierCategoryMappings:  helpers.PrepareCategoreMapping(params.GetCategoryIds()),
+		SupplierOpcMappings:       helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
+		SupplierAddresses:         helpers.PrepareSupplierAddress(params),
 	}
 
 	err := database.DBAPM(ctx).Save(&supplier)
@@ -156,21 +162,27 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		}
 
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
-			Status:                   status,
-			Name:                     params.GetName(),
-			Email:                    params.GetEmail(),
-			SupplierType:             utils.SupplierType(params.GetSupplierType()),
-			BusinessName:             params.GetBusinessName(),
-			Phone:                    params.GetPhone(),
-			AlternatePhone:           params.GetAlternatePhone(),
-			IsPhoneVerified:          &isPhoneVerified,
-			ShopImageURL:             params.GetShopImageUrl(),
-			NidNumber:                params.GetNidNumber(),
-			NidFrontImageUrl:         params.GetNidFrontImageUrl(),
-			NidBackImageUrl:          params.GetNidBackImageUrl(),
-			TradeLicenseUrl:          params.GetTradeLicenseUrl(),
-			AgreementUrl:             params.GetAgreementUrl(),
-			SupplierCategoryMappings: helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
+			Status:                    status,
+			Name:                      params.GetName(),
+			Email:                     params.GetEmail(),
+			SupplierType:              utils.SupplierType(params.GetSupplierType()),
+			BusinessName:              params.GetBusinessName(),
+			Phone:                     params.GetPhone(),
+			AlternatePhone:            params.GetAlternatePhone(),
+			IsPhoneVerified:           &isPhoneVerified,
+			ShopImageURL:              params.GetShopImageUrl(),
+			NidNumber:                 params.GetNidNumber(),
+			NidFrontImageUrl:          params.GetNidFrontImageUrl(),
+			NidBackImageUrl:           params.GetNidBackImageUrl(),
+			TradeLicenseUrl:           params.GetTradeLicenseUrl(),
+			AgreementUrl:              params.GetAgreementUrl(),
+			ShopOwnerImageUrl:         params.GetShopOwnerImageUrl(),
+			GuarantorImageUrl:         params.GetGuarantorImageUrl(),
+			GuarantorNidNumber:        params.GetGuarantorNidNumber(),
+			GuarantorNidFrontImageUrl: params.GetGuarantorNidFrontImageUrl(),
+			GuarantorNidBackImageUrl:  params.GetGuarantorNidBackImageUrl(),
+			ChequeImageUrl:            params.GetChequeImageUrl(),
+			SupplierCategoryMappings:  helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
@@ -195,20 +207,25 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 		resp.Message = "Supplier Not Found"
 	} else if !supplier.IsChangeAllowed(ctx) {
 		resp.Message = "Change Not Allowed"
-	} else if !utils.IsInclude(utils.SupplierDocumentType, params.GetDocumentType()) {
-		resp.Message = "Invalid Document Type"
 	} else {
-		query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", params.GetId())
-		query = query.Update(params.GetDocumentType(), "")
-		if supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed {
-			query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
-		}
-
-		if err := query.Error; err != nil {
-			resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
+		isPrimaryDoc := utils.IsInclude(utils.SupplierPrimaryDocumentType, params.GetDocumentType())
+		isSecondaryDoc := utils.IsInclude(utils.SupplierSecondaryDocumentType, params.GetDocumentType())
+		if !(isPrimaryDoc || isSecondaryDoc) {
+			resp.Message = "Invalid Document Type"
 		} else {
-			resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
-			resp.Success = true
+			query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", params.GetId())
+			query = query.Update(params.GetDocumentType(), "")
+			if isPrimaryDoc &&
+				(supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed) {
+				query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
+			}
+
+			if err := query.Error; err != nil {
+				resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
+			} else {
+				resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
+				resp.Success = true
+			}
 		}
 	}
 	log.Printf("RemoveDocumentResponse: %+v", resp)
@@ -391,6 +408,12 @@ func (ss *SupplierService) getResponseField() string {
 		"suppliers.trade_license_url",
 		"suppliers.agreement_url",
 		"suppliers.reason",
+		"suppliers.shop_owner_image_url",
+		"suppliers.guarantor_nid_number",
+		"suppliers.guarantor_image_url",
+		"suppliers.guarantor_nid_front_image_url",
+		"suppliers.guarantor_nid_back_image_url",
+		"suppliers.cheque_image_url",
 		"GROUP_CONCAT( DISTINCT supplier_category_mappings.category_id) as category_ids",
 		"GROUP_CONCAT( DISTINCT supplier_opc_mappings.processing_center_id) as opc_ids",
 	}

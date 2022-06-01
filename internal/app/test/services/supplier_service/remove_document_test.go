@@ -23,7 +23,7 @@ var _ = Describe("EditSupplier", func() {
 	})
 
 	Context("Removing supplier document", func() {
-		It("Should remove document successfully", func() {
+		It("Should remove primary document successfully", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				AgreementUrl: "abc/xyz.pdf",
 				Status:       models.SupplierStatusVerified,
@@ -43,6 +43,28 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 			Expect(updatedSupplier.AgreementUrl).To(Equal(""))
+		})
+
+		It("Should remove secondary document successfully", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				GuarantorNidFrontImageUrl: "abc/xyz.jpg",
+				Status:                    models.SupplierStatusVerified,
+			})
+			param := &supplierpb.RemoveDocumentParam{
+				Id:           supplier.ID,
+				DocumentType: "guarantor_nid_front_image_url",
+			}
+			res, err := new(services.SupplierService).RemoveDocument(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier guarantor_nid_front_image_url Removed Successfully"))
+
+			updatedSupplier := models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
+
+			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
+			Expect(updatedSupplier.GuarantorNidFrontImageUrl).To(Equal(""))
 		})
 
 		It("Should return error for invalid document type", func() {
