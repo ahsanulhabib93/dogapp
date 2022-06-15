@@ -71,7 +71,7 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = helpers.PrepareFilter(ctx, query, params).
-		Preload("SupplierAddresses").Joins("join supplier_addresses on supplier_addresses.supplier_id=suppliers.id").
+		Preload("SupplierAddresses").Joins(models.GetSupplierAddressJoinStr()).
 		Group("suppliers.id")
 
 	var total uint64
