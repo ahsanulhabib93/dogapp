@@ -1,4 +1,11 @@
 {
+    "scopes": [
+        {
+          "id": "supplierpanel",
+          "description": "supplier panel",
+          "vaccount_id": 12
+        }      
+    ],
     "roles": [
         {
             "name": "Digital Credit Team",
