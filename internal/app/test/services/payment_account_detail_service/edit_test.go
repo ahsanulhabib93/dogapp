@@ -221,4 +221,22 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(res.Message).To(Equal("Change Not Allowed"))
 		})
 	})
+
+	Context("Editing with existing account number", func() {
+		It("Should return error response", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			_ = test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, AccountNumber: "AccountNum", IsDefault: true})
+			paymentAccount2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier2.ID, AccountType: utils.Bank, IsDefault: true})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:            paymentAccount2.ID,
+				AccountNumber: "AccountNum",
+			}
+			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while updating PaymentAccountDetail: Provided bank account number already exists"))
+		})
+	})
 })

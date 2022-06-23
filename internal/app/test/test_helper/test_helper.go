@@ -68,7 +68,14 @@ func CreateSupplierAddress(ctx context.Context, supplierAddress *models.Supplier
 func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.PaymentAccountDetail) *models.PaymentAccountDetail {
 	id := getUniqueID()
 	paymentAccount.AccountName = fmt.Sprintf("AccountName-%v", id)
-	paymentAccount.AccountNumber = fmt.Sprintf("AccountNumber-%v", id)
+	number := paymentAccount.AccountNumber
+	if number == "" {
+		paymentAccount.AccountNumber = fmt.Sprintf("Harsha-%v", id)
+	} else {
+		fmt.Println("inside else case")
+		fmt.Println(number)
+		paymentAccount.AccountNumber = number
+	}
 
 	if paymentAccount.AccountType == utils.Mfs {
 		paymentAccount.AccountSubType = utils.Bkash

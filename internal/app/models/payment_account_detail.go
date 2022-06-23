@@ -24,6 +24,11 @@ type PaymentAccountDetail struct {
 
 // Validate ...
 func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
+	res := db.Model(&paymentAccount).First(&PaymentAccountDetail{}, "supplier_id!= ? and account_number = ?", paymentAccount.SupplierID, paymentAccount.AccountNumber)
+	if !res.RecordNotFound() {
+		db.AddError(errors.New("Provided bank account number already exists"))
+	}
+
 	if !paymentAccount.IsDefault {
 		result := db.Model(&paymentAccount).Where("supplier_id = ? and is_default = ? and id != ?", paymentAccount.SupplierID, true, paymentAccount.ID).First(&PaymentAccountDetail{})
 		if result.RecordNotFound() {

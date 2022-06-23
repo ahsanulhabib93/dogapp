@@ -273,4 +273,30 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: For Bank account type BankID and BranchName needed"))
 		})
 	})
+
+	Context("While adding payment account detail with existing account number", func() {
+		It("Should return error response", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			_ = test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, AccountNumber: "AccountNum", IsDefault: true})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:     supplier2.ID,
+				AccountType:    uint64(utils.Bank),
+				AccountSubType: uint64(utils.Savings),
+				AccountName:    "AccountName",
+				AccountNumber:  "AccountNum",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+			}
+
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Bank Account Number already exists"))
+		})
+	})
 })
