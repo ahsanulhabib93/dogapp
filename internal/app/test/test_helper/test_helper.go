@@ -70,10 +70,8 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 	paymentAccount.AccountName = fmt.Sprintf("AccountName-%v", id)
 	number := paymentAccount.AccountNumber
 	if number == "" {
-		paymentAccount.AccountNumber = fmt.Sprintf("Harsha-%v", id)
+		paymentAccount.AccountNumber = fmt.Sprintf("AccountNumber-%v", id)
 	} else {
-		fmt.Println("inside else case")
-		fmt.Println(number)
 		paymentAccount.AccountNumber = number
 	}
 
