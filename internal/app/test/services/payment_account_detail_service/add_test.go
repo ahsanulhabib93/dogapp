@@ -296,7 +296,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Bank Account Number already exists"))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: Provided bank account number already exists"))
 		})
 	})
 })
