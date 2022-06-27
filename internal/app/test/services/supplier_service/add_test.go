@@ -3,7 +3,6 @@ package supplier_service_test
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -358,7 +357,6 @@ var _ = Describe("AddSupplier", func() {
 				SupplierType: uint64(utils.Hlc),
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
-			fmt.Println("logger here")
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: Invalid Phone Number"))
