@@ -24,7 +24,7 @@ var _ = Describe("ChangePendingState", func() {
 		test_utils.GetContext(&ctx)
 	})
 
-	It("Should create key account manager and return success", func() {
+	It("Should update status successfully", func() {
 		lastMonth := time.Now().Add(-time.Hour * 24 * 31)
 		s1 := test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
 			SupplierType:             utils.Hlc,
@@ -32,16 +32,6 @@ var _ = Describe("ChangePendingState", func() {
 			SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 		}, lastMonth)
 		isPhoneVerified := true
-		test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
-			SupplierType:    utils.L1,
-			IsPhoneVerified: &isPhoneVerified,
-			Status:          models.SupplierStatusVerified,
-		}, lastMonth)
-		test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
-			SupplierType:    utils.L1,
-			IsPhoneVerified: &isPhoneVerified,
-			Status:          models.SupplierStatusPending,
-		}, time.Now())
 		s2 := test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
 			SupplierType:    utils.L1,
 			IsPhoneVerified: &isPhoneVerified,
@@ -71,5 +61,29 @@ var _ = Describe("ChangePendingState", func() {
 		Expect(*supplierData1.IsPhoneVerified).To(Equal(true))
 		Expect(supplierData1.SupplierType).To(Equal(utils.L1))
 		Expect(supplierData1.Status).To(Equal(models.SupplierStatusFailed))
+		Expect(supplierData1.CreatedAt.Day()).To(Equal(lastMonth.Day()))
+		Expect(supplierData1.UpdatedAt.Day()).To(Equal(time.Now().Day()))
+	})
+
+	It("Should not update supplier status if not more than 1 week old", func() {
+		lastMonth := time.Now().Add(-time.Hour * 24 * 31)
+		isPhoneVerified := true
+		test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
+			SupplierType:    utils.L1,
+			IsPhoneVerified: &isPhoneVerified,
+			Status:          models.SupplierStatusVerified,
+		}, lastMonth)
+		test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
+			SupplierType:    utils.L1,
+			IsPhoneVerified: &isPhoneVerified,
+			Status:          models.SupplierStatusPending,
+		}, time.Now())
+
+		err := helpers.ChangePendingState(&worker.VaccountContext{1, 1}, &work.Job{})
+		Expect(err).To(BeNil())
+
+		var count int
+		database.DBAPM(ctx).Model(&models.Supplier{}).Where("status = ?", models.SupplierStatusFailed).Count(&count)
+		Expect(count).To(Equal(0))
 	})
 })
