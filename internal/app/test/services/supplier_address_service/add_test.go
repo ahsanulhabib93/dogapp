@@ -261,7 +261,7 @@ var _ = Describe("AddSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier Address: Invalid Phone Number"))
+			Expect(res.Message).To(Equal("Error while creating Supplier Address: Phone Number should have 13 digits"))
 		})
 	})
 

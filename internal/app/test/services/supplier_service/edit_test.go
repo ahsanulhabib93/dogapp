@@ -307,7 +307,7 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while updating Supplier: Invalid Phone Number"))
+			Expect(res.Message).To(Equal("Error while updating Supplier: Phone Number should have 13 digits"))
 		})
 	})
 
@@ -323,7 +323,7 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while updating Supplier: Supplier Already Exists"))
+			Expect(res.Message).To(Equal("Error while updating Supplier: Phone Number Already Exists"))
 		})
 	})
 })
