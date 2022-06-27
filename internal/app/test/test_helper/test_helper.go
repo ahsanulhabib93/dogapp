@@ -20,7 +20,7 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 	id := getUniqueID()
 
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
-	supplier.AlternatePhone = fmt.Sprintf("01811122233%v", id)
+	supplier.AlternatePhone = fmt.Sprintf("8801234567890%v", id)
 	supplier.BusinessName = fmt.Sprintf("Test Business %v", id)
 	supplier.Reason = fmt.Sprintf("Test reason %v", id)
 	supplier.ShopImageURL = fmt.Sprintf("/ss2/test_shop_image_url/%v", id)
@@ -59,7 +59,7 @@ func CreateSupplierAddress(ctx context.Context, supplierAddress *models.Supplier
 	supplierAddress.State = fmt.Sprintf("State-%v", id)
 	supplierAddress.Country = fmt.Sprintf("Country-%v", id)
 	supplierAddress.Zipcode = fmt.Sprintf("Zipcode-%v", id)
-	supplierAddress.Phone = fmt.Sprintf("011245689%v%v", rand.Intn(10), rand.Intn(10))
+	supplierAddress.Phone = fmt.Sprintf("8801234567890%v%v", rand.Intn(13), rand.Intn(13))
 	supplierAddress.GstNumber = fmt.Sprintf("GstNumber-%v", id)
 	database.DBAPM(ctx).Save(supplierAddress)
 	return supplierAddress

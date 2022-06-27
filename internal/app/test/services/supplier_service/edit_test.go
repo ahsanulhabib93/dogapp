@@ -45,8 +45,8 @@ var _ = Describe("EditSupplier", func() {
 				Email:                     "Email",
 				SupplierType:              uint64(utils.L1),
 				BusinessName:              "BusinessName",
-				Phone:                     "01123456789",
-				AlternatePhone:            "01123456111",
+				Phone:                     "8801234567890",
+				AlternatePhone:            "8801234567891",
 				ShopImageUrl:              "ss2/shop_images/test.png",
 				NidNumber:                 "12345",
 				NidFrontImageUrl:          "ss2/shop_images/test.png",
@@ -301,7 +301,7 @@ var _ = Describe("EditSupplier", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierObject{
 				Id:    supplier1.ID,
-				Phone: "1234",
+				Phone: "1234567890",
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 

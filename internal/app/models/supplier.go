@@ -77,9 +77,7 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 
 	if phoneNumber := strings.TrimSpace(supplier.Phone); len(phoneNumber) == 0 {
 		db.AddError(errors.New("Phone Number can't be blank"))
-	} else if !((strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) ||
-		(strings.HasPrefix(phoneNumber, "01") && len(phoneNumber) == 11) ||
-		(strings.HasPrefix(phoneNumber, "1") && len(phoneNumber) == 10)) {
+	} else if !(strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) {
 		db.AddError(errors.New("Invalid Phone Number"))
 	}
 }

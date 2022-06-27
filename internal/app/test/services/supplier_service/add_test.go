@@ -3,6 +3,7 @@ package supplier_service_test
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -56,8 +57,8 @@ var _ = Describe("AddSupplier", func() {
 				Email:                    "Email",
 				SupplierType:             uint64(utils.Hlc),
 				BusinessName:             "BusinessName",
-				Phone:                    "01123456789",
-				AlternatePhone:           "01123456111",
+				Phone:                    "8801234567890",
+				AlternatePhone:           "8801234567891",
 				ShopImageUrl:             "ss2/shop_images/test.png",
 				Firstname:                "Firstname",
 				Lastname:                 "Lastname",
@@ -141,8 +142,8 @@ var _ = Describe("AddSupplier", func() {
 				Email:            "Email",
 				SupplierType:     uint64(utils.Hlc),
 				BusinessName:     "BusinessName",
-				Phone:            "01123456789",
-				AlternatePhone:   "01123456111",
+				Phone:            "8801234567890",
+				AlternatePhone:   "8801234567891",
 				ShopImageUrl:     "ss2/shop_images/test.png",
 				Firstname:        "Firstname",
 				Lastname:         "Lastname",
@@ -193,7 +194,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Email:        "Email",
 				SupplierType: uint64(utils.Hlc),
-				Phone:        "1234567890",
+				Phone:        "8801234567890",
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
 			}
@@ -211,7 +212,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:         supplier1.Name,
 				Email:        "Email",
-				Phone:        "1234567890",
+				Phone:        "8801234567890",
 				SupplierType: uint64(utils.Hlc),
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
@@ -232,7 +233,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
 				Email:    "Email",
-				Phone:    "01123456789",
+				Phone:    "8801234567890",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
 			}
@@ -255,7 +256,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:     "Name",
 				Email:    "Email",
-				Phone:    "01123456789",
+				Phone:    "8801234567890",
 				Address1: "Address1",
 				Zipcode:  "Zipcode",
 				OpcIds:   opcIds,
@@ -306,7 +307,7 @@ var _ = Describe("AddSupplier", func() {
 
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
-				Phone:                "01123456789",
+				Phone:                "8801234567890",
 				SupplierType:         uint64(utils.Hlc),
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
@@ -332,7 +333,7 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
 				SupplierType:         uint64(utils.Hlc),
-				Phone:                "01123456789",
+				Phone:                "8801234567890",
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
 			}
@@ -353,11 +354,11 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				Email:        "Email",
-				Phone:        "1234",
+				Phone:        "1234567890",
 				SupplierType: uint64(utils.Hlc),
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
-
+			fmt.Println("logger here")
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: Invalid Phone Number"))
