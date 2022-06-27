@@ -59,7 +59,7 @@ func CreateSupplierAddress(ctx context.Context, supplierAddress *models.Supplier
 	supplierAddress.State = fmt.Sprintf("State-%v", id)
 	supplierAddress.Country = fmt.Sprintf("Country-%v", id)
 	supplierAddress.Zipcode = fmt.Sprintf("Zipcode-%v", id)
-	supplierAddress.Phone = fmt.Sprintf("Phone-%v", rand.Intn(13))
+	supplierAddress.Phone = fmt.Sprintf("880%v", rand.Intn(999999999)+1000000000)
 	supplierAddress.GstNumber = fmt.Sprintf("GstNumber-%v", id)
 	database.DBAPM(ctx).Save(supplierAddress)
 	return supplierAddress

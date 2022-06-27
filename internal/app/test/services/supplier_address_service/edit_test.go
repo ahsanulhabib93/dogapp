@@ -38,7 +38,7 @@ var _ = Describe("EditSupplierAddress", func() {
 				State:     "State",
 				Country:   "Country",
 				Zipcode:   "Zipcode",
-				Phone:     "01123456789",
+				Phone:     "8801123456789",
 				GstNumber: "GstNumber",
 				IsDefault: false,
 			}
@@ -239,7 +239,7 @@ var _ = Describe("EditSupplierAddress", func() {
 				State:     "State",
 				Country:   "Country",
 				Zipcode:   "Zipcode",
-				Phone:     "01123456789",
+				Phone:     "8801123456789",
 				GstNumber: "GstNumber",
 				IsDefault: false,
 			}
