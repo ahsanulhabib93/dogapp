@@ -4,17 +4,19 @@ import (
 	"context"
 	"time"
 
-	"github.com/voonik/ss2/internal/app/helpers"
-	"github.com/voonik/ss2/internal/app/models"
-	"github.com/voonik/ss2/internal/app/test/test_helper"
-	"github.com/voonik/ss2/internal/app/utils"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/goFramework/pkg/worker"
 	"github.com/voonik/work"
+
+	"github.com/voonik/ss2/internal/app/helpers"
+	"github.com/voonik/ss2/internal/app/models"
+	"github.com/voonik/ss2/internal/app/test/mocks"
+	"github.com/voonik/ss2/internal/app/test/test_helper"
+	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("ChangePendingState", func() {
@@ -66,18 +68,24 @@ var _ = Describe("ChangePendingState", func() {
 	})
 
 	It("Should not update supplier status if not more than 1 week old", func() {
-		lastMonth := time.Now().Add(-time.Hour * 24 * 31)
+		aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
+			"supplier_auto_status_change_duration": int64(20),
+		}))
+
+		date := time.Now().Add(-time.Hour * 24 * 31)
 		isPhoneVerified := true
 		test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
 			SupplierType:    utils.L1,
 			IsPhoneVerified: &isPhoneVerified,
 			Status:          models.SupplierStatusVerified,
-		}, lastMonth)
+		}, date)
+
+		date = time.Now().Add(-time.Hour * 24 * 8)
 		test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
 			SupplierType:    utils.L1,
 			IsPhoneVerified: &isPhoneVerified,
 			Status:          models.SupplierStatusPending,
-		}, time.Now())
+		}, date)
 
 		err := helpers.ChangePendingState(&worker.VaccountContext{1, 1}, &work.Job{})
 		Expect(err).To(BeNil())
