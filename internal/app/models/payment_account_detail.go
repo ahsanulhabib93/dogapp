@@ -1,10 +1,12 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -24,9 +26,13 @@ type PaymentAccountDetail struct {
 
 // Validate ...
 func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
-	res := db.Model(&paymentAccount).First(&PaymentAccountDetail{}, "supplier_id!= ? and account_number = ?", paymentAccount.SupplierID, paymentAccount.AccountNumber)
-	if !res.RecordNotFound() {
-		db.AddError(errors.New("Provided bank account number already exists"))
+	if ctxx, ok := db.Get("context"); ok {
+		if aaaModels.GetAppPreferenceServiceInstance().GetValue(ctxx.(context.Context), "enabled_account_number_validation", false).(bool) {
+			res := db.Model(&paymentAccount).First(&PaymentAccountDetail{}, "supplier_id!= ? and account_number = ?", paymentAccount.SupplierID, paymentAccount.AccountNumber)
+			if !res.RecordNotFound() {
+				db.AddError(errors.New("Provided bank account number already exists"))
+			}
+		}
 	}
 
 	if !paymentAccount.IsDefault {

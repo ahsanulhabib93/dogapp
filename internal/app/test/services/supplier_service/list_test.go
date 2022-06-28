@@ -399,4 +399,46 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData.Name).To(Equal(supplier.Name))
 		})
 	})
+
+	Context("When supplier name is given", func() {
+		It("Should Respond with suppliers with same name, same phone number and same account number", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Name: "4444"})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801444444444"})
+			supplier3 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier3.ID, AccountNumber: "44404444", IsDefault: true})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Name: "444"})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(3)))
+			Expect(len(res.Data)).To(Equal(3))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier1.Email))
+			Expect(supplierData1.Name).To(Equal(supplier1.Name))
+			Expect(supplierData1.Phone).To(Equal(supplier1.Phone))
+			Expect(supplierData1.AlternatePhone).To(Equal(supplier1.AlternatePhone))
+			Expect(supplierData1.BusinessName).To(Equal(supplier1.BusinessName))
+			Expect(supplierData1.ShopImageUrl).To(Equal(supplier1.ShopImageURL))
+			Expect(supplierData1.Reason).To(Equal(supplier1.Reason))
+
+			supplierData2 := res.Data[1]
+			Expect(supplierData2.Email).To(Equal(supplier2.Email))
+			Expect(supplierData2.Name).To(Equal(supplier2.Name))
+			Expect(supplierData2.Phone).To(Equal(supplier2.Phone))
+			Expect(supplierData2.AlternatePhone).To(Equal(supplier2.AlternatePhone))
+			Expect(supplierData2.BusinessName).To(Equal(supplier2.BusinessName))
+			Expect(supplierData2.ShopImageUrl).To(Equal(supplier2.ShopImageURL))
+			Expect(supplierData2.Reason).To(Equal(supplier2.Reason))
+
+			supplierData3 := res.Data[2]
+			Expect(supplierData3.Email).To(Equal(supplier3.Email))
+			Expect(supplierData3.Name).To(Equal(supplier3.Name))
+			Expect(supplierData3.Phone).To(Equal(supplier3.Phone))
+			Expect(supplierData3.AlternatePhone).To(Equal(supplier3.AlternatePhone))
+			Expect(supplierData3.BusinessName).To(Equal(supplier3.BusinessName))
+			Expect(supplierData3.ShopImageUrl).To(Equal(supplier3.ShopImageURL))
+			Expect(supplierData3.Reason).To(Equal(supplier3.Reason))
+
+		})
+	})
 })
