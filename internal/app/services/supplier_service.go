@@ -57,7 +57,7 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 
 	var total uint64
 	query.Count(&total)
-	helpers.SetPage(query, params)
+	helpers.SetPage(ctx, query, params)
 	query.Select(ss.getResponseField()).Scan(&suppliers)
 	resp := helpers.PrepareListResponse(suppliers, total)
 	log.Printf("ListSupplierResponse: %+v", resp)
@@ -76,7 +76,7 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 
 	var total uint64
 	query.Count(&total)
-	helpers.SetPage(query, params)
+	helpers.SetPage(ctx, query, params)
 	suppliersWithAddresses := []models.Supplier{{}}
 	query.Select("suppliers.*").Find(&suppliersWithAddresses)
 

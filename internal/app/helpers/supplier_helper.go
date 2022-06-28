@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -67,15 +67,16 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	return query
 }
 
-func SetPage(query *gorm.DB, params *supplierpb.ListParams) {
+func SetPage(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams) {
 	if params.GetPerPage() <= 0 || params.GetPerPage() > utils.DEFAULT_PER_PAGE {
 		params.PerPage = utils.DEFAULT_PER_PAGE
 	}
 
 	params.Page = utils.Int64Max(utils.DEFAULT_PAGE, params.GetPage())
 	offset := (params.GetPage() - 1) * params.GetPerPage()
+	searchLimit := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "query_search_limit", 5).(int)
 	if params.GetName() != "" {
-		*query = *query.Offset(offset).Limit(5)
+		*query = *query.Offset(offset).Limit(searchLimit)
 	} else {
 		*query = *query.Offset(offset).Limit(params.GetPerPage())
 	}
