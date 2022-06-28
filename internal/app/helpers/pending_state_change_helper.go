@@ -20,7 +20,7 @@ func ChangePendingState(c *goWorker.VaccountContext, job *work.Job) error {
 	lastWeek := time.Now().Add(-time.Hour * 24 * time.Duration(noOfDay))
 	err := database.DBAPM(c.GetContext()).Model(&models.Supplier{}).
 		Where("suppliers.status = ?", models.SupplierStatusPending).
-		Where("suppliers.created_at < ?", lastWeek).Pluck("id", &supplierIds).
+		Where("suppliers.updated_at < ?", lastWeek).Pluck("id", &supplierIds).
 		Error
 
 	if err != nil {
