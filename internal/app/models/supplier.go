@@ -154,3 +154,8 @@ func GetCategoryMappingJoinStr() string {
 func GetOpcMappingJoinStr() string {
 	return "LEFT JOIN supplier_opc_mappings on supplier_opc_mappings.supplier_id = suppliers.id and supplier_opc_mappings.deleted_at IS NULL and supplier_opc_mappings.vaccount_id = suppliers.vaccount_id"
 }
+
+// GetPaymentAccountDetailsJoinStr ...
+func GetPaymentAccountDetailsJoinStr() string {
+	return "LEFT JOIN payment_account_details on payment_account_details.supplier_id = suppliers.id and payment_account_details.vaccount_id = suppliers.vaccount_id"
+}
