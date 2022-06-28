@@ -38,7 +38,7 @@ var _ = Describe("EditSupplierAddress", func() {
 				State:     "State",
 				Country:   "Country",
 				Zipcode:   "Zipcode",
-				Phone:     "01123456789",
+				Phone:     "8801123456789",
 				GstNumber: "GstNumber",
 				IsDefault: false,
 			}
@@ -169,7 +169,7 @@ var _ = Describe("EditSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while updating Supplier Address: Invalid Phone Number"))
+			Expect(res.Message).To(Equal("Error while updating Supplier Address: Phone Number should have 13 digits"))
 		})
 	})
 
@@ -190,7 +190,7 @@ var _ = Describe("EditSupplierAddress", func() {
 				State:     "State",
 				Country:   "Country",
 				Zipcode:   "Zipcode",
-				Phone:     "01123456789",
+				Phone:     "8801123456789",
 				GstNumber: "GstNumber",
 				IsDefault: false,
 			}
@@ -239,7 +239,7 @@ var _ = Describe("EditSupplierAddress", func() {
 				State:     "State",
 				Country:   "Country",
 				Zipcode:   "Zipcode",
-				Phone:     "01123456789",
+				Phone:     "8801123456789",
 				GstNumber: "GstNumber",
 				IsDefault: false,
 			}

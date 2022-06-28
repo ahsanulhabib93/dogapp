@@ -35,7 +35,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				State:      "State",
 				Country:    "Country",
 				Zipcode:    "Zipcode",
-				Phone:      "01123456789",
+				Phone:      "8801123456789",
 				GstNumber:  "GstNumber",
 				IsDefault:  false,
 			}
@@ -85,7 +85,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				State:      "State",
 				Country:    "Country",
 				Zipcode:    "Zipcode",
-				Phone:      "01123456789",
+				Phone:      "8801123456789",
 				GstNumber:  "GstNumber",
 			}
 			res, err := new(services.SupplierAddressService).Add(ctx, param)
@@ -131,7 +131,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				State:      "State",
 				Country:    "Country",
 				Zipcode:    "Zipcode",
-				Phone:      "01123456789",
+				Phone:      "8801123456789",
 				GstNumber:  "GstNumber",
 			}
 			res, err := new(services.SupplierAddressService).Add(ctx, param)
@@ -158,7 +158,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				State:      "State",
 				Country:    "Country",
 				Zipcode:    "Zipcode",
-				Phone:      "01123456789",
+				Phone:      "8801123456789",
 				GstNumber:  "GstNumber",
 				IsDefault:  true,
 			}
@@ -199,7 +199,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				SupplierId: 1000,
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
-				Phone:      "01123456789",
+				Phone:      "8801123456789",
 			}
 			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
@@ -217,7 +217,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
 				Address1:   "Address1",
-				Phone:      "01123456789",
+				Phone:      "8801123456789",
 			}
 			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
@@ -235,7 +235,7 @@ var _ = Describe("AddSupplierAddress", func() {
 				Firstname:  "Firstname",
 				Lastname:   "Lastname",
 				Zipcode:    "Zipcode",
-				Phone:      "01123456789",
+				Phone:      "8801123456789",
 			}
 			res, err := new(services.SupplierAddressService).Add(ctx, param)
 
@@ -261,7 +261,7 @@ var _ = Describe("AddSupplierAddress", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier Address: Invalid Phone Number"))
+			Expect(res.Message).To(Equal("Error while creating Supplier Address: Phone Number should have 13 digits"))
 		})
 	})
 
