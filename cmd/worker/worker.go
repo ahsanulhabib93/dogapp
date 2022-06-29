@@ -18,7 +18,7 @@ func main() {
 	jobInstance.RegisterJobWithOptions("change_pending_supplier_status", work.JobOptions{
 		MaxConcurrency: 0, Priority: 10, MaxFails: 1,
 	}, helpers.ChangePendingState, opts...)
-	schedulerInstance.SchedulePeriodicJob("@daily", "change_pending_supplier_status", map[string]interface{}{}, opts...)
+	schedulerInstance.SchedulePeriodicJob("0 0 * * *", "change_pending_supplier_status", map[string]interface{}{}, opts...)
 
 	goWorker.Start()
 }
