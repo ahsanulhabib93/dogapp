@@ -74,7 +74,7 @@ func SetPage(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams)
 
 	params.Page = utils.Int64Max(utils.DEFAULT_PAGE, params.GetPage())
 	offset := (params.GetPage() - 1) * params.GetPerPage()
-	searchLimit := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "query_search_limit", uint64(5)).(uint64)
+	searchLimit := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "query_search_limit", int64(5)).(int64)
 	if params.GetName() != "" {
 		*query = *query.Offset(offset).Limit(searchLimit)
 	} else {
