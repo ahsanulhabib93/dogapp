@@ -11,5 +11,6 @@ dirs:
   - <->
   - app/handlers
   - cmd/server
+  - cmd/worker
   - app/test
   - app/migrations

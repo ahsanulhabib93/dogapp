@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
@@ -60,9 +59,4 @@ func GetBucketName(ctx context.Context) string {
 		aaaModels.AppPreference{}, ctx, "ss2_bucket", "uatvndrs.shopups2.xyz",
 	)
 	return bucketName.(string)
-}
-
-func IntToString(data []uint64) string {
-	s, _ := json.Marshal(data)
-	return strings.Trim(string(s), "[]")
 }
