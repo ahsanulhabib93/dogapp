@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"errors"
-	"log"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -28,9 +27,7 @@ type PaymentAccountDetail struct {
 // Validate ...
 func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 	if ctxx, ok := db.Get("context"); ok {
-		log.Println("enable_account_number_validation app preference value")
-		log.Println(aaaModels.GetAppPreferenceServiceInstance().GetValue(ctxx.(context.Context), "enabled_account_number_validation", false).(bool))
-		if aaaModels.GetAppPreferenceServiceInstance().GetValue(ctxx.(context.Context), "enabled_account_number_validation", false).(bool) {
+		if aaaModels.GetAppPreferenceServiceInstance().GetValue(ctxx.(context.Context), "enable_account_number_validation", false).(bool) {
 			res := db.Model(&paymentAccount).First(&PaymentAccountDetail{}, "supplier_id!= ? and account_number = ?", paymentAccount.SupplierID, paymentAccount.AccountNumber)
 			if !res.RecordNotFound() {
 				db.AddError(errors.New("Provided bank account number already exists"))
