@@ -29,7 +29,7 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	}
 	if params.GetName() != "" {
 		searchValue := fmt.Sprintf("%%%s%%", params.GetName())
-		query = query.Joins(models.GetPaymentAccountDetailsJoinStr()).Where("suppliers.name LIKE ? or suppliers.business_name LIKE ? or suppliers.phone LIKE ? or suppliers.id = ? or payment_account_details.account_number LIKE ?", searchValue, searchValue, searchValue, searchValue, searchValue)
+		query = query.Joins(models.GetPaymentAccountDetailsJoinStr()).Where("suppliers.name LIKE ? or suppliers.business_name LIKE ? or suppliers.phone LIKE ? or suppliers.id = ? or payment_account_details.account_number LIKE ?", searchValue, searchValue, searchValue, params.GetName(), searchValue)
 
 	}
 	if params.GetEmail() != "" {
