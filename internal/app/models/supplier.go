@@ -145,11 +145,6 @@ func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
 	return false
 }
 
-// GetOpcMappingJoinStr ...
-func GetSupplierAddressJoinStr() string {
-	return "INNER JOIN supplier_addresses on supplier_addresses.supplier_id = suppliers.id and supplier_addresses.vaccount_id = suppliers.vaccount_id"
-}
-
 // GetCategoryMappingJoinStr ...
 func GetCategoryMappingJoinStr() string {
 	return "LEFT JOIN supplier_category_mappings on supplier_category_mappings.supplier_id = suppliers.id and supplier_category_mappings.deleted_at IS NULL and supplier_category_mappings.vaccount_id = suppliers.vaccount_id"
