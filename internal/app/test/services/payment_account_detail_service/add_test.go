@@ -7,10 +7,12 @@ import (
 	. "github.com/onsi/gomega"
 
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -20,6 +22,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
+		aaaModels.CreateAppPreferenceServiceInterface()
 	})
 
 	Context("Add", func() {
@@ -274,12 +277,15 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 		})
 	})
 
-	Context("While adding payment account detail with existing account number", func() {
+	Context("While adding payment account detail with existing account number with AppPreference", func() {
 		It("Should return error response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			_ = test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, AccountNumber: "AccountNum", IsDefault: true})
+			aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
+				"enabled_account_number_validation": true,
+			}))
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier2.ID,
 				AccountType:    uint64(utils.Bank),
@@ -297,6 +303,35 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: Provided bank account number already exists"))
+		})
+	})
+
+	Context("While adding payment account detail with existing account number without AppPreference", func() {
+		It("Should return error response", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			_ = test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, AccountNumber: "AccountNum", IsDefault: true})
+			aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
+				"enabled_account_number_validation": false,
+			}))
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:     supplier2.ID,
+				AccountType:    uint64(utils.Bank),
+				AccountSubType: uint64(utils.Savings),
+				AccountName:    "AccountName",
+				AccountNumber:  "AccountNum",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+			}
+
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Payment Account Detail Added Successfully"))
 		})
 	})
 })

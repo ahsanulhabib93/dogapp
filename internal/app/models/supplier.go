@@ -143,6 +143,11 @@ func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
 	return false
 }
 
+// GetSupplierAddressJoinStr ...
+func GetSupplierAddressJoinStr() string {
+	return "INNER JOIN supplier_addresses on supplier_addresses.supplier_id = suppliers.id and supplier_addresses.vaccount_id = suppliers.vaccount_id"
+}
+
 // GetCategoryMappingJoinStr ...
 func GetCategoryMappingJoinStr() string {
 	return "LEFT JOIN supplier_category_mappings on supplier_category_mappings.supplier_id = suppliers.id and supplier_category_mappings.deleted_at IS NULL and supplier_category_mappings.vaccount_id = suppliers.vaccount_id"
@@ -151,4 +156,9 @@ func GetCategoryMappingJoinStr() string {
 // GetOpcMappingJoinStr ...
 func GetOpcMappingJoinStr() string {
 	return "LEFT JOIN supplier_opc_mappings on supplier_opc_mappings.supplier_id = suppliers.id and supplier_opc_mappings.deleted_at IS NULL and supplier_opc_mappings.vaccount_id = suppliers.vaccount_id"
+}
+
+// GetPaymentAccountDetailsJoinStr ...
+func GetPaymentAccountDetailsJoinStr() string {
+	return "LEFT JOIN payment_account_details on payment_account_details.supplier_id = suppliers.id and payment_account_details.vaccount_id = suppliers.vaccount_id"
 }

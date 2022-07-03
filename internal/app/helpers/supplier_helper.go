@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -29,7 +29,8 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	}
 	if params.GetName() != "" {
 		searchValue := fmt.Sprintf("%%%s%%", params.GetName())
-		query = query.Where("(suppliers.name LIKE ? or suppliers.business_name LIKE ?)", searchValue, searchValue)
+		query = query.Joins(models.GetPaymentAccountDetailsJoinStr()).Where("suppliers.name LIKE ? or suppliers.business_name LIKE ? or suppliers.phone LIKE ? or suppliers.id = ? or payment_account_details.account_number LIKE ?", searchValue, searchValue, searchValue, params.GetName(), searchValue)
+
 	}
 	if params.GetEmail() != "" {
 		query = query.Where("suppliers.email = ?", params.GetEmail())
@@ -66,14 +67,20 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	return query
 }
 
-func SetPage(query *gorm.DB, params *supplierpb.ListParams) {
+func SetPage(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams) {
 	if params.GetPerPage() <= 0 || params.GetPerPage() > utils.DEFAULT_PER_PAGE {
 		params.PerPage = utils.DEFAULT_PER_PAGE
 	}
 
 	params.Page = utils.Int64Max(utils.DEFAULT_PAGE, params.GetPage())
 	offset := (params.GetPage() - 1) * params.GetPerPage()
-	*query = *query.Offset(offset).Limit(params.GetPerPage())
+	searchLimit := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "query_search_limit", int64(5)).(int64)
+	if params.GetName() != "" {
+		*query = *query.Offset(offset).Limit(searchLimit)
+	} else {
+		*query = *query.Offset(offset).Limit(params.GetPerPage())
+	}
+
 }
 
 func PrepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
