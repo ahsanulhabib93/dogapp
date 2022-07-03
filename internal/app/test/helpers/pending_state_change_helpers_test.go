@@ -40,6 +40,9 @@ var _ = Describe("ChangePendingState", func() {
 			Status:          models.SupplierStatusPending,
 		}, lastMonth)
 
+		suppliers := []models.Supplier{}
+		database.DBAPM(ctx).Model(&models.Supplier{}).Where("status = ?", models.SupplierStatusFailed).Scan(&suppliers)
+
 		err := helpers.ChangePendingState(&worker.VaccountContext{1, 1}, &work.Job{})
 		Expect(err).To(BeNil())
 
@@ -47,7 +50,7 @@ var _ = Describe("ChangePendingState", func() {
 		database.DBAPM(ctx).Model(&models.Supplier{}).Where("status = ?", models.SupplierStatusFailed).Count(&count)
 		Expect(count).To(Equal(2))
 
-		suppliers := []models.Supplier{}
+		suppliers = []models.Supplier{}
 		database.DBAPM(ctx).Model(&models.Supplier{}).Where("status = ?", models.SupplierStatusFailed).Scan(&suppliers)
 		Expect(len(suppliers)).To(Equal(2))
 
