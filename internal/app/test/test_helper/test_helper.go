@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/voonik/goFramework/pkg/database"
@@ -40,6 +41,12 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 
 	database.DBAPM(ctx).Save(supplier)
 	return supplier
+}
+
+func CreateSupplierWithDateTime(ctx context.Context, supplier *models.Supplier, createAt time.Time) *models.Supplier {
+	supplier.CreatedAt = createAt
+	supplier.UpdatedAt = createAt
+	return CreateSupplier(ctx, supplier)
 }
 
 func CreateSupplierWithAddress(ctx context.Context, supplier *models.Supplier) *models.Supplier {

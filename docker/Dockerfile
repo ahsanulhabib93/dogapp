@@ -27,7 +27,7 @@ COPY . .
 RUN go mod vendor
 
 # Build the application
-RUN go build -o ./ ./cmd/server
+RUN go build -o ./ ./cmd/server ./cmd/worker
 
 #Final Docker Image
 FROM base
