@@ -18,13 +18,8 @@
             "vaccount_id": 2
         },
         {
-            "name": "Digital Credit Team",
-            "description": "Digital Credit Team",
-            "vaccount_id": 12
-        },
-        {
-            "name": "ss2owner",
-            "description": "SS2 owner",
+            "name": "Cargo SS2 Admin",
+            "description": "Admin Role for cargo vendors",
             "vaccount_id": 12
         }
     ],
@@ -439,52 +434,37 @@
             "vaccount_id": 2
         },
         {
-            "role_name": "Digital Credit Team",
+            "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
             "vaccount_id": 12
         },
         {
-            "role_name": "Digital Credit Team",
+            "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:supplierlistapi:view",
             "vaccount_id": 12
         },
         {
-            "role_name": "ss2owner",
-            "permission_id": "supplierpanel:supplierlistapi:view",
-            "vaccount_id": 12
-        },
-        {
-            "role_name": "Digital Credit Team",
+            "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:supplierlistadminapi:admin",
             "vaccount_id": 12
         },
         {
-            "role_name": "ss2owner",
-            "permission_id": "supplierpanel:supplierlistadminapi:admin",
-            "vaccount_id": 12
-        },
-        {
-            "role_name": "ss2owner",
+            "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:supplierlist:view",
             "vaccount_id": 12
         },
         {
-            "role_name": "Digital Credit Team",
+            "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:pendingsuppliermodule:admin",
             "vaccount_id": 12
         },
         {
-            "role_name": "ss2owner",
-            "permission_id": "supplierpanel:pendingsuppliermodule:admin",
-            "vaccount_id": 12
-        },
-        {
-            "role_name": "ss2owner",
+            "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:supplierphoneverificationpi:admin",
             "vaccount_id": 12
         },
         {
-            "role_name": "Digital Credit Team",
+            "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:supplierstatusupdateapi:admin",
             "vaccount_id": 12
         }
