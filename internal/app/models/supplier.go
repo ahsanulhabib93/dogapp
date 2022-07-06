@@ -36,6 +36,7 @@ type Supplier struct {
 	IsPhoneVerified           *bool                  `gorm:"default:false" json:"is_phone_verified"` // using pointer to update false value in Edit API
 	ShopImageURL              string                 `json:"shop_image_url"`
 	UserID                    *uint64                `json:"user_id"`
+	AgentID                   *uint64                `json:"agent_id"`
 	NidNumber                 string                 `json:"nid_number"`
 	NidFrontImageUrl          string                 `gorm:"type:varchar(512)" json:"nid_front_image_url"`
 	NidBackImageUrl           string                 `gorm:"type:varchar(512)" json:"nid_back_image_url"`
