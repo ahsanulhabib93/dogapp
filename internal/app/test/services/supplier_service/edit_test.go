@@ -265,6 +265,44 @@ var _ = Describe("EditSupplier", func() {
 		})
 	})
 
+	Context("Editing with category ids from cmt response", func() {
+		It("Should delete old mapping and add new mapping", func() {
+			category_ids := []uint64{100, 101, 102}
+			mockCategory := mocks.SetCategoryMock()
+			mockCategory.On("GetCategoriesData", ctx, category_ids).Return(&categoryPb.CategoryDataList{Data: []*categoryPb.CategoryData{
+				{Id: 100},
+				{Id: 101},
+			}}, nil)
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierCategoryMappings: []models.SupplierCategoryMapping{
+					{CategoryID: 101},
+					{CategoryID: 201},
+				},
+			})
+
+			param := &supplierpb.SupplierObject{
+				Id:           supplier.ID,
+				Name:         "Name",
+				Email:        "Email",
+				SupplierType: uint64(utils.L1),
+				CategoryIds:  []uint64{100, 101, 102},
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
+
+			var categoryIds []uint64
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Pluck("category_id", &categoryIds)
+			Expect(len(categoryIds)).To(Equal(2))
+			Expect(categoryIds).To(ContainElements([]uint64{100, 101}))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
+			Expect(count).To(Equal(3))
+		})
+	})
+
 	Context("Editing with new set of category ids which got removed before", func() {
 		It("Should restore deleted mapping", func() {
 			category_ids := []uint64{101, 200, 567}
