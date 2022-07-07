@@ -9,6 +9,7 @@ import (
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
@@ -18,10 +19,25 @@ import (
 
 var _ = Describe("UpdateStatus", func() {
 	var ctx context.Context
+	var userId uint64 = uint64(101)
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
 		aaaModels.CreateAppPreferenceServiceInterface()
+
+		threadObject := &misc.ThreadObject{
+			VaccountId:    1,
+			PortalId:      1,
+			CurrentActId:  1,
+			XForwardedFor: "5079327",
+			UserData: &misc.UserData{
+				UserId: userId,
+				Name:   "John",
+				Email:  "john@gmail.com",
+				Phone:  "8801855533367",
+			},
+		}
+		ctx = misc.SetInContextThreadObject(ctx, threadObject)
 	})
 
 	Context("Update Supplier status", func() {
@@ -42,6 +58,7 @@ var _ = Describe("UpdateStatus", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusFailed))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
+			Expect(updatedSupplier.AgentID).To(BeNil())
 		})
 
 		It("Should update status for blocked user", func() {
@@ -65,6 +82,7 @@ var _ = Describe("UpdateStatus", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
+			Expect(*updatedSupplier.AgentID).To(Equal(userId))
 		})
 
 		It("Updating status to block with reason reason", func() {
@@ -100,6 +118,7 @@ var _ = Describe("UpdateStatus", func() {
 			updatedSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
+			Expect(*updatedSupplier.AgentID).To(Equal(userId))
 		})
 	})
 

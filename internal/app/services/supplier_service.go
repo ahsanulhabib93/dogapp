@@ -250,6 +250,10 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 		resp.Message = message
 	} else {
 		updateDetails := map[string]interface{}{"status": newSupplierStatus, "reason": params.GetReason()} //to allow empty string update for reason
+		if newSupplierStatus == models.SupplierStatusVerified {
+			updateDetails["agent_id"] = utils.GetCurrentUserID(ctx)
+		}
+
 		err := database.DBAPM(ctx).Model(&supplier).Updates(updateDetails)
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
