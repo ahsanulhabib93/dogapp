@@ -27,17 +27,17 @@ func getCategoryClient() CategoryClientInterface {
 	return categoryClient
 }
 
-func (s *CategoryHelper) GetCategoriesData(ctx context.Context, category_ids []uint64) (*categoryPb.CategoryDataList, error) {
+func (s *CategoryHelper) GetCategoriesData(ctx context.Context, categoryIds []uint64) (*categoryPb.CategoryDataList, error) {
 	return categoryService.Category().GetCategoryData(ctx,
-		&categoryPb.CategoryIDData{CategoryIds: category_ids, RootCategoryFilter: true})
+		&categoryPb.CategoryIDData{CategoryIds: categoryIds, RootCategoryFilter: true})
 }
 
-func GetParentCategories(ctx context.Context, category_ids []uint64) []uint64 {
-	parent_category := []uint64{}
-	resp, _ := getCategoryClient().GetCategoriesData(ctx, category_ids)
+func GetParentCategories(ctx context.Context, categoryIds []uint64) []uint64 {
+	parentCategory := []uint64{}
+	resp, _ := getCategoryClient().GetCategoriesData(ctx, categoryIds)
 
 	for _, cat := range resp.Data {
-		parent_category = append(parent_category, cat.Id)
+		parentCategory = append(parentCategory, cat.Id)
 	}
-	return parent_category
+	return parentCategory
 }

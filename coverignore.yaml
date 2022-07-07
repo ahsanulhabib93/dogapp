@@ -14,3 +14,5 @@ dirs:
   - cmd/worker
   - app/test
   - app/migrations
+files:
+  - /app/helpers/category_helper.go
