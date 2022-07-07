@@ -48,8 +48,15 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 	supplierCategoryMappings := []models.SupplierCategoryMapping{}
 	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_id = ?", supplierId).Find(&supplierCategoryMappings)
 	categoryToCreateMap := map[uint64]bool{}
-	for _, id := range newIds {
-		categoryToCreateMap[id] = true
+	responseId := GetParentCategories(newIds)
+	if len(responseId) < len(newIds) {
+		for _, id := range responseId {
+			categoryToCreateMap[id] = true
+		}
+	} else {
+		for _, id := range newIds {
+			categoryToCreateMap[id] = true
+		}
 	}
 
 	mapToDelete := []uint64{}

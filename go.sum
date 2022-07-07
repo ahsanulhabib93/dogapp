@@ -572,6 +572,8 @@ github.com/voonik/goConnect v0.0.0-20220607110858-eb87ab5583e4 h1:bOZhZB27bkvC0w
 github.com/voonik/goConnect v0.0.0-20220607110858-eb87ab5583e4/go.mod h1:k1WyeCaaNrjomaFKEK96jc9TsVC0NJVXVGmx0+8NeRM=
 github.com/voonik/goFramework v0.0.0-20220525082050-342a02df1e19 h1:BB0lDOb693H6fhA4fvijmmOpQjKKZQOBxOdhnEfzGhQ=
 github.com/voonik/goFramework v0.0.0-20220525082050-342a02df1e19/go.mod h1:LtjM2yTAnbuRYMK2EzHvQSs6BTTlTTmrFXmUsoBFww0=
+github.com/voonik/goFramework v0.0.0-20220622093546-afe074b400ba h1:wy+ay642q4c2Q7ddXZISmpie2UaoAA6UJ5CNHQAphcM=
+github.com/voonik/goFramework v0.0.0-20220622093546-afe074b400ba/go.mod h1:LtjM2yTAnbuRYMK2EzHvQSs6BTTlTTmrFXmUsoBFww0=
 github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae h1:kxenNAZ1ptTT0O+NRMlZaiS+5GIgW1uAtvEqMYScp1c=
 github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae/go.mod h1:YN6xD/9qJc6zre85Y46CprXqHrPWbzi/67FYvXnHNZE=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
