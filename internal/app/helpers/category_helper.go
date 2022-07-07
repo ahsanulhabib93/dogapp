@@ -1,9 +1,10 @@
 package helpers
 
 import (
+	"context"
 	"reflect"
 
-	categroyPb "github.com/voonik/goConnect/api/go/cmt/category"
+	categoryPb "github.com/voonik/goConnect/api/go/cmt/category"
 	categoryService "github.com/voonik/goConnect/cmt/category"
 )
 
@@ -16,7 +17,7 @@ func InjectMockCategoryClientInstance(mockObj CategoryClientInterface) {
 }
 
 type CategoryClientInterface interface {
-	GetCategoriesData(category_ids []uint64) (*categroyPb.CategoryDataList, error)
+	GetCategoriesData(ctx context.Context, category_ids []uint64) (*categoryPb.CategoryDataList, error)
 }
 
 func getCategoryClient() CategoryClientInterface {
@@ -26,16 +27,17 @@ func getCategoryClient() CategoryClientInterface {
 	return categoryClient
 }
 
-func (s *CategoryHelper) GetCategoriesData(category_ids []uint64) (*categroyPb.CategoryDataList, error) {
-	return categoryService.Category().GetCategoryData(&categroyPb.CategoryIDList{CategoryIds: category_ids})
+func (s *CategoryHelper) GetCategoriesData(ctx context.Context, category_ids []uint64) (*categoryPb.CategoryDataList, error) {
+	return categoryService.Category().GetCategoryData(ctx,
+		&categoryPb.CategoryIDData{CategoryIds: category_ids, RootCategoryFilter: true})
 }
 
-func GetParentCategories(category_ids []uint64) []uint64 {
+func GetParentCategories(ctx context.Context, category_ids []uint64) []uint64 {
 	parent_category := []uint64{}
-	resp, _ := getCategoryClient().GetCategoriesData(category_ids)
+	resp, _ := getCategoryClient().GetCategoriesData(ctx, category_ids)
 
-	for _, cat := range resp {
-		parent_category = append(parent_category, cat.Data.Id)
+	for _, cat := range resp.Data {
+		parent_category = append(parent_category, cat.Id)
 	}
 	return parent_category
 }

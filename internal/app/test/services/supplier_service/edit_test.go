@@ -7,11 +7,13 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	categoryPb "github.com/voonik/goConnect/api/go/cmt/category"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -226,6 +228,13 @@ var _ = Describe("EditSupplier", func() {
 
 	Context("Editing with new set of category ids", func() {
 		It("Should delete old mapping and add new mapping", func() {
+			category_ids := []uint64{100, 101, 102}
+			mockCategory := mocks.SetCategoryMock()
+			mockCategory.On("GetCategoriesData", ctx, category_ids).Return(&categoryPb.CategoryDataList{Data: []*categoryPb.CategoryData{
+				{Id: 100},
+				{Id: 101},
+				{Id: 102},
+			}}, nil)
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 101},
@@ -238,7 +247,7 @@ var _ = Describe("EditSupplier", func() {
 				Name:         "Name",
 				Email:        "Email",
 				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{101, 102, 100},
+				CategoryIds:  []uint64{100, 101, 102},
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 			Expect(err).To(BeNil())
@@ -258,6 +267,13 @@ var _ = Describe("EditSupplier", func() {
 
 	Context("Editing with new set of category ids which got removed before", func() {
 		It("Should restore deleted mapping", func() {
+			category_ids := []uint64{101, 200, 567}
+			mockCategory := mocks.SetCategoryMock()
+			mockCategory.On("GetCategoriesData", ctx, category_ids).Return(&categoryPb.CategoryDataList{Data: []*categoryPb.CategoryData{
+				{Id: 101},
+				{Id: 200},
+				{Id: 567},
+			}}, nil)
 			t := time.Now()
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
