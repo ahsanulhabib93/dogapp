@@ -298,8 +298,8 @@ var _ = Describe("EditSupplier", func() {
 			Expect(categoryIds).To(ContainElements([]uint64{100, 101}))
 
 			var count int
-			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ?", supplier.ID).Count(&count)
-			Expect(count).To(Equal(3))
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ? and supplier_category_mappings.deleted_at IS NULL", supplier.ID).Count(&count)
+			Expect(count).To(Equal(2))
 		})
 	})
 

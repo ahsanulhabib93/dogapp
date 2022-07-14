@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
@@ -49,15 +50,14 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_id = ?", supplierId).Find(&supplierCategoryMappings)
 	categoryToCreateMap := map[uint64]bool{}
 	responseId := GetParentCategories(ctx, newIds)
-	if len(responseId) < len(newIds) {
-		for _, id := range responseId {
-			categoryToCreateMap[id] = true
-		}
-	} else {
-		for _, id := range newIds {
-			categoryToCreateMap[id] = true
-		}
+	log.Printf("CMT Response:: categories = %v, response = %v\n", newIds, responseId)
+
+	for _, id := range responseId {
+		categoryToCreateMap[id] = true
 	}
+
+	fmt.Println(categoryToCreateMap)
+	fmt.Println("category map here!!!")
 
 	mapToDelete := []uint64{}
 	mapToRestore := []uint64{}
@@ -72,8 +72,17 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 	}
 
 	currentTime := time.Now()
-	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id IN (?)", mapToRestore).Update("deleted_at", nil)
-	database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id IN (?)", mapToDelete).Update("deleted_at", &currentTime)
+	fmt.Println(mapToRestore)
+	fmt.Println("restore data here!!")
+	fmt.Println(mapToDelete)
+	fmt.Println("deletion data here!!")
+	if mapToRestore != nil {
+		database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id IN (?)", mapToRestore).Update("deleted_at", nil)
+	}
+	if mapToDelete != nil {
+		database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id IN (?)", mapToDelete).Update("deleted_at", &currentTime)
+	}
+
 	newIds = []uint64{}
 	for k, v := range categoryToCreateMap {
 		if v {
