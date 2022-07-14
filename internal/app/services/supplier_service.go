@@ -261,6 +261,10 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 			resp.Message = "Supplier status updated successfully"
 			resp.Success = true
 		}
+
+		if (newSupplierStatus == models.SupplierStatusFailed || newSupplierStatus == models.SupplierStatusBlocked) && resp.Success {
+			helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus))
+		}
 	}
 	log.Printf("UpdateStatusResponse: %+v", resp)
 	return &resp, nil
