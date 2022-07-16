@@ -50,7 +50,7 @@ var _ = Describe("UpdateStatus", func() {
 		ctx = metadata.NewIncomingContext(ctx, metadata.New(header))
 
 		mock1, mock2 = mocks.SetApiCallerMock(), mocks.SetVigeonAPIHelperMock()
-		mock1.On("Call", ctx, mock.Anything, mock.Anything).Return(&rest.Response{Body: "{\"data\":{\"users\":[{\"id\":101,\"email\":\"user_email@gmail.com\"}]}}"}, nil)
+		mock1.On("Get", ctx, mock.Anything, mock.Anything).Return(&rest.Response{Body: "{\"data\":{\"users\":[{\"id\":101,\"email\":\"user_email@gmail.com\"}]}}"}, nil)
 		mock2.On("SendEmailAPI", ctx, mock.Anything).Return(&notify.EmailResp{}, nil)
 	})
 
@@ -81,7 +81,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusFailed))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
 			Expect(updatedSupplier.AgentID).To(BeNil())
-			Expect(mock1.Count["Call"]).To(Equal(1))
+			Expect(mock1.Count["Get"]).To(Equal(1))
 			Expect(mock2.Count["SendEmailAPI"]).To(Equal(1))
 		})
 
@@ -107,7 +107,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
 			Expect(*updatedSupplier.AgentID).To(Equal(userId))
-			Expect(mock1.Count["Call"]).To(Equal(0))
+			Expect(mock1.Count["Get"]).To(Equal(0))
 			Expect(mock2.Count["SendEmailAPI"]).To(Equal(0))
 		})
 
@@ -125,7 +125,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier status updated successfully"))
-			Expect(mock1.Count["Call"]).To(Equal(1))
+			Expect(mock1.Count["Get"]).To(Equal(1))
 			Expect(mock2.Count["SendEmailAPI"]).To(Equal(1))
 		})
 	})

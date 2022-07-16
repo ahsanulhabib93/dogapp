@@ -26,8 +26,8 @@ func UnsetApiCallerMock() {
 	helpers.InjectMockApiCallHelperInstance(nil)
 }
 
-func (_m *ApiCallHelperInterface) Call(ctx context.Context, url string, headers map[string]string) (*rest.Response, error) {
+func (_m *ApiCallHelperInterface) Get(ctx context.Context, url string, headers map[string]string) (*rest.Response, error) {
 	args := _m.Called(ctx, url, headers)
-	_m.Count["Call"] += 1
+	_m.Count["Get"] += 1
 	return args.Get(0).(*rest.Response), args.Error(1)
 }

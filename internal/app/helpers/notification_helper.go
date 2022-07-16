@@ -9,6 +9,7 @@ import (
 
 	"github.com/voonik/goConnect/api/go/vigeon/notify"
 	vigeon "github.com/voonik/goConnect/vigeon/notify"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 
 	"github.com/voonik/ss2/internal/app/models"
 )
@@ -24,11 +25,19 @@ func SendStatusChangeEmailNotification(ctx context.Context, supplier models.Supp
 		return nil
 	}
 
+	fromEmail := aaaModels.AppPreference.GetValue(
+		aaaModels.AppPreference{}, ctx, "update_status_from_email", "ss2@shopup.org").(string)
+	subject := aaaModels.AppPreference.GetValue(
+		aaaModels.AppPreference{}, ctx, "update_status_subject", "User Status Changed").(string)
+	content := aaaModels.AppPreference.GetValue(
+		aaaModels.AppPreference{}, ctx, "update_status_content",
+		fmt.Sprintf("Users(#%v) status has been updated to \"%v\"", supplier.ID, strings.Title(status))).(string)
+
 	emailParam := notify.EmailParam{
 		ToEmail:   user.Email,
-		FromEmail: "ss2@shopup.org",
-		Subject:   "User Status Changed",
-		Content:   fmt.Sprintf("User(#%v) status has been updated to \"%v\"", supplier.ID, strings.Title(status)),
+		FromEmail: fromEmail,
+		Subject:   subject,
+		Content:   content,
 	}
 
 	return getVigeonAPIHelperInstance().SendEmailAPI(ctx, emailParam)

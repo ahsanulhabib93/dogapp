@@ -5,13 +5,12 @@ import (
 	"context"
 
 	"github.com/voonik/goFramework/pkg/rest"
-	"google.golang.org/grpc/metadata"
 )
 
 type ApiCallHelper struct{}
 
 type ApiCallHelperInterface interface {
-	Call(ctx context.Context, url string, headers map[string]string) (*rest.Response, error)
+	Get(ctx context.Context, url string, headers map[string]string) (*rest.Response, error)
 }
 
 var apiCall ApiCallHelperInterface
@@ -27,8 +26,6 @@ func GetApiCallHelperInstance() ApiCallHelperInterface {
 	return apiCall
 }
 
-func (apiCallHelper *ApiCallHelper) Call(ctx context.Context, url string, headers map[string]string) (*rest.Response, error) {
-	reqHeaders, _ := metadata.FromIncomingContext(ctx)
-	headers["Authorization"] = reqHeaders["authorization"][0]
+func (apiCallHelper *ApiCallHelper) Get(ctx context.Context, url string, headers map[string]string) (*rest.Response, error) {
 	return rest.HTTPRequest(ctx, url, "GET", headers, map[string]interface{}{}, bytes.NewBuffer([]byte{}))
 }

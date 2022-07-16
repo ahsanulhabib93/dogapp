@@ -57,7 +57,7 @@ func (apiHelper *IdentityUserApiHelper) IdentityBulkUserDetailsApi(ctx context.C
 	headers := make(map[string]string)
 	reqHeaders, _ := metadata.FromIncomingContext(ctx)
 	headers["Authorization"] = reqHeaders["authorization"][0]
-	resp, _ := GetApiCallHelperInstance().Call(ctx, url, headers)
+	resp, _ := GetApiCallHelperInstance().Get(ctx, url, headers)
 
 	var respData IdentityBulkUserResponse
 	_ = json.Unmarshal([]byte(resp.Body), &respData)
