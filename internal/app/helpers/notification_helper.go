@@ -26,7 +26,7 @@ func SendStatusChangeEmailNotification(ctx context.Context, supplier models.Supp
 	}
 
 	fromEmail := aaaModels.AppPreference.GetValue(
-		aaaModels.AppPreference{}, ctx, "update_status_from_email", "ss2@shopup.org").(string)
+		aaaModels.AppPreference{}, ctx, "update_status_from_email", "ss2@shopf.co").(string)
 	subject := aaaModels.AppPreference.GetValue(
 		aaaModels.AppPreference{}, ctx, "update_status_subject", "User Status Changed").(string)
 	content := aaaModels.AppPreference.GetValue(
