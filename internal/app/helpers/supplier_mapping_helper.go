@@ -56,9 +56,6 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 		categoryToCreateMap[id] = true
 	}
 
-	fmt.Println(categoryToCreateMap)
-	fmt.Println("category map here!!!")
-
 	mapToDelete := []uint64{}
 	mapToRestore := []uint64{}
 	for _, cMap := range supplierCategoryMappings {
@@ -72,10 +69,6 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 	}
 
 	currentTime := time.Now()
-	fmt.Println(mapToRestore)
-	fmt.Println("restore data here!!")
-	fmt.Println(mapToDelete)
-	fmt.Println("deletion data here!!")
 	if mapToRestore != nil {
 		database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("id IN (?)", mapToRestore).Update("deleted_at", nil)
 	}
