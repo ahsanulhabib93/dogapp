@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -56,8 +55,6 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 		categoryToCreateMap[id] = true
 	}
 
-	fmt.Println(categoryToCreateMap)
-	fmt.Println("category map here!!!")
 
 	mapToDelete := []uint64{}
 	mapToRestore := []uint64{}
