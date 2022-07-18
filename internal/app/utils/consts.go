@@ -33,5 +33,6 @@ const (
 )
 
 const (
-	BucketFolder = "ss2"
+	BucketFolder       = "ss2"
+	SupplierAuditTopic = "supplier_audit"
 )
