@@ -17,9 +17,10 @@ import (
 type AuditActionType string
 
 const (
-	ActionUpdateSupplierStatus AuditActionType = "update_supplier_status"
-	ActionUpdateSupplier       AuditActionType = "update_supplier"
-	ActionCreateSupplier       AuditActionType = "create_supplier"
+	ActionUpdateSupplierStatus    AuditActionType = "update_supplier_status"
+	ActionUpdateSupplier          AuditActionType = "update_supplier"
+	ActionCreateSupplier          AuditActionType = "create_supplier"
+	ActionRemoveSupplierDocuments AuditActionType = "remove_supplier_document"
 )
 
 type AuditHelper struct{}
@@ -47,11 +48,16 @@ func AuditAction(ctx context.Context, supplierId uint64, entity string, action A
 		return err
 	}
 
+	var userId uint64
+	if v := utils.GetCurrentUserID(ctx); v != nil {
+		userId = *v
+	}
+
 	auditRecord := &supplierPb.AuditRecord{
 		Source:     "ss2",
 		Entity:     entity,
 		ActionName: string(action),
-		UserId:     *utils.GetCurrentUserID(ctx),
+		UserId:     userId,
 		SupplierId: supplierId,
 		DataDump:   string(dump),
 		VaccountId: uint64(utils.GetVaccount(ctx)),

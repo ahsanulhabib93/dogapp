@@ -13,7 +13,6 @@ import (
 	"github.com/voonik/goConnect/api/go/vigeon/notify"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
-	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/goFramework/pkg/rest"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
@@ -27,29 +26,18 @@ var _ = Describe("UpdateStatus", func() {
 	var userId uint64 = uint64(101)
 	var mock1 *mocks.ApiCallHelperInterface
 	var mock2 *mocks.VigeonAPIHelperInterface
+	var mockAudit *mocks.AuditLogMock
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
 		aaaModels.CreateAppPreferenceServiceInterface()
 
 		header := map[string]string{"authorization": "random"}
-		threadObject := &misc.ThreadObject{
-			VaccountId:    1,
-			PortalId:      1,
-			CurrentActId:  1,
-			XForwardedFor: "5079327",
-			UserData: &misc.UserData{
-				UserId: userId,
-				Name:   "John",
-				Email:  "john@gmail.com",
-				Phone:  "8801855533367",
-			},
-		}
-
-		ctx = misc.SetInContextThreadObject(ctx, threadObject)
+		ctx = test_helper.SetContextUser(ctx, userId, []string{})
 		ctx = metadata.NewIncomingContext(ctx, metadata.New(header))
 
-		mock1, mock2 = mocks.SetApiCallerMock(), mocks.SetVigeonAPIHelperMock()
+		mock1, mock2, mockAudit = mocks.SetApiCallerMock(), mocks.SetVigeonAPIHelperMock(), mocks.SetAuditLogMock()
+		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 		mock1.On("Get", ctx, mock.Anything, mock.Anything).Return(&rest.Response{Body: "{\"data\":{\"users\":[{\"id\":101,\"email\":\"user_email@gmail.com\"}]}}"}, nil)
 		mock2.On("SendEmailAPI", ctx, mock.Anything).Return(&notify.EmailResp{}, nil)
 	})
@@ -57,6 +45,7 @@ var _ = Describe("UpdateStatus", func() {
 	AfterEach(func() {
 		mocks.UnsetApiCallerMock()
 		mocks.UnsetVigeonHelperMock()
+		mocks.UnsetAuditLogMock()
 	})
 
 	Context("Update Supplier status", func() {
@@ -83,6 +72,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(updatedSupplier.AgentID).To(BeNil())
 			Expect(mock1.Count["Get"]).To(Equal(1))
 			Expect(mock2.Count["SendEmailAPI"]).To(Equal(1))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 
 		It("Should update status for blocked user", func() {
@@ -109,6 +99,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(*updatedSupplier.AgentID).To(Equal(userId))
 			Expect(mock1.Count["Get"]).To(Equal(0))
 			Expect(mock2.Count["SendEmailAPI"]).To(Equal(0))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 
 		It("Updating status to block with reason reason", func() {
@@ -163,6 +154,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Supplier Not Found"))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(0))
 		})
 	})
 

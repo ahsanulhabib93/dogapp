@@ -128,6 +128,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		resp.Message = "Supplier Added Successfully"
 		resp.Success = true
 		resp.Id = supplier.ID
+		helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionCreateSupplier, supplier)
 	}
 	log.Printf("AddSupplierResponse: %+v", resp)
 	return &resp, nil
@@ -189,6 +190,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		} else {
 			resp.Message = "Supplier Edited Successfully"
 			resp.Success = true
+			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
 		}
 	}
 	log.Printf("EditSupplierResponse: %+v", resp)
@@ -225,6 +227,7 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 			} else {
 				resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
 				resp.Success = true
+				helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionRemoveSupplierDocuments, params)
 			}
 		}
 	}
@@ -260,10 +263,11 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 		} else {
 			resp.Message = "Supplier status updated successfully"
 			resp.Success = true
-		}
+			if newSupplierStatus == models.SupplierStatusFailed || newSupplierStatus == models.SupplierStatusBlocked {
+				helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus))
+			}
 
-		if (newSupplierStatus == models.SupplierStatusFailed || newSupplierStatus == models.SupplierStatusBlocked) && resp.Success {
-			helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus))
+			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplierStatus, updateDetails)
 		}
 	}
 	log.Printf("UpdateStatusResponse: %+v", resp)

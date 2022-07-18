@@ -5,21 +5,32 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 )
 
-var _ = Describe("EditSupplier", func() {
+var _ = Describe("RemoveSupplier", func() {
 	var ctx context.Context
+	var mockAudit *mocks.AuditLogMock
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		test_utils.SetPermission(&ctx, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
+		ctx = test_helper.SetContextUser(ctx, 101, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
+
+		mocks.SetAuditLogMock()
+		mockAudit = mocks.SetAuditLogMock()
+		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+	})
+
+	AfterEach(func() {
+		mocks.UnsetAuditLogMock()
 	})
 
 	Context("Removing supplier document", func() {
@@ -43,6 +54,7 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 			Expect(updatedSupplier.AgreementUrl).To(Equal(""))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 
 		It("Should remove secondary document successfully", func() {
@@ -65,6 +77,7 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
 			Expect(updatedSupplier.GuarantorNidFrontImageUrl).To(Equal(""))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 
 		It("Should return error for invalid document type", func() {
@@ -80,6 +93,7 @@ var _ = Describe("EditSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Invalid Document Type"))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(0))
 		})
 
 		It("Should return error for un-allowed permission", func() {
