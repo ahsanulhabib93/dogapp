@@ -30,8 +30,10 @@ func SendStatusChangeEmailNotification(ctx context.Context, supplier models.Supp
 	subject := aaaModels.AppPreference.GetValue(
 		aaaModels.AppPreference{}, ctx, "update_status_subject", "User Status Changed").(string)
 	content := aaaModels.AppPreference.GetValue(
-		aaaModels.AppPreference{}, ctx, "update_status_content",
-		fmt.Sprintf("Users(#%v) status has been updated to \"%v\"", supplier.ID, strings.Title(status))).(string)
+		aaaModels.AppPreference{}, ctx, "update_status_content", "Users($id) status has been updated to \"$status\"").(string)
+
+	content = strings.ReplaceAll(content, "$id", fmt.Sprint(supplier.ID))
+	content = strings.ReplaceAll(content, "$status", strings.Title(status))
 
 	emailParam := notify.EmailParam{
 		ToEmail:   user.Email,
