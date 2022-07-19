@@ -14,7 +14,7 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 )
 
-func SendStatusChangeEmailNotification(ctx context.Context, supplier models.Supplier, status string) *notify.EmailResp {
+func SendStatusChangeEmailNotification(ctx context.Context, supplier models.Supplier, status, reason string) *notify.EmailResp {
 	if supplier.UserID == nil {
 		return nil
 	}
@@ -30,10 +30,14 @@ func SendStatusChangeEmailNotification(ctx context.Context, supplier models.Supp
 	subject := aaaModels.AppPreference.GetValue(
 		aaaModels.AppPreference{}, ctx, "update_status_subject", "User Status Changed").(string)
 	content := aaaModels.AppPreference.GetValue(
-		aaaModels.AppPreference{}, ctx, "update_status_content", "Users($id) status has been updated to \"$status\"").(string)
+		aaaModels.AppPreference{}, ctx, "update_status_content", "Users($id) status has been updated to \"$status\". Reason: $reason").(string)
+
+	subject = strings.ReplaceAll(subject, "$id", fmt.Sprint(supplier.ID))
+	subject = strings.ReplaceAll(subject, "$status", strings.Title(status))
 
 	content = strings.ReplaceAll(content, "$id", fmt.Sprint(supplier.ID))
 	content = strings.ReplaceAll(content, "$status", strings.Title(status))
+	content = strings.ReplaceAll(content, "$reason", reason)
 
 	emailParam := notify.EmailParam{
 		ToEmail:   user.Email,

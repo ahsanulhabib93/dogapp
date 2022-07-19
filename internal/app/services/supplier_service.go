@@ -264,7 +264,7 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 			resp.Message = "Supplier status updated successfully"
 			resp.Success = true
 			if newSupplierStatus == models.SupplierStatusFailed || newSupplierStatus == models.SupplierStatusBlocked {
-				helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus))
+				helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus), params.GetReason())
 			}
 
 			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplierStatus, updateDetails)
