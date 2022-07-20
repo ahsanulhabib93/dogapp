@@ -34,5 +34,5 @@ const (
 
 const (
 	BucketFolder       = "ss2"
-	SupplierAuditTopic = "supplier_audit"
+	SupplierAuditTopic = "cash_audit_supplier" // topic should be "audit_supplier". Renamed to incorporate SRE team
 )
