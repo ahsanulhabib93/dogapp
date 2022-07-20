@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"context"
-	"reflect"
+	"log"
 
 	categoryPb "github.com/voonik/goConnect/api/go/cmt/category"
 	categoryService "github.com/voonik/goConnect/cmt/category"
@@ -21,7 +21,7 @@ type CategoryClientInterface interface {
 }
 
 func getCategoryClient() CategoryClientInterface {
-	if categoryClient == nil || reflect.ValueOf(categoryClient).IsNil() {
+	if categoryClient == nil {
 		return new(CategoryHelper)
 	}
 	return categoryClient
@@ -34,8 +34,13 @@ func (s *CategoryHelper) GetCategoriesData(ctx context.Context, categoryIds []ui
 
 func GetParentCategories(ctx context.Context, categoryIds []uint64) []uint64 {
 	parentCategory := []uint64{}
-	resp, _ := getCategoryClient().GetCategoriesData(ctx, categoryIds)
+	resp, err := getCategoryClient().GetCategoriesData(ctx, categoryIds)
+	if err != nil {
+		log.Println("GetParentCategories: failed to get category data. Error: ", err.Error())
+		return nil
+	}
 
+	log.Println("GetParentCategories: response ", resp)
 	for _, cat := range resp.Data {
 		parentCategory = append(parentCategory, cat.Id)
 	}
