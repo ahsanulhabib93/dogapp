@@ -398,6 +398,7 @@ func (ss *SupplierService) VerifyOtp(ctx context.Context, params *supplierpb.Ver
 			database.DBAPM(ctx).Model(&supplier).Update("IsPhoneVerified", true)
 			resp.Message = otpResponse.Message
 			resp.Success = true
+			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionVerifySupplierPhoneNumber, params)
 		}
 	}
 
