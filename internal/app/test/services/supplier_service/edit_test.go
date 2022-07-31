@@ -6,22 +6,33 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("EditSupplier", func() {
 	var ctx context.Context
+	var mockAudit *mocks.AuditLogMock
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		test_utils.SetPermission(&ctx, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
+		ctx = test_helper.SetContextUser(ctx, 101, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
+
+		mocks.SetAuditLogMock()
+		mockAudit = mocks.SetAuditLogMock()
+		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+	})
+
+	AfterEach(func() {
+		mocks.UnsetAuditLogMock()
 	})
 
 	Context("Editing existing Supplier", func() {
@@ -92,6 +103,8 @@ var _ = Describe("EditSupplier", func() {
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
 			Expect(len(updatedSupplier.SupplierOpcMappings)).To(Equal(2))
 			Expect(updatedSupplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(2)))
+
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 	})
 
@@ -125,6 +138,8 @@ var _ = Describe("EditSupplier", func() {
 	Context("Editing allowed for limited permission", func() {
 		It("Should return success on updating pending supplier", func() {
 			test_utils.SetPermission(&ctx, []string{})
+			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -169,6 +184,7 @@ var _ = Describe("EditSupplier", func() {
 
 		It("Should return error on updating blocked supplier", func() {
 			test_utils.SetPermission(&ctx, []string{})
+			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -183,6 +199,7 @@ var _ = Describe("EditSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Change Not Allowed"))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(0))
 		})
 	})
 
