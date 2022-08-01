@@ -5,10 +5,15 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
+
+	"google.golang.org/grpc/metadata"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	"github.com/voonik/goConnect/api/go/vigeon/notify"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/rest"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
@@ -18,15 +23,37 @@ import (
 
 var _ = Describe("UpdateStatus", func() {
 	var ctx context.Context
+	var userId uint64 = uint64(101)
+	var mock1 *mocks.ApiCallHelperInterface
+	var mock2 *mocks.VigeonAPIHelperInterface
+	var mockAudit *mocks.AuditLogMock
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
 		aaaModels.CreateAppPreferenceServiceInterface()
+
+		header := map[string]string{"authorization": "random"}
+		ctx = test_helper.SetContextUser(ctx, userId, []string{})
+		ctx = metadata.NewIncomingContext(ctx, metadata.New(header))
+
+		mock1, mock2, mockAudit = mocks.SetApiCallerMock(), mocks.SetVigeonAPIHelperMock(), mocks.SetAuditLogMock()
+		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+		mock1.On("Get", ctx, mock.Anything, mock.Anything).Return(&rest.Response{Body: "{\"data\":{\"users\":[{\"id\":101,\"email\":\"user_email@gmail.com\"}]}}"}, nil)
+		mock2.On("SendEmailAPI", ctx, mock.Anything).Return(&notify.EmailResp{}, nil)
+	})
+
+	AfterEach(func() {
+		mocks.UnsetApiCallerMock()
+		mocks.UnsetVigeonHelperMock()
+		mocks.UnsetAuditLogMock()
 	})
 
 	Context("Update Supplier status", func() {
 		It("Should be updated and return success response", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				UserID: &userId,
+			})
+
 			param := &supplierpb.UpdateStatusParam{
 				Id:     supplier.ID,
 				Status: string(models.SupplierStatusFailed),
@@ -42,6 +69,10 @@ var _ = Describe("UpdateStatus", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusFailed))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
+			Expect(updatedSupplier.AgentID).To(BeNil())
+			Expect(mock1.Count["Get"]).To(Equal(1))
+			Expect(mock2.Count["SendEmailAPI"]).To(Equal(1))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 
 		It("Should update status for blocked user", func() {
@@ -65,10 +96,16 @@ var _ = Describe("UpdateStatus", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
+			Expect(*updatedSupplier.AgentID).To(Equal(userId))
+			Expect(mock1.Count["Get"]).To(Equal(0))
+			Expect(mock2.Count["SendEmailAPI"]).To(Equal(0))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 
 		It("Updating status to block with reason reason", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				UserID: &userId,
+			})
 			param := &supplierpb.UpdateStatusParam{
 				Id:     supplier.ID,
 				Status: string(models.SupplierStatusBlocked),
@@ -79,6 +116,8 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier status updated successfully"))
+			Expect(mock1.Count["Get"]).To(Equal(1))
+			Expect(mock2.Count["SendEmailAPI"]).To(Equal(1))
 		})
 	})
 
@@ -100,6 +139,7 @@ var _ = Describe("UpdateStatus", func() {
 			updatedSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
+			Expect(*updatedSupplier.AgentID).To(Equal(userId))
 		})
 	})
 
@@ -114,6 +154,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Supplier Not Found"))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(0))
 		})
 	})
 
