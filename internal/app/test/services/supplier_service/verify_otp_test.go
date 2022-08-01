@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	otpPb "github.com/voonik/goConnect/api/go/vigeon2/otp"
@@ -20,9 +21,13 @@ import (
 var _ = Describe("VerifyOtp", func() {
 	var ctx context.Context
 	var apiHelperInstance *mocks.APIHelperInterface
+	var mockAudit *mocks.AuditLogMock
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
+
+		mockAudit = mocks.SetAuditLogMock()
+		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 	})
 
 	Context("For Invalid Supplier", func() {
@@ -80,6 +85,7 @@ var _ = Describe("VerifyOtp", func() {
 			updatedSupplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
+			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 	})
 

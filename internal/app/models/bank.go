@@ -5,7 +5,7 @@ import (
 )
 
 type Bank struct {
-	database.VaccountGorm
+	database.VModel
 	Name string `gorm:"not null" valid:"required"`
 }
 
