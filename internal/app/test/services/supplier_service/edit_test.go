@@ -6,8 +6,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/mock"
 
+	categoryPb "github.com/voonik/goConnect/api/go/cmt/category"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
@@ -20,19 +20,10 @@ import (
 
 var _ = Describe("EditSupplier", func() {
 	var ctx context.Context
-	var mockAudit *mocks.AuditLogMock
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		ctx = test_helper.SetContextUser(ctx, 101, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
-
-		mocks.SetAuditLogMock()
-		mockAudit = mocks.SetAuditLogMock()
-		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
-	})
-
-	AfterEach(func() {
-		mocks.UnsetAuditLogMock()
+		test_utils.SetPermission(&ctx, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
 	})
 
 	Context("Editing existing Supplier", func() {
@@ -103,8 +94,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
 			Expect(len(updatedSupplier.SupplierOpcMappings)).To(Equal(2))
 			Expect(updatedSupplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(2)))
-
-			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 	})
 
@@ -138,8 +127,6 @@ var _ = Describe("EditSupplier", func() {
 	Context("Editing allowed for limited permission", func() {
 		It("Should return success on updating pending supplier", func() {
 			test_utils.SetPermission(&ctx, []string{})
-			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
-
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -184,7 +171,6 @@ var _ = Describe("EditSupplier", func() {
 
 		It("Should return error on updating blocked supplier", func() {
 			test_utils.SetPermission(&ctx, []string{})
-			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -199,7 +185,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Change Not Allowed"))
-			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(0))
 		})
 	})
 
@@ -243,6 +228,13 @@ var _ = Describe("EditSupplier", func() {
 
 	Context("Editing with new set of category ids", func() {
 		It("Should delete old mapping and add new mapping", func() {
+			category_ids := []uint64{100, 101, 102}
+			mockCategory := mocks.SetCategoryMock()
+			mockCategory.On("GetCategoriesData", ctx, category_ids).Return(&categoryPb.CategoryDataList{Data: []*categoryPb.CategoryData{
+				{Id: 100},
+				{Id: 101},
+				{Id: 102},
+			}}, nil)
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 101},
@@ -255,7 +247,7 @@ var _ = Describe("EditSupplier", func() {
 				Name:         "Name",
 				Email:        "Email",
 				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{101, 102, 100},
+				CategoryIds:  []uint64{100, 101, 102},
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 			Expect(err).To(BeNil())
@@ -273,8 +265,53 @@ var _ = Describe("EditSupplier", func() {
 		})
 	})
 
+	Context("Editing with category ids from cmt response", func() {
+		It("Should delete old mapping and add new mapping", func() {
+			category_ids := []uint64{100, 101, 102}
+			mockCategory := mocks.SetCategoryMock()
+			mockCategory.On("GetCategoriesData", ctx, category_ids).Return(&categoryPb.CategoryDataList{Data: []*categoryPb.CategoryData{
+				{Id: 100},
+				{Id: 101},
+			}}, nil)
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierCategoryMappings: []models.SupplierCategoryMapping{
+					{CategoryID: 101},
+					{CategoryID: 201},
+				},
+			})
+
+			param := &supplierpb.SupplierObject{
+				Id:           supplier.ID,
+				Name:         "Name",
+				Email:        "Email",
+				SupplierType: uint64(utils.L1),
+				CategoryIds:  []uint64{100, 101, 102},
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
+
+			var categoryIds []uint64
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Pluck("category_id", &categoryIds)
+			Expect(len(categoryIds)).To(Equal(2))
+			Expect(categoryIds).To(ContainElements([]uint64{100, 101}))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierCategoryMapping{}).Unscoped().Where("supplier_category_mappings.supplier_id = ? and supplier_category_mappings.deleted_at IS NULL", supplier.ID).Count(&count)
+			Expect(count).To(Equal(2))
+		})
+	})
+
 	Context("Editing with new set of category ids which got removed before", func() {
 		It("Should restore deleted mapping", func() {
+			category_ids := []uint64{101, 200, 567}
+			mockCategory := mocks.SetCategoryMock()
+			mockCategory.On("GetCategoriesData", ctx, category_ids).Return(&categoryPb.CategoryDataList{Data: []*categoryPb.CategoryData{
+				{Id: 101},
+				{Id: 200},
+				{Id: 567},
+			}}, nil)
 			t := time.Now()
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{

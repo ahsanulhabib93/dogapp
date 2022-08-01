@@ -90,7 +90,6 @@ func PrepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
 			CategoryID: id,
 		})
 	}
-
 	return categories
 }
 

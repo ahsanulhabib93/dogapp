@@ -22,10 +22,6 @@ func GetCurrentUserID(ctx context.Context) *uint64 {
 	return nil
 }
 
-func GetVaccount(ctx context.Context) int64 {
-	return misc.ExtractThreadObject(ctx).VaccountId
-}
-
 func GetCurrentUserPermissions(ctx context.Context) []string {
 	threadUser := misc.ExtractThreadObject(ctx).UserData
 	if threadUser != nil {
