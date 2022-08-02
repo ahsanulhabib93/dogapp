@@ -13,8 +13,8 @@ require (
 	github.com/qor/qor v1.2.0 // indirect
 	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46
 	github.com/stretchr/testify v1.7.0
-	github.com/voonik/goConnect v0.0.0-20220801062658-676738dbb7b4
-	github.com/voonik/goFramework v0.0.0-20220622093546-afe074b400ba
+	github.com/voonik/goConnect v0.0.0-20220802070845-f3c73405e824
+	github.com/voonik/goFramework v0.0.0-20220727120341-aec869daeaaa
 	github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae
 	golang.org/x/net v0.0.0-20220325170049-de3da57026de // indirect
 	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
