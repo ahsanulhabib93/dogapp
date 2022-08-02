@@ -1,4 +1,11 @@
 {
+    "scopes": [
+        {
+          "id": "supplierpanel",
+          "description": "supplier panel",
+          "vaccount_id": 12
+        }      
+    ],
     "roles": [
         {
             "name": "Digital Credit Team",
@@ -9,6 +16,11 @@
             "name": "Digital Credit Team",
             "description": "Digital Credit Team",
             "vaccount_id": 2
+        },
+        {
+            "name": "Cargo SS2 Admin",
+            "description": "Admin Role for cargo vendors",
+            "vaccount_id": 12
         }
     ],
     "role_scopes": [
@@ -21,6 +33,11 @@
             "role_name": "Digital Credit Team",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
         }
     ],
     "permissions": [
@@ -59,6 +76,48 @@
             "description": "edit verified/blocked supplier api",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:editverifiedblockedsupplieronly:admin",
+            "description": "edit verified/blocked supplier api",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:supplierlistapi:view",
+            "description": "supplier list api view",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:supplierlistadminapi:admin",
+            "description": "supplier api admin",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:supplierlist:view",
+            "description": "ss2 supplierlist view",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:pendingsuppliermodule:admin",
+            "description": "ss2 pendingsuppliermodule view",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:supplierphoneverificationpi:admin",
+            "description": "supplier phone verification API",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:supplierstatusupdateapi:admin",
+            "description": "supplier Status update API",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
         }
     ],
     "route_permissions": [
@@ -138,6 +197,174 @@
             "service": "ss2",
             "required_permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
             "vaccount_id": 2
+        },
+        {
+            "route": "/supplier/remove_document",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/list",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/list_with_address",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier_address/list",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/payment_account_detail/list",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/key_account_manager/list",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/test",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/bank/list",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/info",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/map",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/categories",
+            "request_method": "GET",
+            "service": "products",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/get_download_url",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/add",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/edit",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier_address/add",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier_address/edit",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/payment_account_detail/add",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/payment_account_detail/edit",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/key_account_manager/add",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/key_account_manager/edit",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/get_upload_url",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/send_verification_otp",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierphoneverificationpi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/verify_otp",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierphoneverificationpi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/supplier/update_status",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierstatusupdateapi:admin",
+            "vaccount_id": 12
         }
     ],
     "role_permissions": [
@@ -200,6 +427,41 @@
             "role_name": "ss2owner",
             "permission_id": "supplierpanel:supplierphoneverificationpi:admin",
             "vaccount_id": 2
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:editverifiedblockedsupplieronly:admin",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:supplierlist:view",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:pendingsuppliermodule:admin",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:supplierphoneverificationpi:admin",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:supplierstatusupdateapi:admin",
+            "vaccount_id": 12
         }
     ]
 }

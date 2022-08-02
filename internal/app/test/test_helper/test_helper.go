@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -113,4 +114,21 @@ func CreateBank(ctx context.Context, bank *models.Bank) *models.Bank {
 	bank.Name = fmt.Sprintf("TestBank-%v", id)
 	database.DBAPM(ctx).Save(bank)
 	return bank
+}
+
+func SetContextUser(ctx context.Context, userId uint64, permissions []string) context.Context {
+	threadObject := &misc.ThreadObject{
+		VaccountId:    1,
+		PortalId:      1,
+		CurrentActId:  1,
+		XForwardedFor: "5079327",
+		UserData: &misc.UserData{
+			UserId:      userId,
+			Name:        "John",
+			Email:       "john@gmail.com",
+			Phone:       "8801855533367",
+			Permissions: permissions,
+		},
+	}
+	return misc.SetInContextThreadObject(ctx, threadObject)
 }
