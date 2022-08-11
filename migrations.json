@@ -462,6 +462,11 @@
             "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:supplierstatusupdateapi:admin",
             "vaccount_id": 12
+        },
+        {
+            "role_name": "crtadmin",
+            "permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 2
         }
     ]
 }
