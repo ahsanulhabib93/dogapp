@@ -85,3 +85,7 @@ func (paymentAccount PaymentAccountDetail) accountTypeMapping() map[utils.Accoun
 		utils.Mfs:  {utils.Bkash, utils.Nagada},
 	}
 }
+
+func JoinPaymentAccountDetailWarehouseMappings() string {
+	return "JOIN payment_account_detail_warehouse_mappings ON payment_account_detail_warehouse_mappings.payment_account_detail_id = payment_account_details.id AND payment_account_detail_warehouse_mappings.vaccount_id = payment_account_details.vaccount_id"
+}

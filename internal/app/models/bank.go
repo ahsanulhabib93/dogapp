@@ -10,5 +10,5 @@ type Bank struct {
 }
 
 func GetBankJoinStr() string {
-	return "left join banks on banks.id = payment_account_details.bank_id"
+	return "LEFT JOIN banks ON banks.id = payment_account_details.bank_id"
 }
