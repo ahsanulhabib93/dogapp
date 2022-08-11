@@ -125,6 +125,7 @@ var _ = Describe("GetSupplier", func() {
 				paymentDetail2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
 				paymentDetail3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
 				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, PaymentAccountDetailID: paymentDetail1.ID})
+				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, PaymentAccountDetailID: paymentDetail1.ID})
 				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, PaymentAccountDetailID: paymentDetail2.ID})
 				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, PaymentAccountDetailID: paymentDetail3.ID})
 
@@ -174,6 +175,11 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.PaymentAccountDetails[0].AccountType).To(Equal(uint64(paymentDetail1.AccountType)))
 				Expect(resp.Data.PaymentAccountDetails[0].AccountSubType).To(Equal(uint64(paymentDetail1.AccountSubType)))
 
+				sort.Slice(resp.Data.PaymentAccountDetails[0].Warehouses, func(i, j int) bool {
+					return resp.Data.PaymentAccountDetails[0].Warehouses[i] < resp.Data.PaymentAccountDetails[0].Warehouses[j]
+				})
+				Expect(resp.Data.PaymentAccountDetails[0].Warehouses).To(Equal([]uint64{10, 11}))
+
 				Expect(resp.Data.PaymentAccountDetails[1].Id).To(Equal(paymentDetail2.ID))
 				Expect(resp.Data.PaymentAccountDetails[1].AccountName).To(Equal(paymentDetail2.AccountName))
 				Expect(resp.Data.PaymentAccountDetails[1].AccountNumber).To(Equal(paymentDetail2.AccountNumber))
@@ -184,6 +190,11 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.PaymentAccountDetails[1].IsDefault).To(Equal(paymentDetail2.IsDefault))
 				Expect(resp.Data.PaymentAccountDetails[1].AccountType).To(Equal(uint64(paymentDetail2.AccountType)))
 				Expect(resp.Data.PaymentAccountDetails[1].AccountSubType).To(Equal(uint64(paymentDetail2.AccountSubType)))
+				sort.Slice(resp.Data.PaymentAccountDetails[1].Warehouses, func(i, j int) bool {
+					return resp.Data.PaymentAccountDetails[1].Warehouses[i] < resp.Data.PaymentAccountDetails[1].Warehouses[j]
+				})
+				Expect(resp.Data.PaymentAccountDetails[1].Warehouses).To(Equal([]uint64{10}))
+
 			})
 		})
 	})

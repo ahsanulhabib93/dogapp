@@ -51,6 +51,14 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 			"payment_account_details.*, banks.name bank_name",
 		).Scan(&paymentDetails)
 	}
+	var paymentDetailIds []uint64
+	for _, paymentDetail := range paymentDetails {
+		paymentDetailIds = append(paymentDetailIds, paymentDetail.Id)
+	}
+	warehouses := helpers.GetWarehousesForPaymentAccountDetails(ctx, paymentDetailIds)
+	for _, paymentDetail := range paymentDetails {
+		paymentDetail.Warehouses = warehouses[paymentDetail.Id]
+	}
 	resp := helpers.SupplierDBResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
