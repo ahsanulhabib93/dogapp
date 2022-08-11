@@ -100,6 +100,17 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 	return paymentAccount
 }
 
+func CreatePaymentAccountDetailWarehouseMappings(ctx context.Context, paymentAccountDetailWarehouseMapping *models.PaymentAccountDetailWarehouseMapping) *models.PaymentAccountDetailWarehouseMapping {
+	if paymentAccountDetailWarehouseMapping.WarehouseID == 0 {
+		paymentAccountDetailWarehouseMapping.WarehouseID = rand.Uint64()
+	}
+	if paymentAccountDetailWarehouseMapping.PaymentAccountDetailID == 0 {
+		paymentAccountDetailWarehouseMapping.PaymentAccountDetailID = rand.Uint64()
+	}
+	database.DBAPM(ctx).Save(paymentAccountDetailWarehouseMapping)
+	return paymentAccountDetailWarehouseMapping
+}
+
 func CreateKeyAccountManager(ctx context.Context, accountManager *models.KeyAccountManager) *models.KeyAccountManager {
 	id := getUniqueID()
 	accountManager.Name = fmt.Sprintf("Test-%v", id)

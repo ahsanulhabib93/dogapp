@@ -29,10 +29,27 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	}
 
 	paymentDetails := []*supplierpb.PaymentAccountDetailObject{}
-	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Where("supplier_id = ?", params.GetId()).
-		Joins(models.GetBankJoinStr()).Select("payment_account_details.*, banks.name bank_name").
-		Scan(&paymentDetails)
+	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
+		models.JoinPaymentAccountDetailWarehouseMappings(),
+	).Joins(
+		models.GetBankJoinStr(),
+	).Where(
+		"warehouse_id = ?", params.GetWarehouseId(),
+	).Where(
+		"supplier_id = ?", params.GetId(),
+	).Select(
+		"payment_account_details.*, banks.name bank_name",
+	).Scan(&paymentDetails)
 
+	if len(paymentDetails) == 0 {
+		database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
+			models.GetBankJoinStr(),
+		).Where(
+			"supplier_id = ?", params.GetId(),
+		).Select(
+			"payment_account_details.*, banks.name bank_name",
+		).Scan(&paymentDetails)
+	}
 	resp := helpers.SupplierDBResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
