@@ -10,7 +10,6 @@ import (
 	"github.com/jinzhu/gorm"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
-	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -139,19 +138,6 @@ func PrepareSupplierResponse(supplier SupplierDBResponse) *supplierpb.SupplierOb
 	}
 
 	return so
-}
-
-func GetWarehousesForPaymentAccountDetails(ctx context.Context, paymentDetailIds []uint64) map[uint64][]uint64 {
-	warehouses := make(map[uint64][]uint64)
-	var paymentAccountDetailWarehouseMappings []*models.PaymentAccountDetailWarehouseMapping
-	database.DBAPM(ctx).Model(&models.PaymentAccountDetailWarehouseMapping{}).Where(
-		"payment_account_detail_id IN (?)", paymentDetailIds,
-	).Find(&paymentAccountDetailWarehouseMappings)
-	for _, paymentDetailWarehouseMapping := range paymentAccountDetailWarehouseMappings {
-		paymentAccountDetailID := paymentDetailWarehouseMapping.PaymentAccountDetailID
-		warehouses[paymentAccountDetailID] = append(warehouses[paymentAccountDetailID], paymentDetailWarehouseMapping.WarehouseID)
-	}
-	return warehouses
 }
 
 func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierAddress {
