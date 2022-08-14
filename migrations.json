@@ -325,6 +325,13 @@
             "vaccount_id": 12
         },
         {
+            "route": "/payment_account_detail/map",
+            "request_method": "PUT",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 2
+        },
+        {
             "route": "/key_account_manager/add",
             "request_method": "POST",
             "service": "ss2",

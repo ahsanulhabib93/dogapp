@@ -13,6 +13,10 @@ func TestPaymentAccountDetailService(t *testing.T) {
 	RunSpecs(t, "PaymentAccountDetailService Suite")
 }
 
+var _ = BeforeSuite(func() {
+	test.Cleaner.Clean("suppliers", "payment_account_details", "banks", "payment_account_detail_warehouse_mappings")
+})
+
 var _ = AfterEach(func() {
-	test.Cleaner.Clean("suppliers", "payment_account_details", "banks")
+	test.Cleaner.Clean("suppliers", "payment_account_details", "banks", "payment_account_detail_warehouse_mappings")
 })

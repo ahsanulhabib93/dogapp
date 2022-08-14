@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	"github.com/voonik/goFramework/pkg/database"
@@ -106,4 +107,22 @@ func (ps *PaymentAccountDetailService) ListBanks(ctx context.Context, params *pa
 	resp := paymentpb.ListBankResponse{}
 	database.DBAPM(ctx).Model(&models.Bank{}).Scan(&resp.Data)
 	return &resp, nil
+}
+
+// MapPaymentAccountDetail ...
+func (ps *PaymentAccountDetailService) MapPaymentAccountDetail(ctx context.Context, params *paymentpb.MappingParam) (*paymentpb.BasicApiResponse, error) {
+	resp := &paymentpb.BasicApiResponse{}
+	switch strings.ToLower(params.MappableType) {
+	case "warehouses":
+		err := helpers.UpdatePaymentAccountDetailWarehouseMapping(ctx, params.GetId(), params.GetMappableIds())
+		if err != nil {
+			resp.Message = err.Error()
+		} else {
+			resp.Success = true
+			resp.Message = "Mapping Updated Successfully"
+		}
+	default:
+		resp.Message = "Invalid mapping_type"
+	}
+	return resp, nil
 }

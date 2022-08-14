@@ -22,6 +22,8 @@ type PaymentAccountDetail struct {
 	BranchName     string               `json:"branch_name,omitempty"`
 	RoutingNumber  string               `json:"routing_number,omitempty"`
 	IsDefault      bool                 `json:"is_default,omitempty"`
+
+	PaymentAccountDetailWarehouseMappings []*PaymentAccountDetailWarehouseMapping
 }
 
 // Validate ...
