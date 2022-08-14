@@ -57,12 +57,19 @@ var _ = Describe("MapPaymentAccountDetail", func() {
 			})
 		})
 
-		Context("With Invalid Mapping Type", func() {
-			It("Should return false response", func() {
+		Context("With Invalid Params", func() {
+			It("Invalid Mapping Type - Should return false response", func() {
 				res, err := new(services.PaymentAccountDetailService).MapPaymentAccountDetail(ctx, &paymentpb.MappingParam{Id: accountDetail1.ID, MappableType: "howdy", MappableIds: []uint64{10, 11, 50}})
 				Expect(err).To(BeNil())
 				Expect(res.Success).To(BeFalse())
 				Expect(res.Message).To(Equal("Invalid mapping_type"))
+			})
+
+			It("Invalid AccountDetail Id - Should return false response", func() {
+				res, err := new(services.PaymentAccountDetailService).MapPaymentAccountDetail(ctx, &paymentpb.MappingParam{Id: accountDetail2.ID + 1, MappableType: "warehouses", MappableIds: []uint64{10, 11, 50}})
+				Expect(err).To(BeNil())
+				Expect(res.Success).To(BeFalse())
+				Expect(res.Message).To(Equal("PaymentAccountDetail Not Found"))
 			})
 		})
 
