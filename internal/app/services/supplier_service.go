@@ -29,28 +29,22 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	}
 
 	paymentDetails := []*supplierpb.PaymentAccountDetailObject{}
+	query := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
+		models.GetBankJoinStr(),
+	).Where(
+		"supplier_id = ?", params.GetId(),
+	)
 	if params.GetWarehouseId() != 0 {
-		database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
+		query = query.Joins(
 			models.JoinPaymentAccountDetailWarehouseMappings(),
-		).Joins(
-			models.GetBankJoinStr(),
 		).Where(
 			"warehouse_id = ?", params.GetWarehouseId(),
-		).Where(
-			"supplier_id = ?", params.GetId(),
-		).Select(
-			"payment_account_details.*, banks.name bank_name",
-		).Scan(&paymentDetails)
+		)
 	}
-	if len(paymentDetails) == 0 {
-		database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
-			models.GetBankJoinStr(),
-		).Where(
-			"supplier_id = ?", params.GetId(),
-		).Select(
-			"payment_account_details.*, banks.name bank_name",
-		).Scan(&paymentDetails)
-	}
+	query.Select(
+		"payment_account_details.*, banks.name bank_name",
+	).Scan(&paymentDetails)
+
 	var paymentDetailIds []uint64
 	for _, paymentDetail := range paymentDetails {
 		paymentDetailIds = append(paymentDetailIds, paymentDetail.Id)
