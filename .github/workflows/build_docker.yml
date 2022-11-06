@@ -7,8 +7,25 @@ env:
   GKE_STAGING_CLUSTER: ${{ secrets.GKE_STAGING_CLUSTER }}    # TODO: update to cluster name
   GKE_ZONE: ${{ secrets.GKE_ZONE }}   # TODO: update to cluster zone
   GITHUB_TOKEN: ${{ secrets.GIHUB_PAT }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+    outputs:
+      SONAR_STATUS: ${{ steps.sonar.outputs.SONAR_STATUS }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: Sonar Cloud Quality Check
+      id: sonar
+      run: |-
+        STATUS=`curl -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status\?projectKey\=shopuptech_ss2\&pullRequest\=$PR_NUMBER | jq -r '.projectStatus.status'`
+        echo $STATUS
+        echo "SONAR_STATUS=$STATUS" >> $GITHUB_OUTPUT    
   setup-build-staging:
     name: Setup, Build to staging
     runs-on: ubuntu-20.04
