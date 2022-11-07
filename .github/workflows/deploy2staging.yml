@@ -37,7 +37,7 @@ jobs:
     name: Setup, Build, Publish, and Deploy to staging
     runs-on: ubuntu-20.04
     needs: sonarcloud
-    if: ${{ github.event.label.name == 'Ok to deploy in staging' }}
+    if: ${{ github.event.label.name == 'Ok to deploy in staging' && needs.sonarcloud.outputs.SONAR_STATUS == 'OK' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
