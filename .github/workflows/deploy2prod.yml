@@ -27,23 +27,18 @@ jobs:
           gcloud --quiet auth configure-docker
       # Build and Push the Docker image to Google Container Registry
       - name: Build and push
+        id: build
         run: |
+          IMAGE_TAG=${GITHUB_REF##*/}
           docker build -t ss2 . --build-arg GITHUB_TOKEN="${{secrets.PAT_GITHUB}}" -f docker/Dockerfile
           docker tag ss2 gcr.io/voonik-tech/vnkshopup/ss2:${GITHUB_REF##*/}
           docker push gcr.io/voonik-tech/vnkshopup/ss2:${GITHUB_REF##*/}
-      # Set up helm v3.4.1
-      - uses: azure/setup-helm@v1
-        with:
-          version: '3.4.1' # default is latest stable
-        id: install
+          echo "::set-output name=version::$IMAGE_TAG"
 
       # Deploy to production GKE cluster
-      - name: Deploy to production
+      - name: Apply Proto Config to production
         run: |
           gcloud container clusters get-credentials mokam-prod --zone asia-southeast1 --project $PROJECT_ID
-          helm plugin install https://github.com/hayorov/helm-gcs --version 0.3.5
-          helm repo add shopup gs://shopup-prod/helm-charts
-          helm repo update
           ### Update envoy grpc transcoder if any changes are made to protobuf file ###
             git clone https://$GITHUB_TOKEN@github.com/Voonik/goConnect.git
             cd goConnect
@@ -58,13 +53,22 @@ jobs:
             protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto
             kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
           ################################################################################
-          helm upgrade --install --atomic --timeout 600s --namespace mokam ss2 shopup/ss2 --set image.tag=${GITHUB_REF##*/}
-      # Send Slack Alerts
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_CHANNEL: deployment-status
-          SLACK_ICON: https://shopimages1.vstores.io/dev_ops/production-icon.png?size=48
-          SLACK_COLOR: '#2EB67D'
-          SLACK_MESSAGE: "Helm Intsall/Upgrade Successful\nService: SS2\nBranch: Master\nEnvironment: Production"
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: shopuptech/cicd-automation
+          token: ${{ secrets.GIHUB_PAT }}
+          ref: 'master'
+
+      - name: Deploying to GCP Cluster
+        uses: fjogeleit/yaml-update-action@master
+        with:
+          valueFile: 'charts/shopup/ss2/values-production.yaml'
+          propertyPath: 'image.tag'
+          value: ${{ steps.build.outputs.version }}
+          repository: shopuptech/cicd-automation
+          branch: master
+          updateFile: true
+          message: 'feat(helm): Update Image Version to ${{ steps.build.outputs.version }}'
+          token: ${{ secrets.GIHUB_PAT }}
