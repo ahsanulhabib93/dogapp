@@ -18,7 +18,14 @@ type SupplierAddressService struct{}
 func (sas *SupplierAddressService) List(ctx context.Context, params *addresspb.ListSupplierAddressParams) (*addresspb.ListSupplierAddressResponse, error) {
 	log.Printf("ListAddressParams: %+v", params)
 	resp := addresspb.ListSupplierAddressResponse{}
-	database.DBAPM(ctx).Model(&models.SupplierAddress{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
+	query := database.DBAPM(ctx).Model(&models.SupplierAddress{})
+	if params.GetSupplierId() != 0 {
+		query = query.Where("supplier_id = ?", params.GetSupplierId())
+	}
+	if params.GetId() != 0 {
+		query = query.Where("id = ?", params.Id())
+	}
+	query.Scan(&resp)
 	log.Printf("ListAddressResponse: %+v", resp)
 	return &resp, nil
 }
