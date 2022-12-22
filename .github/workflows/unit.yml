@@ -45,7 +45,7 @@ jobs:
       - name: Verify MySQL
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential python-dev nginx-extras pkg-config cmake libxrender1 libmysqlclient-dev ncurses-dev gettext flex bison autoconf binutils-doc redis-tools vim nfs-common jq bc
+          sudo apt-get install -y build-essential python-dev-is-python3 nginx-extras pkg-config cmake libxrender1 libmysqlclient-dev ncurses-dev gettext flex bison autoconf binutils-doc redis-tools vim nfs-common jq bc
           mysql --host 127.0.0.1 --port 33306 -uroot -ppassword -e "SHOW GRANTS FOR 'root'@'localhost'"
           mysql --host 127.0.0.1 --port 33306 -uroot -ppassword -e "SET GLOBAL sql_mode = ''"
           mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql --host 127.0.0.1 --port 33306 -uroot -ppassword mysql
