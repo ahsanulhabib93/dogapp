@@ -67,7 +67,6 @@ var _ = Describe("ListSupplier", func() {
 			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
 			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
-			supplierAddress2 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
 			res, err := new(services.SupplierAddressService).List(ctx, &addresspb.ListSupplierAddressParams{Id: supplierAddress1.ID})
 			Expect(err).To(BeNil())
