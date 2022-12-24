@@ -25,7 +25,7 @@ func (sas *SupplierAddressService) List(ctx context.Context, params *addresspb.L
 	if params.GetId() != 0 {
 		query = query.Where("id = ?", params.GetId())
 	}
-	query.Scan(&resp)
+	query.Scan(&resp.Data)
 	log.Printf("ListAddressResponse: %+v", resp)
 	return &resp, nil
 }
