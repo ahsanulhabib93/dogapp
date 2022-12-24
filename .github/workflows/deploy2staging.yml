@@ -63,11 +63,16 @@ jobs:
           docker tag ss2 gcr.io/voonik-tech/vnkshopup/ss2:$IMAGE_TAG
           docker push gcr.io/voonik-tech/vnkshopup/ss2:$IMAGE_TAG
           echo "::set-output name=version::$IMAGE_TAG"
+      - id: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v1'
+        with:
+          cluster_name: 'shopup-mokam-stg'
+          location: 'asia-southeast1'
 
       # Deploy to staging GKE cluster
       - name: Apply Proto Config to staging
         run: |
-          gcloud container clusters get-credentials shopup-mokam-stg --zone asia-southeast1 --project $PROJECT_ID
+          #gcloud container clusters get-credentials shopup-mokam-stg --zone asia-southeast1 --project $PROJECT_ID
           ### Update envoy grpc transcoder if any changes are made to protobuf file ###
             git clone https://$GITHUB_TOKEN@github.com/Voonik/goConnect.git
             cd goConnect
