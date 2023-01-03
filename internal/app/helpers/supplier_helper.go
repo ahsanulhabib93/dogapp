@@ -3,7 +3,6 @@ package helpers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -185,15 +184,15 @@ func CheckSupplierExistWithDifferentRole(ctx context.Context, supplier models.Su
 		user := apiHelper.FindUserByPhone(ctx, supplier.Phone)
 		log.Printf("CheckSupplierExistWithDifferentRole: phone = %s response = %v\n", supplier.Phone, user)
 		if user != nil {
-			return errors.New("user already exist as Retails/SalesRep")
+			return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.Phone)
 		}
 	}
 
 	if !utils.IsEmptyStr(supplier.AlternatePhone) {
 		user := apiHelper.FindUserByPhone(ctx, supplier.AlternatePhone)
-		log.Printf("CheckSupplierExistWithDifferentRole: phone = %s response = %v\n", supplier.AlternatePhone, user)
+		log.Printf("CheckSupplierExistWithDifferentRole: alternate_phone = %s response = %v\n", supplier.AlternatePhone, user)
 		if user != nil {
-			return errors.New("user already exist as Retails/SalesRep")
+			return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.AlternatePhone)
 		}
 	}
 
