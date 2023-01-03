@@ -3,7 +3,9 @@ package helpers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -176,6 +178,26 @@ func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatu
 		}
 	}
 	return true, ""
+}
+
+func CheckSupplierExistWithDifferentRole(ctx context.Context, supplier models.Supplier) error {
+	if !utils.IsEmptyStr(supplier.Phone) {
+		user := apiHelper.FindUserByPhone(ctx, supplier.Phone)
+		log.Printf("CheckSupplierExistWithDifferentRole: phone = %s response = %v\n", supplier.Phone, user)
+		if user != nil {
+			return errors.New("user already exist as Retails/SalesRep")
+		}
+	}
+
+	if !utils.IsEmptyStr(supplier.AlternatePhone) {
+		user := apiHelper.FindUserByPhone(ctx, supplier.AlternatePhone)
+		log.Printf("CheckSupplierExistWithDifferentRole: phone = %s response = %v\n", supplier.AlternatePhone, user)
+		if user != nil {
+			return errors.New("user already exist as Retails/SalesRep")
+		}
+	}
+
+	return nil
 }
 
 func isValidStatus(newStatus models.SupplierStatus) (valid bool) {

@@ -2,8 +2,11 @@ package helpers
 
 import (
 	"context"
+	"log"
 
+	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
 	otpPb "github.com/voonik/goConnect/api/go/vigeon2/otp"
+	userSrv "github.com/voonik/goConnect/cre_admin/users_detail"
 	Vigeon2Service "github.com/voonik/goConnect/vigeon2/otp"
 )
 
@@ -14,6 +17,7 @@ type APIHelper struct{}
 type APIHelperInterface interface {
 	SendOtpAPI(context.Context, otpPb.OtpParam) *otpPb.OtpResponse
 	VerifyOtpAPI(context.Context, otpPb.VerifyOtpParam) *otpPb.OtpResponse
+	FindUserByPhone(context.Context, string) *userPb.UserInfo
 }
 
 var apiHelper APIHelperInterface
@@ -65,4 +69,11 @@ func VerifyOtpAPI(ctx context.Context, supplierID uint64, otpCode string) *otpPb
 func (apiHelper *APIHelper) VerifyOtpAPI(ctx context.Context, verifyOtpParam otpPb.VerifyOtpParam) *otpPb.OtpResponse {
 	resp, _ := Vigeon2Service.Otp().VerifyOtp(ctx, &verifyOtpParam)
 	return resp
+}
+
+//FindUserByPhone ...
+func (apiHelper *APIHelper) FindUserByPhone(ctx context.Context, phone string) *userPb.UserInfo {
+	resp, _ := userSrv.UsersDetail().FindByPhone(ctx, &userPb.UserParams{Phone: phone})
+	log.Printf("FindUserByPhone: phone = %s response = %v\n", phone, resp)
+	return resp.Data["user"]
 }

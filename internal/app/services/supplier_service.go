@@ -144,6 +144,8 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	err := database.DBAPM(ctx).Save(&supplier)
 	if err != nil && err.Error != nil {
 		resp.Message = fmt.Sprintf("Error while creating Supplier: %s", err.Error)
+	} else if err := helpers.CheckSupplierExistWithDifferentRole(ctx, supplier); err != nil {
+		resp.Message = fmt.Sprintf("Error while creating Supplier: %s", err.Error())
 	} else {
 		resp.Message = "Supplier Added Successfully"
 		resp.Success = true
@@ -266,7 +268,7 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 	fmt.Printf("newSupplierStatus %+v", newSupplierStatus)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if params.GetReason() == EmptyString &&
+	} else if params.GetReason() == utils.EmptyString &&
 		(newSupplierStatus == models.SupplierStatusBlocked || newSupplierStatus == models.SupplierStatusFailed) {
 		resp.Message = "Status change reason missing"
 	} else if valid, message := helpers.IsValidStatusUpdate(ctx, supplier, newSupplierStatus); !valid {
