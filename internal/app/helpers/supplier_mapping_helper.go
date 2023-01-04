@@ -12,7 +12,7 @@ import (
 )
 
 func UpdateSupplierOpcMapping(ctx context.Context, id, opcId uint64, delete bool) *supplierpb.BasicApiResponse {
-	if err := IsOpcListValid(ctx, []uint64{opcId}); delete == false && err != nil {
+	if err := IsOpcListValid(ctx, []uint64{opcId}); !delete && err != nil {
 		return &supplierpb.BasicApiResponse{Message: err.Error()}
 	}
 
