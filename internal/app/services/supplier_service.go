@@ -141,11 +141,14 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		SupplierAddresses:         helpers.PrepareSupplierAddress(params),
 	}
 
+	if err := helpers.CheckSupplierExistWithDifferentRole(ctx, supplier); err != nil {
+		resp.Message = fmt.Sprintf("Error while creating Supplier: %s", err.Error())
+		return &resp, nil
+	}
+
 	err := database.DBAPM(ctx).Save(&supplier)
 	if err != nil && err.Error != nil {
 		resp.Message = fmt.Sprintf("Error while creating Supplier: %s", err.Error)
-	} else if err := helpers.CheckSupplierExistWithDifferentRole(ctx, supplier); err != nil {
-		resp.Message = fmt.Sprintf("Error while creating Supplier: %s", err.Error())
 	} else {
 		resp.Message = "Supplier Added Successfully"
 		resp.Success = true

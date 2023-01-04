@@ -72,6 +72,11 @@ func (apiHelper *APIHelper) VerifyOtpAPI(ctx context.Context, verifyOtpParam otp
 }
 
 //FindUserByPhone ...
+func FindUserByPhone(ctx context.Context, phone string) *userPb.UserInfo {
+	return getAPIHelperInstance().FindUserByPhone(ctx, phone)
+}
+
+//FindUserByPhone ...
 func (apiHelper *APIHelper) FindUserByPhone(ctx context.Context, phone string) *userPb.UserInfo {
 	resp, _ := userSrv.UsersDetail().FindByPhone(ctx, &userPb.UserParams{Phone: phone})
 	log.Printf("FindUserByPhone: phone = %s response = %v\n", phone, resp)

@@ -209,6 +209,10 @@ var _ = Describe("AddSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567891) already exist as Retails/SalesRep"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
 		})
 
 		It("Should return error if user exist with same alternate phone number in CRE", func() {
@@ -231,6 +235,10 @@ var _ = Describe("AddSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567890) already exist as Retails/SalesRep"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
 		})
 	})
 
