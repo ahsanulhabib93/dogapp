@@ -80,5 +80,5 @@ func FindUserByPhone(ctx context.Context, phone string) *userPb.UserInfo {
 func (apiHelper *APIHelper) FindUserByPhone(ctx context.Context, phone string) *userPb.UserInfo {
 	resp, _ := userSrv.UsersDetail().FindByPhone(ctx, &userPb.UserParams{Phone: phone})
 	log.Printf("FindUserByPhone: phone = %s response = %v\n", phone, resp)
-	return resp.Data["user"]
+	return resp.Data
 }
