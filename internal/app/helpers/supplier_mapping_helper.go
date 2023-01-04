@@ -83,5 +83,5 @@ func UpdateSupplierCategoryMapping(ctx context.Context, supplierId uint64, newId
 		}
 	}
 
-	return PrepareCategoreMapping(newIds)
+	return PrepareCategoryMapping(newIds)
 }

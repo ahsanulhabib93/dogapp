@@ -136,7 +136,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		GuarantorNidFrontImageUrl: params.GetGuarantorNidFrontImageUrl(),
 		GuarantorNidBackImageUrl:  params.GetGuarantorNidBackImageUrl(),
 		ChequeImageUrl:            params.GetChequeImageUrl(),
-		SupplierCategoryMappings:  helpers.PrepareCategoreMapping(params.GetCategoryIds()),
+		SupplierCategoryMappings:  helpers.PrepareCategoryMapping(params.GetCategoryIds()),
 		SupplierOpcMappings:       helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
 		SupplierAddresses:         helpers.PrepareSupplierAddress(params),
 	}
