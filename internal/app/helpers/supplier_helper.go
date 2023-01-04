@@ -180,20 +180,14 @@ func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatu
 }
 
 func CheckSupplierExistWithDifferentRole(ctx context.Context, supplier models.Supplier) error {
-	if !utils.IsEmptyStr(supplier.Phone) {
-		user := FindUserByPhone(ctx, supplier.Phone)
-		log.Printf("CheckSupplierExistWithDifferentRole: phone = %s response = %v\n", supplier.Phone, user)
-		if user != nil {
-			return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.Phone)
-		}
+	if user := FindCreUserByPhone(ctx, supplier.Phone); user != nil {
+		log.Printf("getCreUserWithPhone: phone = %s response = %v\n", supplier.Phone, user)
+		return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.Phone)
 	}
 
-	if !utils.IsEmptyStr(supplier.AlternatePhone) {
-		user := FindUserByPhone(ctx, supplier.AlternatePhone)
-		log.Printf("CheckSupplierExistWithDifferentRole: alternate_phone = %s response = %v\n", supplier.AlternatePhone, user)
-		if user != nil {
-			return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.AlternatePhone)
-		}
+	if user := FindCreUserByPhone(ctx, supplier.AlternatePhone); user != nil {
+		log.Printf("getCreUserWithPhone: alternate_phone = %s response = %v\n", supplier.AlternatePhone, user)
+		return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.AlternatePhone)
 	}
 
 	return nil

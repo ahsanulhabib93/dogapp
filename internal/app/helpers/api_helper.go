@@ -8,6 +8,7 @@ import (
 	otpPb "github.com/voonik/goConnect/api/go/vigeon2/otp"
 	userSrv "github.com/voonik/goConnect/cre_admin/users_detail"
 	Vigeon2Service "github.com/voonik/goConnect/vigeon2/otp"
+	"github.com/voonik/ss2/internal/app/utils"
 )
 
 // APIHelper ...
@@ -71,8 +72,13 @@ func (apiHelper *APIHelper) VerifyOtpAPI(ctx context.Context, verifyOtpParam otp
 	return resp
 }
 
-//FindUserByPhone ...
-func FindUserByPhone(ctx context.Context, phone string) *userPb.UserInfo {
+//FindCreUserByPhone ...
+func FindCreUserByPhone(ctx context.Context, phone string) *userPb.UserInfo {
+	log.Printf("FindCreUserByPhone: phone = %s\n", phone)
+	if utils.IsEmptyStr(phone) {
+		return nil
+	}
+
 	return getAPIHelperInstance().FindUserByPhone(ctx, phone)
 }
 
