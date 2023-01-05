@@ -25,6 +25,7 @@ var _ = Describe("AddSupplier", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
 	var apiHelperInstance *mocks.APIHelperInterface
+	var IdentityUserApiHelperInstance *mocks.IdentityUserApiHelperInterface
 	var userId uint64 = uint64(101)
 
 	BeforeEach(func() {
@@ -38,10 +39,16 @@ var _ = Describe("AddSupplier", func() {
 		apiHelperInstance = new(mocks.APIHelperInterface)
 		helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 		apiHelperInstance.On("FindUserByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
+
+		IdentityUserApiHelperInstance = new(mocks.IdentityUserApiHelperInterface)
+		helpers.InjectMockIdentityUserApiHelperInstance(IdentityUserApiHelperInstance)
+		IdentityUserApiHelperInstance.On("GetUserDetailsApiByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
 	})
 
 	AfterEach(func() {
 		mocks.UnsetAuditLogMock()
+		helpers.InjectMockAPIHelperInstance(nil)
+		helpers.InjectMockIdentityUserApiHelperInstance(nil)
 	})
 
 	Context("Adding new Supplier", func() {
@@ -235,6 +242,30 @@ var _ = Describe("AddSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567890) already exist as Retails/SalesRep"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
+		})
+
+		It("Should return error if user exist with same phone number in Identity Service", func() {
+			phone := "8801234567891"
+			IdentityUserApiHelperInstance = new(mocks.IdentityUserApiHelperInterface)
+			helpers.InjectMockIdentityUserApiHelperInstance(IdentityUserApiHelperInstance)
+			IdentityUserApiHelperInstance.On("GetUserDetailsApiByPhone", ctx, phone).Return(&helpers.IdentityUserObject{})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := &supplierpb.SupplierParam{
+				Name:         supplier1.Name,
+				Email:        "Email",
+				Phone:        phone,
+				SupplierType: uint64(utils.Hlc),
+				Address1:     "Address1",
+				Zipcode:      "Zipcode",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567891) already exist"))
 
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
