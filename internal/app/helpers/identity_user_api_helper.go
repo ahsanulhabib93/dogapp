@@ -66,14 +66,12 @@ func getIdentityUserApiHelperInstance() IdentityUserApiHelperInterface {
 }
 
 func (apiHelper *IdentityUserApiHelper) IdentityBulkUserDetailsApi(ctx context.Context, userIds []string) map[string]IdentityUserObject {
-	url := getIdentityServiceDomain(ctx) + getIdentityServicePrefix(ctx) + "v0/users/bulk"
+	url := getIdentityUrl(ctx, "v0/users/bulk")
 	if len(userIds) > 0 {
 		url += "?userIds=" + strings.Join(userIds, ",")
 	}
 
-	headers := make(map[string]string)
-	reqHeaders, _ := metadata.FromIncomingContext(ctx)
-	headers["Authorization"] = reqHeaders["authorization"][0]
+	headers := getHeaders(ctx)
 	resp, _ := GetApiCallHelperInstance().Get(ctx, url, headers)
 
 	var respData IdentityBulkUserResponse
@@ -88,17 +86,25 @@ func (apiHelper *IdentityUserApiHelper) IdentityBulkUserDetailsApi(ctx context.C
 }
 
 func (apiHelper *IdentityUserApiHelper) GetUserDetailsApiByPhone(ctx context.Context, phone string) *IdentityUserObject {
-	url := getIdentityServiceDomain(ctx) + getIdentityServicePrefix(ctx) + "v0/users/phone/" + phone + "?include=[roles]"
-
-	headers := make(map[string]string)
-	reqHeaders, _ := metadata.FromIncomingContext(ctx)
-	headers["Authorization"] = reqHeaders["authorization"][0]
+	url := getIdentityUrl(ctx, "v0/users/phone/"+phone+"?include=[roles]")
+	headers := getHeaders(ctx)
 	resp, _ := GetApiCallHelperInstance().Get(ctx, url, headers)
 
 	var respData IdentityUserResponse
 	_ = json.Unmarshal([]byte(resp.Body), &respData)
 
 	return respData.Data
+}
+
+func getIdentityUrl(ctx context.Context, suffix string) string {
+	return getIdentityServiceDomain(ctx) + getIdentityServicePrefix(ctx) + suffix
+}
+
+func getHeaders(ctx context.Context) map[string]string {
+	headers := make(map[string]string)
+	reqHeaders, _ := metadata.FromIncomingContext(ctx)
+	headers["Authorization"] = reqHeaders["authorization"][0]
+	return headers
 }
 
 func getIdentityServiceDomain(ctx context.Context) string {
