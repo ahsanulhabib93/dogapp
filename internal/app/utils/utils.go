@@ -140,3 +140,7 @@ func GetBucketName(ctx context.Context) string {
 	)
 	return bucketName.(string)
 }
+
+func IsEmptyStr(s string) bool {
+	return strings.TrimSpace(s) == EmptyString
+}

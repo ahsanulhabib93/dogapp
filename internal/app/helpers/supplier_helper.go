@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	supplierPb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
@@ -20,7 +21,7 @@ type SupplierDBResponse struct {
 	OpcIds      string `json:"opc_ids,omitempty"`
 }
 
-func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams) *gorm.DB {
+func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListParams) *gorm.DB {
 	if params.GetId() != 0 {
 		query = query.Where("suppliers.id = ?", params.GetId())
 	}
@@ -67,7 +68,7 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	return query
 }
 
-func SetPage(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams) {
+func SetPage(ctx context.Context, query *gorm.DB, params *supplierPb.ListParams) {
 	if params.GetPerPage() <= 0 || params.GetPerPage() > utils.DEFAULT_PER_PAGE {
 		params.PerPage = utils.DEFAULT_PER_PAGE
 	}
@@ -83,7 +84,7 @@ func SetPage(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams)
 
 }
 
-func PrepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
+func PrepareCategoryMapping(ids []uint64) []models.SupplierCategoryMapping {
 	categories := []models.SupplierCategoryMapping{}
 	for _, id := range ids {
 		categories = append(categories, models.SupplierCategoryMapping{
@@ -107,18 +108,18 @@ func PrepareOpcMapping(ctx context.Context, ids []uint64, fetchOpc bool) []model
 	return processCenters
 }
 
-func PrepareListResponse(suppliers []SupplierDBResponse, total uint64) supplierpb.ListResponse {
-	data := []*supplierpb.SupplierObject{}
+func PrepareListResponse(suppliers []SupplierDBResponse, total uint64) supplierPb.ListResponse {
+	data := []*supplierPb.SupplierObject{}
 	for _, supplier := range suppliers {
 		data = append(data, PrepareSupplierResponse(supplier))
 	}
 
-	return supplierpb.ListResponse{Data: data, TotalCount: total}
+	return supplierPb.ListResponse{Data: data, TotalCount: total}
 }
 
-func PrepareSupplierResponse(supplier SupplierDBResponse) *supplierpb.SupplierObject {
+func PrepareSupplierResponse(supplier SupplierDBResponse) *supplierPb.SupplierObject {
 	temp, _ := json.Marshal(supplier)
-	so := &supplierpb.SupplierObject{}
+	so := &supplierPb.SupplierObject{}
 	json.Unmarshal(temp, so)
 
 	so.CategoryIds = []uint64{}
@@ -140,7 +141,7 @@ func PrepareSupplierResponse(supplier SupplierDBResponse) *supplierpb.SupplierOb
 	return so
 }
 
-func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierAddress {
+func PrepareSupplierAddress(params *supplierPb.SupplierParam) []models.SupplierAddress {
 	if params.GetFirstname() == "" && params.GetLastname() == "" && params.GetAddress1() == "" && params.GetAddress2() == "" &&
 		params.GetLandmark() == "" && params.GetCity() == "" && params.GetState() == "" && params.GetCountry() == "" &&
 		params.GetZipcode() == "" && params.GetGstNumber() == "" {
@@ -176,6 +177,20 @@ func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatu
 		}
 	}
 	return true, ""
+}
+
+func CheckSupplierExistWithDifferentRole(ctx context.Context, supplier models.Supplier) error {
+	if user := FindCreUserByPhone(ctx, supplier.Phone); user != nil {
+		log.Printf("getCreUserWithPhone: phone = %s response = %v\n", supplier.Phone, user)
+		return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.Phone)
+	}
+
+	if user := FindCreUserByPhone(ctx, supplier.AlternatePhone); user != nil {
+		log.Printf("getCreUserWithPhone: alternate_phone = %s response = %v\n", supplier.AlternatePhone, user)
+		return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.AlternatePhone)
+	}
+
+	return nil
 }
 
 func isValidStatus(newStatus models.SupplierStatus) (valid bool) {

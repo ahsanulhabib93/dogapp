@@ -7,6 +7,7 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
+	"github.com/voonik/goConnect/api/go/cre_admin/users_detail"
 	otp "github.com/voonik/goConnect/api/go/vigeon2/otp"
 
 	testing "testing"
@@ -43,6 +44,22 @@ func (_m *APIHelperInterface) VerifyOtpAPI(_a0 context.Context, _a1 otp.VerifyOt
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*otp.OtpResponse)
+		}
+	}
+
+	return r0
+}
+
+// FindUserByPhone provides a mock function with given fields: _a0, _a1
+func (_m *APIHelperInterface) FindUserByPhone(_a0 context.Context, _a1 string) *users_detail.UserInfo {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *users_detail.UserInfo
+	if rf, ok := ret.Get(0).(func(context.Context, string) *users_detail.UserInfo); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*users_detail.UserInfo)
 		}
 	}
 

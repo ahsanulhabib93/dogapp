@@ -1,3 +1,5 @@
 /vendor
 cover.*
 report.xml
+.vscode/settings.json
+.vscode/launch.json

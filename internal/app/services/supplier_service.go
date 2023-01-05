@@ -136,9 +136,14 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		GuarantorNidFrontImageUrl: params.GetGuarantorNidFrontImageUrl(),
 		GuarantorNidBackImageUrl:  params.GetGuarantorNidBackImageUrl(),
 		ChequeImageUrl:            params.GetChequeImageUrl(),
-		SupplierCategoryMappings:  helpers.PrepareCategoreMapping(params.GetCategoryIds()),
+		SupplierCategoryMappings:  helpers.PrepareCategoryMapping(params.GetCategoryIds()),
 		SupplierOpcMappings:       helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
 		SupplierAddresses:         helpers.PrepareSupplierAddress(params),
+	}
+
+	if err := helpers.CheckSupplierExistWithDifferentRole(ctx, supplier); err != nil {
+		resp.Message = fmt.Sprintf("Error while creating Supplier: %s", err.Error())
+		return &resp, nil
 	}
 
 	err := database.DBAPM(ctx).Save(&supplier)
@@ -266,7 +271,7 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 	fmt.Printf("newSupplierStatus %+v", newSupplierStatus)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if params.GetReason() == EmptyString &&
+	} else if params.GetReason() == utils.EmptyString &&
 		(newSupplierStatus == models.SupplierStatusBlocked || newSupplierStatus == models.SupplierStatusFailed) {
 		resp.Message = "Status change reason missing"
 	} else if valid, message := helpers.IsValidStatusUpdate(ctx, supplier, newSupplierStatus); !valid {

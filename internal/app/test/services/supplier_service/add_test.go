@@ -8,10 +8,12 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
 
+	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
@@ -22,6 +24,7 @@ import (
 var _ = Describe("AddSupplier", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
+	var apiHelperInstance *mocks.APIHelperInterface
 	var userId uint64 = uint64(101)
 
 	BeforeEach(func() {
@@ -31,6 +34,10 @@ var _ = Describe("AddSupplier", func() {
 		ctx = test_helper.SetContextUser(ctx, userId, []string{})
 		mockAudit = mocks.SetAuditLogMock()
 		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+
+		apiHelperInstance = new(mocks.APIHelperInterface)
+		helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+		apiHelperInstance.On("FindUserByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
 	})
 
 	AfterEach(func() {
@@ -182,6 +189,56 @@ var _ = Describe("AddSupplier", func() {
 			supplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", res.Id).First(&supplier)
 			Expect(supplier.Email).To(Equal(param.Email))
+		})
+
+		It("Should return error if user exist with same phone number in CRE", func() {
+			phone := "8801234567891"
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(&userPb.UserInfo{})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := &supplierpb.SupplierParam{
+				Name:         supplier1.Name,
+				Email:        "Email",
+				Phone:        phone,
+				SupplierType: uint64(utils.Hlc),
+				Address1:     "Address1",
+				Zipcode:      "Zipcode",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567891) already exist as Retails/SalesRep"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
+		})
+
+		It("Should return error if user exist with same alternate phone number in CRE", func() {
+			phone, altPhone := "8801234567891", "8801234567890"
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(nil)
+			apiHelperInstance.On("FindUserByPhone", ctx, altPhone).Return(&userPb.UserInfo{})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := &supplierpb.SupplierParam{
+				Name:           supplier1.Name,
+				Email:          "Email",
+				Phone:          phone,
+				AlternatePhone: altPhone,
+				SupplierType:   uint64(utils.Hlc),
+				Address1:       "Address1",
+				Zipcode:        "Zipcode",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567890) already exist as Retails/SalesRep"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
 		})
 	})
 
