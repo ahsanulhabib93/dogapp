@@ -183,11 +183,14 @@ func CheckSupplierExistWithDifferentRole(ctx context.Context, supplier models.Su
 	if user := FindCreUserByPhone(ctx, supplier.Phone); user != nil {
 		log.Printf("getCreUserWithPhone: phone = %s response = %v\n", supplier.Phone, user)
 		return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.Phone)
-	}
-
-	if user := FindCreUserByPhone(ctx, supplier.AlternatePhone); user != nil {
+	} else if user = FindCreUserByPhone(ctx, supplier.AlternatePhone); user != nil {
 		log.Printf("getCreUserWithPhone: alternate_phone = %s response = %v\n", supplier.AlternatePhone, user)
 		return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.AlternatePhone)
+	}
+
+	if user := GetIdentityUser(ctx, supplier.Phone); user != nil {
+		log.Printf("getCreUserWithPhone: phone = %s response = %v\n", supplier.Phone, user)
+		return fmt.Errorf("user(#%s) already exist", supplier.Phone)
 	}
 
 	return nil
