@@ -28,13 +28,13 @@ func UnsetApiCallerMock() {
 
 func (_m *ApiCallHelperInterface) Get(ctx context.Context, url string, headers map[string]string) (*rest.Response, error) {
 	args := _m.Called(ctx, url, headers)
-	_m.Count["Get"] += 1
+	_m.Count[helpers.MethodGet] += 1
 	return args.Get(0).(*rest.Response), args.Error(1)
 }
 
 func (_m *ApiCallHelperInterface) Post(ctx context.Context, url string, headers map[string]string, body []byte) (*rest.Response, error) {
 	ret := _m.Called(ctx, url, headers, body)
-	_m.Count["Post"] += 1
+	_m.Count[helpers.MethodPost] += 1
 	var r0 *rest.Response
 	if rf, ok := ret.Get(0).(func(context.Context, string, map[string]string, []byte) *rest.Response); ok {
 		r0 = rf(ctx, url, headers, body)

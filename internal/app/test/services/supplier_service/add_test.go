@@ -46,12 +46,6 @@ var _ = Describe("AddSupplier", func() {
 		helpers.InjectMockIdentityUserApiHelperInstance(IdentityUserApiHelperInstance)
 		IdentityUserApiHelperInstance.On("GetUserDetailsApiByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
 		IdentityUserApiHelperInstance.On("CreateSupplier", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
-
-		// apiCallerMock = new(mocks.ApiCallHelperInterface)
-		// helpers.InjectMockApiCallHelperInstance(apiCallerMock)
-		// apiCallerMock.On("Post", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.Anything).Return(
-		// 	&rest.Response{Body: "{\"data\":{\"success\": \"true\"}}"}, nil,
-		// )
 	})
 
 	AfterEach(func() {
