@@ -4,7 +4,7 @@
           "id": "supplierpanel",
           "description": "supplier panel",
           "vaccount_id": 12
-        }      
+        }
     ],
     "roles": [
         {
@@ -21,6 +21,11 @@
             "name": "Cargo SS2 Admin",
             "description": "Admin Role for cargo vendors",
             "vaccount_id": 12
+        },
+        {
+            "name": "supplier",
+            "description": "supplier role",
+            "vaccount_id": 2
         }
     ],
     "role_scopes": [
