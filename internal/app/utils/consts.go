@@ -39,4 +39,5 @@ const (
 
 const (
 	EmptyString = ""
+	Zero        = 0
 )

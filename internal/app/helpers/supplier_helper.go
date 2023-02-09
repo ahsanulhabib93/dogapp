@@ -193,6 +193,11 @@ func CheckSupplierExistWithDifferentRole(ctx context.Context, supplier models.Su
 		return fmt.Errorf("user(#%s) already exist", supplier.Phone)
 	}
 
+	if users := GetTalentXUser(ctx, supplier.Phone); len(users) != utils.Zero {
+		log.Printf("GetTalentXUser: phone = %s response = %v\n", supplier.Phone, users)
+		return fmt.Errorf("user(#%s) already exist as shopup employee", supplier.Phone)
+	}
+
 	return nil
 }
 

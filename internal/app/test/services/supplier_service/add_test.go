@@ -10,6 +10,7 @@ import (
 
 	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
+	employeePb "github.com/voonik/goConnect/api/go/sr_service/attendance"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
@@ -39,6 +40,7 @@ var _ = Describe("AddSupplier", func() {
 		apiHelperInstance = new(mocks.APIHelperInterface)
 		helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 		apiHelperInstance.On("FindUserByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
+		apiHelperInstance.On("FindTalentXUserByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
 
 		IdentityUserApiHelperInstance = new(mocks.IdentityUserApiHelperInterface)
 		helpers.InjectMockIdentityUserApiHelperInstance(IdentityUserApiHelperInstance)
@@ -266,6 +268,31 @@ var _ = Describe("AddSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567891) already exist"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
+		})
+
+		It("Should return error if user exist with same phone number in Identity Service", func() {
+			phone := "8801234567891"
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(nil)
+			apiHelperInstance.On("FindTalentXUserByPhone", ctx, phone).Return([]*employeePb.EmployeeRecord{{Name: "employee"}})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := &supplierpb.SupplierParam{
+				Name:         supplier1.Name,
+				Email:        "Email",
+				Phone:        phone,
+				SupplierType: uint64(utils.Hlc),
+				Address1:     "Address1",
+				Zipcode:      "Zipcode",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567891) already exist as shopup employee"))
 
 			var count int
 			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
