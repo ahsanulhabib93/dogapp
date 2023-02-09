@@ -67,6 +67,26 @@ jobs:
           token: ${{ secrets.GIHUB_PAT }}
           ref: 'master'
 
+      - name: Update protoservices
+        run: |
+          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-production.yaml
+          custom=( 
+              "health.health_v1.Health"
+              "ss2.supplier.Supplier"
+              "ss2.payment_account_detail.PaymentAccountDetail"
+              "ss2.key_account_manager.KeyAccountManager"
+              "ss2.supplier_address.SupplierAddress"
+          i=0
+          for value in "${custom[@]}"; do
+            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-production.yaml
+            i=$((i+1))
+          done
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add charts/shopup/ss2/values-production.yaml
+          git commit -m "feat(helm): Update Proto to latest image"
+          git push origin golang-test
+
       - name: Deploying to GCP Cluster
         uses: fjogeleit/yaml-update-action@master
         with:
