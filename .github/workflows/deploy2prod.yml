@@ -85,7 +85,7 @@ jobs:
           git config user.email "actions@github.com"
           git add charts/shopup/ss2/values-production.yaml
           git commit -m "feat(helm): Update Proto to latest image"
-          git push origin golang-test
+          git push origin master
 
       - name: Deploying to GCP Cluster
         uses: fjogeleit/yaml-update-action@master
