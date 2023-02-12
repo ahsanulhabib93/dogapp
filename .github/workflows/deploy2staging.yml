@@ -109,12 +109,14 @@ jobs:
             yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-staging.yaml
             i=$((i+1))
           done
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add charts/shopup/ss2/values-staging.yaml
-          git commit -m "feat(helm): Update Proto to latest image"
-          git push origin master
-
+          if git status | grep -q modified
+          then
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git add charts/shopup/ss2/values-staging.yaml
+            git commit -m "feat(helm): Update Proto to latest image"
+            git push origin master
+          fi
       - name: Deploying to GCP Cluster
         uses: fjogeleit/yaml-update-action@master
         with:
