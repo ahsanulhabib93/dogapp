@@ -71,11 +71,12 @@ jobs:
         run: |
           yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-production.yaml
           custom=( 
-              "health.health_v1.Health"
-              "ss2.supplier.Supplier"
-              "ss2.payment_account_detail.PaymentAccountDetail"
-              "ss2.key_account_manager.KeyAccountManager"
-              "ss2.supplier_address.SupplierAddress"
+            "health.health_v1.Health"
+            "ss2.supplier.Supplier"
+            "ss2.payment_account_detail.PaymentAccountDetail"
+            "ss2.key_account_manager.KeyAccountManager"
+            "ss2.supplier_address.SupplierAddress"
+          )  
           i=0
           for value in "${custom[@]}"; do
             yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-production.yaml
