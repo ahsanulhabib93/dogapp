@@ -26,6 +26,7 @@ var _ = Describe("AddSupplier", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
 	var apiHelperInstance *mocks.APIHelperInterface
+	// var apiCallerMock *mocks.ApiCallHelperInterface
 	var IdentityUserApiHelperInstance *mocks.IdentityUserApiHelperInterface
 	var userId uint64 = uint64(101)
 
@@ -42,9 +43,11 @@ var _ = Describe("AddSupplier", func() {
 		apiHelperInstance.On("FindUserByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
 		apiHelperInstance.On("FindTalentXUserByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
 
-		IdentityUserApiHelperInstance = new(mocks.IdentityUserApiHelperInterface)
+		// IdentityUserApiHelperInstance = new(mocks.IdentityUserApiHelperInterface)
+		IdentityUserApiHelperInstance = &mocks.IdentityUserApiHelperInterface{}
 		helpers.InjectMockIdentityUserApiHelperInstance(IdentityUserApiHelperInstance)
 		IdentityUserApiHelperInstance.On("GetUserDetailsApiByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
+		IdentityUserApiHelperInstance.On("CreateSupplier", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 	})
 
 	AfterEach(func() {
@@ -143,6 +146,13 @@ var _ = Describe("AddSupplier", func() {
 			Expect(address.GstNumber).To(Equal(param.GstNumber))
 			Expect(address.IsDefault).To(Equal(true))
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
+			var actualCalls int
+			for _, m := range IdentityUserApiHelperInstance.Calls {
+				if m.Method == "CreateSupplier" {
+					actualCalls++
+				}
+			}
+			Expect(actualCalls).To(Equal(1))
 		})
 	})
 

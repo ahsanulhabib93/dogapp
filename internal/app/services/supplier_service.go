@@ -153,6 +153,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		resp.Message = "Supplier Added Successfully"
 		resp.Success = true
 		resp.Id = supplier.ID
+		helpers.CreateIdentityServiceUser(ctx, supplier)
 		helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionCreateSupplier, supplier)
 	}
 	log.Printf("AddSupplierResponse: %+v", resp)

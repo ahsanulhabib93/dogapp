@@ -13,6 +13,7 @@ import (
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/goFramework/pkg/rest"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
@@ -68,7 +69,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusFailed))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
 			Expect(updatedSupplier.AgentID).To(BeNil())
-			Expect(mock1.Count["Get"]).To(Equal(1))
+			Expect(mock1.Count[helpers.MethodGet]).To(Equal(1))
 			Expect(mock2.Count["SendEmailAPI"]).To(Equal(1))
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
@@ -95,7 +96,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
 			Expect(*updatedSupplier.AgentID).To(Equal(userId))
-			Expect(mock1.Count["Get"]).To(Equal(0))
+			Expect(mock1.Count[helpers.MethodGet]).To(Equal(0))
 			Expect(mock2.Count["SendEmailAPI"]).To(Equal(0))
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
@@ -114,7 +115,7 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier status updated successfully"))
-			Expect(mock1.Count["Get"]).To(Equal(1))
+			Expect(mock1.Count[helpers.MethodGet]).To(Equal(1))
 			Expect(mock2.Count["SendEmailAPI"]).To(Equal(1))
 		})
 	})

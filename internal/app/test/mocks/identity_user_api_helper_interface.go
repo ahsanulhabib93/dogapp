@@ -46,6 +46,22 @@ func (_m *IdentityUserApiHelperInterface) IdentityBulkUserDetailsApi(_a0 context
 	return r0
 }
 
+// CreateSupplier provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *IdentityUserApiHelperInterface) CreateSupplier(_a0 context.Context, _a1 string, _a2 string, _a3 string) *helpers.IdentityResponse {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 *helpers.IdentityResponse
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) *helpers.IdentityResponse); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*helpers.IdentityResponse)
+		}
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewIdentityUserApiHelperInterface interface {
 	mock.TestingT
 	Cleanup(func())

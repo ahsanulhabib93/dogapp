@@ -7,10 +7,16 @@ import (
 	"github.com/voonik/goFramework/pkg/rest"
 )
 
+const (
+	MethodGet  = "GET"
+	MethodPost = "POST"
+)
+
 type ApiCallHelper struct{}
 
 type ApiCallHelperInterface interface {
 	Get(ctx context.Context, url string, headers map[string]string) (*rest.Response, error)
+	Post(ctx context.Context, url string, headers map[string]string, body []byte) (*rest.Response, error)
 }
 
 var apiCall ApiCallHelperInterface
@@ -27,5 +33,9 @@ func GetApiCallHelperInstance() ApiCallHelperInterface {
 }
 
 func (apiCallHelper *ApiCallHelper) Get(ctx context.Context, url string, headers map[string]string) (*rest.Response, error) {
-	return rest.HTTPRequest(ctx, url, "GET", headers, map[string]interface{}{}, bytes.NewBuffer([]byte{}))
+	return rest.HTTPRequest(ctx, url, MethodGet, headers, map[string]interface{}{}, bytes.NewBuffer([]byte{}))
+}
+
+func (apiCallHelper *ApiCallHelper) Post(ctx context.Context, url string, headers map[string]string, body []byte) (*rest.Response, error) {
+	return rest.HTTPRequest(ctx, url, MethodPost, headers, map[string]interface{}{}, bytes.NewBuffer(body))
 }

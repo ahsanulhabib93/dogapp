@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 	"google.golang.org/grpc/metadata"
 )
@@ -18,6 +19,14 @@ type IdentityUserObject struct {
 	Email string
 	Phone string
 	Roles []string
+}
+
+type IdentityResponse struct {
+	Data struct {
+		Success    bool
+		Message    string
+		StatusCode uint64
+	}
 }
 
 type IdentityUserResponse struct {
@@ -45,11 +54,17 @@ func GetIdentityUser(ctx context.Context, phone string) *IdentityUserObject {
 	return getIdentityUserApiHelperInstance().GetUserDetailsApiByPhone(ctx, phone)
 }
 
+func CreateIdentityServiceUser(ctx context.Context, supplier models.Supplier) *IdentityResponse {
+	log.Printf("CreateIdentityServiceUser: id = %v name = %v phone = %s\n", supplier.ID, supplier.Name, supplier.Phone)
+	return getIdentityUserApiHelperInstance().CreateSupplier(ctx, supplier.Name, supplier.Phone, supplier.Email)
+}
+
 type IdentityUserApiHelper struct{}
 
 type IdentityUserApiHelperInterface interface {
 	IdentityBulkUserDetailsApi(context.Context, []string) map[string]IdentityUserObject
 	GetUserDetailsApiByPhone(context.Context, string) *IdentityUserObject
+	CreateSupplier(context.Context, string, string, string) *IdentityResponse
 }
 
 var identityUserApiHelper IdentityUserApiHelperInterface
@@ -94,6 +109,20 @@ func (apiHelper *IdentityUserApiHelper) GetUserDetailsApiByPhone(ctx context.Con
 	_ = json.Unmarshal([]byte(resp.Body), &respData)
 
 	return respData.Data
+}
+
+func (apiHelper *IdentityUserApiHelper) CreateSupplier(ctx context.Context, name, phone, email string) *IdentityResponse {
+	headers := getHeaders(ctx)
+	url := getIdentityUrl(ctx, "v0/user/create-as-supplier")
+	body, _ := json.Marshal(map[string]string{
+		"name": name, "phone": phone, "email": email,
+	})
+	resp, _ := GetApiCallHelperInstance().Post(ctx, url, headers, body)
+
+	var respData IdentityResponse
+	_ = json.Unmarshal([]byte(resp.Body), &respData)
+
+	return &respData
 }
 
 func getIdentityUrl(ctx context.Context, suffix string) string {
