@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"log"
 	"reflect"
 
 	categoryPb "github.com/voonik/goConnect/api/go/cmt/category"
@@ -34,7 +35,8 @@ func (s *CategoryHelper) GetCategoriesData(ctx context.Context, categoryIds []ui
 
 func GetParentCategories(ctx context.Context, categoryIds []uint64) []uint64 {
 	parentCategory := []uint64{}
-	resp, _ := getCategoryClient().GetCategoriesData(ctx, categoryIds)
+	resp, err := getCategoryClient().GetCategoriesData(ctx, categoryIds)
+	log.Printf("GetParentCategories: resp = %v err = %v\n", resp, err)
 
 	for _, cat := range resp.Data {
 		parentCategory = append(parentCategory, cat.Id)
