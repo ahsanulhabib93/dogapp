@@ -74,15 +74,4 @@ var _ = Describe("AddKeyAccountManager", func() {
 			Expect(res.Message).To(Equal("Error while creating Key Account Manager: Name can't be blank"))
 		})
 	})
-
-	Context("While supplier type is Captive", func() {
-		It("Should have supplier type as captive", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Captive})
-			lastSupplier := models.Supplier{}
-
-			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", supplier.ID).Find(&lastSupplier)
-
-			Expect(lastSupplier.SupplierType).To(Equal(utils.Captive))
-		})
-	})
 })

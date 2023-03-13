@@ -144,3 +144,12 @@ func GetBucketName(ctx context.Context) string {
 func IsEmptyStr(s string) bool {
 	return strings.TrimSpace(s) == EmptyString
 }
+
+func Includes(array []uint64, value uint64) bool {
+	for _, v := range array {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
