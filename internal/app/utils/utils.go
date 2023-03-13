@@ -145,9 +145,10 @@ func IsEmptyStr(s string) bool {
 	return strings.TrimSpace(s) == EmptyString
 }
 
-func Includes(array []uint64, value uint64) bool {
-	for _, v := range array {
-		if v == value {
+func Includes(array interface{}, item interface{}) bool {
+	arrRef := reflect.ValueOf(array)
+	for i := Zero; i < arrRef.Len(); i++ {
+		if arrRef.Index(i).Interface() == item {
 			return true
 		}
 	}

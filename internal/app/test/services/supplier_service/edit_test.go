@@ -11,6 +11,7 @@ import (
 	categoryPb "github.com/voonik/goConnect/api/go/cmt/category"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	aaaMocks "github.com/voonik/goFramework/pkg/aaa/models/mocks"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
@@ -23,6 +24,7 @@ import (
 var _ = Describe("EditSupplier", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
+	var appPreferenceMockInstance *aaaMocks.AppPreferenceInterface
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
@@ -31,13 +33,16 @@ var _ = Describe("EditSupplier", func() {
 		mocks.SetAuditLogMock()
 		mockAudit = mocks.SetAuditLogMock()
 		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
-		aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
-			"allowed_supplier_types": []uint64{2, 5},
-		}))
+
+		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
+		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
+		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).Return([]uint64{2, 5})
+		appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
 	})
 
 	AfterEach(func() {
 		mocks.UnsetAuditLogMock()
+		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
 	Context("Editing existing Supplier", func() {
@@ -143,9 +148,20 @@ var _ = Describe("EditSupplier", func() {
 	})
 
 	Context("Editing allowed for limited permission", func() {
-		It("Should return success on updating pending supplier", func() {
+
+		BeforeEach(func() {
 			test_utils.SetPermission(&ctx, []string{})
 			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+
+			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).Return([]uint64{2, 5})
+			appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
+		})
+
+		AfterEach(func() {
+			aaaModels.InjectMockAppPreferenceServiceInstance(nil)
+		})
+
+		It("Should return success on updating pending supplier", func() {
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -172,7 +188,6 @@ var _ = Describe("EditSupplier", func() {
 		})
 
 		It("Should return error on updating verified supplier", func() {
-			test_utils.SetPermission(&ctx, []string{"weird:permission:role"})
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -190,8 +205,6 @@ var _ = Describe("EditSupplier", func() {
 		})
 
 		It("Should return error on updating blocked supplier", func() {
-			test_utils.SetPermission(&ctx, []string{})
-			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,

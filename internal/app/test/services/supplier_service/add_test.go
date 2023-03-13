@@ -13,6 +13,7 @@ import (
 	employeePb "github.com/voonik/goConnect/api/go/sr_service/attendance"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	aaaMocks "github.com/voonik/goFramework/pkg/aaa/models/mocks"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
@@ -30,6 +31,7 @@ var _ = Describe("AddSupplier", func() {
 	// var apiCallerMock *mocks.ApiCallHelperInterface
 	var IdentityUserApiHelperInstance *mocks.IdentityUserApiHelperInterface
 	var userId uint64 = uint64(101)
+	var appPreferenceMockInstance *aaaMocks.AppPreferenceInterface
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
@@ -50,15 +52,16 @@ var _ = Describe("AddSupplier", func() {
 		IdentityUserApiHelperInstance.On("GetUserDetailsApiByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
 		IdentityUserApiHelperInstance.On("CreateSupplier", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 
-		aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
-			"allowed_supplier_types": []uint64{5},
-		}))
+		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
+		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
+		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).Return([]uint64{5})
 	})
 
 	AfterEach(func() {
 		mocks.UnsetAuditLogMock()
 		helpers.InjectMockAPIHelperInstance(nil)
 		helpers.InjectMockIdentityUserApiHelperInstance(nil)
+		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
 	Context("Adding new Supplier", func() {
@@ -523,11 +526,14 @@ var _ = Describe("AddSupplier", func() {
 	})
 
 	Context("While supplier type is Driver", func() {
-		It("Should have supplier type as driver", func() {
-			aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
-				"allowed_supplier_types": []uint64{7},
-			}))
+		BeforeEach(func() {
+			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).Return([]uint64{7})
+		})
+		AfterEach(func() {
+			aaaModels.InjectMockAppPreferenceServiceInstance(nil)
+		})
 
+		It("Should have supplier type as driver", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Driver})
 			lastSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", supplier.ID).Find(&lastSupplier)
