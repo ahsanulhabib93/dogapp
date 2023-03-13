@@ -117,7 +117,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	}
 
 	if params.GetSupplierType() != 0 {
-		errorMessage, allowed := ss.getAllowedSupplierTypes(ctx, params.GetSupplierType())
+		errorMessage, allowed := ss.checkAllowedSupplierTypes(ctx, params.GetSupplierType())
 		if !allowed {
 			resp.Message = errorMessage
 			return &resp, nil
@@ -197,7 +197,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		}
 
 		if params.GetSupplierType() != 0 {
-			errorMessage, allowed := ss.getAllowedSupplierTypes(ctx, params.GetSupplierType())
+			errorMessage, allowed := ss.checkAllowedSupplierTypes(ctx, params.GetSupplierType())
 			if !allowed {
 				resp.Message = errorMessage
 				return &resp, nil
@@ -479,7 +479,7 @@ func (ss *SupplierService) getResponseField() string {
 	return strings.Join(s, ",")
 }
 
-func (ss *SupplierService) getAllowedSupplierTypes(ctx context.Context, supplierType uint64) (string, bool) {
+func (ss *SupplierService) checkAllowedSupplierTypes(ctx context.Context, supplierType uint64) (string, bool) {
 	typeValue := utils.SupplierTypeValue[utils.SupplierType(supplierType)]
 	allowedSupplierTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "allowed_supplier_types", []uint64{}).([]uint64)
 
