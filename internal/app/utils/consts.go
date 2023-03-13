@@ -10,14 +10,18 @@ const (
 	L2
 	L3
 	Hlc
+	Captive
+	Driver
 )
 
 var SupplierTypeValue = map[SupplierType]string{
-	L0:  "L0",
-	L1:  "L1",
-	L2:  "L2",
-	L3:  "L3",
-	Hlc: "Hlc",
+	L0:      "L0",
+	L1:      "L1",
+	L2:      "L2",
+	L3:      "L3",
+	Hlc:     "Hlc",
+	Captive: "Captive",
+	Driver:  "Driver",
 }
 
 const (
