@@ -477,9 +477,9 @@ func (ss *SupplierService) getResponseField() string {
 
 func (ss *SupplierService) checkAllowedSupplierTypes(ctx context.Context, supplierType uint64) string {
 	typeValue := utils.SupplierTypeValue[utils.SupplierType(supplierType)]
-	allowedSupplierTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).([]uint64)
+	allowedSupplierTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).([]string)
 
-	if supplierType != utils.Zero && !utils.Includes(allowedSupplierTypes, supplierType) {
+	if supplierType != utils.Zero && !utils.IsInclude(allowedSupplierTypes, typeValue) {
 		resp := fmt.Sprintf("Supplier Type: %s is not Allowed for this Supplier", typeValue)
 		return resp
 	}

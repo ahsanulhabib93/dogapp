@@ -54,7 +54,7 @@ var _ = Describe("AddSupplier", func() {
 
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
-		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).Return([]uint64{5})
+		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Hlc"})
 	})
 
 	AfterEach(func() {
@@ -527,7 +527,7 @@ var _ = Describe("AddSupplier", func() {
 
 	Context("While supplier type is Driver", func() {
 		BeforeEach(func() {
-			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).Return([]uint64{7})
+			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Driver"})
 		})
 		AfterEach(func() {
 			aaaModels.InjectMockAppPreferenceServiceInstance(nil)
