@@ -10,6 +10,8 @@ import (
 
 	categoryPb "github.com/voonik/goConnect/api/go/cmt/category"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	aaaMocks "github.com/voonik/goFramework/pkg/aaa/models/mocks"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
@@ -22,6 +24,7 @@ import (
 var _ = Describe("EditSupplier", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
+	var appPreferenceMockInstance *aaaMocks.AppPreferenceInterface
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
@@ -30,16 +33,23 @@ var _ = Describe("EditSupplier", func() {
 		mocks.SetAuditLogMock()
 		mockAudit = mocks.SetAuditLogMock()
 		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+
+		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
+		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
+		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).Return([]uint64{2, 5})
+		appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
 	})
 
 	AfterEach(func() {
 		mocks.UnsetAuditLogMock()
+		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
 	Context("Editing existing Supplier", func() {
 		It("Should update supplier and return success response", func() {
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+				SupplierType:    utils.Hlc,
 				IsPhoneVerified: &isPhoneVerified,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 1},
@@ -117,8 +127,9 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusBlocked,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:   supplier.ID,
-				Name: "Name",
+				Id:           supplier.ID,
+				Name:         "Name",
+				SupplierType: uint64(utils.L1),
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -129,7 +140,7 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
-			Expect(updatedSupplier.SupplierType).To(Equal(utils.Hlc))
+			Expect(updatedSupplier.SupplierType).To(Equal(utils.L1))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusBlocked))
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
@@ -137,17 +148,29 @@ var _ = Describe("EditSupplier", func() {
 	})
 
 	Context("Editing allowed for limited permission", func() {
-		It("Should return success on updating pending supplier", func() {
+
+		BeforeEach(func() {
 			test_utils.SetPermission(&ctx, []string{})
 			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+
+			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).Return([]uint64{2, 5})
+			appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
+		})
+
+		AfterEach(func() {
+			aaaModels.InjectMockAppPreferenceServiceInstance(nil)
+		})
+
+		It("Should return success on updating pending supplier", func() {
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
 				Status:          models.SupplierStatusPending,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:   supplier.ID,
-				Name: "Name",
+				Id:           supplier.ID,
+				Name:         "Name",
+				SupplierType: uint64(utils.L1),
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -158,14 +181,13 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
-			Expect(updatedSupplier.SupplierType).To(Equal(utils.Hlc))
+			Expect(updatedSupplier.SupplierType).To(Equal(utils.L1))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
 		})
 
 		It("Should return error on updating verified supplier", func() {
-			test_utils.SetPermission(&ctx, []string{"weird:permission:role"})
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -183,8 +205,6 @@ var _ = Describe("EditSupplier", func() {
 		})
 
 		It("Should return error on updating blocked supplier", func() {
-			test_utils.SetPermission(&ctx, []string{})
-			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
@@ -211,8 +231,9 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusVerified,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:   supplier.ID,
-				Name: "Name",
+				Id:           supplier.ID,
+				Name:         "Name",
+				SupplierType: uint64(utils.Hlc),
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -393,6 +414,23 @@ var _ = Describe("EditSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while updating Supplier: Phone Number Already Exists"))
+		})
+	})
+
+	Context("Editing Supplier with invalid supplier type", func() {
+		It("Should return error response", func() {
+			test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567891"})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567800"})
+			param := &supplierpb.SupplierObject{
+				Id:           supplier1.ID,
+				Phone:        "8801234567890",
+				SupplierType: uint64(utils.Captive),
+			}
+			res, err := new(services.SupplierService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Supplier Type: Captive is not Allowed for this Supplier"))
 		})
 	})
 })

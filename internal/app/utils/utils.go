@@ -144,3 +144,13 @@ func GetBucketName(ctx context.Context) string {
 func IsEmptyStr(s string) bool {
 	return strings.TrimSpace(s) == EmptyString
 }
+
+func Includes(array interface{}, item interface{}) bool {
+	arrRef := reflect.ValueOf(array)
+	for i := Zero; i < arrRef.Len(); i++ {
+		if arrRef.Index(i).Interface() == item {
+			return true
+		}
+	}
+	return false
+}

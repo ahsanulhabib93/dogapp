@@ -116,6 +116,12 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		return &resp, nil
 	}
 
+	errorMessage := ss.checkAllowedSupplierTypes(ctx, params.GetSupplierType())
+	if errorMessage != "" {
+		resp.Message = errorMessage
+		return &resp, nil
+	}
+
 	supplier := models.Supplier{
 		Name:                      params.GetName(),
 		Email:                     params.GetEmail(),
@@ -186,6 +192,12 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		var status models.SupplierStatus
 		if supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed {
 			status = models.SupplierStatusPending // Moving to Pending if any data is updated
+		}
+
+		errorMessage := ss.checkAllowedSupplierTypes(ctx, params.GetSupplierType())
+		if errorMessage != "" {
+			resp.Message = errorMessage
+			return &resp, nil
 		}
 
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
@@ -461,4 +473,16 @@ func (ss *SupplierService) getResponseField() string {
 	}
 
 	return strings.Join(s, ",")
+}
+
+func (ss *SupplierService) checkAllowedSupplierTypes(ctx context.Context, supplierType uint64) string {
+	typeValue := utils.SupplierTypeValue[utils.SupplierType(supplierType)]
+	allowedSupplierTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "allowed_supplier_types", []uint64{1, 2, 3, 4, 5, 6, 7}).([]uint64)
+
+	if supplierType != utils.Zero && !utils.Includes(allowedSupplierTypes, supplierType) {
+		resp := fmt.Sprintf("Supplier Type: %s is not Allowed for this Supplier", typeValue)
+		return resp
+	}
+
+	return ""
 }
