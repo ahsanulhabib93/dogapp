@@ -84,7 +84,7 @@ var _ = Describe("EditSupplier", func() {
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
 			Expect(err).To(BeNil())
-			// Expect(res.Success).To(Equal(true))
+			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier Edited Successfully"))
 
 			updatedSupplier := models.Supplier{}
