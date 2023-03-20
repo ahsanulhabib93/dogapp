@@ -15,7 +15,7 @@ require (
 	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46
 	github.com/rodaine/table v1.1.0
 	github.com/stretchr/testify v1.8.1
-	github.com/urfave/cli v1.22.12
+	github.com/urfave/cli v1.22.10
 	github.com/voonik/goConnect v0.0.0-20230223070145-a0c40e37b139
 	github.com/voonik/goFramework v0.0.0-20220727120341-aec869daeaaa
 	github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae
