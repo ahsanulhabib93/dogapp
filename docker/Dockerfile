@@ -6,7 +6,7 @@ ENV GO111MODULE=on \
     CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64 \
-    GOPRIVATE=github.com/voonik
+    GOPRIVATE=github.com/voonik,github.com/shopuptech
 
 WORKDIR /ss2
 
