@@ -383,21 +383,21 @@
             "request_method": "POST",
             "service": "ss2",
             "required_permission_id": "admin:appPreferencePanel:view",
-            "vaccount_id": 2
+            "vaccount_id": 12
         },
         {
             "route": "/app_preferences/create",
             "request_method": "POST",
             "service": "ss2",
             "required_permission_id": "admin:appPreferencePanel:create",
-            "vaccount_id": 2
+            "vaccount_id": 12
         },
         {
             "route": "/app_preferences/update",
             "request_method": "PUT",
             "service": "ss2",
             "required_permission_id": "admin:appPreferencePanel:update",
-            "vaccount_id": 2
+            "vaccount_id": 12
         }
     ],
     "role_permissions": [
