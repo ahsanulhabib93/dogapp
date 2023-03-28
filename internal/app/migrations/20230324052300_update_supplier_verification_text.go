@@ -14,6 +14,8 @@ func init() {
 		ID: "20230324052300",
 		Migrate: func(tx *gorm.DB) error {
 			tableName := tx.NewScope(aaaModels.AppPreference{}).TableName()
+			tx.Exec("ALTER TABLE " + tableName + " MODIFY COLUMN value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+
 			updatedText := "প্রিয় ব্যবসায়িক পার্টনার, আপনার সাপ্লাইয়ার ভেরিফিকেশন কোডটি হলো - $otp। ভেরিফিকেশন কোডটি মোকাম পার্টনারকে প্রদান করে রেজিস্ট্রেশন সম্পূর্ন করুন" //nolint:revive
 			appPref := aaaModels.AppPreference{}
 			resp := tx.Raw("SELECT * FROM "+tableName+" WHERE preference_key = ?", "supplier_phone_verification_otp_content").Scan(&appPref)
