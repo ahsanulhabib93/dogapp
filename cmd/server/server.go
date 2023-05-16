@@ -10,6 +10,7 @@ import (
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/goFramework/pkg/grpc/server"
 	"github.com/voonik/ss2/internal/app/handlers"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/migrations"
 	"google.golang.org/grpc/reflection"
 )
@@ -28,6 +29,10 @@ func main() {
 
 	if config.GRPCServerConfigReflection() {
 		reflection.Register(server.GrpcServer)
+	}
+
+	if config.AsynqConfigEnabled() {
+		helpers.InitGoJobsWorker()
 	}
 
 	server.Start()
