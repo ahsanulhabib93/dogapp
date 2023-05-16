@@ -15,6 +15,9 @@ param = 1
 port = "5006"
 reflection=true
 
+[gRPCAddOnAPIServices]
+AppPreferenceAPI=true
+
 [serviceconfig]
 name = "ss2"
 originalName = "ss2"
