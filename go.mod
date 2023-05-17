@@ -21,6 +21,9 @@ require (
 	github.com/voonik/goConnect v0.0.0-20230605071816-5eb78c191615
 	github.com/voonik/goFramework v0.0.0-20230425044616-f044dcd96534
 	github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae
+	github.com/yuin/goldmark v1.5.4 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/tools v0.9.1 // indirect
 	google.golang.org/grpc v1.53.0
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
