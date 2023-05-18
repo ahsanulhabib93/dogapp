@@ -53,10 +53,11 @@ jobs:
             git clone https://github.com/googleapis/googleapis
             GOOGLEAPIS_DIR=./googleapis
             cp goConnect/api/proto/health/health_v1.proto .
+            cp goConnect/api/proto/app_preference_service/app_preference_service.proto .
             cp goConnect/api/proto/ss2/{supplier*,payment*,key*} .
-            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto
+            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto
             sudo apt install -y protobuf-compiler
-            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto
+            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto
             kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
           ################################################################################
 
@@ -71,6 +72,7 @@ jobs:
         run: |
           yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-production.yaml
           custom=( 
+            "app_preference_service.app_preference_service.AppPreferenceService"
             "health.health_v1.Health"
             "ss2.supplier.Supplier"
             "ss2.payment_account_detail.PaymentAccountDetail"

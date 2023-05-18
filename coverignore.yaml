@@ -7,6 +7,10 @@
 #files:
 #  - <->
 #To exclude Certain files in  a package from coverage report
+
+files:
+  - <->
+  - app/helpers/worker_helper.go
 dirs:
   - <->
   - app/handlers

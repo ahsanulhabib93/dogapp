@@ -14,6 +14,8 @@ require (
 	github.com/qor/qor v1.2.0 // indirect
 	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46
 	github.com/rodaine/table v1.1.0
+	github.com/shopuptech/go-jobs/v3 v3.1.1
+	github.com/shopuptech/go-libs v0.0.12
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
 	github.com/voonik/goConnect v0.0.0-20230411103724-23819ecbcf0d

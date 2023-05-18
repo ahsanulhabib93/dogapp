@@ -47,3 +47,6 @@ const (
 	EmptyString = ""
 	Zero        = 0
 )
+
+const ChangePendingSupplierStatus = "change_pending_supplier_status"
+const ScheduleEveryDay = "0 0 * * *"
