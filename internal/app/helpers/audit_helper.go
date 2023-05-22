@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	supplierPb "github.com/voonik/goConnect/api/go/audit_log_service/supplier"
 
@@ -43,10 +42,23 @@ func getAuditInstance() Auditor {
 }
 
 func AuditAction(ctx context.Context, supplierId uint64, entity string, action AuditActionType, data interface{}) error {
-	dump, err := json.Marshal(data)
+	auditRecord, err := CreateAuditLog(ctx, supplierId, entity, action, data)
 	if err != nil {
-		log.Println("AuditAction: Failed to create dump. Error: ", err.Error())
-		return err
+		return fmt.Errorf("[AuditAction] Failed to create audit log with error: %s", err.Error())
+	}
+
+	if err = getAuditInstance().RecordAuditAction(ctx, auditRecord); err != nil {
+		return fmt.Errorf("[AuditAction] Failed to publish audit log with error: %s", err.Error())
+	}
+
+	return nil
+}
+
+func CreateAuditLog(ctx context.Context, supplierId uint64, entity string, action AuditActionType, data interface{}) (*supplierPb.AuditRecord, error) {
+	dump, err := json.Marshal(data)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create dump with error: %s", err.Error())
 	}
 
 	var userId uint64
@@ -63,12 +75,7 @@ func AuditAction(ctx context.Context, supplierId uint64, entity string, action A
 		DataDump:   string(dump),
 		VaccountId: uint64(utils.GetVaccount(ctx)),
 	}
-
-	if err := getAuditInstance().RecordAuditAction(ctx, auditRecord); err != nil {
-		log.Println("AuditAction: Failed to publish audit log. Error: ", err.Error())
-	}
-
-	return nil
+	return auditRecord, nil
 }
 
 func (a *AuditHelper) RecordAuditAction(ctx context.Context, auditRecord *supplierPb.AuditRecord) error {
