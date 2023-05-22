@@ -142,12 +142,22 @@ func CreateSupplierLog(ctx context.Context, supplier models.Supplier, metadata m
 		SupplierAddresses:         getSupplierAddresses(supplier.SupplierAddresses),
 		PaymentAccountDetails:     getPaymentAccountDetails(supplier.PaymentAccountDetails),
 		CategoryIds:               getCategoryIds(supplier.SupplierCategoryMappings),
-		//OpcIds:                    supplier.SupplierOpcMappings,
+		OpcIds:                    getOpcIds(supplier.SupplierOpcMappings),
 		//CreatedAt:                 supplier.CreatedAt,
 		//UpdatedAt:                 supplier.UpdatedAt,
 	}
 
 	return key, value
+}
+
+func getOpcIds(opcMapping []models.SupplierOpcMapping) []uint64 {
+	var opcIds []uint64
+
+	for _, o := range opcMapping {
+		opcIds = append(opcIds, o.ProcessingCenterID)
+	}
+
+	return opcIds
 }
 
 func getCategoryIds(categoryMapping []models.SupplierCategoryMapping) []uint64 {
