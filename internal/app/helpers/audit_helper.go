@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/golang/protobuf/proto"
 	supplierPb "github.com/voonik/goConnect/api/go/audit_log_service/supplier"
 
 	"github.com/voonik/goFramework/pkg/misc"
@@ -25,7 +26,7 @@ const (
 
 type AuditHelper struct{}
 type Auditor interface {
-	RecordAuditAction(ctx context.Context, auditRecord *supplierPb.AuditRecord) error
+	RecordAuditAction(ctx context.Context, auditRecord proto.Message) error
 }
 
 var auditAction Auditor
@@ -78,7 +79,7 @@ func CreateAuditLog(ctx context.Context, supplierId uint64, entity string, actio
 	return auditRecord, nil
 }
 
-func (a *AuditHelper) RecordAuditAction(ctx context.Context, auditRecord *supplierPb.AuditRecord) error {
+func (a *AuditHelper) RecordAuditAction(ctx context.Context, auditRecord proto.Message) error {
 	fmt.Print("auditRecord: ", auditRecord)
 
 	transportconf := serviceapiconfig.NewClientOptions(
