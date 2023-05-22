@@ -184,7 +184,7 @@ func getPaymentAccountDetails(paymentAccountDetails []models.PaymentAccountDetai
 			BranchName:     p.BranchName,
 			RoutingNumber:  p.RoutingNumber,
 			IsDefault:      p.IsDefault,
-			//Warehouses:     p.PaymentAccountDetailWarehouseMappings,
+			Warehouses:     getWarehouses(p.PaymentAccountDetailWarehouseMappings),
 			//CreatedAt:      p.CreatedAt,
 			//UpdatedAt:      p.UpdatedAt,
 		}
@@ -193,6 +193,16 @@ func getPaymentAccountDetails(paymentAccountDetails []models.PaymentAccountDetai
 	}
 
 	return details
+}
+
+func getWarehouses(paymentAccountDetailWarehouseMappings []*models.PaymentAccountDetailWarehouseMapping) []uint64 {
+	var warehouses []uint64
+
+	for _, w := range paymentAccountDetailWarehouseMappings {
+		warehouses = append(warehouses, w.WarehouseID)
+	}
+
+	return warehouses
 }
 
 func getSupplierAddresses(supplierAddresses []models.SupplierAddress) []*supplier.SupplierAddress {
