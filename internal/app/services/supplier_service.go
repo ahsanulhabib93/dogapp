@@ -152,7 +152,10 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		resp.Success = true
 		resp.Id = supplier.ID
 		helpers.CreateIdentityServiceUser(ctx, supplier)
-		helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionCreateSupplier, supplier)
+
+		if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionCreateSupplier, supplier); err != nil {
+			log.Println(err)
+		}
 	}
 	log.Printf("AddSupplierResponse: %+v", resp)
 	return &resp, nil
@@ -226,10 +229,13 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 
 			if err != nil && err.Error != nil {
 				resp.Message = fmt.Sprintf("Error while updating PartnerServiceMapping: %s", err.Error)
-			} else {
-				resp.Message = "Supplier Edited Successfully"
-				resp.Success = true
-				helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
+			}
+
+			resp.Message = "Supplier Edited Successfully"
+			resp.Success = true
+
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params); err != nil {
+				log.Println(err)
 			}
 		}
 	}
@@ -271,6 +277,16 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 		if partnerServiceMapping.ID == utils.Zero {
 			resp.Message = "ParnerServiceMapping not found"
 			return &resp, nil
+			if err := query.Error; err != nil {
+				resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
+			} else {
+				resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
+				resp.Success = true
+
+				if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionRemoveSupplierDocuments, params); err != nil {
+					log.Println(err)
+				}
+			}
 		}
 	}
 
@@ -333,7 +349,9 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 				helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus), params.GetReason())
 			}
 
-			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplierStatus, updateDetails)
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplierStatus, updateDetails); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 	log.Printf("UpdateStatusResponse: %+v", resp)
@@ -464,7 +482,10 @@ func (ss *SupplierService) VerifyOtp(ctx context.Context, params *supplierpb.Ver
 			database.DBAPM(ctx).Model(&supplier).Update("IsPhoneVerified", true)
 			resp.Message = otpResponse.Message
 			resp.Success = true
-			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionVerifySupplierPhoneNumber, params)
+
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionVerifySupplierPhoneNumber, params); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 
