@@ -140,7 +140,7 @@ func CreateSupplierLog(ctx context.Context, supplier models.Supplier, metadata m
 		ChequeImageUrl:            supplier.ChequeImageUrl,
 		SupplierType:              ss2.SupplierType(supplier.SupplierType),
 		SupplierAddresses:         getSupplierAddresses(supplier.SupplierAddresses),
-		//PaymentAccountDetails:     supplier.PaymentAccountDetails,
+		PaymentAccountDetails:     getPaymentAccountDetails(supplier.PaymentAccountDetails),
 		//CategoryIds:               supplier.SupplierCategoryMappings,
 		//OpcIds:                    supplier.SupplierOpcMappings,
 		//CreatedAt:                 supplier.CreatedAt,
@@ -148,6 +148,31 @@ func CreateSupplierLog(ctx context.Context, supplier models.Supplier, metadata m
 	}
 
 	return key, value
+}
+
+func getPaymentAccountDetails(paymentAccountDetails []models.PaymentAccountDetail) []*supplier.PaymentAccountDetail {
+	var details []*supplier.PaymentAccountDetail
+
+	for _, p := range paymentAccountDetails {
+		detail := &supplier.PaymentAccountDetail{
+			Id:             p.ID,
+			AccountType:    supplier.AccountType(p.AccountType),
+			AccountSubType: supplier.AccountSubType(p.AccountSubType),
+			AccountName:    p.AccountName,
+			AccountNumber:  p.AccountNumber,
+			BankId:         p.BankID,
+			BranchName:     p.BranchName,
+			RoutingNumber:  p.RoutingNumber,
+			IsDefault:      p.IsDefault,
+			//Warehouses:     p.PaymentAccountDetailWarehouseMappings,
+			//CreatedAt:      p.CreatedAt,
+			//UpdatedAt:      p.UpdatedAt,
+		}
+
+		details = append(details, detail)
+	}
+
+	return details
 }
 
 func getSupplierAddresses(supplierAddresses []models.SupplierAddress) []*supplier.SupplierAddress {
