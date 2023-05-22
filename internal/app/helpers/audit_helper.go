@@ -25,17 +25,17 @@ const (
 )
 
 type AuditHelper struct{}
-type AuditActionInterface interface {
+type Auditor interface {
 	RecordAuditAction(ctx context.Context, auditRecord *supplierPb.AuditRecord) error
 }
 
-var auditAction AuditActionInterface
+var auditAction Auditor
 
-func InjectMockAuditActionInstance(mockObj AuditActionInterface) {
+func InjectMockAuditActionInstance(mockObj Auditor) {
 	auditAction = mockObj
 }
 
-func getAuditInstance() AuditActionInterface {
+func getAuditInstance() Auditor {
 	if auditAction == nil {
 		return new(AuditHelper)
 	}
