@@ -28,6 +28,18 @@ func GetVaccount(ctx context.Context) int64 {
 	return misc.ExtractThreadObject(ctx).VaccountId
 }
 
+func GetPortalId(ctx context.Context) int64 {
+	return misc.ExtractThreadObject(ctx).PortalId
+}
+
+func GetCurrentActId(ctx context.Context) int64 {
+	return misc.ExtractThreadObject(ctx).CurrentActId
+}
+
+func GetXRequestId(ctx context.Context) string {
+	return misc.ExtractThreadObject(ctx).XRequestId
+}
+
 func GetCurrentUserPermissions(ctx context.Context) []string {
 	threadUser := misc.ExtractThreadObject(ctx).UserData
 	if threadUser != nil {
