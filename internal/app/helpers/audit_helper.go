@@ -8,6 +8,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/shopuptech/event-bus-logs-go/core"
+	"github.com/shopuptech/event-bus-logs-go/models/supplier"
 	"github.com/shopuptech/event-bus-logs-go/ss2"
 	supplierPb "github.com/voonik/goConnect/api/go/audit_log_service/supplier"
 	"github.com/voonik/goFramework/pkg/misc"
@@ -138,7 +139,7 @@ func CreateSupplierLog(ctx context.Context, supplier models.Supplier, metadata m
 		GuarantorNidBackImageUrl:  supplier.GuarantorNidBackImageUrl,
 		ChequeImageUrl:            supplier.ChequeImageUrl,
 		SupplierType:              ss2.SupplierType(supplier.SupplierType),
-		//SupplierAddresses:         supplier.SupplierAddresses,
+		SupplierAddresses:         getSupplierAddresses(supplier.SupplierAddresses),
 		//PaymentAccountDetails:     supplier.PaymentAccountDetails,
 		//CategoryIds:               supplier.SupplierCategoryMappings,
 		//OpcIds:                    supplier.SupplierOpcMappings,
@@ -147,6 +148,33 @@ func CreateSupplierLog(ctx context.Context, supplier models.Supplier, metadata m
 	}
 
 	return key, value
+}
+
+func getSupplierAddresses(supplierAddresses []models.SupplierAddress) []*supplier.SupplierAddress {
+	var addresses []*supplier.SupplierAddress
+
+	for _, s := range supplierAddresses {
+		address := &supplier.SupplierAddress{
+			Id:        s.ID,
+			Firstname: s.Firstname,
+			Lastname:  s.Lastname,
+			Address1:  s.Address1,
+			Address2:  s.Address2,
+			Landmark:  s.Landmark,
+			City:      s.City,
+			State:     s.State,
+			Country:   s.Country,
+			Zipcode:   s.Zipcode,
+			Phone:     s.Phone,
+			GstNumber: s.GstNumber,
+			IsDefault: strconv.FormatBool(s.IsDefault),
+			//CreatedAt: s.CreatedAt,
+			//UpdatedAt: s.UpdatedAt,
+		}
+
+		addresses = append(addresses, address)
+	}
+	return addresses
 }
 
 func (a *AuditHelper) RecordAuditAction(ctx context.Context, auditRecord proto.Message) error {
