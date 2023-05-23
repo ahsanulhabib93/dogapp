@@ -4,7 +4,7 @@ on: ["push"]
 
 env:
   SOURCE_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-  GONOSUMDB: github.com/voonik/,github.com/shopuptech
+  GONOSUMDB: github.com/voonik/*,github.com/shopuptech/*
 
 jobs:
   tests:
