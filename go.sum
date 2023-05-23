@@ -920,8 +920,9 @@ github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826/go.mod h1:TaXosZuwd
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/newrelic/go-agent/v3 v3.0.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
-github.com/newrelic/go-agent/v3 v3.12.0 h1:tcDo0Q8qRWAJqb9uykfmM8pxGSbv0HqSS3q1+PzdhAo=
 github.com/newrelic/go-agent/v3 v3.12.0/go.mod h1:1A1dssWBwzB7UemzRU6ZVaGDsI+cEn5/bNxI0wiYlIc=
+github.com/newrelic/go-agent/v3 v3.20.4 h1:fkxr0oUEYrPeXyfJC0D0BwDs1FYMe4NgUSqnzqPESI0=
+github.com/newrelic/go-agent/v3 v3.20.4/go.mod h1:rT6ZUxJc5rQbWLyCtjqQCOcfb01lKRFbc1yMQkcboWM=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1 h1:/ar1Omo9luapTJYWXt86oQGBpWwpWF92x+UuYU9v/7o=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.3.1/go.mod h1:2q0u6qkNJ4ClDt920A4r+NpcO370lFze1NF4OPJjAks=
 github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.0.1 h1:HR+riJMMoe9BJKqOux+67sGQJk4XzzwQ9xwcFRSuhu4=
@@ -1130,8 +1131,8 @@ github.com/urfave/cli/v2 v2.16.3/go.mod h1:1CNUng3PtjQMtRzJO4FMXBQvkGtuYRxxiR9xM
 github.com/voonik/goConnect v0.0.0-20230411103724-23819ecbcf0d h1:5DB4P+ekCs+cHMkvJIOs12azjpGxq8m9UOB9YabQCoU=
 github.com/voonik/goConnect v0.0.0-20230411103724-23819ecbcf0d/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
 github.com/voonik/goFramework v0.0.0-20221006080900-34f22876386b/go.mod h1:IOtcJERqfsdL3ckoUICj4DSkY6LWEBUDWG3lTlz8JmY=
-github.com/voonik/goFramework v0.0.0-20230409101133-032d53f4ae83 h1:rlG/1U4b8SM8YxFjO+EY3/mCV7dPy40Dst5/S8QuW+c=
-github.com/voonik/goFramework v0.0.0-20230409101133-032d53f4ae83/go.mod h1:+HZGA+tT6Qaa727KO7aMTllxG6tvpcqNhNrv1ZpNbNM=
+github.com/voonik/goFramework v0.0.0-20230425044616-f044dcd96534 h1:ffZ4hKMcJsBwvKCa/zpY5NpkpM6y6pN01x1upUKeaPM=
+github.com/voonik/goFramework v0.0.0-20230425044616-f044dcd96534/go.mod h1:BOptdsc6c/LrT5qNjHmAbrFCmyjss/dbdPxGP3TM/34=
 github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae h1:kxenNAZ1ptTT0O+NRMlZaiS+5GIgW1uAtvEqMYScp1c=
 github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae/go.mod h1:YN6xD/9qJc6zre85Y46CprXqHrPWbzi/67FYvXnHNZE=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
