@@ -9,6 +9,7 @@ import (
 	"github.com/shopuptech/event-bus-logs-go/ss2"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func CreateSupplierLog(ctx context.Context, supplier models.Supplier, metadata map[string]string) (*ss2.SupplierLogKey, *ss2.SupplierLogValue) {
@@ -71,8 +72,8 @@ func CreateSupplierLog(ctx context.Context, supplier models.Supplier, metadata m
 		PaymentAccountDetails:     getPaymentAccountDetails(supplier.PaymentAccountDetails),
 		CategoryIds:               getCategoryIds(supplier.SupplierCategoryMappings),
 		OpcIds:                    getOpcIds(supplier.SupplierOpcMappings),
-		//CreatedAt:                 supplier.CreatedAt,
-		//UpdatedAt:                 supplier.UpdatedAt,
+		CreatedAt:                 timestamppb.New(supplier.CreatedAt),
+		UpdatedAt:                 timestamppb.New(supplier.UpdatedAt),
 	}
 
 	return key, value
@@ -113,8 +114,8 @@ func getPaymentAccountDetails(paymentAccountDetails []models.PaymentAccountDetai
 			RoutingNumber:  p.RoutingNumber,
 			IsDefault:      p.IsDefault,
 			Warehouses:     getWarehouses(p.PaymentAccountDetailWarehouseMappings),
-			//CreatedAt:      p.CreatedAt,
-			//UpdatedAt:      p.UpdatedAt,
+			CreatedAt:      timestamppb.New(p.CreatedAt),
+			UpdatedAt:      timestamppb.New(p.UpdatedAt),
 		}
 
 		details = append(details, detail)
@@ -151,8 +152,8 @@ func getSupplierAddresses(supplierAddresses []models.SupplierAddress) []*supplie
 			Phone:     s.Phone,
 			GstNumber: s.GstNumber,
 			IsDefault: strconv.FormatBool(s.IsDefault),
-			//CreatedAt: s.CreatedAt,
-			//UpdatedAt: s.UpdatedAt,
+			CreatedAt: timestamppb.New(s.CreatedAt),
+			UpdatedAt: timestamppb.New(s.UpdatedAt),
 		}
 
 		addresses = append(addresses, address)
