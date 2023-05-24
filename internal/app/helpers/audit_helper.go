@@ -19,7 +19,7 @@ type Auditor interface {
 	RecordAuditAction(ctx context.Context, auditRecord proto.Message) error
 }
 
-func AuditAction(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}) error {
+func AuditAction(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}, supplier models.Supplier) error {
 	auditRecord, err := CreateAuditLog(ctx, supplierId, entity, action, data)
 	if err != nil {
 		return fmt.Errorf("[AuditAction] Failed to create audit log with error: %s", err.Error())
