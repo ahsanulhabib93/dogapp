@@ -10,17 +10,8 @@ import (
 	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/goFramework/pkg/pubsub/publisher"
 	"github.com/voonik/goFramework/pkg/serviceapiconfig"
+	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
-)
-
-type AuditActionType string
-
-const (
-	ActionUpdateSupplierStatus      AuditActionType = "update_supplier_status"
-	ActionUpdateSupplier            AuditActionType = "update_supplier"
-	ActionCreateSupplier            AuditActionType = "create_supplier"
-	ActionVerifySupplierPhoneNumber AuditActionType = "verify_supplier_phone_number"
-	ActionRemoveSupplierDocuments   AuditActionType = "remove_supplier_document"
 )
 
 type AuditHelper struct{}
@@ -41,20 +32,13 @@ func getAuditInstance() Auditor {
 	return auditAction
 }
 
-func AuditAction(ctx context.Context, supplierId uint64, entity string, action AuditActionType, data interface{}) error {
-	auditRecord, err := CreateAuditLog(ctx, supplierId, entity, action, data)
-	if err != nil {
-		return fmt.Errorf("[AuditAction] Failed to create audit log with error: %s", err.Error())
-	}
+var auditAction Auditor
 
-	if err = getAuditInstance().RecordAuditAction(ctx, auditRecord); err != nil {
-		return fmt.Errorf("[AuditAction] Failed to publish audit log with error: %s", err.Error())
-	}
-
-	return nil
+func InjectMockAuditActionInstance(mockObj Auditor) {
+	auditAction = mockObj
 }
 
-func CreateAuditLog(ctx context.Context, supplierId uint64, entity string, action AuditActionType, data interface{}) (*supplierPb.AuditRecord, error) {
+func CreateAuditLog(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}) (*supplierPb.AuditRecord, error) {
 	dump, err := json.Marshal(data)
 
 	if err != nil {

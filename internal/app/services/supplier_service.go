@@ -153,7 +153,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		resp.Id = supplier.ID
 		helpers.CreateIdentityServiceUser(ctx, supplier)
 
-		if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionCreateSupplier, supplier); err != nil {
+		if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionCreateSupplier, supplier); err != nil {
 			log.Println(err)
 		}
 	}
@@ -234,7 +234,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			resp.Message = "Supplier Edited Successfully"
 			resp.Success = true
 
-			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params); err != nil {
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params); err != nil {
 				log.Println(err)
 			}
 		}
@@ -283,7 +283,7 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 				resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
 				resp.Success = true
 
-				if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionRemoveSupplierDocuments, params); err != nil {
+				if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionRemoveSupplierDocuments, params); err != nil {
 					log.Println(err)
 				}
 			}
@@ -349,7 +349,7 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 				helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus), params.GetReason())
 			}
 
-			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplierStatus, updateDetails); err != nil {
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplierStatus, updateDetails); err != nil {
 				log.Println(err)
 			}
 		}
@@ -483,7 +483,7 @@ func (ss *SupplierService) VerifyOtp(ctx context.Context, params *supplierpb.Ver
 			resp.Message = otpResponse.Message
 			resp.Success = true
 
-			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionVerifySupplierPhoneNumber, params); err != nil {
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionVerifySupplierPhoneNumber, params); err != nil {
 				log.Println(err)
 			}
 		}
