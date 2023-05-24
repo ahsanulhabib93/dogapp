@@ -2,33 +2,60 @@ package helpers
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/shopuptech/event-bus-logs-go/core"
 	"github.com/shopuptech/event-bus-logs-go/models/supplier"
 	"github.com/shopuptech/event-bus-logs-go/ss2"
 	"github.com/voonik/ss2/internal/app/models"
+	"github.com/voonik/ss2/internal/app/publisher"
 	"github.com/voonik/ss2/internal/app/utils"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func CreateSupplierLog(ctx context.Context, supplier models.Supplier, metadata map[string]string) (*ss2.SupplierLogKey, *ss2.SupplierLogValue) {
+func PublishSupplierLog(ctx context.Context, action models.AuditActionType, supplier models.Supplier, data interface{}) error {
+	key, value := supplierLog(ctx, supplier, metadata(ctx, action, data))
+
+	_, err := publisher.Publish(ctx, "", key, value)
+	if err != nil {
+		return fmt.Errorf("failed to publish supplier log with err: %s", err.Error())
+	}
+
+	return nil
+}
+
+func metadata(ctx context.Context, action models.AuditActionType, data interface{}) map[string]string {
+	m := make(map[string]string)
+
+	var userId uint64
+	if v := utils.GetCurrentUserID(ctx); v != nil {
+		userId = *v
+	}
+
+	m["source"] = "ss2"
+	m["user_id"] = strconv.FormatUint(userId, 64)
+	m["action_name"] = string(action)
+
+	var dataMap map[string]string
+	d, _ := json.Marshal(data)
+	json.Unmarshal(d, &dataMap)
+
+	for k, v := range dataMap {
+		m[k] = v
+	}
+
+	return m
+}
+
+func supplierLog(ctx context.Context, supplier models.Supplier, metadata map[string]string) (*ss2.SupplierLogKey, *ss2.SupplierLogValue) {
 	logContext := &core.Context{
 		VaccountId:   int32(utils.GetVaccount(ctx)),
 		PortalId:     int32(utils.GetPortalId(ctx)),
 		CurrentActId: int32(utils.GetCurrentActId(ctx)),
 		XRequestId:   utils.GetXRequestId(ctx),
 	}
-
-	//var userId uint64
-	//if v := utils.GetCurrentUserID(ctx); v != nil {
-	//	userId = *v
-	//}
-
-	//metadata := make(map[string]string)
-	//metadata["actionName"] = string(action)
-	//metadata["userId"] = strconv.FormatUint(userId, 64)
-	//metadata["source"] = "ss2"
 
 	event := &core.Event{
 		Id:             "",

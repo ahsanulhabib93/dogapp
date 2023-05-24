@@ -19,23 +19,17 @@ type Auditor interface {
 	RecordAuditAction(ctx context.Context, auditRecord proto.Message) error
 }
 
-var auditAction Auditor
-
-func InjectMockAuditActionInstance(mockObj Auditor) {
-	auditAction = mockObj
-}
-
-func getAuditInstance() Auditor {
-	if auditAction == nil {
-		return new(AuditHelper)
+func AuditAction(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}) error {
+	auditRecord, err := CreateAuditLog(ctx, supplierId, entity, action, data)
+	if err != nil {
+		return fmt.Errorf("[AuditAction] Failed to create audit log with error: %s", err.Error())
 	}
-	return auditAction
-}
 
-var auditAction Auditor
+	if err = getAuditInstance().RecordAuditAction(ctx, auditRecord); err != nil {
+		return fmt.Errorf("[AuditAction] Failed to publish audit log with error: %s", err.Error())
+	}
 
-func InjectMockAuditActionInstance(mockObj Auditor) {
-	auditAction = mockObj
+	return nil
 }
 
 func CreateAuditLog(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}) (*supplierPb.AuditRecord, error) {
@@ -71,4 +65,17 @@ func (a *AuditHelper) RecordAuditAction(ctx context.Context, auditRecord proto.M
 		serviceapiconfig.WithPubSubKlass("AuditLogService::Supplier::AuditRecord"),
 	)
 	return publisher.ProduceMessage(ctx, auditRecord, &misc.PubSubMessage{}, utils.SupplierAuditTopic, "", "", transportconf)
+}
+
+func getAuditInstance() Auditor {
+	if auditAction == nil {
+		return new(AuditHelper)
+	}
+	return auditAction
+}
+
+var auditAction Auditor
+
+func InjectMockAuditActionInstance(mockObj Auditor) {
+	auditAction = mockObj
 }
