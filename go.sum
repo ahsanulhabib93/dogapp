@@ -1064,6 +1064,8 @@ github.com/shopuptech/event-bus-logs-go v0.4.8 h1:dSymLWzq84wqXoV1xItpiEUJ/X5xNU
 github.com/shopuptech/event-bus-logs-go v0.4.8/go.mod h1:nh8tuuYN9yhM1Sk5eR90X9/thl7N8xrWOyGYRbUthgE=
 github.com/shopuptech/event-bus-logs-go v0.17.1 h1:efXevZxNGhAciYM3eswFcN9RjmnF6GEEqXW197D3P6k=
 github.com/shopuptech/event-bus-logs-go v0.17.1/go.mod h1:nh8tuuYN9yhM1Sk5eR90X9/thl7N8xrWOyGYRbUthgE=
+github.com/shopuptech/event-bus-logs-go v0.18.1 h1:feF/EJbYxOizxOXI2+iV1yeIvElOduCr1C+cpGOD3P0=
+github.com/shopuptech/event-bus-logs-go v0.18.1/go.mod h1:nh8tuuYN9yhM1Sk5eR90X9/thl7N8xrWOyGYRbUthgE=
 github.com/shopuptech/go-jobs/v3 v3.1.1 h1:1ybtm65F6myv4CiroH1eb77PXEIzuyJ5lWH4nG73HqI=
 github.com/shopuptech/go-jobs/v3 v3.1.1/go.mod h1:nfAHAJDAdg21g2+8EeOMTzx/QDWXprtCuLpNAfUUiNo=
 github.com/shopuptech/go-libs v0.0.12 h1:0T8JbR+qunRfN/JUqWHn3Qitd1dKvhGXuo0YKqB/Wr8=
