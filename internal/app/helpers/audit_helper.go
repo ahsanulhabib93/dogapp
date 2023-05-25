@@ -29,7 +29,17 @@ func AuditAction(ctx context.Context, supplierId uint64, entity string, action m
 		return fmt.Errorf("[AuditAction] Failed to publish audit log with error: %s", err.Error())
 	}
 
+	if shouldSendSupplierLog() {
+		if err = PublishSupplierLog(ctx, action, supplier, data); err != nil {
+			return fmt.Errorf("[AuditAction] failed to publish supplier log with err: %s", err.Error())
+		}
+	}
+
 	return nil
+}
+
+func shouldSendSupplierLog() bool {
+	return true
 }
 
 func CreateAuditLog(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}) (*supplierPb.AuditRecord, error) {
