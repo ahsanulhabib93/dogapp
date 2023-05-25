@@ -16,7 +16,7 @@ import (
 )
 
 func PublishSupplierLog(ctx context.Context, action models.AuditActionType, supplier models.Supplier, data interface{}) error {
-	key, value := supplierLog(ctx, supplier, metadata(ctx, action, data))
+	key, value := supplierLog(ctx, supplier, supplierMetadata(ctx, action, data))
 
 	_, err := publisher.Publish(ctx, "", key, value)
 	if err != nil {
@@ -26,7 +26,7 @@ func PublishSupplierLog(ctx context.Context, action models.AuditActionType, supp
 	return nil
 }
 
-func metadata(ctx context.Context, action models.AuditActionType, data interface{}) map[string]string {
+func supplierMetadata(ctx context.Context, action models.AuditActionType, data interface{}) map[string]string {
 	m := make(map[string]string)
 
 	var userId uint64
