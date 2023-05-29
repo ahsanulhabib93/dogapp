@@ -1,8 +1,13 @@
 package utils
 
+type ServiceType uint16
 type SupplierType uint16
 type AccountType uint16
 type AccountSubType uint16
+
+const (
+	Supplier ServiceType = 1 + iota
+)
 
 const (
 	L0 SupplierType = 1 + iota

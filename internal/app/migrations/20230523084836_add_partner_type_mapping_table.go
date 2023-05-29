@@ -13,7 +13,7 @@ func init() {
 		ID: "20230523113708",
 		Migrate: func(tx *gorm.DB) error {
 			return tx.AutoMigrate(
-				models.SupplierService{},
+				models.PartnerServiceMapping{},
 			).Error
 		},
 		Rollback: func(tx *gorm.DB) error {
@@ -24,8 +24,8 @@ func init() {
 		ID: "20230523113716",
 		Migrate: func(tx *gorm.DB) error {
 			return tx.Model(
-				models.SupplierService{},
-			).AddUniqueIndex("idx_partner_service", "supplier_id", "service_type").Error
+				models.PartnerServiceMapping{},
+			).AddUniqueIndex("idx_partner_service", "supplier_id", "service_type", "vaccount_id").Error
 		},
 		Rollback: func(tx *gorm.DB) error {
 			return nil
