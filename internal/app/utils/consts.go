@@ -13,17 +13,19 @@ const (
 	Captive
 	Driver
 	CashVendor
+	RedxHubVendor
 )
 
 var SupplierTypeValue = map[SupplierType]string{
-	L0:         "L0",
-	L1:         "L1",
-	L2:         "L2",
-	L3:         "L3",
-	Hlc:        "Hlc",
-	Captive:    "Captive",
-	Driver:     "Driver",
-	CashVendor: "Cash Vendor",
+	L0:            "L0",
+	L1:            "L1",
+	L2:            "L2",
+	L3:            "L3",
+	Hlc:           "Hlc",
+	Captive:       "Captive",
+	Driver:        "Driver",
+	CashVendor:    "Cash Vendor",
+	RedxHubVendor: "Redx Hub Vendor",
 }
 
 const (
