@@ -7,6 +7,7 @@ type AccountSubType uint16
 
 const (
 	Supplier ServiceType = 1 + iota
+	Transporter
 )
 
 const (

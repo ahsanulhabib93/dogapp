@@ -164,7 +164,7 @@ func PrepareSupplierAddress(params *supplierPb.SupplierParam) []models.SupplierA
 	}}
 }
 
-//IsValidStatusUpdate ...
+// IsValidStatusUpdate ...
 func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatus models.SupplierStatus) (valid bool, message string) {
 	if !isValidStatus(newStatus) {
 		return false, "Invalid Status"
@@ -228,4 +228,8 @@ func isValidStatusTransition(oldStatus, newStatus models.SupplierStatus) (valid 
 		}
 	}
 	return
+}
+
+func GetDefaultServiceType(ctx context.Context) utils.ServiceType {
+	return utils.ServiceType(aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "default_service_type", int64(1)).(int64))
 }
