@@ -7,7 +7,7 @@ import (
 
 type PartnerServiceMapping struct {
 	database.VaccountGorm
-	SupplierId      uint64 `gorm:"not null" valid:"required" json:"supplier_id"`
+	SupplierId      uint64 `gorm:"not null" json:"supplier_id"`
 	ServiceType     utils.ServiceType
 	ServiceLevel    utils.SupplierType
 	Active          bool   `gorm:"default:false"`

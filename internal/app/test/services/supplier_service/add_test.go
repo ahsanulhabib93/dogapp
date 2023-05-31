@@ -55,6 +55,7 @@ var _ = Describe("AddSupplier", func() {
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
 		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Hlc"})
+		appPreferenceMockInstance.On("GetValue", ctx, "default_service_type", int64(1)).Return(int64(1))
 	})
 
 	AfterEach(func() {
@@ -113,7 +114,6 @@ var _ = Describe("AddSupplier", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierCategoryMappings").Preload("SupplierOpcMappings").First(&supplier)
 			Expect(res.Id).To(Equal(supplier.ID))
 			Expect(supplier.Email).To(Equal(param.Email))
-			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(*supplier.UserID).To(Equal(userId))
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 			Expect(supplier.BusinessName).To(Equal(param.BusinessName))
@@ -129,6 +129,12 @@ var _ = Describe("AddSupplier", func() {
 			Expect(supplier.GuarantorNidNumber).To(Equal(param.GuarantorNidNumber))
 			Expect(supplier.GuarantorNidBackImageUrl).To(Equal(param.GuarantorNidBackImageUrl))
 			Expect(supplier.ChequeImageUrl).To(Equal(param.ChequeImageUrl))
+
+			Expect(len(supplier.PartnerServiceMappings)).To(Equal(1))
+			partnerService := supplier.PartnerServiceMappings[0]
+			Expect(partnerService.ServiceType).To(Equal(utils.Supplier))
+			Expect(partnerService.ServiceLevel).To(Equal(utils.Hlc))
+			Expect(partnerService.Active).To(Equal(true))
 
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))

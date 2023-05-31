@@ -30,14 +30,21 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 	if supplier.Name == "" {
 		supplier.Name = fmt.Sprintf("Test-%v", id)
 	}
-	if supplier.SupplierType == 0 {
-		supplier.SupplierType = utils.Hlc
-	}
 	if supplier.Status == "" {
 		supplier.Status = models.SupplierStatusPending
 	}
 	if supplier.Phone == "" {
 		supplier.Phone = fmt.Sprintf("8801%v", id[:9])
+	}
+
+	if supplier.SupplierType == 0 {
+		supplier.SupplierType = utils.Hlc
+
+		supplier.PartnerServiceMappings = []models.PartnerServiceMapping{{
+			ServiceType:  utils.Supplier,
+			ServiceLevel: supplier.SupplierType,
+			Active:       true,
+		}}
 	}
 
 	database.DBAPM(ctx).Save(supplier)
