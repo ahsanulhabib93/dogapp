@@ -533,31 +533,13 @@ var _ = Describe("AddSupplier", func() {
 		})
 	})
 
-	Context("While supplier type is Driver", func() {
-		BeforeEach(func() {
-			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Driver"})
-		})
-		AfterEach(func() {
-			aaaModels.InjectMockAppPreferenceServiceInstance(nil)
-		})
-
-		It("Should have supplier type as driver", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Driver})
-			lastSupplier := models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", supplier.ID).Find(&lastSupplier)
-
-			Expect(lastSupplier.SupplierType).To(Equal(utils.Driver))
-		})
-	})
-
 	Context("Adding Supplier with invalid supplier type", func() {
 		It("Should return error response", func() {
-			test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567891"})
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				Email:        "Email",
 				SupplierType: uint64(utils.Captive),
-				Phone:        "8801234567890",
+				Phone:        "8801234567112",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 

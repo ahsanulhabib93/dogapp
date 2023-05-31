@@ -170,5 +170,5 @@ func GetPaymentAccountDetailsJoinStr() string {
 }
 
 func GetPartnerServiceMappingsJoinStr() string {
-	return "LEFT JOIN partner_service_mappings on partner_service_mappings.supplier_id = suppliers.id and partner_service_mappings.vaccount_id = suppliers.vaccount_id"
+	return "INNER JOIN partner_service_mappings on partner_service_mappings.supplier_id = suppliers.id and partner_service_mappings.vaccount_id = suppliers.vaccount_id"
 }
