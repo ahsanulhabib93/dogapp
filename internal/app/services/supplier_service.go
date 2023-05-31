@@ -212,7 +212,6 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			Status:                    status,
 			Name:                      params.GetName(),
 			Email:                     params.GetEmail(),
-			SupplierType:              utils.SupplierType(params.GetSupplierType()),
 			BusinessName:              params.GetBusinessName(),
 			Phone:                     params.GetPhone(),
 			AlternatePhone:            params.GetAlternatePhone(),

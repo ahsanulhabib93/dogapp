@@ -55,9 +55,14 @@ var _ = Describe("RemoveDocument", func() {
 
 			updatedSupplier := models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
-
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 			Expect(updatedSupplier.AgreementUrl).To(Equal(""))
+
+			partnerServices := []*models.PartnerServiceMapping{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PartnerServiceMappings").Find(&partnerServices)
+			Expect(len(partnerServices)).To(Equal(1))
+			Expect(partnerServices[0].AgreementUrl).To(Equal(""))
+
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
 

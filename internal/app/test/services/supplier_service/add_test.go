@@ -130,8 +130,10 @@ var _ = Describe("AddSupplier", func() {
 			Expect(supplier.GuarantorNidBackImageUrl).To(Equal(param.GuarantorNidBackImageUrl))
 			Expect(supplier.ChequeImageUrl).To(Equal(param.ChequeImageUrl))
 
-			Expect(len(supplier.PartnerServiceMappings)).To(Equal(1))
-			partnerService := supplier.PartnerServiceMappings[0]
+			partnerServices := []*models.PartnerServiceMapping{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PartnerServiceMappings").Find(&partnerServices)
+			Expect(len(partnerServices)).To(Equal(1))
+			partnerService := partnerServices[0]
 			Expect(partnerService.ServiceType).To(Equal(utils.Supplier))
 			Expect(partnerService.ServiceLevel).To(Equal(utils.Hlc))
 			Expect(partnerService.Active).To(Equal(true))
@@ -375,7 +377,7 @@ var _ = Describe("AddSupplier", func() {
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: service_level can't be blank"))
 		})
 	})
 
@@ -400,7 +402,7 @@ var _ = Describe("AddSupplier", func() {
 			supplier := &models.Supplier{}
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: service_level can't be blank"))
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierOpcMappings").First(&supplier)
 			Expect(len(supplier.SupplierOpcMappings)).To(Equal(0))
 		})
