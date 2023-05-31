@@ -233,7 +233,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
 		} else {
-			var partnerServiceMapping *models.PartnerServiceMapping
+			partnerServiceMapping := models.PartnerServiceMapping{}
 			database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID).First(&partnerServiceMapping)
 			err = database.DBAPM(ctx).Model(&partnerServiceMapping).Updates(models.PartnerServiceMapping{
 				ServiceLevel:    utils.SupplierType(params.GetSupplierType()),
@@ -279,7 +279,7 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 			}
 
 			if utils.IsInclude([]string{"trade_license_url", "agreement_url"}, params.GetDocumentType()) {
-				var partnerServiceMapping *models.PartnerServiceMapping
+				partnerServiceMapping := models.PartnerServiceMapping{}
 				database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID).First(&partnerServiceMapping)
 				query = database.DBAPM(ctx).Model(&partnerServiceMapping).Update(params.GetDocumentType(), "")
 			} else {

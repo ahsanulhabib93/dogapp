@@ -16,7 +16,7 @@ import (
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 )
 
-var _ = Describe("RemoveSupplier", func() {
+var _ = Describe("RemoveDocument", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
 
@@ -35,10 +35,14 @@ var _ = Describe("RemoveSupplier", func() {
 
 	Context("Removing supplier document", func() {
 		It("Should remove primary document successfully", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				AgreementUrl: "abc/xyz.pdf",
-				Status:       models.SupplierStatusVerified,
-			})
+			supplierData := models.Supplier{
+				Status: models.SupplierStatusVerified,
+				PartnerServiceMappings: []models.PartnerServiceMapping{{
+					AgreementUrl: "abc/xyz.pdf",
+				}},
+			}
+			supplier := test_helper.CreateSupplier(ctx, &supplierData)
+
 			param := &supplierpb.RemoveDocumentParam{
 				Id:           supplier.ID,
 				DocumentType: "agreement_url",
@@ -81,9 +85,13 @@ var _ = Describe("RemoveSupplier", func() {
 		})
 
 		It("Should return error for invalid document type", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				AgreementUrl: "abc/xyz.pdf",
-			})
+			supplierData := models.Supplier{
+				Status: models.SupplierStatusVerified,
+				PartnerServiceMappings: []models.PartnerServiceMapping{{
+					AgreementUrl: "abc/xyz.pdf",
+				}},
+			}
+			supplier := test_helper.CreateSupplier(ctx, &supplierData)
 			param := &supplierpb.RemoveDocumentParam{
 				Id:           supplier.ID,
 				DocumentType: "agreement_url_abc",
@@ -98,10 +106,14 @@ var _ = Describe("RemoveSupplier", func() {
 
 		It("Should return error for un-allowed permission", func() {
 			test_utils.SetPermission(&ctx, []string{"per:missi:on"})
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				AgreementUrl: "abc/xyz.pdf",
-				Status:       models.SupplierStatusVerified,
-			})
+			supplierData := models.Supplier{
+				Status: models.SupplierStatusVerified,
+				PartnerServiceMappings: []models.PartnerServiceMapping{{
+					AgreementUrl: "abc/xyz.pdf",
+				}},
+			}
+			supplier := test_helper.CreateSupplier(ctx, &supplierData)
+
 			param := &supplierpb.RemoveDocumentParam{
 				Id:           supplier.ID,
 				DocumentType: "agreement_url",
@@ -116,7 +128,10 @@ var _ = Describe("RemoveSupplier", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
-			Expect(updatedSupplier.AgreementUrl).To(Equal("abc/xyz.pdf"))
+			partnerServices := []*models.PartnerServiceMapping{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PartnerServiceMappings").Find(&partnerServices)
+			Expect(len(partnerServices)).To(Equal(1))
+			Expect(partnerServices[0].AgreementUrl).To(Equal("abc/xyz.pdf"))
 		})
 	})
 })

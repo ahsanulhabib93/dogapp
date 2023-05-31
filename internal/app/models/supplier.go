@@ -107,7 +107,11 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 		return errors.New("At least one primary document or OTP verification needed")
 	}
 
-	typeValue := utils.SupplierTypeValue[supplier.SupplierType]
+	// TBD: How to handle if multiple service mappings present
+	partnerService := PartnerServiceMapping{}
+	database.DBAPM(ctx).Model(PartnerServiceMapping{}).Where("supplier_id = ?", supplier.ID).First(&partnerService)
+	typeValue := utils.SupplierTypeValue[partnerService.ServiceLevel]
+
 	otpTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_otp_verification", []string{}).([]string)
 	if utils.IsInclude(otpTypeVerificationList, typeValue) && !supplier.IsOTPVerified() {
 		msg := fmt.Sprint("OTP verification required for supplier type: ", typeValue)
