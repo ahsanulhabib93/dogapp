@@ -622,8 +622,6 @@ github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaS
 github.com/golang/protobuf v1.5.1/go.mod h1:DopwsBzvsk0Fs44TXzsVbJyPhcCPeIwnvohx4u74HPM=
 github.com/golang/protobuf v1.5.2 h1:ROPKBNFfQgOUMifHyP+KYbvpjbdoFNs+aK7DXlji0Tw=
 github.com/golang/protobuf v1.5.2/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
-github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg=
-github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
 github.com/golang/snappy v0.0.1/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/golang/snappy v0.0.3 h1:fHPg5GQYlCeLIPB9BZqMVR5nR9A+IM5zcgeTdjMYmLA=
 github.com/golang/snappy v0.0.3/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
@@ -1060,12 +1058,9 @@ github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdh
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24/go.mod h1:M+9NzErvs504Cn4c5DxATwIqPbtswREoFCre64PpcG4=
 github.com/shopspring/decimal v1.2.0/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
-github.com/shopuptech/event-bus-logs-go v0.4.8 h1:dSymLWzq84wqXoV1xItpiEUJ/X5xNUAZnyGH5tKyIII=
 github.com/shopuptech/event-bus-logs-go v0.4.8/go.mod h1:nh8tuuYN9yhM1Sk5eR90X9/thl7N8xrWOyGYRbUthgE=
-github.com/shopuptech/event-bus-logs-go v0.17.1 h1:efXevZxNGhAciYM3eswFcN9RjmnF6GEEqXW197D3P6k=
-github.com/shopuptech/event-bus-logs-go v0.17.1/go.mod h1:nh8tuuYN9yhM1Sk5eR90X9/thl7N8xrWOyGYRbUthgE=
-github.com/shopuptech/event-bus-logs-go v0.18.1 h1:feF/EJbYxOizxOXI2+iV1yeIvElOduCr1C+cpGOD3P0=
-github.com/shopuptech/event-bus-logs-go v0.18.1/go.mod h1:nh8tuuYN9yhM1Sk5eR90X9/thl7N8xrWOyGYRbUthgE=
+github.com/shopuptech/event-bus-logs-go v0.18.2 h1:LYzUR2glmBvTO0s0Jv0//d4m6f+/OfTsFtuvxhLPFYE=
+github.com/shopuptech/event-bus-logs-go v0.18.2/go.mod h1:nh8tuuYN9yhM1Sk5eR90X9/thl7N8xrWOyGYRbUthgE=
 github.com/shopuptech/go-jobs/v3 v3.1.1 h1:1ybtm65F6myv4CiroH1eb77PXEIzuyJ5lWH4nG73HqI=
 github.com/shopuptech/go-jobs/v3 v3.1.1/go.mod h1:nfAHAJDAdg21g2+8EeOMTzx/QDWXprtCuLpNAfUUiNo=
 github.com/shopuptech/go-libs v0.0.12 h1:0T8JbR+qunRfN/JUqWHn3Qitd1dKvhGXuo0YKqB/Wr8=
