@@ -64,6 +64,10 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 	if params.GetOpcId() != 0 {
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
 	}
+	if len(params.GetTypes()) != 0 {
+		// partner_service_mappings is already joined in places where PrepareFilter is called
+		query = query.Where("partner_service_mappings.service_level IN (?)", params.GetTypes())
+	}
 
 	return query
 }
