@@ -199,4 +199,35 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			Expect(res.Data[1].Email).To(Equal(supplier2.Email))
 		})
 	})
+
+	Context("With supplier Types filter", func() {
+		var supplier1, supplier2, supplier3 *models.Supplier
+		BeforeEach(func() {
+			supplier1 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{SupplierType: utils.Captive})
+			supplier2 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{SupplierType: utils.L0})
+			supplier3 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{SupplierType: utils.L1})
+		})
+		It("Should return corresponding suppliers for given supplier type", func() {
+			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+
+			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{uint64(utils.L0)}})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
+			Expect(len(res.Data)).To(Equal(1))
+
+			Expect(res.Data[0].Email).To(Equal(supplier2.Email))
+		})
+
+		It("Should return corresponding suppliers for given multiple supplier types", func() {
+			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+
+			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{uint64(utils.L1), uint64(utils.Captive)}})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(2)))
+			Expect(len(res.Data)).To(Equal(2))
+
+			Expect(res.Data[0].Email).To(Equal(supplier1.Email))
+			Expect(res.Data[1].Email).To(Equal(supplier3.Email))
+		})
+	})
 })

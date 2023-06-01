@@ -64,6 +64,9 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 	if params.GetOpcId() != 0 {
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
 	}
+	if len(params.GetTypes()) != 0 {
+		query = query.Where("suppliers.supplier_type IN (?)", params.GetTypes())
+	}
 
 	return query
 }
@@ -164,7 +167,7 @@ func PrepareSupplierAddress(params *supplierPb.SupplierParam) []models.SupplierA
 	}}
 }
 
-//IsValidStatusUpdate ...
+// IsValidStatusUpdate ...
 func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatus models.SupplierStatus) (valid bool, message string) {
 	if !isValidStatus(newStatus) {
 		return false, "Invalid Status"
