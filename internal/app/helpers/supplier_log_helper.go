@@ -35,7 +35,7 @@ func supplierMetadata(ctx context.Context, action models.AuditActionType, data i
 	}
 
 	m["source"] = "ss2"
-	m["user_id"] = strconv.FormatUint(userId, 64)
+	m["user_id"] = strconv.FormatUint(userId, 10)
 	m["action_name"] = string(action)
 
 	var dataMap map[string]string
