@@ -22,49 +22,30 @@ type SupplierService struct{}
 // Get Supplier Info
 func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSupplierParam) (*supplierpb.SupplierResponse, error) {
 	log.Printf("GetSupplierParam: %+v", params)
+	resp := supplierpb.SupplierResponse{Success: false}
+
 	supplier := models.Supplier{}
-	result := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses").First(&supplier, params.GetId())
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).
+		Preload("SupplierAddresses").Preload("PartnerServiceMappings").
+		First(&supplier, params.GetId())
 	if result.RecordNotFound() {
-		return &supplierpb.SupplierResponse{Success: false}, nil
+		return &resp, nil
 	}
 
-	paymentDetails := []*supplierpb.PaymentAccountDetailObject{}
-	query := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
-		models.GetBankJoinStr(),
-	).Where(
-		"supplier_id = ?", params.GetId(),
-	)
-	if params.GetWarehouseId() != 0 {
-		query = query.Joins(
-			models.JoinPaymentAccountDetailWarehouseMappings(),
-		).Where(
-			"warehouse_id = ?", params.GetWarehouseId(),
-		)
-	}
-	query.Select(
-		"payment_account_details.*, banks.name bank_name",
-	).Scan(&paymentDetails)
-
-	var paymentDetailIds []uint64
-	for _, paymentDetail := range paymentDetails {
-		paymentDetailIds = append(paymentDetailIds, paymentDetail.Id)
-	}
-	warehouses := helpers.GetWarehousesForPaymentAccountDetails(ctx, paymentDetailIds)
-	for _, paymentDetail := range paymentDetails {
-		paymentDetail.Warehouses = warehouses[paymentDetail.Id]
-	}
-	resp := helpers.SupplierDBResponse{}
+	supplierData := helpers.SupplierDBResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
 		Joins(models.GetPartnerServiceMappingsJoinStr()).
 		Where("suppliers.id = ?", supplier.ID).Group("suppliers.id").
-		Select(ss.getResponseField()).Scan(&resp)
+		Select(ss.getResponseField()).Scan(&supplierData)
+	supplierData.SupplierAddresses = supplier.SupplierAddresses
 
-	resp.SupplierAddresses = supplier.SupplierAddresses
-	supplierResp := helpers.PrepareSupplierResponse(resp)
-	supplierResp.PaymentAccountDetails = paymentDetails
+	resp.Data = helpers.PrepareSupplierResponse(supplierData)
+	resp.Data.PaymentAccountDetails = helpers.GetPaymentAccountDetails(ctx, supplier, params.GetWarehouseId())
+	resp.Data.PartnerServiceMappings = helpers.GetPartnerServiceMappings(ctx, supplier)
+	resp.Success = true
 	log.Printf("GetSupplierResponse: %+v", resp)
-	return &supplierpb.SupplierResponse{Success: true, Data: supplierResp}, nil
+	return &resp, nil
 }
 
 // List Suppliers

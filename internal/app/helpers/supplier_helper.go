@@ -237,3 +237,21 @@ func isValidStatusTransition(oldStatus, newStatus models.SupplierStatus) (valid 
 func GetDefaultServiceType(ctx context.Context) utils.ServiceType {
 	return utils.ServiceType(aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "default_service_type", int64(utils.Supplier)).(int64))
 }
+
+func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []*supplierPb.PartnerServiceObject {
+	partnerServiceData := []*supplierPb.PartnerServiceObject{}
+
+	partnerServices := supplier.PartnerServiceMappings // preloaded
+	for _, partnerService := range partnerServices {
+		partnerServiceData = append(partnerServiceData, &supplierPb.PartnerServiceObject{
+			Id:              partnerService.ID,
+			Active:          partnerService.Active,
+			AgreementUrl:    partnerService.AgreementUrl,
+			TradeLicenseUrl: partnerService.TradeLicenseUrl,
+			ServiceType:     partnerService.ServiceType.String(),
+			ServiceLevel:    partnerService.ServiceLevel.String(),
+		})
+	}
+
+	return partnerServiceData
+}
