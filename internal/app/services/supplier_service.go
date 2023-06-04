@@ -40,10 +40,10 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 		Select(ss.getResponseField()).Scan(&supplierData)
 	supplierData.SupplierAddresses = supplier.SupplierAddresses
 
-	resp.Data = helpers.PrepareSupplierResponse(supplierData)
+	resp.Data = helpers.PrepareSupplierResponse(ctx, supplier, supplierData)
 	resp.Data.PaymentAccountDetails = helpers.GetPaymentAccountDetails(ctx, supplier, params.GetWarehouseId())
-	resp.Data.PartnerServiceMappings = helpers.GetPartnerServiceMappings(ctx, supplier)
 	resp.Success = true
+
 	log.Printf("GetSupplierResponse: %+v", resp)
 	return &resp, nil
 }
@@ -51,18 +51,21 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 // List Suppliers
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	log.Printf("ListSupplierParams: %+v", params)
-	suppliers := []helpers.SupplierDBResponse{}
+	resp := supplierpb.ListResponse{}
+
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = helpers.PrepareFilter(ctx, query, params).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
 		Joins(models.GetPartnerServiceMappingsJoinStr()).
 		Group("suppliers.id")
 
-	var total uint64
-	query.Count(&total)
+	query.Count(&resp.TotalCount)
 	helpers.SetPage(ctx, query, params)
-	query.Select(ss.getResponseField()).Scan(&suppliers)
-	resp := helpers.PrepareListResponse(suppliers, total)
+
+	suppliersData := []helpers.SupplierDBResponse{}
+	query.Select(ss.getResponseField()).Scan(&suppliersData)
+	resp.Data = helpers.PrepareListResponse(ctx, suppliersData)
+
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
 }
