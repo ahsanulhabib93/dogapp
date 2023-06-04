@@ -14,5 +14,5 @@ func TestHelper(t *testing.T) {
 }
 
 var _ = AfterEach(func() {
-	test.Cleaner.Clean("suppliers")
+	test.Cleaner.Clean("suppliers", "partner_service_mappings")
 })

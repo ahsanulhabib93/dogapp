@@ -39,7 +39,7 @@ func (supplierAddress *SupplierAddress) Validate(db *gorm.DB) {
 	}
 }
 
-//AfterSave ...
+// AfterSave ...
 func (supplierAddress *SupplierAddress) AfterSave(db *gorm.DB) error {
 	supplier := Supplier{}
 	db.Model(&supplier).First(&supplier, "id = ? ", supplierAddress.SupplierID)

@@ -204,11 +204,13 @@ var _ = Describe("ListSupplierWithAddress", func() {
 		var supplier1, supplier2, supplier3 *models.Supplier
 		BeforeEach(func() {
 			supplier1 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{SupplierType: utils.Captive})
+			test_helper.CreateServiceMapping(ctx, supplier1, utils.Supplier, utils.Captive)
 			supplier2 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{SupplierType: utils.L0})
+			test_helper.CreateServiceMapping(ctx, supplier2, utils.Supplier, utils.L0)
 			supplier3 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{SupplierType: utils.L1})
+			test_helper.CreateServiceMapping(ctx, supplier3, utils.Supplier, utils.L1)
 		})
 		It("Should return corresponding suppliers for given supplier type", func() {
-			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
 
 			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{uint64(utils.L0)}})
 			Expect(err).To(BeNil())
@@ -219,7 +221,6 @@ var _ = Describe("ListSupplierWithAddress", func() {
 		})
 
 		It("Should return corresponding suppliers for given multiple supplier types", func() {
-			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
 
 			res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{uint64(utils.L1), uint64(utils.Captive)}})
 			Expect(err).To(BeNil())
