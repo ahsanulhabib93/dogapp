@@ -143,3 +143,16 @@ func SetContextUser(ctx context.Context, userId uint64, permissions []string) co
 	}
 	return misc.SetInContextThreadObject(ctx, threadObject)
 }
+
+func CreatePartnerService(ctx context.Context, partnerservice *models.PartnerServiceMapping, supplierId uint64) *models.PartnerServiceMapping {
+	id := getUniqueID()
+	partnerservice.SupplierId = supplierId
+	partnerservice.ServiceLevel = utils.SupplierType(utils.Supplier)
+	partnerservice.ServiceLevel = utils.Hlc
+	partnerservice.Active = true
+	partnerservice.TradeLicenseUrl = fmt.Sprintf("trade_license_url_%v", id)
+	partnerservice.AgreementUrl = fmt.Sprintf("agreement_url_%v", id)
+
+	database.DBAPM(ctx).Save(partnerservice)
+	return partnerservice
+}

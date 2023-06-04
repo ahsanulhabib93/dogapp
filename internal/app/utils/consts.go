@@ -7,6 +7,7 @@ type AccountSubType uint16
 
 const (
 	Supplier ServiceType = 1 + iota
+	Transporter
 )
 
 const (
@@ -57,3 +58,19 @@ const (
 
 const ChangePendingSupplierStatus = "change_pending_supplier_status"
 const ScheduleEveryDay = "0 0 * * *"
+
+var PartnerServiceTypeMapping = map[string]ServiceType{
+	"Supplier":    Supplier,
+	"Transporter": Transporter,
+}
+
+var PartnerServiceLevelMapping = map[string]SupplierType{
+	"L0":          L0,
+	"L1":          L1,
+	"L2":          L2,
+	"L3":          L3,
+	"Hlc":         Hlc,
+	"Captive":     Captive,
+	"Driver":      Driver,
+	"Cash Vendor": CashVendor,
+}
