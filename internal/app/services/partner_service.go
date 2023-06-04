@@ -66,8 +66,8 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
 	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
 
-	if (serviceType == 0) || (serviceLevel == 0) || (params.GetPartnerServiceId() == 0) {
-		response.Message = "Invalid Service Type and/or Service Level"
+	if params.GetPartnerServiceId() == 0 || params.GetSupplierId() == 0 {
+		response.Message = "Invalid Partner/Partner Service ID"
 		return &response, nil
 	}
 
@@ -126,9 +126,7 @@ func (psm *PartnerServiceMappingService) UpdateStatus(ctx context.Context, param
 	} else if partnerServiceQuery.RecordNotFound() {
 		response.Message = "Partner Service Not Found"
 	} else {
-		err := database.DBAPM(ctx).Model(&partnerService).Updates(models.PartnerServiceMapping{
-			Active: params.GetActive(),
-		})
+		err := database.DBAPM(ctx).Model(&partnerService).Updates(map[string]interface{}{"active": params.GetActive()})
 
 		if err != nil && err.Error != nil {
 			response.Message = fmt.Sprintf("Error while updating Partner Service: %s", err.Error)

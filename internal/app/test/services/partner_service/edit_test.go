@@ -133,4 +133,21 @@ var _ = Describe("EditPartnerService", func() {
 			Expect(res.Success).To(Equal(false))
 		})
 	})
+	Context("When partner service id is not passed", func() {
+		It("Should return failure response", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			test_helper.CreatePartnerService(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier}, supplier1.ID)
+
+			param := psmpb.PartnerServiceObject{
+				SupplierId:   supplier1.ID,
+				ServiceType:  "Transporter",
+				ServiceLevel: "Captive",
+			}
+
+			res, _ := new(services.PartnerServiceMappingService).Edit(ctx, &param)
+
+			Expect(res.Message).To(Equal("Invalid Partner/Partner Service ID"))
+			Expect(res.Success).To(Equal(false))
+		})
+	})
 })

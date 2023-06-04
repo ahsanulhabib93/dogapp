@@ -9,6 +9,7 @@ import (
 
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
@@ -38,7 +39,7 @@ var _ = Describe("UpdateStatus", func() {
 		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
-	Context("When proper service type and level are given", func() {
+	Context("When service is deactivated and proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			partnerservice := test_helper.CreatePartnerService(ctx, &models.PartnerServiceMapping{}, supplier.ID)
@@ -53,6 +54,33 @@ var _ = Describe("UpdateStatus", func() {
 
 			Expect(res.Message).To(Equal("Partner Service Updated Successfully"))
 			Expect(res.Success).To(Equal(true))
+
+			service := models.PartnerServiceMapping{}
+			database.DBAPM(ctx).Model(models.PartnerServiceMapping{}).Where("id = ?", partnerservice.ID).First(&service)
+
+			Expect(service.Active).To(Equal(false))
+		})
+	})
+	Context("When service is activated and proper service type and level are given", func() {
+		It("Should return success response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			partnerservice := test_helper.CreatePartnerService(ctx, &models.PartnerServiceMapping{}, supplier.ID)
+
+			param := psmpb.PartnerServiceObject{
+				SupplierId:       supplier.ID,
+				PartnerServiceId: partnerservice.ID,
+				Active:           true,
+			}
+
+			res, _ := new(services.PartnerServiceMappingService).UpdateStatus(ctx, &param)
+
+			Expect(res.Message).To(Equal("Partner Service Updated Successfully"))
+			Expect(res.Success).To(Equal(true))
+
+			service := models.PartnerServiceMapping{}
+			database.DBAPM(ctx).Model(models.PartnerServiceMapping{}).Where("id = ?", partnerservice.ID).First(&service)
+
+			Expect(service.Active).To(Equal(true))
 		})
 	})
 	Context("When partner doesn't exist", func() {
