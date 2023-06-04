@@ -45,14 +45,20 @@ var _ = Describe("ListSupplier", func() {
 	Context("Supplier List", func() {
 		It("Should Respond with all the suppliers", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierType:             utils.Hlc,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
+				PartnerServiceMappings:   []models.PartnerServiceMapping{{ServiceLevel: utils.Hlc}},
 			})
+			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+				SupplierId:   supplier1.ID,
+				ServiceType:  utils.Transporter,
+				ServiceLevel: utils.Driver,
+			})
+
 			isPhoneVerified := true
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierType:    utils.L1,
-				IsPhoneVerified: &isPhoneVerified,
+				IsPhoneVerified:        &isPhoneVerified,
+				PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L1}},
 			})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
@@ -74,6 +80,12 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusPending)))
 
+			Expect(supplierData1.PartnerServices).To(HaveLen(2))
+			Expect(supplierData1.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+			Expect(supplierData1.PartnerServices[0].ServiceLevel).To(Equal("Hlc"))
+			Expect(supplierData1.PartnerServices[1].ServiceType).To(Equal("Transporter"))
+			Expect(supplierData1.PartnerServices[1].ServiceLevel).To(Equal("Driver"))
+
 			supplierData2 := res.Data[1]
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
@@ -87,6 +99,10 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.OpcIds).To(Equal([]uint64{}))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(supplierData2.Status).To(Equal(string(models.SupplierStatusPending)))
+
+			Expect(supplierData2.PartnerServices).To(HaveLen(1))
+			Expect(supplierData2.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+			Expect(supplierData2.PartnerServices[0].ServiceLevel).To(Equal("L1"))
 		})
 	})
 

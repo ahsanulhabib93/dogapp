@@ -156,7 +156,7 @@ func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supp
 		}
 	}
 
-	supplierObject.PartnerServiceMappings = GetPartnerServiceMappings(ctx, supplier)
+	supplierObject.PartnerServices = GetPartnerServiceMappings(ctx, supplier)
 	return supplierObject
 }
 
