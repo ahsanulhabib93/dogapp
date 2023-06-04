@@ -55,6 +55,7 @@ var _ = Describe("AddSupplier", func() {
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
 		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Hlc"})
+		appPreferenceMockInstance.On("GetValue", ctx, "default_service_type", int64(1)).Return(int64(1))
 	})
 
 	AfterEach(func() {
@@ -113,7 +114,6 @@ var _ = Describe("AddSupplier", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierCategoryMappings").Preload("SupplierOpcMappings").First(&supplier)
 			Expect(res.Id).To(Equal(supplier.ID))
 			Expect(supplier.Email).To(Equal(param.Email))
-			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(*supplier.UserID).To(Equal(userId))
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 			Expect(supplier.BusinessName).To(Equal(param.BusinessName))
@@ -129,6 +129,14 @@ var _ = Describe("AddSupplier", func() {
 			Expect(supplier.GuarantorNidNumber).To(Equal(param.GuarantorNidNumber))
 			Expect(supplier.GuarantorNidBackImageUrl).To(Equal(param.GuarantorNidBackImageUrl))
 			Expect(supplier.ChequeImageUrl).To(Equal(param.ChequeImageUrl))
+
+			partnerServices := []*models.PartnerServiceMapping{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PartnerServiceMappings").Find(&partnerServices)
+			Expect(len(partnerServices)).To(Equal(1))
+			partnerService := partnerServices[0]
+			Expect(partnerService.ServiceType).To(Equal(utils.Supplier))
+			Expect(partnerService.ServiceLevel).To(Equal(utils.Hlc))
+			Expect(partnerService.Active).To(Equal(true))
 
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
@@ -369,7 +377,7 @@ var _ = Describe("AddSupplier", func() {
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: service_level can't be blank"))
 		})
 	})
 
@@ -394,7 +402,7 @@ var _ = Describe("AddSupplier", func() {
 			supplier := &models.Supplier{}
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: service_level can't be blank"))
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierOpcMappings").First(&supplier)
 			Expect(len(supplier.SupplierOpcMappings)).To(Equal(0))
 		})
@@ -525,31 +533,13 @@ var _ = Describe("AddSupplier", func() {
 		})
 	})
 
-	Context("While supplier type is Driver", func() {
-		BeforeEach(func() {
-			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Driver"})
-		})
-		AfterEach(func() {
-			aaaModels.InjectMockAppPreferenceServiceInstance(nil)
-		})
-
-		It("Should have supplier type as driver", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Driver})
-			lastSupplier := models.Supplier{}
-			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", supplier.ID).Find(&lastSupplier)
-
-			Expect(lastSupplier.SupplierType).To(Equal(utils.Driver))
-		})
-	})
-
 	Context("Adding Supplier with invalid supplier type", func() {
 		It("Should return error response", func() {
-			test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567891"})
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				Email:        "Email",
 				SupplierType: uint64(utils.Captive),
-				Phone:        "8801234567890",
+				Phone:        "8801234567112",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 

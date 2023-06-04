@@ -65,7 +65,8 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
 	}
 	if len(params.GetTypes()) != 0 {
-		query = query.Where("suppliers.supplier_type IN (?)", params.GetTypes())
+		// partner_service_mappings is already joined in places where PrepareFilter is called
+		query = query.Where("partner_service_mappings.service_level IN (?)", params.GetTypes())
 	}
 
 	return query
@@ -231,4 +232,8 @@ func isValidStatusTransition(oldStatus, newStatus models.SupplierStatus) (valid 
 		}
 	}
 	return
+}
+
+func GetDefaultServiceType(ctx context.Context) utils.ServiceType {
+	return utils.ServiceType(aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "default_service_type", int64(utils.Supplier)).(int64))
 }

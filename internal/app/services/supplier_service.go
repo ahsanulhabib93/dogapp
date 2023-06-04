@@ -56,6 +56,7 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	resp := helpers.SupplierDBResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
+		Joins(models.GetPartnerServiceMappingsJoinStr()).
 		Where("suppliers.id = ?", supplier.ID).Group("suppliers.id").
 		Select(ss.getResponseField()).Scan(&resp)
 
@@ -73,6 +74,7 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = helpers.PrepareFilter(ctx, query, params).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
+		Joins(models.GetPartnerServiceMappingsJoinStr()).
 		Group("suppliers.id")
 
 	var total uint64
@@ -92,13 +94,15 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = helpers.PrepareFilter(ctx, query, params).
 		Preload("SupplierAddresses").Joins(models.GetSupplierAddressJoinStr()).
+		Joins(models.GetPartnerServiceMappingsJoinStr()).
 		Group("suppliers.id")
 
 	var total uint64
 	query.Count(&total)
 	helpers.SetPage(ctx, query, params)
 	suppliersWithAddresses := []models.Supplier{{}}
-	query.Select("suppliers.*").Find(&suppliersWithAddresses)
+	query.Select("suppliers.*, partner_service_mappings.service_level supplier_type").
+		Find(&suppliersWithAddresses)
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
 	json.Unmarshal(temp, &resp.Data)
@@ -126,7 +130,6 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		Name:                      params.GetName(),
 		Email:                     params.GetEmail(),
 		UserID:                    utils.GetCurrentUserID(ctx),
-		SupplierType:              utils.SupplierType(params.GetSupplierType()),
 		BusinessName:              params.GetBusinessName(),
 		Phone:                     params.GetPhone(),
 		AlternatePhone:            params.GetAlternatePhone(),
@@ -145,6 +148,11 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		SupplierCategoryMappings:  helpers.PrepareCategoryMapping(params.GetCategoryIds()),
 		SupplierOpcMappings:       helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
 		SupplierAddresses:         helpers.PrepareSupplierAddress(params),
+		PartnerServiceMappings: []models.PartnerServiceMapping{{
+			ServiceType:  helpers.GetDefaultServiceType(ctx),
+			ServiceLevel: utils.SupplierType(params.GetSupplierType()),
+			Active:       true,
+		}},
 	}
 
 	if err := helpers.CheckSupplierExistWithDifferentRole(ctx, supplier); err != nil {
@@ -204,7 +212,6 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			Status:                    status,
 			Name:                      params.GetName(),
 			Email:                     params.GetEmail(),
-			SupplierType:              utils.SupplierType(params.GetSupplierType()),
 			BusinessName:              params.GetBusinessName(),
 			Phone:                     params.GetPhone(),
 			AlternatePhone:            params.GetAlternatePhone(),
@@ -213,8 +220,6 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			NidNumber:                 params.GetNidNumber(),
 			NidFrontImageUrl:          params.GetNidFrontImageUrl(),
 			NidBackImageUrl:           params.GetNidBackImageUrl(),
-			TradeLicenseUrl:           params.GetTradeLicenseUrl(),
-			AgreementUrl:              params.GetAgreementUrl(),
 			ShopOwnerImageUrl:         params.GetShopOwnerImageUrl(),
 			GuarantorImageUrl:         params.GetGuarantorImageUrl(),
 			GuarantorNidNumber:        params.GetGuarantorNidNumber(),
@@ -223,12 +228,25 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			ChequeImageUrl:            params.GetChequeImageUrl(),
 			SupplierCategoryMappings:  helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
+
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
 		} else {
-			resp.Message = "Supplier Edited Successfully"
-			resp.Success = true
-			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
+			partnerServiceMapping := models.PartnerServiceMapping{}
+			database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID).First(&partnerServiceMapping)
+			err = database.DBAPM(ctx).Model(&partnerServiceMapping).Updates(models.PartnerServiceMapping{
+				ServiceLevel:    utils.SupplierType(params.GetSupplierType()),
+				TradeLicenseUrl: params.GetTradeLicenseUrl(),
+				AgreementUrl:    params.GetAgreementUrl(),
+			})
+
+			if err != nil && err.Error != nil {
+				resp.Message = fmt.Sprintf("Error while updating PartnerServiceMapping: %s", err.Error)
+			} else {
+				resp.Message = "Supplier Edited Successfully"
+				resp.Success = true
+				helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
+			}
 		}
 	}
 	log.Printf("EditSupplierResponse: %+v", resp)
@@ -253,11 +271,18 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 		if !(isPrimaryDoc || isSecondaryDoc) {
 			resp.Message = "Invalid Document Type"
 		} else {
-			query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", params.GetId())
-			query = query.Update(params.GetDocumentType(), "")
+			query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", supplier.ID)
 			if isPrimaryDoc &&
 				(supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed) {
 				query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
+			}
+
+			if utils.IsInclude([]string{"trade_license_url", "agreement_url"}, params.GetDocumentType()) {
+				partnerServiceMapping := models.PartnerServiceMapping{}
+				database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID).First(&partnerServiceMapping)
+				query = database.DBAPM(ctx).Model(&partnerServiceMapping).Update(params.GetDocumentType(), "")
+			} else {
+				query = query.Update(params.GetDocumentType(), "")
 			}
 
 			if err := query.Error; err != nil {
@@ -448,7 +473,7 @@ func (ss *SupplierService) getResponseField() string {
 	s := []string{
 		"suppliers.id",
 		"suppliers.status",
-		"suppliers.supplier_type",
+		"partner_service_mappings.service_level supplier_type",
 		"suppliers.name",
 		"suppliers.email",
 		"suppliers.phone",
@@ -459,8 +484,8 @@ func (ss *SupplierService) getResponseField() string {
 		"suppliers.nid_number",
 		"suppliers.nid_front_image_url",
 		"suppliers.nid_back_image_url",
-		"suppliers.trade_license_url",
-		"suppliers.agreement_url",
+		"partner_service_mappings.trade_license_url",
+		"partner_service_mappings.agreement_url",
 		"suppliers.reason",
 		"suppliers.shop_owner_image_url",
 		"suppliers.guarantor_nid_number",

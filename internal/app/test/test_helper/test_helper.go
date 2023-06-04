@@ -21,6 +21,12 @@ func getUniqueID() string {
 func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supplier {
 	id := getUniqueID()
 
+	partnerServiceMapping := models.PartnerServiceMapping{}
+	if len(supplier.PartnerServiceMappings) != 0 {
+		partnerServiceMapping = supplier.PartnerServiceMappings[0]
+	}
+	partnerServiceMapping.ServiceType = utils.Supplier
+
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
 	supplier.AlternatePhone = fmt.Sprintf("8801234567890%v", id)
 	supplier.BusinessName = fmt.Sprintf("Test Business %v", id)
@@ -30,9 +36,6 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 	if supplier.Name == "" {
 		supplier.Name = fmt.Sprintf("Test-%v", id)
 	}
-	if supplier.SupplierType == 0 {
-		supplier.SupplierType = utils.Hlc
-	}
 	if supplier.Status == "" {
 		supplier.Status = models.SupplierStatusPending
 	}
@@ -40,8 +43,23 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 		supplier.Phone = fmt.Sprintf("8801%v", id[:9])
 	}
 
+	if supplier.SupplierType != 0 {
+		partnerServiceMapping.ServiceLevel = supplier.SupplierType
+	} else if partnerServiceMapping.ServiceLevel == 0 {
+		partnerServiceMapping.ServiceLevel = utils.Hlc
+	}
+
+	supplier.PartnerServiceMappings = []models.PartnerServiceMapping{partnerServiceMapping}
 	database.DBAPM(ctx).Save(supplier)
 	return supplier
+}
+
+func CreatePartnerServiceMapping(ctx context.Context, partnerServiceMapping *models.PartnerServiceMapping) *models.PartnerServiceMapping {
+	id := getUniqueID()
+	partnerServiceMapping.TradeLicenseUrl = fmt.Sprintf("/ss2/test_trade_license_url/%v", id)
+	partnerServiceMapping.AgreementUrl = fmt.Sprintf("/ss2/test_agreement_url/%v", id)
+	database.DBAPM(ctx).Save(partnerServiceMapping)
+	return partnerServiceMapping
 }
 
 func CreateSupplierWithDateTime(ctx context.Context, supplier *models.Supplier, createAt time.Time) *models.Supplier {
@@ -54,6 +72,12 @@ func CreateSupplierWithAddress(ctx context.Context, supplier *models.Supplier) *
 	supplier = CreateSupplier(ctx, supplier)
 	CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
 	return supplier
+}
+
+func CreateServiceMapping(ctx context.Context, supplier *models.Supplier, servicetype utils.ServiceType, servicelevel utils.SupplierType) *models.PartnerServiceMapping {
+	serviceMapping := &models.PartnerServiceMapping{SupplierId: supplier.ID, ServiceType: servicetype, ServiceLevel: servicelevel, Active: true}
+	database.DBAPM(ctx).Save(serviceMapping)
+	return serviceMapping
 }
 
 func CreateSupplierAddress(ctx context.Context, supplierAddress *models.SupplierAddress) *models.SupplierAddress {

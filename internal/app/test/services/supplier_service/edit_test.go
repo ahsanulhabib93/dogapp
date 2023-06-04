@@ -93,7 +93,6 @@ var _ = Describe("EditSupplier", func() {
 
 			Expect(updatedSupplier.Email).To(Equal(param.Email))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
-			Expect(updatedSupplier.SupplierType).To(Equal(utils.L1))
 			Expect(updatedSupplier.BusinessName).To(Equal(param.BusinessName))
 			Expect(updatedSupplier.Phone).To(Equal(param.Phone))
 			Expect(updatedSupplier.AlternatePhone).To(Equal(param.AlternatePhone))
@@ -101,8 +100,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(updatedSupplier.NidNumber).To(Equal(param.NidNumber))
 			Expect(updatedSupplier.NidFrontImageUrl).To(Equal(param.NidFrontImageUrl))
 			Expect(updatedSupplier.NidBackImageUrl).To(Equal(param.NidBackImageUrl))
-			Expect(updatedSupplier.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
-			Expect(updatedSupplier.AgreementUrl).To(Equal(param.AgreementUrl))
 			Expect(updatedSupplier.ShopOwnerImageUrl).To(Equal(param.ShopOwnerImageUrl))
 			Expect(updatedSupplier.GuarantorImageUrl).To(Equal(param.GuarantorImageUrl))
 			Expect(updatedSupplier.GuarantorNidNumber).To(Equal(param.GuarantorNidNumber))
@@ -114,6 +111,12 @@ var _ = Describe("EditSupplier", func() {
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
 			Expect(len(updatedSupplier.SupplierOpcMappings)).To(Equal(2))
 			Expect(updatedSupplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(2)))
+
+			partnerService := models.PartnerServiceMapping{}
+			database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Where("supplier_id = ?", supplier.ID).First(&partnerService)
+			Expect(partnerService.ServiceLevel).To(Equal(utils.L1))
+			Expect(partnerService.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
+			Expect(partnerService.AgreementUrl).To(Equal(param.AgreementUrl))
 
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})
@@ -140,7 +143,6 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
-			Expect(updatedSupplier.SupplierType).To(Equal(utils.L1))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusBlocked))
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
@@ -181,7 +183,6 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
-			Expect(updatedSupplier.SupplierType).To(Equal(utils.L1))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
@@ -244,7 +245,6 @@ var _ = Describe("EditSupplier", func() {
 			updatedSupplier := &models.Supplier{}
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&updatedSupplier, supplier.ID)
 			Expect(updatedSupplier.Email).To(Equal(supplier.Email))
-			Expect(updatedSupplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(updatedSupplier.Name).To(Equal(param.Name))
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusPending))
 			Expect(*updatedSupplier.IsPhoneVerified).To(Equal(true))
