@@ -77,7 +77,7 @@ var _ = Describe("AddPartnerService", func() {
 
 			res, _ := new(services.PartnerServiceMappingService).Add(ctx, &param)
 
-			Expect(res.Message).To(Equal("Error while creating Supplier Address: Error 1062: Duplicate entry '1-1-1' for key 'partner_service_mappings.idx_partner_service'"))
+			Expect(res.Message).To(Equal("Error while creating Partner Service: Error 1062: Duplicate entry '1-1-1' for key 'partner_service_mappings.idx_partner_service'"))
 			Expect(res.Success).To(Equal(false))
 		})
 	})

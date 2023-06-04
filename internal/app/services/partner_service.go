@@ -20,7 +20,7 @@ func (psm *PartnerServiceMappingService) Add(ctx context.Context, params *psmpb.
 	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
 	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
 
-	if (params.GetServiceLevel() == "" && params.GetServiceType() == "") || (serviceType == 0) || (serviceLevel == 0) {
+	if (serviceType == 0) || (serviceLevel == 0) {
 		response.Message = "Invalid Service Type and/or Service Level"
 		return &response, nil
 	}
@@ -49,7 +49,7 @@ func (psm *PartnerServiceMappingService) Add(ctx context.Context, params *psmpb.
 
 		err := database.DBAPM(ctx).Save(&partnerService)
 		if err != nil && err.Error != nil {
-			response.Message = fmt.Sprintf("Error while creating Supplier Address: %s", err.Error)
+			response.Message = fmt.Sprintf("Error while creating Partner Service: %s", err.Error)
 		} else {
 			response.Message = "Partner Service Added Successfully"
 			response.Success = true
@@ -66,7 +66,7 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
 	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
 
-	if (params.GetServiceLevel() == "" && params.GetServiceType() == "") || (serviceType == 0) || (serviceLevel == 0) || (params.GetPartnerServiceId() == 0) {
+	if (serviceType == 0) || (serviceLevel == 0) || (params.GetPartnerServiceId() == 0) {
 		response.Message = "Invalid Service Type and/or Service Level"
 		return &response, nil
 	}
@@ -112,6 +112,7 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 }
 
 func (psm *PartnerServiceMappingService) UpdateStatus(ctx context.Context, params *psmpb.PartnerServiceObject) (*psmpb.BasicApiResponse, error) {
+	log.Printf("PartnerServiceMappingService UpdateStatus params: %+v", params)
 	response := psmpb.BasicApiResponse{Message: "Partner Service updated Successfully"}
 
 	supplier := models.Supplier{}
@@ -137,6 +138,7 @@ func (psm *PartnerServiceMappingService) UpdateStatus(ctx context.Context, param
 		}
 	}
 
+	log.Printf("PartnerServiceMappingService UpdateStatus response: %+v", response)
 	return &response, nil
 }
 
