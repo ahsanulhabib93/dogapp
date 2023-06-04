@@ -259,41 +259,60 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 	resp := supplierpb.BasicApiResponse{Success: false}
 
 	supplier := models.Supplier{}
-	query := database.DBAPM(ctx).Model(&models.Supplier{})
-	result := query.First(&supplier, params.GetId())
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if !supplier.IsChangeAllowed(ctx) {
+		return &resp, nil
+	}
+
+	if !supplier.IsChangeAllowed(ctx) {
 		resp.Message = "Change Not Allowed"
-	} else {
-		isPrimaryDoc := utils.IsInclude(utils.SupplierPrimaryDocumentType, params.GetDocumentType())
-		isSecondaryDoc := utils.IsInclude(utils.SupplierSecondaryDocumentType, params.GetDocumentType())
-		if !(isPrimaryDoc || isSecondaryDoc) {
-			resp.Message = "Invalid Document Type"
-		} else {
-			query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", supplier.ID)
-			if isPrimaryDoc &&
-				(supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed) {
-				query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
-			}
+		return &resp, nil
+	}
 
-			if utils.IsInclude([]string{"trade_license_url", "agreement_url"}, params.GetDocumentType()) {
-				partnerServiceMapping := models.PartnerServiceMapping{}
-				database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID).First(&partnerServiceMapping)
-				query = database.DBAPM(ctx).Model(&partnerServiceMapping).Update(params.GetDocumentType(), "")
-			} else {
-				query = query.Update(params.GetDocumentType(), "")
-			}
+	isPrimaryDoc := utils.IsInclude(utils.SupplierPrimaryDocumentType, params.GetDocumentType())
+	isSecondaryDoc := utils.IsInclude(utils.SupplierSecondaryDocumentType, params.GetDocumentType())
+	if !(isPrimaryDoc || isSecondaryDoc) {
+		resp.Message = "Invalid Document Type"
+		return &resp, nil
+	}
 
-			if err := query.Error; err != nil {
-				resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
-			} else {
-				resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
-				resp.Success = true
-				helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionRemoveSupplierDocuments, params)
-			}
+	partnerServiceMapping := models.PartnerServiceMapping{}
+	if utils.IsInclude([]string{"trade_license_url", "agreement_url"}, params.GetDocumentType()) {
+		query := database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID)
+		if params.GetPartnerServiceId() != utils.Zero {
+			query = query.Where("id = ?", params.GetPartnerServiceId())
+		}
+		query.First(&partnerServiceMapping)
+		if partnerServiceMapping.ID == utils.Zero {
+			resp.Message = "ParnerServiceMapping not found"
+			return &resp, nil
 		}
 	}
+
+	query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", supplier.ID)
+	if isPrimaryDoc &&
+		(supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed) {
+		query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
+	}
+
+	if partnerServiceMapping.ID != utils.Zero {
+		query = database.DBAPM(ctx).Model(&partnerServiceMapping).Updates(map[string]interface{}{
+			params.GetDocumentType(): "",
+			"active":                 false,
+		})
+	} else {
+		query = query.Update(params.GetDocumentType(), "")
+	}
+
+	if err := query.Error; err != nil {
+		resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
+	} else {
+		resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
+		resp.Success = true
+		helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionRemoveSupplierDocuments, params)
+	}
+
 	log.Printf("RemoveDocumentResponse: %+v", resp)
 	return &resp, nil
 }

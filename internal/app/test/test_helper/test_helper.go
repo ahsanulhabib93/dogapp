@@ -26,6 +26,7 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 		partnerServiceMapping = supplier.PartnerServiceMappings[0]
 	}
 	partnerServiceMapping.ServiceType = utils.Supplier
+	partnerServiceMapping.Active = true
 
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
 	supplier.AlternatePhone = fmt.Sprintf("8801234567890%v", id)
