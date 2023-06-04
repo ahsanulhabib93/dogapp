@@ -75,12 +75,6 @@ func CreateSupplierWithAddress(ctx context.Context, supplier *models.Supplier) *
 	return supplier
 }
 
-func CreateServiceMapping(ctx context.Context, supplier *models.Supplier, servicetype utils.ServiceType, servicelevel utils.SupplierType) *models.PartnerServiceMapping {
-	serviceMapping := &models.PartnerServiceMapping{SupplierId: supplier.ID, ServiceType: servicetype, ServiceLevel: servicelevel, Active: true}
-	database.DBAPM(ctx).Save(serviceMapping)
-	return serviceMapping
-}
-
 func CreateSupplierAddress(ctx context.Context, supplierAddress *models.SupplierAddress) *models.SupplierAddress {
 	id := getUniqueID()
 	supplierAddress.Firstname = fmt.Sprintf("Firstname-%v", id)
