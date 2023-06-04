@@ -114,10 +114,22 @@ func PrepareOpcMapping(ctx context.Context, ids []uint64, fetchOpc bool) []model
 }
 
 func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse) (data []*supplierPb.SupplierObject) {
+	supplierIDs := make([]uint64, len(suppliersData))
+	for i, supplierData := range suppliersData {
+		supplierIDs[i] = supplierData.ID
+	}
+
+	suppliers := []models.Supplier{}
+	database.DBAPM(ctx).Model(&models.Supplier{}).Preload("PartnerServiceMappings").
+		Where("id IN (?)", supplierIDs).Find(&suppliers)
+
+	supplierMap := make(map[uint64]models.Supplier)
+	for _, supplier := range suppliers {
+		supplierMap[supplier.ID] = supplier
+	}
+
 	for _, supplierData := range suppliersData {
-		supplier := models.Supplier{}
-		database.DBAPM(ctx).Model(&models.Supplier{}).Preload("PartnerServiceMappings").
-			Where("id = ?", supplierData.ID).Find(&supplier)
+		supplier := supplierMap[supplierData.ID]
 		data = append(data, PrepareSupplierResponse(ctx, supplier, supplierData))
 	}
 	return data
