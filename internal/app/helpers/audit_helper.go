@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	supplierPb "github.com/voonik/goConnect/api/go/audit_log_service/supplier"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/goFramework/pkg/pubsub/publisher"
 	"github.com/voonik/goFramework/pkg/serviceapiconfig"
@@ -29,7 +30,7 @@ func AuditAction(ctx context.Context, supplierId uint64, entity string, action m
 		return fmt.Errorf("[AuditAction] Failed to publish audit log with error: %s", err.Error())
 	}
 
-	if shouldSendSupplierLog() {
+	if shouldSendSupplierLog(ctx) {
 		if err = PublishSupplierLog(ctx, action, supplier, data); err != nil {
 			return fmt.Errorf("[AuditAction] failed to publish supplier log with err: %s", err.Error())
 		}
@@ -38,8 +39,9 @@ func AuditAction(ctx context.Context, supplierId uint64, entity string, action m
 	return nil
 }
 
-func shouldSendSupplierLog() bool {
-	return true
+func shouldSendSupplierLog(ctx context.Context) bool {
+	return aaaModels.AppPreference.GetValue(
+		aaaModels.AppPreference{}, ctx, "should_send_supplier_log", "false").(bool)
 }
 
 func CreateAuditLog(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}) (*supplierPb.AuditRecord, error) {
