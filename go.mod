@@ -18,7 +18,7 @@ require (
 	github.com/shopuptech/go-libs v0.0.12
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
-	github.com/voonik/goConnect v0.0.0-20230604110602-a64302f12b49
+	github.com/voonik/goConnect v0.0.0-20230605071816-5eb78c191615
 	github.com/voonik/goFramework v0.0.0-20230425044616-f044dcd96534
 	github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae
 	google.golang.org/grpc v1.53.0
