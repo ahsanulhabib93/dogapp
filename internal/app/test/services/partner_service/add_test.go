@@ -46,8 +46,8 @@ var _ = Describe("AddPartnerService", func() {
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:   supplier1.ID,
-				ServiceType:  "Supplier",
-				ServiceLevel: "L1",
+				ServiceType:  "Transporter",
+				ServiceLevel: "Captive",
 			}
 
 			res, _ := new(services.PartnerServiceMappingService).Add(ctx, &param)
@@ -56,17 +56,17 @@ var _ = Describe("AddPartnerService", func() {
 			Expect(res.Success).To(Equal(true))
 
 			partnerServiceObj := &models.PartnerServiceMapping{}
-			database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).First(&partnerServiceObj)
+			database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Last(&partnerServiceObj)
 
 			Expect(partnerServiceObj.SupplierId).To(Equal(supplier1.ID))
-			Expect(partnerServiceObj.ServiceType).To(Equal(utils.Supplier))
-			Expect(partnerServiceObj.ServiceLevel).To(Equal(utils.L1))
+			Expect(partnerServiceObj.ServiceType).To(Equal(utils.Transporter))
+			Expect(partnerServiceObj.ServiceLevel).To(Equal(utils.Captive))
 		})
 	})
 	Context("When partner service already exist for a user", func() {
 		It("Should return failure response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice1 := test_helper.CreatePartnerService(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier}, supplier1.ID)
+			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier}, supplier1.ID)
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,

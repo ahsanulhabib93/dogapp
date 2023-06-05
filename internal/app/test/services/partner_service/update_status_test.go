@@ -42,7 +42,7 @@ var _ = Describe("UpdateStatus", func() {
 	Context("When service is deactivated and proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice := test_helper.CreatePartnerService(ctx, &models.PartnerServiceMapping{}, supplier.ID)
+			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{}, supplier.ID)
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier.ID,
@@ -64,7 +64,7 @@ var _ = Describe("UpdateStatus", func() {
 	Context("When service is activated and proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice := test_helper.CreatePartnerService(ctx, &models.PartnerServiceMapping{}, supplier.ID)
+			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{}, supplier.ID)
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier.ID,

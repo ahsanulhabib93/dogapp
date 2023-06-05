@@ -54,12 +54,17 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 	return supplier
 }
 
-func CreatePartnerServiceMapping(ctx context.Context, partnerServiceMapping *models.PartnerServiceMapping) *models.PartnerServiceMapping {
+func CreatePartnerServiceMapping(ctx context.Context, partnerServiceMapping *models.PartnerServiceMapping, supplierId uint64) *models.PartnerServiceMapping {
 	id := getUniqueID()
-	partnerServiceMapping.TradeLicenseUrl = fmt.Sprintf("/ss2/test_trade_license_url/%v", id)
-	partnerServiceMapping.AgreementUrl = fmt.Sprintf("/ss2/test_agreement_url/%v", id)
+	partnerServiceMapping.SupplierId = supplierId
+	partnerServiceMapping.TradeLicenseUrl = fmt.Sprintf("trade_license_url_%v", id)
+	partnerServiceMapping.AgreementUrl = fmt.Sprintf("agreement_url_%v", id)
+
 	database.DBAPM(ctx).Save(partnerServiceMapping)
-	return partnerServiceMapping
+
+	obj := models.PartnerServiceMapping{}
+	database.DBAPM(ctx).Model(models.PartnerServiceMapping{}).Last(&obj)
+	return &obj
 }
 
 func CreateSupplierWithDateTime(ctx context.Context, supplier *models.Supplier, createAt time.Time) *models.Supplier {
