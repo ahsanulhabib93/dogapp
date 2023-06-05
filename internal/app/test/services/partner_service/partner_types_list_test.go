@@ -54,8 +54,8 @@ var _ = Describe("PartnerTypesList", func() {
 			transport := res.PartnerServiceTypeMappings[1]
 
 			Expect(transport.PartnerType).To(Equal("Transporter"))
-			Expect(len(transport.ServiceTypes)).To(Equal(3))
-			Expect(transport.ServiceTypes).To(Equal([]string{"Captive", "Driver", "CashVendor"}))
+			Expect(len(transport.ServiceTypes)).To(Equal(4))
+			Expect(transport.ServiceTypes).To(Equal([]string{"Captive", "Driver", "Cash Vendor", "Redx Hub Vendor"}))
 		})
 	})
 })

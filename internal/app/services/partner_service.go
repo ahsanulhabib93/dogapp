@@ -141,21 +141,27 @@ func (psm *PartnerServiceMappingService) UpdateStatus(ctx context.Context, param
 }
 
 func (psm *PartnerServiceMappingService) PartnerTypesList(ctx context.Context, params *psmpb.PartnerServiceObject) (*psmpb.PartnerTypeListResponse, error) {
-	supplierPartnerTypeObject := psmpb.PartnerServiceTypeMapping{
-		PartnerType:  "Supplier",
-		ServiceTypes: []string{"L0", "L1", "L2", "L3", "Hlc"},
-	}
+	responseMappings := []*psmpb.PartnerServiceTypeMapping{}
 
-	transportPartnerTypeObject := psmpb.PartnerServiceTypeMapping{
-		PartnerType:  "Transporter",
-		ServiceTypes: []string{"Captive", "Driver", "CashVendor"},
+	for key, value := range utils.PartnerServiceTypeLevelMapping {
+		object := psmpb.PartnerServiceTypeMapping{}
+		switch key {
+		case 1:
+			object.PartnerType = "Supplier"
+		case 2:
+			object.PartnerType = "Transporter"
+		}
+
+		for _, v := range value {
+			str := utils.SupplierTypeValue[v]
+			object.ServiceTypes = append(object.ServiceTypes, str)
+		}
+
+		responseMappings = append(responseMappings, &object)
 	}
 
 	response := psmpb.PartnerTypeListResponse{
-		PartnerServiceTypeMappings: []*psmpb.PartnerServiceTypeMapping{
-			&supplierPartnerTypeObject,
-			&transportPartnerTypeObject,
-		},
+		PartnerServiceTypeMappings: responseMappings,
 	}
 
 	return &response, nil
