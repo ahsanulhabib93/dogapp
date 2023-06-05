@@ -214,7 +214,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			GuarantorNidBackImageUrl:  params.GetGuarantorNidBackImageUrl(),
 			ChequeImageUrl:            params.GetChequeImageUrl(),
 			SupplierCategoryMappings:  helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
-		})
+		}
 
 		err := database.DBAPM(ctx).Model(&supplier).Updates(updatedSupplier)
 
