@@ -15,10 +15,12 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+const supplierLogTopic = "supplier-service-log"
+
 func PublishSupplierLog(ctx context.Context, action models.AuditActionType, supplier models.Supplier, data interface{}) error {
 	key, value := supplierLog(ctx, supplier, supplierMetadata(ctx, action, data))
 
-	_, err := publisher.Publish(ctx, "", key, value)
+	_, err := publisher.Publish(ctx, supplierLogTopic, key, value)
 	if err != nil {
 		return fmt.Errorf("failed to publish supplier log with err: %s", err.Error())
 	}
