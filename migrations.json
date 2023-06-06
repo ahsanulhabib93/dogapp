@@ -131,20 +131,8 @@
             "vaccount_id": 2
         },
         {
-            "id": "supplierpanel:partnerservice:view",
-            "description": "Partner Service View APIs",
-            "scope_id": "supplierpanel",
-            "vaccount_id": 2
-        },
-        {
             "id": "supplierpanel:partnerservice:admin",
             "description": "Partner Service Admin APIs",
-            "scope_id": "supplierpanel",
-            "vaccount_id": 12
-        },
-        {
-            "id": "supplierpanel:partnerservice:view",
-            "description": "Partner Service View APIs",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
         }
