@@ -2,7 +2,6 @@ package partner_service_service_test
 
 import (
 	"context"
-	"log"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -44,15 +43,15 @@ var _ = Describe("EditPartnerService", func() {
 	Context("When proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified})
-			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier}, supplier1.ID)
-			partnerservice2 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.Captive}, supplier1.ID)
+			// partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier, ServiceLevel: utils.L0, SupplierId: supplier1.ID})
+			partnerservice2 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.Captive, SupplierId: supplier1.ID})
 
-			log.Printf("inside test case %+v || %+v", partnerservice1.ID, partnerservice1.ServiceType)
+			// log.Printf("inside test case %+v || %+v", partnerservice1.ID, partnerservice1.ServiceType)
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
-				PartnerServiceId: partnerservice1.ID,
-				ServiceType:      "Supplier",
-				ServiceLevel:     "L2",
+				PartnerServiceId: partnerservice2.ID,
+				ServiceType:      "Transporter",
+				ServiceLevel:     "CashVendor",
 			}
 
 			res, _ := new(services.PartnerServiceMappingService).Edit(ctx, &param)
@@ -66,7 +65,7 @@ var _ = Describe("EditPartnerService", func() {
 			Expect(partner.Status).To(Equal(models.SupplierStatusPending))
 
 			supplier := &models.PartnerServiceMapping{}
-			database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Where("id = ?", partnerservice2.ID).First(&supplier)
+			database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Where("service_type = ?", utils.Transporter).First(&supplier)
 
 			Expect(supplier.SupplierId).To(Equal(supplier1.ID))
 			Expect(supplier.Active).To(Equal(false))
@@ -98,13 +97,13 @@ var _ = Describe("EditPartnerService", func() {
 	Context("When service type and level are incompatible", func() {
 		It("Should return failure response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier}, supplier1.ID)
+			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.Captive, SupplierId: supplier1.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
 				PartnerServiceId: partnerservice1.ID,
-				ServiceType:      "Supplier",
-				ServiceLevel:     "Cash Vendor",
+				ServiceType:      "Transporter",
+				ServiceLevel:     "L0",
 				TradeLicenseUrl:  "trade_license_url",
 				AgreementUrl:     "agreement_url",
 			}
@@ -118,13 +117,13 @@ var _ = Describe("EditPartnerService", func() {
 	Context("When service type is edited", func() {
 		It("Should return failure response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier}, supplier1.ID)
+			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.RedxHubVendor, SupplierId: supplier1.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
 				PartnerServiceId: partnerservice1.ID,
-				ServiceType:      "Transporter",
-				ServiceLevel:     "Captive",
+				ServiceType:      "Supplier",
+				ServiceLevel:     "L0",
 			}
 
 			res, _ := new(services.PartnerServiceMappingService).Edit(ctx, &param)
@@ -136,7 +135,7 @@ var _ = Describe("EditPartnerService", func() {
 	Context("When partner service id is not passed", func() {
 		It("Should return failure response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier}, supplier1.ID)
+			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier, SupplierId: supplier1.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:   supplier1.ID,

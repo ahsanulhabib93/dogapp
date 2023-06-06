@@ -66,7 +66,7 @@ var _ = Describe("AddPartnerService", func() {
 	Context("When partner service already exist for a user", func() {
 		It("Should return failure response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier}, supplier1.ID)
+			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier, SupplierId: supplier1.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
@@ -112,7 +112,7 @@ var _ = Describe("AddPartnerService", func() {
 			param := psmpb.PartnerServiceObject{
 				SupplierId:   100,
 				ServiceType:  "Supplier",
-				ServiceLevel: "Cash Vendor",
+				ServiceLevel: "CashVendor",
 			}
 
 			res, _ := new(services.PartnerServiceMappingService).Add(ctx, &param)

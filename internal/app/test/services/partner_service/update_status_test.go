@@ -16,6 +16,7 @@ import (
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
+	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("UpdateStatus", func() {
@@ -42,7 +43,7 @@ var _ = Describe("UpdateStatus", func() {
 	Context("When service is deactivated and proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{}, supplier.ID)
+			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.CashVendor, SupplierId: supplier.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier.ID,
@@ -64,7 +65,7 @@ var _ = Describe("UpdateStatus", func() {
 	Context("When service is activated and proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{}, supplier.ID)
+			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.CashVendor, SupplierId: supplier.ID, Active: false})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier.ID,

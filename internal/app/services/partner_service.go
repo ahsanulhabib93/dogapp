@@ -63,28 +63,37 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 	log.Printf("PartnerServiceMappingService Edit params: %+v", params)
 	response := psmpb.BasicApiResponse{Message: "Partner Service Added Successfully"}
 
-	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
-	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
+	var serviceType utils.ServiceType
+	var serviceLevel utils.SupplierType
 
 	if params.GetPartnerServiceId() == 0 || params.GetSupplierId() == 0 {
 		response.Message = "Invalid Partner/Partner Service ID"
 		return &response, nil
 	}
 
-	allowedservicelevel, _ := utils.PartnerServiceTypeLevelMapping[serviceType]
+	if params.GetServiceType() != "" && params.GetServiceLevel() != "" {
+		serviceType = utils.PartnerServiceTypeMapping[params.GetServiceType()]
+		serviceLevel = utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
 
-	if !utils.Includes(allowedservicelevel, serviceLevel) {
-		response.Message = "Incompatible Service Type and Service Level"
-		return &response, nil
+		allowedservicelevel, _ := utils.PartnerServiceTypeLevelMapping[serviceType]
+
+		if !utils.Includes(allowedservicelevel, serviceLevel) {
+			response.Message = "Incompatible Service Type and Service Level"
+			return &response, nil
+		}
 	}
 
 	supplier := models.Supplier{}
-	supplierQuery := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetSupplierId())
+	database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetSupplierId())
 
 	partnerService := models.PartnerServiceMapping{}
-	partnerServiceQuery := database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).First(&partnerService, params.GetPartnerServiceId())
+	partnerServiceQuery := database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Where("id = ? and supplier_id = ?", params.GetPartnerServiceId(), params.GetSupplierId()).First(&partnerService)
 
-	if supplierQuery.RecordNotFound() || partnerServiceQuery.RecordNotFound() {
+	if serviceLevel == 0 {
+		serviceLevel = partnerService.ServiceLevel
+	}
+
+	if partnerServiceQuery.RecordNotFound() {
 		response.Message = "Partner/Partner Service Not Found"
 	} else if utils.ServiceType(partnerService.ServiceType) != utils.ServiceType(serviceType) {
 		response.Message = "Not allowed to edit Partner Type"
@@ -147,8 +156,7 @@ func (psm *PartnerServiceMappingService) PartnerTypesList(ctx context.Context, p
 		object := psmpb.PartnerServiceTypeMapping{}
 		object.PartnerType = key.String()
 		for _, v := range value {
-			str := utils.SupplierTypeValue[v]
-			object.ServiceTypes = append(object.ServiceTypes, str)
+			object.ServiceTypes = append(object.ServiceTypes, v.String())
 		}
 
 		responseMappings = append(responseMappings, &object)
@@ -162,8 +170,6 @@ func (psm *PartnerServiceMappingService) PartnerTypesList(ctx context.Context, p
 }
 
 func (psm *PartnerServiceMappingService) updateUserStatus(ctx context.Context, supplier models.Supplier, supplierId uint64) (string, error) {
-	// errorMessage := ""
-
 	var status models.SupplierStatus
 	if supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed {
 		status = models.SupplierStatusPending // Moving to Pending if any data is updated
