@@ -448,7 +448,7 @@
             "route": "/partner_service/partner_types",
             "request_method": "GET",
             "service": "ss2",
-            "required_permission_id": "supplierpanel:partnerservice:view",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
             "vaccount_id": 2
         },        {
             "route": "/partner_service/add",
@@ -475,7 +475,7 @@
             "route": "/partner_service/partner_types",
             "request_method": "GET",
             "service": "ss2",
-            "required_permission_id": "supplierpanel:partnerservice:view",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
             "vaccount_id": 12
         }
     ],
@@ -586,28 +586,13 @@
             "vaccount_id": 2
         },
         {
-            "role_name": "ss2owner",
-            "permission_id": "supplierpanel:partnerservice:view",
-            "vaccount_id": 2
-        },
-        {
             "role_name": "Digital Credit Team",
             "permission_id": "supplierpanel:partnerservice:admin",
             "vaccount_id": 2
         },
         {
-            "role_name": "Digital Credit Team",
-            "permission_id": "supplierpanel:partnerservice:view",
-            "vaccount_id": 2
-        },
-        {
             "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:partnerservice:admin",
-            "vaccount_id": 12
-        },
-        {
-            "role_name": "Cargo SS2 Admin",
-            "permission_id": "supplierpanel:partnerservice:view",
             "vaccount_id": 12
         }
     ]

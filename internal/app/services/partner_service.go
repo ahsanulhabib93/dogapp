@@ -145,13 +145,7 @@ func (psm *PartnerServiceMappingService) PartnerTypesList(ctx context.Context, p
 
 	for key, value := range utils.PartnerServiceTypeLevelMapping {
 		object := psmpb.PartnerServiceTypeMapping{}
-		switch key {
-		case 1:
-			object.PartnerType = "Supplier"
-		case 2:
-			object.PartnerType = "Transporter"
-		}
-
+		object.PartnerType = key.String()
 		for _, v := range value {
 			str := utils.SupplierTypeValue[v]
 			object.ServiceTypes = append(object.ServiceTypes, str)
