@@ -40,6 +40,13 @@ var _ = Describe("GetSupplier", func() {
 						AgreementUrl: "abc.com",
 					}},
 				})
+				test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+					SupplierId:   supplier.ID,
+					ServiceType:  utils.Transporter,
+					ServiceLevel: utils.Driver,
+					Active:       false,
+				})
+
 				supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
 				paymentDetails := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 				resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{Id: supplier.ID})
@@ -64,6 +71,14 @@ var _ = Describe("GetSupplier", func() {
 
 				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
 				Expect(resp.Data.AgreementUrl).To(Equal("abc.com"))
+
+				Expect(resp.Data.PartnerServices).To(HaveLen(2))
+				Expect(resp.Data.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+				Expect(resp.Data.PartnerServices[0].ServiceLevel).To(Equal("Hlc"))
+				Expect(resp.Data.PartnerServices[0].Active).To(Equal(true))
+				Expect(resp.Data.PartnerServices[1].ServiceType).To(Equal("Transporter"))
+				Expect(resp.Data.PartnerServices[1].ServiceLevel).To(Equal("Driver"))
+				Expect(resp.Data.PartnerServices[1].Active).To(Equal(false))
 
 				Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))
 				Expect(resp.Data.SupplierAddresses[0].Firstname).To(Equal(supplierAddress.Firstname))
