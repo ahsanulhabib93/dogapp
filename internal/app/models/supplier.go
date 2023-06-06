@@ -54,7 +54,7 @@ type Supplier struct {
 	KeyAccountManagers        []KeyAccountManager
 	SupplierCategoryMappings  []SupplierCategoryMapping
 	SupplierOpcMappings       []SupplierOpcMapping
-	PartnerServiceMappings    []PartnerServiceMapping
+	PartnerServiceMappings    []PartnerServiceMapping `json:"partner_service_mappings"`
 }
 
 // Validate ...

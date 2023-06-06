@@ -26,6 +26,7 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 		partnerServiceMapping = supplier.PartnerServiceMappings[0]
 	}
 	partnerServiceMapping.ServiceType = utils.Supplier
+	partnerServiceMapping.Active = true
 
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
 	supplier.AlternatePhone = fmt.Sprintf("8801234567890%v", id)
@@ -73,12 +74,6 @@ func CreateSupplierWithAddress(ctx context.Context, supplier *models.Supplier) *
 	supplier = CreateSupplier(ctx, supplier)
 	CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
 	return supplier
-}
-
-func CreateServiceMapping(ctx context.Context, supplier *models.Supplier, servicetype utils.ServiceType, servicelevel utils.SupplierType) *models.PartnerServiceMapping {
-	serviceMapping := &models.PartnerServiceMapping{SupplierId: supplier.ID, ServiceType: servicetype, ServiceLevel: servicelevel, Active: true}
-	database.DBAPM(ctx).Save(serviceMapping)
-	return serviceMapping
 }
 
 func CreateSupplierAddress(ctx context.Context, supplierAddress *models.SupplierAddress) *models.SupplierAddress {
