@@ -61,10 +61,6 @@ func CreatePartnerServiceMapping(ctx context.Context, partnerServiceMapping *mod
 
 	database.DBAPM(ctx).Save(partnerServiceMapping)
 	return partnerServiceMapping
-
-	// obj := models.PartnerServiceMapping{}
-	// database.DBAPM(ctx).Model(models.PartnerServiceMapping{}).Last(&obj)
-	// return &obj
 }
 
 func CreateSupplierWithDateTime(ctx context.Context, supplier *models.Supplier, createAt time.Time) *models.Supplier {

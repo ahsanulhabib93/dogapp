@@ -43,10 +43,8 @@ var _ = Describe("EditPartnerService", func() {
 	Context("When proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified})
-			// partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Supplier, ServiceLevel: utils.L0, SupplierId: supplier1.ID})
 			partnerservice2 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.Captive, SupplierId: supplier1.ID})
 
-			// log.Printf("inside test case %+v || %+v", partnerservice1.ID, partnerservice1.ServiceType)
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
 				PartnerServiceId: partnerservice2.ID,
