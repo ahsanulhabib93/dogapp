@@ -536,11 +536,6 @@
             "role_name": "Cargo SS2 Admin",
             "permission_id": "admin:appPreferencePanel:create",
             "vaccount_id": 12
-        },
-        {
-            "role_name":"Cargo SS2 Admin",
-            "permission_id": "apppreferencepanel:mokamcrepreferencesmodule:admin",
-            "vaccount_id": 12
         }
     ]
 }
