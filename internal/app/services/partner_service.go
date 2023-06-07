@@ -53,6 +53,7 @@ func (psm *PartnerServiceMappingService) Add(ctx context.Context, params *psmpb.
 		} else {
 			response.Message = "Partner Service Added Successfully"
 			response.Success = true
+			response.Id = partnerService.ID
 		}
 	}
 
@@ -113,6 +114,7 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 		} else {
 			response.Message = "Partner Service Edited Successfully"
 			response.Success = true
+			response.Id = partnerService.ID
 		}
 	}
 
@@ -142,6 +144,7 @@ func (psm *PartnerServiceMappingService) UpdateStatus(ctx context.Context, param
 		} else {
 			response.Message = "Partner Service Updated Successfully"
 			response.Success = true
+			response.Id = partnerService.ID
 		}
 	}
 
