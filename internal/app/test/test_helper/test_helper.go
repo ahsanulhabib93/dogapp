@@ -57,8 +57,9 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 
 func CreatePartnerServiceMapping(ctx context.Context, partnerServiceMapping *models.PartnerServiceMapping) *models.PartnerServiceMapping {
 	id := getUniqueID()
-	partnerServiceMapping.TradeLicenseUrl = fmt.Sprintf("/ss2/test_trade_license_url/%v", id)
-	partnerServiceMapping.AgreementUrl = fmt.Sprintf("/ss2/test_agreement_url/%v", id)
+	partnerServiceMapping.TradeLicenseUrl = fmt.Sprintf("trade_license_url_%v", id)
+	partnerServiceMapping.AgreementUrl = fmt.Sprintf("agreement_url_%v", id)
+
 	database.DBAPM(ctx).Save(partnerServiceMapping)
 	return partnerServiceMapping
 }
