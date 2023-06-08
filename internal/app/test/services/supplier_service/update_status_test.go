@@ -36,7 +36,6 @@ var _ = Describe("UpdateStatus", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		aaaModels.CreateAppPreferenceServiceInterface()
 
 		header := map[string]string{"authorization": "random"}
 		ctx = test_helper.SetContextUser(ctx, userId, []string{})
@@ -402,9 +401,7 @@ var _ = Describe("UpdateStatus", func() {
 		})
 
 		It("When at least one primary document required for given supplier type", func() {
-			aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
-				"enabled_primary_doc_verification": []string{"Hlc"},
-			}))
+			appPreferenceMockInstance.On("GetValue", ctx, "enabled_primary_doc_verification", []string{"Hlc"}).Return([]string{"Hlc"})
 
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
@@ -433,9 +430,7 @@ var _ = Describe("UpdateStatus", func() {
 		})
 
 		It("When otp verification required for given supplier type", func() {
-			aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
-				"enabled_otp_verification": []string{"Hlc"},
-			}))
+			appPreferenceMockInstance.On("GetValue", ctx, "enabled_otp_verification", []string{"Hlc"}).Return([]string{"Hlc"})
 
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
 				Status:    models.SupplierStatusBlocked,
