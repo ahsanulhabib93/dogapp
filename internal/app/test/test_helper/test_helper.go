@@ -6,11 +6,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
-	"github.com/shopuptech/event-bus-logs-go/ss2"
-	eventBus "github.com/voonik/goConnect/api/go/event_bus/publisher"
-	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/ss2/internal/app/models"
@@ -166,21 +162,4 @@ func SetContextUser(ctx context.Context, userId uint64, permissions []string) co
 		},
 	}
 	return misc.SetInContextThreadObject(ctx, threadObject)
-}
-
-func CreatePublishRequest(supplierParams *supplierpb.SupplierParam) *eventBus.PublishRequest {
-	key, value := makeSupplierLog(supplierParams)
-	marshalledKey, _ := proto.Marshal(key)
-	marshalledValue, _ := proto.Marshal(value)
-	topic := "test-topic"
-
-	return &eventBus.PublishRequest{
-		Topic: topic,
-		Key:   marshalledKey,
-		Value: marshalledValue,
-	}
-}
-
-func makeSupplierLog(params *supplierpb.SupplierParam) (*ss2.SupplierLogKey, *ss2.SupplierLogValue) {
-	return nil, nil
 }
