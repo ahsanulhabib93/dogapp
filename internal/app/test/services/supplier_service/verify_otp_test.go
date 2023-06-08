@@ -48,7 +48,7 @@ var _ = Describe("VerifyOtp", func() {
 			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
 			defer resetEventBus()
 
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
 
 			res, err := new(services.SupplierService).VerifyOtp(ctx, param)
 
@@ -69,7 +69,7 @@ var _ = Describe("VerifyOtp", func() {
 			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
 			defer resetEventBus()
 
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
 
 			res, err := new(services.SupplierService).VerifyOtp(ctx, param)
 
@@ -109,7 +109,7 @@ var _ = Describe("VerifyOtp", func() {
 			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
 			defer resetEventBus()
 
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
 
 			res, err := new(services.SupplierService).VerifyOtp(ctx, param)
 
@@ -152,7 +152,7 @@ var _ = Describe("VerifyOtp", func() {
 			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
 			defer resetEventBus()
 
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
 
 			res, err := new(services.SupplierService).VerifyOtp(ctx, param)
 
