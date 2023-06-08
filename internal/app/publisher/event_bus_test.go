@@ -22,7 +22,7 @@ func TestPublish(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("should not panic when ctx, key and value are provided and publish to kafka", func(t *testing.T) {
-		mockedEventBus, resetEventBus := mocks.SetupMockPublisherClient(t, &eventBusClient)
+		mockedEventBus, resetEventBus := mocks.SetupMockPublisherClient(t, &EventBusClient)
 		defer resetEventBus()
 
 		request := &eventBus.PublishRequest{
@@ -43,7 +43,7 @@ func TestPublish(t *testing.T) {
 
 	t.Run("should not publish to kafka in case of error", func(t *testing.T) {
 		t.Run("when event-bus returns error", func(t *testing.T) {
-			mockedEventBus, resetEventBus := mocks.SetupMockPublisherClient(t, &eventBusClient)
+			mockedEventBus, resetEventBus := mocks.SetupMockPublisherClient(t, &EventBusClient)
 			defer resetEventBus()
 
 			request := &eventBus.PublishRequest{

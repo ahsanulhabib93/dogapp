@@ -12,7 +12,7 @@ import (
 
 var protoMarshal = proto.Marshal
 
-var eventBusClient = func() eventBus.PublisherClient {
+var EventBusClient = func() eventBus.PublisherClient {
 	return eventBusPublisher.Publisher()
 }
 
@@ -37,7 +37,7 @@ func Publish(ctx context.Context, topic string, key proto.Message, value proto.M
 		Value: marshalledValue,
 	}
 
-	response, err := eventBusClient().Publish(ctx, request)
+	response, err := EventBusClient().Publish(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("[EventBus] publish failed with error: %v", err)
 	}

@@ -312,7 +312,7 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 	} else {
 		resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
 		resp.Success = true
-		helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionRemoveSupplierDocuments, params)
+		helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionRemoveSupplierDocuments, params, supplier)
 	}
 
 	log.Printf("RemoveDocumentResponse: %+v", resp)
