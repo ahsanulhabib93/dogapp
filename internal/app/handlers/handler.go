@@ -23,3 +23,8 @@ func GetPaymentAccountDetailInstance() *services.PaymentAccountDetailService {
 func GetKeyAccountManagerInstance() *services.KeyAccountManagerService {
 	return new(services.KeyAccountManagerService)
 }
+
+// GetPartnerServiceMapping ...
+func GetPartnerServiceMappingInstance() *services.PartnerServiceMappingService {
+	return new(services.PartnerServiceMappingService)
+}

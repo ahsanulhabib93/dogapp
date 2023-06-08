@@ -123,6 +123,18 @@
             "description": "supplier Status update API",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:partnerservice:admin",
+            "description": "Partner Service Admin APIs",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:partnerservice:admin",
+            "description": "Partner Service Admin APIs",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
         }
     ],
     "route_permissions": [
@@ -398,6 +410,61 @@
             "service": "ss2",
             "required_permission_id": "admin:appPreferencePanel:update",
             "vaccount_id": 2
+        },
+        {
+            "route": "/partner_service/add",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/partner_service/edit",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/partner_service/update_status",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/partner_service/partner_types",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 2
+        },        {
+            "route": "/partner_service/add",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/partner_service/edit",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/partner_service/update_status",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/partner_service/partner_types",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 12
         }
     ],
     "role_permissions": [
@@ -500,6 +567,21 @@
             "role_name": "crtadmin",
             "permission_id": "supplierpanel:supplierlistapi:view",
             "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 12
         }
     ]
 }

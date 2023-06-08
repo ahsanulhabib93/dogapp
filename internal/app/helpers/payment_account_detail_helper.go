@@ -4,10 +4,31 @@ import (
 	"context"
 	"fmt"
 
+	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
+
+func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, warehouseID uint64) []*supplierpb.PaymentAccountDetailObject {
+	paymentDetails := []*supplierpb.PaymentAccountDetailObject{}
+	query := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).
+		Joins(models.GetBankJoinStr()).Where("supplier_id = ?", supplier.ID)
+	if warehouseID != 0 {
+		query = query.Joins(models.JoinPaymentAccountDetailWarehouseMappings()).Where("warehouse_id = ?", warehouseID)
+	}
+	query.Select("payment_account_details.*, banks.name bank_name").Scan(&paymentDetails)
+
+	var paymentDetailIds []uint64
+	for _, paymentDetail := range paymentDetails {
+		paymentDetailIds = append(paymentDetailIds, paymentDetail.Id)
+	}
+	warehouses := GetWarehousesForPaymentAccountDetails(ctx, paymentDetailIds)
+	for _, paymentDetail := range paymentDetails {
+		paymentDetail.Warehouses = warehouses[paymentDetail.Id]
+	}
+	return paymentDetails
+}
 
 func GetWarehousesForPaymentAccountDetails(ctx context.Context, paymentDetailIds []uint64) map[uint64][]uint64 {
 	warehouses := make(map[uint64][]uint64)

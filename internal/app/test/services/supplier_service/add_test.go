@@ -377,7 +377,7 @@ var _ = Describe("AddSupplier", func() {
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: service_level can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: partner_service_mappings can't be blank"))
 		})
 	})
 
@@ -402,7 +402,7 @@ var _ = Describe("AddSupplier", func() {
 			supplier := &models.Supplier{}
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: service_level can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: partner_service_mappings can't be blank"))
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierOpcMappings").First(&supplier)
 			Expect(len(supplier.SupplierOpcMappings)).To(Equal(0))
 		})
