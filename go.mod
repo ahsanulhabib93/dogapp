@@ -16,12 +16,12 @@ require (
 	github.com/rodaine/table v1.1.0
 	github.com/shopuptech/go-jobs/v3 v3.1.1
 	github.com/shopuptech/go-libs v0.0.12
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.3
 	github.com/urfave/cli v1.22.10
 	github.com/voonik/goConnect v0.0.0-20230601073755-37f0f0de5960
-	github.com/voonik/goFramework v0.0.0-20230425044616-f044dcd96534
+	github.com/voonik/goFramework v0.0.0-20230608060543-d0ebe5715fc0
 	github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae
-	google.golang.org/grpc v1.53.0
+	google.golang.org/grpc v1.55.0
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
 )
