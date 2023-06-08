@@ -73,8 +73,8 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 
 	if len(params.GetServiceLevels()) != 0 {
 		var serviceLevels []utils.SupplierType
-		for _, level := range params.GetServiceLevels() {
-			if val, ok := utils.PartnerServiceLevelMapping[level]; ok {
+		for _, serviceLevel := range params.GetServiceLevels() {
+			if val, ok := utils.PartnerServiceLevelMapping[serviceLevel]; ok {
 				serviceLevels = append(serviceLevels, val)
 			}
 		}
@@ -83,12 +83,12 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 
 	if len(params.GetServiceTypes()) != 0 {
 		var serviceTypes []utils.ServiceType
-		for _, level := range params.GetServiceLevels() {
-			if val, ok := utils.PartnerServiceTypeMapping[level]; ok {
+		for _, serviceType := range params.GetServiceTypes() {
+			if val, ok := utils.PartnerServiceTypeMapping[serviceType]; ok {
 				serviceTypes = append(serviceTypes, val)
 			}
 		}
-		query = query.Where("partner_service_mappings.service_level IN (?)", serviceTypes)
+		query = query.Where("partner_service_mappings.service_type IN (?)", serviceTypes)
 	}
 	return query
 }

@@ -479,7 +479,7 @@ var _ = Describe("ListSupplier", func() {
 		})
 	})
 
-	XContext("When ServiceTypes filter is applied", func() {
+	Context("When ServiceTypes filter is applied", func() {
 		It("Should Respond with corresponding suppliers", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
 			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
