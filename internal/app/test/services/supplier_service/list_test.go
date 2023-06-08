@@ -457,4 +457,42 @@ var _ = Describe("ListSupplier", func() {
 
 		})
 	})
+
+	Context("When ServiceLevels filter is applied", func() {
+		It("Should Respond with corresponding suppliers", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.Hlc}}})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L0}}})
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L1}}})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{ServiceLevels: []string{"Hlc", "L0"}})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(2)))
+			Expect(len(res.Data)).To(Equal(2))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier1.Email))
+			Expect(supplierData1.PartnerServices[0].ServiceLevel).To(Equal("Hlc"))
+
+			supplierData2 := res.Data[1]
+			Expect(supplierData2.Email).To(Equal(supplier2.Email))
+			Expect(supplierData2.PartnerServices[0].ServiceLevel).To(Equal("L0"))
+		})
+	})
+
+	XContext("When ServiceTypes filter is applied", func() {
+		It("Should Respond with corresponding suppliers", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{ServiceTypes: []string{"Supplier"}})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier1.Email))
+			Expect(supplierData1.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+		})
+	})
+
 })

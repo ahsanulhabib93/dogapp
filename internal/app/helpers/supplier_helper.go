@@ -65,11 +65,31 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 	if params.GetOpcId() != 0 {
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
 	}
+
+	// partner_service_mappings is already joined in places where PrepareFilter is called
 	if len(params.GetTypes()) != 0 {
-		// partner_service_mappings is already joined in places where PrepareFilter is called
 		query = query.Where("partner_service_mappings.service_level IN (?)", params.GetTypes())
 	}
 
+	if len(params.GetServiceLevels()) != 0 {
+		var serviceLevels []utils.SupplierType
+		for _, level := range params.GetServiceLevels() {
+			if val, ok := utils.PartnerServiceLevelMapping[level]; ok {
+				serviceLevels = append(serviceLevels, val)
+			}
+		}
+		query = query.Where("partner_service_mappings.service_level IN (?)", serviceLevels)
+	}
+
+	if len(params.GetServiceTypes()) != 0 {
+		var serviceTypes []utils.ServiceType
+		for _, level := range params.GetServiceLevels() {
+			if val, ok := utils.PartnerServiceTypeMapping[level]; ok {
+				serviceTypes = append(serviceTypes, val)
+			}
+		}
+		query = query.Where("partner_service_mappings.service_level IN (?)", serviceTypes)
+	}
 	return query
 }
 
