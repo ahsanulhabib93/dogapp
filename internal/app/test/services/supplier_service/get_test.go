@@ -28,16 +28,25 @@ var _ = Describe("GetSupplier", func() {
 			It("Should Respond with success", func() {
 				isPhoneVerified := true
 				supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType:             utils.Hlc,
 					IsPhoneVerified:          &isPhoneVerified,
 					NidNumber:                "123456789",
 					NidFrontImageUrl:         "abc.com",
-					AgreementUrl:             "abc.com",
 					SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 					SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 					GuarantorImageUrl:        "abc.xyz",
 					GuarantorNidNumber:       "0987654321",
+					PartnerServiceMappings: []models.PartnerServiceMapping{{
+						ServiceLevel: utils.Hlc,
+						AgreementUrl: "abc.com",
+					}},
 				})
+				test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+					SupplierId:   supplier.ID,
+					ServiceType:  utils.Transporter,
+					ServiceLevel: utils.Driver,
+					Active:       false,
+				})
+
 				supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
 				paymentDetails := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 				resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{Id: supplier.ID})
@@ -54,13 +63,22 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.IsPhoneVerified).To(Equal(true))
 				Expect(resp.Data.CategoryIds).To(Equal([]uint64{1, 2}))
 				Expect(resp.Data.OpcIds).To(Equal([]uint64{3, 4}))
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
 				Expect(resp.Data.NidNumber).To(Equal(supplier.NidNumber))
 				Expect(resp.Data.NidFrontImageUrl).To(Equal(supplier.NidFrontImageUrl))
-				Expect(resp.Data.AgreementUrl).To(Equal(supplier.AgreementUrl))
 				Expect(resp.Data.GuarantorNidNumber).To(Equal(supplier.GuarantorNidNumber))
 				Expect(resp.Data.GuarantorImageUrl).To(Equal(supplier.GuarantorImageUrl))
 				Expect(resp.Data.Status).To(Equal(string(models.SupplierStatusPending)))
+
+				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
+				Expect(resp.Data.AgreementUrl).To(Equal("abc.com"))
+
+				Expect(resp.Data.PartnerServices).To(HaveLen(2))
+				Expect(resp.Data.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+				Expect(resp.Data.PartnerServices[0].ServiceLevel).To(Equal("Hlc"))
+				Expect(resp.Data.PartnerServices[0].Active).To(Equal(true))
+				Expect(resp.Data.PartnerServices[1].ServiceType).To(Equal("Transporter"))
+				Expect(resp.Data.PartnerServices[1].ServiceLevel).To(Equal("Driver"))
+				Expect(resp.Data.PartnerServices[1].Active).To(Equal(false))
 
 				Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))
 				Expect(resp.Data.SupplierAddresses[0].Firstname).To(Equal(supplierAddress.Firstname))
@@ -87,12 +105,14 @@ var _ = Describe("GetSupplier", func() {
 						{CategoryID: 1, DeletedAt: &deletedAt},
 						{CategoryID: 2},
 					},
-					SupplierType: utils.Hlc,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 2},
 						{ProcessingCenterID: 3, DeletedAt: &deletedAt},
 						{ProcessingCenterID: 4},
 					},
+					PartnerServiceMappings: []models.PartnerServiceMapping{{
+						ServiceLevel: utils.Hlc,
+					}},
 				})
 
 				resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{Id: supplier.ID})
@@ -110,15 +130,17 @@ var _ = Describe("GetSupplier", func() {
 			It("Should Return only Given Warehouse Mapped PaymentAccountDetails", func() {
 				isPhoneVerified := true
 				supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType:             utils.Hlc,
 					IsPhoneVerified:          &isPhoneVerified,
 					NidNumber:                "123456789",
 					NidFrontImageUrl:         "abc.com",
-					AgreementUrl:             "abc.com",
 					SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 					SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 					GuarantorImageUrl:        "abc.xyz",
 					GuarantorNidNumber:       "0987654321",
+					PartnerServiceMappings: []models.PartnerServiceMapping{{
+						ServiceLevel: utils.Hlc,
+						AgreementUrl: "abc.com",
+					}},
 				})
 				supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
 				paymentDetail1 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
@@ -146,13 +168,14 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.IsPhoneVerified).To(Equal(true))
 				Expect(resp.Data.CategoryIds).To(Equal([]uint64{1, 2}))
 				Expect(resp.Data.OpcIds).To(Equal([]uint64{3, 4}))
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
 				Expect(resp.Data.NidNumber).To(Equal(supplier.NidNumber))
 				Expect(resp.Data.NidFrontImageUrl).To(Equal(supplier.NidFrontImageUrl))
-				Expect(resp.Data.AgreementUrl).To(Equal(supplier.AgreementUrl))
 				Expect(resp.Data.GuarantorNidNumber).To(Equal(supplier.GuarantorNidNumber))
 				Expect(resp.Data.GuarantorImageUrl).To(Equal(supplier.GuarantorImageUrl))
 				Expect(resp.Data.Status).To(Equal(string(models.SupplierStatusPending)))
+
+				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
+				Expect(resp.Data.AgreementUrl).To(Equal("abc.com"))
 
 				Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))
 				Expect(resp.Data.SupplierAddresses[0].Firstname).To(Equal(supplierAddress.Firstname))

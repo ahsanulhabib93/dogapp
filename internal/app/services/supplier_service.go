@@ -22,64 +22,50 @@ type SupplierService struct{}
 // Get Supplier Info
 func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSupplierParam) (*supplierpb.SupplierResponse, error) {
 	log.Printf("GetSupplierParam: %+v", params)
+	resp := supplierpb.SupplierResponse{Success: false}
+
 	supplier := models.Supplier{}
-	result := database.DBAPM(ctx).Model(&models.Supplier{}).Preload("SupplierAddresses").First(&supplier, params.GetId())
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).
+		Preload("SupplierAddresses").Preload("PartnerServiceMappings").
+		First(&supplier, params.GetId())
 	if result.RecordNotFound() {
-		return &supplierpb.SupplierResponse{Success: false}, nil
+		return &resp, nil
 	}
 
-	paymentDetails := []*supplierpb.PaymentAccountDetailObject{}
-	query := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
-		models.GetBankJoinStr(),
-	).Where(
-		"supplier_id = ?", params.GetId(),
-	)
-	if params.GetWarehouseId() != 0 {
-		query = query.Joins(
-			models.JoinPaymentAccountDetailWarehouseMappings(),
-		).Where(
-			"warehouse_id = ?", params.GetWarehouseId(),
-		)
-	}
-	query.Select(
-		"payment_account_details.*, banks.name bank_name",
-	).Scan(&paymentDetails)
-
-	var paymentDetailIds []uint64
-	for _, paymentDetail := range paymentDetails {
-		paymentDetailIds = append(paymentDetailIds, paymentDetail.Id)
-	}
-	warehouses := helpers.GetWarehousesForPaymentAccountDetails(ctx, paymentDetailIds)
-	for _, paymentDetail := range paymentDetails {
-		paymentDetail.Warehouses = warehouses[paymentDetail.Id]
-	}
-	resp := helpers.SupplierDBResponse{}
+	supplierData := helpers.SupplierDBResponse{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
+		Joins(models.GetPartnerServiceMappingsJoinStr()).
 		Where("suppliers.id = ?", supplier.ID).Group("suppliers.id").
-		Select(ss.getResponseField()).Scan(&resp)
+		Select(ss.getResponseField()).Scan(&supplierData)
+	supplierData.SupplierAddresses = supplier.SupplierAddresses
 
-	resp.SupplierAddresses = supplier.SupplierAddresses
-	supplierResp := helpers.PrepareSupplierResponse(resp)
-	supplierResp.PaymentAccountDetails = paymentDetails
+	resp.Data = helpers.PrepareSupplierResponse(ctx, supplier, supplierData)
+	resp.Data.PaymentAccountDetails = helpers.GetPaymentAccountDetails(ctx, supplier, params.GetWarehouseId())
+	resp.Success = true
+
 	log.Printf("GetSupplierResponse: %+v", resp)
-	return &supplierpb.SupplierResponse{Success: true, Data: supplierResp}, nil
+	return &resp, nil
 }
 
 // List Suppliers
 func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListParams) (*supplierpb.ListResponse, error) {
 	log.Printf("ListSupplierParams: %+v", params)
-	suppliers := []helpers.SupplierDBResponse{}
+	resp := supplierpb.ListResponse{}
+
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = helpers.PrepareFilter(ctx, query, params).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
+		Joins(models.GetPartnerServiceMappingsJoinStr()).
 		Group("suppliers.id")
 
-	var total uint64
-	query.Count(&total)
+	query.Count(&resp.TotalCount)
 	helpers.SetPage(ctx, query, params)
-	query.Select(ss.getResponseField()).Scan(&suppliers)
-	resp := helpers.PrepareListResponse(suppliers, total)
+
+	suppliersData := []helpers.SupplierDBResponse{}
+	query.Select(ss.getResponseField()).Scan(&suppliersData)
+	resp.Data = helpers.PrepareListResponse(ctx, suppliersData)
+
 	log.Printf("ListSupplierResponse: %+v", resp)
 	return &resp, nil
 }
@@ -92,13 +78,15 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	query := database.DBAPM(ctx).Model(&models.Supplier{})
 	query = helpers.PrepareFilter(ctx, query, params).
 		Preload("SupplierAddresses").Joins(models.GetSupplierAddressJoinStr()).
+		Joins(models.GetPartnerServiceMappingsJoinStr()).
 		Group("suppliers.id")
 
 	var total uint64
 	query.Count(&total)
 	helpers.SetPage(ctx, query, params)
 	suppliersWithAddresses := []models.Supplier{{}}
-	query.Select("suppliers.*").Find(&suppliersWithAddresses)
+	query.Select("suppliers.*, partner_service_mappings.service_level supplier_type").
+		Find(&suppliersWithAddresses)
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
 	json.Unmarshal(temp, &resp.Data)
@@ -116,11 +104,16 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		return &resp, nil
 	}
 
+	errorMessage := ss.checkAllowedSupplierTypes(ctx, params.GetSupplierType())
+	if errorMessage != "" {
+		resp.Message = errorMessage
+		return &resp, nil
+	}
+
 	supplier := models.Supplier{
 		Name:                      params.GetName(),
 		Email:                     params.GetEmail(),
 		UserID:                    utils.GetCurrentUserID(ctx),
-		SupplierType:              utils.SupplierType(params.GetSupplierType()),
 		BusinessName:              params.GetBusinessName(),
 		Phone:                     params.GetPhone(),
 		AlternatePhone:            params.GetAlternatePhone(),
@@ -136,9 +129,19 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		GuarantorNidFrontImageUrl: params.GetGuarantorNidFrontImageUrl(),
 		GuarantorNidBackImageUrl:  params.GetGuarantorNidBackImageUrl(),
 		ChequeImageUrl:            params.GetChequeImageUrl(),
-		SupplierCategoryMappings:  helpers.PrepareCategoreMapping(params.GetCategoryIds()),
+		SupplierCategoryMappings:  helpers.PrepareCategoryMapping(params.GetCategoryIds()),
 		SupplierOpcMappings:       helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
 		SupplierAddresses:         helpers.PrepareSupplierAddress(params),
+		PartnerServiceMappings: []models.PartnerServiceMapping{{
+			ServiceType:  helpers.GetDefaultServiceType(ctx),
+			ServiceLevel: utils.SupplierType(params.GetSupplierType()),
+			Active:       true,
+		}},
+	}
+
+	if err := helpers.CheckSupplierExistWithDifferentRole(ctx, supplier); err != nil {
+		resp.Message = fmt.Sprintf("Error while creating Supplier: %s", err.Error())
+		return &resp, nil
 	}
 
 	err := database.DBAPM(ctx).Save(&supplier)
@@ -148,6 +151,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		resp.Message = "Supplier Added Successfully"
 		resp.Success = true
 		resp.Id = supplier.ID
+		helpers.CreateIdentityServiceUser(ctx, supplier)
 		helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionCreateSupplier, supplier)
 	}
 	log.Printf("AddSupplierResponse: %+v", resp)
@@ -182,11 +186,16 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			status = models.SupplierStatusPending // Moving to Pending if any data is updated
 		}
 
+		errorMessage := ss.checkAllowedSupplierTypes(ctx, params.GetSupplierType())
+		if errorMessage != "" {
+			resp.Message = errorMessage
+			return &resp, nil
+		}
+
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Status:                    status,
 			Name:                      params.GetName(),
 			Email:                     params.GetEmail(),
-			SupplierType:              utils.SupplierType(params.GetSupplierType()),
 			BusinessName:              params.GetBusinessName(),
 			Phone:                     params.GetPhone(),
 			AlternatePhone:            params.GetAlternatePhone(),
@@ -195,8 +204,6 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			NidNumber:                 params.GetNidNumber(),
 			NidFrontImageUrl:          params.GetNidFrontImageUrl(),
 			NidBackImageUrl:           params.GetNidBackImageUrl(),
-			TradeLicenseUrl:           params.GetTradeLicenseUrl(),
-			AgreementUrl:              params.GetAgreementUrl(),
 			ShopOwnerImageUrl:         params.GetShopOwnerImageUrl(),
 			GuarantorImageUrl:         params.GetGuarantorImageUrl(),
 			GuarantorNidNumber:        params.GetGuarantorNidNumber(),
@@ -205,12 +212,25 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			ChequeImageUrl:            params.GetChequeImageUrl(),
 			SupplierCategoryMappings:  helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
 		})
+
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
 		} else {
-			resp.Message = "Supplier Edited Successfully"
-			resp.Success = true
-			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
+			partnerServiceMapping := models.PartnerServiceMapping{}
+			database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID).First(&partnerServiceMapping)
+			err = database.DBAPM(ctx).Model(&partnerServiceMapping).Updates(models.PartnerServiceMapping{
+				ServiceLevel:    utils.SupplierType(params.GetSupplierType()),
+				TradeLicenseUrl: params.GetTradeLicenseUrl(),
+				AgreementUrl:    params.GetAgreementUrl(),
+			})
+
+			if err != nil && err.Error != nil {
+				resp.Message = fmt.Sprintf("Error while updating PartnerServiceMapping: %s", err.Error)
+			} else {
+				resp.Message = "Supplier Edited Successfully"
+				resp.Success = true
+				helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
+			}
 		}
 	}
 	log.Printf("EditSupplierResponse: %+v", resp)
@@ -223,34 +243,60 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 	resp := supplierpb.BasicApiResponse{Success: false}
 
 	supplier := models.Supplier{}
-	query := database.DBAPM(ctx).Model(&models.Supplier{})
-	result := query.First(&supplier, params.GetId())
+	result := database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if !supplier.IsChangeAllowed(ctx) {
-		resp.Message = "Change Not Allowed"
-	} else {
-		isPrimaryDoc := utils.IsInclude(utils.SupplierPrimaryDocumentType, params.GetDocumentType())
-		isSecondaryDoc := utils.IsInclude(utils.SupplierSecondaryDocumentType, params.GetDocumentType())
-		if !(isPrimaryDoc || isSecondaryDoc) {
-			resp.Message = "Invalid Document Type"
-		} else {
-			query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", params.GetId())
-			query = query.Update(params.GetDocumentType(), "")
-			if isPrimaryDoc &&
-				(supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed) {
-				query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
-			}
+		return &resp, nil
+	}
 
-			if err := query.Error; err != nil {
-				resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
-			} else {
-				resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
-				resp.Success = true
-				helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionRemoveSupplierDocuments, params)
-			}
+	if !supplier.IsChangeAllowed(ctx) {
+		resp.Message = "Change Not Allowed"
+		return &resp, nil
+	}
+
+	isPrimaryDoc := utils.IsInclude(utils.SupplierPrimaryDocumentType, params.GetDocumentType())
+	isSecondaryDoc := utils.IsInclude(utils.SupplierSecondaryDocumentType, params.GetDocumentType())
+	if !(isPrimaryDoc || isSecondaryDoc) {
+		resp.Message = "Invalid Document Type"
+		return &resp, nil
+	}
+
+	partnerServiceMapping := models.PartnerServiceMapping{}
+	if utils.IsInclude([]string{"trade_license_url", "agreement_url"}, params.GetDocumentType()) {
+		query := database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID)
+		if params.GetPartnerServiceId() != utils.Zero {
+			query = query.Where("id = ?", params.GetPartnerServiceId())
+		}
+		query.First(&partnerServiceMapping)
+		if partnerServiceMapping.ID == utils.Zero {
+			resp.Message = "ParnerServiceMapping not found"
+			return &resp, nil
 		}
 	}
+
+	query := database.DBAPM(ctx).Model(&supplier).Where("suppliers.id = ?", supplier.ID)
+	if isPrimaryDoc &&
+		(supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed) {
+		query = query.Update("status", models.SupplierStatusPending) // Moving to Pending if any data is updated
+	}
+
+	if partnerServiceMapping.ID != utils.Zero {
+		query = database.DBAPM(ctx).Model(&partnerServiceMapping).Updates(map[string]interface{}{
+			params.GetDocumentType(): "",
+			"active":                 false,
+		})
+	} else {
+		query = query.Update(params.GetDocumentType(), "")
+	}
+
+	if err := query.Error; err != nil {
+		resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
+	} else {
+		resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
+		resp.Success = true
+		helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionRemoveSupplierDocuments, params)
+	}
+
 	log.Printf("RemoveDocumentResponse: %+v", resp)
 	return &resp, nil
 }
@@ -266,7 +312,7 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 	fmt.Printf("newSupplierStatus %+v", newSupplierStatus)
 	if result.RecordNotFound() {
 		resp.Message = "Supplier Not Found"
-	} else if params.GetReason() == EmptyString &&
+	} else if params.GetReason() == utils.EmptyString &&
 		(newSupplierStatus == models.SupplierStatusBlocked || newSupplierStatus == models.SupplierStatusFailed) {
 		resp.Message = "Status change reason missing"
 	} else if valid, message := helpers.IsValidStatusUpdate(ctx, supplier, newSupplierStatus); !valid {
@@ -430,7 +476,7 @@ func (ss *SupplierService) getResponseField() string {
 	s := []string{
 		"suppliers.id",
 		"suppliers.status",
-		"suppliers.supplier_type",
+		"partner_service_mappings.service_level supplier_type",
 		"suppliers.name",
 		"suppliers.email",
 		"suppliers.phone",
@@ -441,8 +487,8 @@ func (ss *SupplierService) getResponseField() string {
 		"suppliers.nid_number",
 		"suppliers.nid_front_image_url",
 		"suppliers.nid_back_image_url",
-		"suppliers.trade_license_url",
-		"suppliers.agreement_url",
+		"partner_service_mappings.trade_license_url",
+		"partner_service_mappings.agreement_url",
 		"suppliers.reason",
 		"suppliers.shop_owner_image_url",
 		"suppliers.guarantor_nid_number",
@@ -455,4 +501,16 @@ func (ss *SupplierService) getResponseField() string {
 	}
 
 	return strings.Join(s, ",")
+}
+
+func (ss *SupplierService) checkAllowedSupplierTypes(ctx context.Context, supplierType uint64) string {
+	typeValue := utils.SupplierTypeValue[utils.SupplierType(supplierType)]
+	allowedSupplierTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).([]string)
+
+	if supplierType != utils.Zero && !utils.IsInclude(allowedSupplierTypes, typeValue) {
+		resp := fmt.Sprintf("Supplier Type: %s is not Allowed for this Supplier", typeValue)
+		return resp
+	}
+
+	return ""
 }

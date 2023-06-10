@@ -1,6 +1,6 @@
 package mocks
 
-import context "context"
+import "context"
 
 type mockAppPreference struct {
 	values map[string]interface{}
@@ -15,4 +15,11 @@ func (mock mockAppPreference) GetValue(ctx context.Context, key string, value in
 		return v
 	}
 	return value
+}
+
+func (mock mockAppPreference) GetBool(ctx context.Context, key string) bool {
+	if v, f := mock.values[key]; f {
+		return v.(bool)
+	}
+	return false
 }

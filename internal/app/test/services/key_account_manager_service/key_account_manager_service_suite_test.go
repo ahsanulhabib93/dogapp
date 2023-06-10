@@ -14,5 +14,5 @@ func TestKeyAccountManagerService(t *testing.T) {
 }
 
 var _ = AfterEach(func() {
-	test.Cleaner.Clean("suppliers", "key_account_managers")
+	test.Cleaner.Clean("suppliers", "partner_service_mappings", "key_account_managers")
 })

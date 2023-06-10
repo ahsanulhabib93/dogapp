@@ -21,7 +21,7 @@ var _ = Describe("ListSupplier", func() {
 		test_utils.GetContext(&ctx)
 	})
 
-	Context("Supplier Address List", func() {
+	Context("Supplier Address List When Filtered with Supplier id", func() {
 		It("Should Respond with corresponding addresses", func() {
 			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
@@ -59,6 +59,32 @@ var _ = Describe("ListSupplier", func() {
 			Expect(addressData2.Phone).To(Equal(supplierAddress2.Phone))
 			Expect(addressData2.GstNumber).To(Equal(supplierAddress2.GstNumber))
 			Expect(addressData2.IsDefault).To(Equal(false))
+		})
+	})
+
+	Context("Supplier Address List When Filtered with  id", func() {
+		It("Should Respond with corresponding addresses", func() {
+			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
+
+			res, err := new(services.SupplierAddressService).List(ctx, &addresspb.ListSupplierAddressParams{Id: supplierAddress1.ID})
+			Expect(err).To(BeNil())
+			Expect(len(res.Data)).To(Equal(1))
+
+			addressData1 := res.Data[0]
+			Expect(addressData1.Firstname).To(Equal(supplierAddress1.Firstname))
+			Expect(addressData1.Lastname).To(Equal(supplierAddress1.Lastname))
+			Expect(addressData1.Address1).To(Equal(supplierAddress1.Address1))
+			Expect(addressData1.Address2).To(Equal(supplierAddress1.Address2))
+			Expect(addressData1.Landmark).To(Equal(supplierAddress1.Landmark))
+			Expect(addressData1.City).To(Equal(supplierAddress1.City))
+			Expect(addressData1.State).To(Equal(supplierAddress1.State))
+			Expect(addressData1.Country).To(Equal(supplierAddress1.Country))
+			Expect(addressData1.Zipcode).To(Equal(supplierAddress1.Zipcode))
+			Expect(addressData1.Phone).To(Equal(supplierAddress1.Phone))
+			Expect(addressData1.GstNumber).To(Equal(supplierAddress1.GstNumber))
+			Expect(addressData1.IsDefault).To(Equal(false))
 		})
 	})
 })

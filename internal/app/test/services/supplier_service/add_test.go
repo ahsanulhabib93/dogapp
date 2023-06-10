@@ -8,10 +8,15 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
 
+	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
+	employeePb "github.com/voonik/goConnect/api/go/sr_service/attendance"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	aaaMocks "github.com/voonik/goFramework/pkg/aaa/models/mocks"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
@@ -22,7 +27,11 @@ import (
 var _ = Describe("AddSupplier", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
+	var apiHelperInstance *mocks.APIHelperInterface
+	// var apiCallerMock *mocks.ApiCallHelperInterface
+	var IdentityUserApiHelperInstance *mocks.IdentityUserApiHelperInterface
 	var userId uint64 = uint64(101)
+	var appPreferenceMockInstance *aaaMocks.AppPreferenceInterface
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
@@ -31,10 +40,29 @@ var _ = Describe("AddSupplier", func() {
 		ctx = test_helper.SetContextUser(ctx, userId, []string{})
 		mockAudit = mocks.SetAuditLogMock()
 		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+
+		apiHelperInstance = new(mocks.APIHelperInterface)
+		helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+		apiHelperInstance.On("FindUserByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
+		apiHelperInstance.On("FindTalentXUserByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
+
+		// IdentityUserApiHelperInstance = new(mocks.IdentityUserApiHelperInterface)
+		IdentityUserApiHelperInstance = &mocks.IdentityUserApiHelperInterface{}
+		helpers.InjectMockIdentityUserApiHelperInstance(IdentityUserApiHelperInstance)
+		IdentityUserApiHelperInstance.On("GetUserDetailsApiByPhone", ctx, mock.AnythingOfType("string")).Return(nil)
+		IdentityUserApiHelperInstance.On("CreateSupplier", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
+
+		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
+		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
+		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Hlc"})
+		appPreferenceMockInstance.On("GetValue", ctx, "default_service_type", int64(1)).Return(int64(1))
 	})
 
 	AfterEach(func() {
 		mocks.UnsetAuditLogMock()
+		helpers.InjectMockAPIHelperInstance(nil)
+		helpers.InjectMockIdentityUserApiHelperInstance(nil)
+		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
 	Context("Adding new Supplier", func() {
@@ -86,7 +114,6 @@ var _ = Describe("AddSupplier", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierCategoryMappings").Preload("SupplierOpcMappings").First(&supplier)
 			Expect(res.Id).To(Equal(supplier.ID))
 			Expect(supplier.Email).To(Equal(param.Email))
-			Expect(supplier.SupplierType).To(Equal(utils.Hlc))
 			Expect(*supplier.UserID).To(Equal(userId))
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 			Expect(supplier.BusinessName).To(Equal(param.BusinessName))
@@ -102,6 +129,14 @@ var _ = Describe("AddSupplier", func() {
 			Expect(supplier.GuarantorNidNumber).To(Equal(param.GuarantorNidNumber))
 			Expect(supplier.GuarantorNidBackImageUrl).To(Equal(param.GuarantorNidBackImageUrl))
 			Expect(supplier.ChequeImageUrl).To(Equal(param.ChequeImageUrl))
+
+			partnerServices := []*models.PartnerServiceMapping{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PartnerServiceMappings").Find(&partnerServices)
+			Expect(len(partnerServices)).To(Equal(1))
+			partnerService := partnerServices[0]
+			Expect(partnerService.ServiceType).To(Equal(utils.Supplier))
+			Expect(partnerService.ServiceLevel).To(Equal(utils.Hlc))
+			Expect(partnerService.Active).To(Equal(true))
 
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
 			Expect(supplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(30)))
@@ -127,6 +162,13 @@ var _ = Describe("AddSupplier", func() {
 			Expect(address.GstNumber).To(Equal(param.GstNumber))
 			Expect(address.IsDefault).To(Equal(true))
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
+			var actualCalls int
+			for _, m := range IdentityUserApiHelperInstance.Calls {
+				if m.Method == "CreateSupplier" {
+					actualCalls++
+				}
+			}
+			Expect(actualCalls).To(Equal(1))
 		})
 	})
 
@@ -183,6 +225,105 @@ var _ = Describe("AddSupplier", func() {
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("id = ?", res.Id).First(&supplier)
 			Expect(supplier.Email).To(Equal(param.Email))
 		})
+
+		It("Should return error if user exist with same phone number in CRE", func() {
+			phone := "8801234567891"
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(&userPb.UserInfo{})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := &supplierpb.SupplierParam{
+				Name:         supplier1.Name,
+				Email:        "Email",
+				Phone:        phone,
+				SupplierType: uint64(utils.Hlc),
+				Address1:     "Address1",
+				Zipcode:      "Zipcode",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567891) already exist as Retails/SalesRep"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
+		})
+
+		It("Should return error if user exist with same alternate phone number in CRE", func() {
+			phone, altPhone := "8801234567891", "8801234567890"
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(nil)
+			apiHelperInstance.On("FindUserByPhone", ctx, altPhone).Return(&userPb.UserInfo{})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := &supplierpb.SupplierParam{
+				Name:           supplier1.Name,
+				Email:          "Email",
+				Phone:          phone,
+				AlternatePhone: altPhone,
+				SupplierType:   uint64(utils.Hlc),
+				Address1:       "Address1",
+				Zipcode:        "Zipcode",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567890) already exist as Retails/SalesRep"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
+		})
+
+		It("Should return error if user exist with same phone number in Identity Service", func() {
+			phone := "8801234567891"
+			IdentityUserApiHelperInstance = new(mocks.IdentityUserApiHelperInterface)
+			helpers.InjectMockIdentityUserApiHelperInstance(IdentityUserApiHelperInstance)
+			IdentityUserApiHelperInstance.On("GetUserDetailsApiByPhone", ctx, phone).Return(&helpers.IdentityUserObject{})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := &supplierpb.SupplierParam{
+				Name:         supplier1.Name,
+				Email:        "Email",
+				Phone:        phone,
+				SupplierType: uint64(utils.Hlc),
+				Address1:     "Address1",
+				Zipcode:      "Zipcode",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567891) already exist"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
+		})
+
+		It("Should return error if user exist with same phone number in Identity Service", func() {
+			phone := "8801234567891"
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(nil)
+			apiHelperInstance.On("FindTalentXUserByPhone", ctx, phone).Return([]*employeePb.EmployeeRecord{{Name: "employee"}})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			param := &supplierpb.SupplierParam{
+				Name:         supplier1.Name,
+				Email:        "Email",
+				Phone:        phone,
+				SupplierType: uint64(utils.Hlc),
+				Address1:     "Address1",
+				Zipcode:      "Zipcode",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Supplier: user(#8801234567891) already exist as shopup employee"))
+
+			var count int
+			database.DBAPM(ctx).Model(&models.SupplierOpcMapping{}).Count(&count)
+			Expect(count).To(Equal(0))
+		})
 	})
 
 	Context("Adding Supplier without name", func() {
@@ -236,7 +377,7 @@ var _ = Describe("AddSupplier", func() {
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: partner_service_mappings can't be blank"))
 		})
 	})
 
@@ -261,7 +402,7 @@ var _ = Describe("AddSupplier", func() {
 			supplier := &models.Supplier{}
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: supplier_type can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: partner_service_mappings can't be blank"))
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierOpcMappings").First(&supplier)
 			Expect(len(supplier.SupplierOpcMappings)).To(Equal(0))
 		})
@@ -389,6 +530,22 @@ var _ = Describe("AddSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: Phone Number Already Exists"))
+		})
+	})
+
+	Context("Adding Supplier with invalid supplier type", func() {
+		It("Should return error response", func() {
+			param := &supplierpb.SupplierParam{
+				Name:         "Name",
+				Email:        "Email",
+				SupplierType: uint64(utils.Captive),
+				Phone:        "8801234567112",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Supplier Type: Captive is not Allowed for this Supplier"))
 		})
 	})
 })

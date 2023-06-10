@@ -12,36 +12,43 @@ env:
   GKE_ZONE: ${{ secrets.GKE_ZONE }}   # TODO: update to cluster zone
   SOURCE_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
   GITHUB_TOKEN: ${{ secrets.GIHUB_PAT }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  PR_NUMBER: ${{ github.event.pull_request.number }}
 
 jobs:
-  
+
   sonarcloud:
     runs-on: ubuntu-latest
+    outputs:
+      SONAR_STATUS: ${{ steps.sonar.outputs.SONAR_STATUS }}
     steps:
     - uses: actions/checkout@v2
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
+    - name: Sonar Cloud Quality Check
+      id: sonar
+      run: |-
+        STATUS=`curl -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status\?projectKey\=shopuptech_ss2\&branch\=$SOURCE_BRANCH_NAME | jq -r '.projectStatus.status'`
+        echo $STATUS
+        echo "SONAR_STATUS=$STATUS" >> $GITHUB_OUTPUT
+        if [[ ! $STATUS == 'OK' ]] ;then
+        exit 1
+        fi
   setup-build-publish-deploy-staging:
     name: Setup, Build, Publish, and Deploy to staging
     runs-on: ubuntu-20.04
     needs: sonarcloud
-    if: ${{ github.event.label.name == 'Ok to deploy in staging' }}
+    if: ${{ github.event.label.name == 'Ok to deploy in staging' && needs.sonarcloud.outputs.SONAR_STATUS == 'OK' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       # Setup gcloud CLI
-      - uses: google-github-actions/auth@v0
+      - uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-      - uses: google-github-actions/setup-gcloud@v0
+      - uses: google-github-actions/setup-gcloud@v1
 
       # Configure Docker to use the gcloud command-line tool as a credential
       # helper for authentication
@@ -49,25 +56,23 @@ jobs:
           gcloud --quiet auth configure-docker
       # Build and Push the Docker image to Google Container Registry
       - name: Build and push
+        id: build
         run: |
-          export IMAGE_TAG=`echo "$SOURCE_BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g'`-$GITHUB_RUN_NUMBER
+          IMAGE_TAG=$SOURCE_BRANCH_NAME-$GITHUB_RUN_NUMBER
           docker build -t ss2 . --build-arg GITHUB_TOKEN="${{secrets.GIHUB_PAT}}" -f docker/Dockerfile
           docker tag ss2 gcr.io/voonik-tech/vnkshopup/ss2:$IMAGE_TAG
           docker push gcr.io/voonik-tech/vnkshopup/ss2:$IMAGE_TAG
-      # Set up helm v3.4.1
-      - uses: azure/setup-helm@v1
+          echo "::set-output name=version::$IMAGE_TAG"
+      - id: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v1'
         with:
-          version: '3.4.1' # default is latest stable
-        id: install
+          cluster_name: 'shopup-mokam-stg'
+          location: 'asia-southeast1'
 
       # Deploy to staging GKE cluster
-      - name: Deploy to staging
+      - name: Apply Proto Config to staging
         run: |
-          export IMAGE_TAG=`echo "$SOURCE_BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g'`-$GITHUB_RUN_NUMBER
-          gcloud container clusters get-credentials shopup-mokam-stg --zone asia-southeast1 --project $PROJECT_ID
-          helm plugin install https://github.com/hayorov/helm-gcs --version 0.3.5
-          helm repo add shopup gs://shopup-prod/helm-charts
-          helm repo update
+          #gcloud container clusters get-credentials shopup-mokam-stg --zone asia-southeast1 --project $PROJECT_ID
           ### Update envoy grpc transcoder if any changes are made to protobuf file ###
             git clone https://$GITHUB_TOKEN@github.com/Voonik/goConnect.git
             cd goConnect
@@ -76,20 +81,54 @@ jobs:
             git clone https://github.com/googleapis/googleapis
             GOOGLEAPIS_DIR=./googleapis
             cp goConnect/api/proto/health/health_v1.proto .
-            cp goConnect/api/proto/ss2/{supplier*,payment*,key*} .
-            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto
+            cp goConnect/api/proto/app_preference_service/app_preference_service.proto .
+            cp goConnect/api/proto/ss2/{supplier*,payment*,key*,partner_service_mapping*} .
+            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto
             sudo apt-get install -y protobuf-compiler
-            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto
+            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto
             kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
           ################################################################################
-          helm upgrade --install --atomic --timeout 600s --namespace mokam ss2 shopup/ss2-staging --set image.tag=$IMAGE_TAG
-      # Send Slack Alerts
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_CHANNEL: deployment-status
-          SLACK_ICON: https://shopimages1.vstores.io/dev_ops/staging_icon.png?size=48
-          SLACK_ICON_EMOJI: ':bell:'
-          SLACK_COLOR: '#3278BD'
-          SLACK_MESSAGE: "Helm Intsall/Upgrade Successful\nService: SS2\nEnvironment: UAT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: shopuptech/cicd-automation
+          token: ${{ secrets.GIHUB_PAT }}
+          ref: 'master'
+
+      - name: Update protoservices
+        run: |
+          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-staging.yaml
+          custom=(
+            "app_preference_service.app_preference_service.AppPreferenceService"
+            "health.health_v1.Health"
+            "ss2.supplier.Supplier"
+            "ss2.payment_account_detail.PaymentAccountDetail"
+            "ss2.key_account_manager.KeyAccountManager"
+            "ss2.supplier_address.SupplierAddress"
+            "ss2.partner_service_mapping.PartnerServiceMapping"
+          )
+          i=0
+          for value in "${custom[@]}"; do
+            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-staging.yaml
+            i=$((i+1))
+          done
+          if git status | grep -q modified
+          then
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git add charts/shopup/ss2/values-staging.yaml
+            git commit -m "feat(helm): Update Proto to latest image"
+            git push origin master
+          fi
+      - name: Deploying to GCP Cluster
+        uses: fjogeleit/yaml-update-action@master
+        with:
+          valueFile: 'charts/shopup/ss2/values-staging.yaml'
+          propertyPath: 'image.tag'
+          value: ${{ steps.build.outputs.version }}
+          repository: shopuptech/cicd-automation
+          branch: master
+          updateFile: true
+          message: 'feat(helm): Update Image Version to ${{ steps.build.outputs.version }}'
+          token: ${{ secrets.GIHUB_PAT }}

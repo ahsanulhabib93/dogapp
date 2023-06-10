@@ -48,12 +48,13 @@ type Supplier struct {
 	GuarantorNidFrontImageUrl string                 `gorm:"type:varchar(512)" json:"guarantor_nid_front_image_url"`
 	GuarantorNidBackImageUrl  string                 `gorm:"type:varchar(512)" json:"guarantor_nid_back_image_url"`
 	ChequeImageUrl            string                 `gorm:"type:varchar(512)" json:"cheque_image_url"`
-	SupplierType              utils.SupplierType     `json:"supplier_type" valid:"required"`
+	SupplierType              utils.SupplierType     `json:"supplier_type"`
 	SupplierAddresses         []SupplierAddress      `json:"supplier_addresses"`
 	PaymentAccountDetails     []PaymentAccountDetail `json:"payment_account_details"`
 	KeyAccountManagers        []KeyAccountManager
 	SupplierCategoryMappings  []SupplierCategoryMapping
 	SupplierOpcMappings       []SupplierOpcMapping
+	PartnerServiceMappings    []PartnerServiceMapping `json:"partner_service_mappings"`
 }
 
 // Validate ...
@@ -106,7 +107,11 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 		return errors.New("At least one primary document or OTP verification needed")
 	}
 
-	typeValue := utils.SupplierTypeValue[supplier.SupplierType]
+	// TBD: How to handle if multiple service mappings present
+	partnerService := PartnerServiceMapping{}
+	database.DBAPM(ctx).Model(PartnerServiceMapping{}).Where("supplier_id = ?", supplier.ID).First(&partnerService)
+	typeValue := utils.SupplierTypeValue[partnerService.ServiceLevel]
+
 	otpTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_otp_verification", []string{}).([]string)
 	if utils.IsInclude(otpTypeVerificationList, typeValue) && !supplier.IsOTPVerified() {
 		msg := fmt.Sprint("OTP verification required for supplier type: ", typeValue)
@@ -162,4 +167,8 @@ func GetOpcMappingJoinStr() string {
 // GetPaymentAccountDetailsJoinStr ...
 func GetPaymentAccountDetailsJoinStr() string {
 	return "LEFT JOIN payment_account_details on payment_account_details.supplier_id = suppliers.id and payment_account_details.vaccount_id = suppliers.vaccount_id"
+}
+
+func GetPartnerServiceMappingsJoinStr() string {
+	return "INNER JOIN partner_service_mappings on partner_service_mappings.supplier_id = suppliers.id and partner_service_mappings.vaccount_id = suppliers.vaccount_id"
 }

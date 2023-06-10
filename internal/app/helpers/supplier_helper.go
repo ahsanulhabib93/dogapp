@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
+	supplierPb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -20,7 +22,7 @@ type SupplierDBResponse struct {
 	OpcIds      string `json:"opc_ids,omitempty"`
 }
 
-func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams) *gorm.DB {
+func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListParams) *gorm.DB {
 	if params.GetId() != 0 {
 		query = query.Where("suppliers.id = ?", params.GetId())
 	}
@@ -63,11 +65,15 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierpb.ListP
 	if params.GetOpcId() != 0 {
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
 	}
+	if len(params.GetTypes()) != 0 {
+		// partner_service_mappings is already joined in places where PrepareFilter is called
+		query = query.Where("partner_service_mappings.service_level IN (?)", params.GetTypes())
+	}
 
 	return query
 }
 
-func SetPage(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams) {
+func SetPage(ctx context.Context, query *gorm.DB, params *supplierPb.ListParams) {
 	if params.GetPerPage() <= 0 || params.GetPerPage() > utils.DEFAULT_PER_PAGE {
 		params.PerPage = utils.DEFAULT_PER_PAGE
 	}
@@ -83,7 +89,7 @@ func SetPage(ctx context.Context, query *gorm.DB, params *supplierpb.ListParams)
 
 }
 
-func PrepareCategoreMapping(ids []uint64) []models.SupplierCategoryMapping {
+func PrepareCategoryMapping(ids []uint64) []models.SupplierCategoryMapping {
 	categories := []models.SupplierCategoryMapping{}
 	for _, id := range ids {
 		categories = append(categories, models.SupplierCategoryMapping{
@@ -107,40 +113,72 @@ func PrepareOpcMapping(ctx context.Context, ids []uint64, fetchOpc bool) []model
 	return processCenters
 }
 
-func PrepareListResponse(suppliers []SupplierDBResponse, total uint64) supplierpb.ListResponse {
-	data := []*supplierpb.SupplierObject{}
-	for _, supplier := range suppliers {
-		data = append(data, PrepareSupplierResponse(supplier))
+func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse) (data []*supplierPb.SupplierObject) {
+	supplierIDs := make([]uint64, len(suppliersData))
+	for i, supplierData := range suppliersData {
+		supplierIDs[i] = supplierData.ID
 	}
 
-	return supplierpb.ListResponse{Data: data, TotalCount: total}
+	suppliers := []models.Supplier{}
+	database.DBAPM(ctx).Model(&models.Supplier{}).Preload("PartnerServiceMappings").
+		Where("id IN (?)", supplierIDs).Find(&suppliers)
+
+	supplierMap := make(map[uint64]models.Supplier)
+	for _, supplier := range suppliers {
+		supplierMap[supplier.ID] = supplier
+	}
+
+	for _, supplierData := range suppliersData {
+		supplier := supplierMap[supplierData.ID]
+		data = append(data, PrepareSupplierResponse(ctx, supplier, supplierData))
+	}
+	return data
 }
 
-func PrepareSupplierResponse(supplier SupplierDBResponse) *supplierpb.SupplierObject {
-	temp, _ := json.Marshal(supplier)
-	so := &supplierpb.SupplierObject{}
-	json.Unmarshal(temp, so)
+func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supplierData SupplierDBResponse) *supplierPb.SupplierObject {
+	temp, _ := json.Marshal(supplierData)
+	supplierObject := &supplierPb.SupplierObject{}
+	json.Unmarshal(temp, supplierObject)
 
-	so.CategoryIds = []uint64{}
-	for _, cId := range strings.Split(supplier.CategoryIds, ",") {
+	supplierObject.CategoryIds = []uint64{}
+	for _, cId := range strings.Split(supplierData.CategoryIds, ",") {
 		if cId := strings.TrimSpace(cId); cId != "" {
 			v, _ := strconv.Atoi(cId)
-			so.CategoryIds = append(so.CategoryIds, uint64(v))
+			supplierObject.CategoryIds = append(supplierObject.CategoryIds, uint64(v))
 		}
 	}
 
-	so.OpcIds = []uint64{}
-	for _, saId := range strings.Split(supplier.OpcIds, ",") {
+	supplierObject.OpcIds = []uint64{}
+	for _, saId := range strings.Split(supplierData.OpcIds, ",") {
 		if opcId := strings.TrimSpace(saId); opcId != "" {
 			v, _ := strconv.Atoi(saId)
-			so.OpcIds = append(so.OpcIds, uint64(v))
+			supplierObject.OpcIds = append(supplierObject.OpcIds, uint64(v))
 		}
 	}
 
-	return so
+	supplierObject.PartnerServices = GetPartnerServiceMappings(ctx, supplier)
+	return supplierObject
 }
 
-func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierAddress {
+func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []*supplierPb.PartnerServiceObject {
+	partnerServiceData := []*supplierPb.PartnerServiceObject{}
+
+	partnerServices := supplier.PartnerServiceMappings // preloaded
+	for _, partnerService := range partnerServices {
+		partnerServiceData = append(partnerServiceData, &supplierPb.PartnerServiceObject{
+			Id:              partnerService.ID,
+			Active:          partnerService.Active,
+			AgreementUrl:    partnerService.AgreementUrl,
+			TradeLicenseUrl: partnerService.TradeLicenseUrl,
+			ServiceType:     partnerService.ServiceType.String(),
+			ServiceLevel:    partnerService.ServiceLevel.String(),
+		})
+	}
+
+	return partnerServiceData
+}
+
+func PrepareSupplierAddress(params *supplierPb.SupplierParam) []models.SupplierAddress {
 	if params.GetFirstname() == "" && params.GetLastname() == "" && params.GetAddress1() == "" && params.GetAddress2() == "" &&
 		params.GetLandmark() == "" && params.GetCity() == "" && params.GetState() == "" && params.GetCountry() == "" &&
 		params.GetZipcode() == "" && params.GetGstNumber() == "" {
@@ -163,7 +201,7 @@ func PrepareSupplierAddress(params *supplierpb.SupplierParam) []models.SupplierA
 	}}
 }
 
-//IsValidStatusUpdate ...
+// IsValidStatusUpdate ...
 func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatus models.SupplierStatus) (valid bool, message string) {
 	if !isValidStatus(newStatus) {
 		return false, "Invalid Status"
@@ -176,6 +214,28 @@ func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatu
 		}
 	}
 	return true, ""
+}
+
+func CheckSupplierExistWithDifferentRole(ctx context.Context, supplier models.Supplier) error {
+	if user := FindCreUserByPhone(ctx, supplier.Phone); user != nil {
+		log.Printf("getCreUserWithPhone: phone = %s response = %v\n", supplier.Phone, user)
+		return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.Phone)
+	} else if user = FindCreUserByPhone(ctx, supplier.AlternatePhone); user != nil {
+		log.Printf("getCreUserWithPhone: alternate_phone = %s response = %v\n", supplier.AlternatePhone, user)
+		return fmt.Errorf("user(#%s) already exist as Retails/SalesRep", supplier.AlternatePhone)
+	}
+
+	if user := GetIdentityUser(ctx, supplier.Phone); user != nil {
+		log.Printf("getCreUserWithPhone: phone = %s response = %v\n", supplier.Phone, user)
+		return fmt.Errorf("user(#%s) already exist", supplier.Phone)
+	}
+
+	if users := GetTalentXUser(ctx, supplier.Phone); len(users) != utils.Zero {
+		log.Printf("GetTalentXUser: phone = %s response = %v\n", supplier.Phone, users)
+		return fmt.Errorf("user(#%s) already exist as shopup employee", supplier.Phone)
+	}
+
+	return nil
 }
 
 func isValidStatus(newStatus models.SupplierStatus) (valid bool) {
@@ -205,4 +265,8 @@ func isValidStatusTransition(oldStatus, newStatus models.SupplierStatus) (valid 
 		}
 	}
 	return
+}
+
+func GetDefaultServiceType(ctx context.Context) utils.ServiceType {
+	return utils.ServiceType(aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "default_service_type", int64(utils.Supplier)).(int64))
 }
