@@ -316,8 +316,9 @@ func GetAllowedServiceTypes(ctx context.Context) []string {
 	globalPermission := "supplierpanel:allservices:view"
 	permissions := utils.GetCurrentUserPermissions(ctx)
 
-	// if user has global permission, then no need to check for other permissions
-	if utils.IsInclude(permissions, globalPermission) { // or Framework user
+	frameworkUser := utils.GetCurrentUserID(ctx) == nil
+	allServiceAccess := utils.IsInclude(permissions, globalPermission)
+	if frameworkUser || allServiceAccess {
 		for serviceType, _ := range utils.PartnerServiceTypeMapping {
 			allowedServiceTypes = append(allowedServiceTypes, serviceType)
 		}

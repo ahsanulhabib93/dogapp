@@ -150,7 +150,8 @@ func CreateBank(ctx context.Context, bank *models.Bank) *models.Bank {
 	return bank
 }
 
-func SetContextUser(ctx context.Context, userId uint64, permissions []string) context.Context {
+func SetContextUser(ctx *context.Context, userId uint64, permissions []string) *context.Context {
+	*ctx = context.Background()
 	threadObject := &misc.ThreadObject{
 		VaccountId:    1,
 		PortalId:      1,
@@ -164,5 +165,6 @@ func SetContextUser(ctx context.Context, userId uint64, permissions []string) co
 			Permissions: permissions,
 		},
 	}
-	return misc.SetInContextThreadObject(ctx, threadObject)
+	*ctx = misc.SetInContextThreadObject(*ctx, threadObject)
+	return ctx
 }

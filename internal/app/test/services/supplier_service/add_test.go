@@ -37,7 +37,7 @@ var _ = Describe("AddSupplier", func() {
 		test_utils.GetContext(&ctx)
 		mocks.UnsetOpcMock()
 
-		ctx = test_helper.SetContextUser(ctx, userId, []string{})
+		test_helper.SetContextUser(&ctx, userId, []string{})
 		mockAudit = mocks.SetAuditLogMock()
 		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 

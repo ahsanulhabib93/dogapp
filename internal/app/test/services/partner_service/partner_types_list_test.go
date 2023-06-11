@@ -9,6 +9,7 @@ import (
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/test_helper"
 )
 
 var _ = Describe("PartnerTypesList", func() {
@@ -20,7 +21,7 @@ var _ = Describe("PartnerTypesList", func() {
 
 	Context("When user has global permission", func() {
 		BeforeEach(func() {
-			test_utils.SetPermission(&ctx, []string{"supplierpanel:allservices:view"})
+			test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:allservices:view"})
 		})
 
 		It("Should return all service types data", func() {
@@ -42,7 +43,7 @@ var _ = Describe("PartnerTypesList", func() {
 
 	Context("When user has supplier permission", func() {
 		BeforeEach(func() {
-			test_utils.SetPermission(&ctx, []string{"supplierpanel:supplierservice:view"})
+			test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:supplierservice:view"})
 		})
 
 		It("Should return only supplier service type data", func() {

@@ -25,7 +25,7 @@ var _ = Describe("ListSupplier", func() {
 	BeforeEach(func() {
 		mocks.UnsetOpcMock()
 		test_utils.GetContext(&ctx)
-		ctx = test_helper.SetContextUser(&ctx, userId, []string{"supplierpanel:allservices:view"})
+		test_helper.SetContextUser(&ctx, userId, []string{"supplierpanel:allservices:view"})
 	})
 
 	Context("Supplier List", func() {
@@ -482,10 +482,12 @@ var _ = Describe("ListSupplier", func() {
 	})
 
 	Context("When User has only supplier permission", func() {
+		BeforeEach(func() {
+			test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:supplierservice:view"})
+		})
 		It("Should Respond with only supplier service type data", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
 			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
-
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
 			Expect(res.TotalCount).To(Equal(uint64(1)))
@@ -498,6 +500,9 @@ var _ = Describe("ListSupplier", func() {
 	})
 
 	Context("When User has only supplier permission and transporter service type filter is applied", func() {
+		BeforeEach(func() {
+			test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:supplierservice:view"})
+		})
 		It("Should Respond with no supplier data", func() {
 			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
 			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})

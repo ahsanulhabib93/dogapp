@@ -19,7 +19,6 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		test_utils.SetPermission(&ctx, []string{"supplierpanel:allservices:view"})
 	})
 
 	Context("Without any filters", func() {
