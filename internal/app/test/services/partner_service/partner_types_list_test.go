@@ -5,36 +5,18 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/mock"
 
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
-	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
-	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/services"
-	"github.com/voonik/ss2/internal/app/test/mocks"
-	"github.com/voonik/ss2/internal/app/test/test_helper"
 )
 
 var _ = Describe("PartnerTypesList", func() {
 	var ctx context.Context
-	var mockAudit *mocks.AuditLogMock
-	var userId uint64 = uint64(101)
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		mocks.UnsetOpcMock()
-
-		ctx = test_helper.SetContextUser(ctx, userId, []string{})
-		mockAudit = mocks.SetAuditLogMock()
-		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
-	})
-
-	AfterEach(func() {
-		mocks.UnsetAuditLogMock()
-		helpers.InjectMockAPIHelperInstance(nil)
-		helpers.InjectMockIdentityUserApiHelperInstance(nil)
-		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
+		test_utils.SetPermission(&ctx, []string{"supplierpanel:allservices:view"})
 	})
 
 	Context("When no params are given", func() {

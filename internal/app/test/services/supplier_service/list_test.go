@@ -2,6 +2,7 @@ package supplier_service_test
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -10,7 +11,6 @@ import (
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
-	"github.com/voonik/goFramework/pkg/misc"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
@@ -26,20 +26,7 @@ var _ = Describe("ListSupplier", func() {
 	BeforeEach(func() {
 		mocks.UnsetOpcMock()
 		test_utils.GetContext(&ctx)
-
-		threadObject := &misc.ThreadObject{
-			VaccountId:    1,
-			PortalId:      1,
-			CurrentActId:  1,
-			XForwardedFor: "5079327",
-			UserData: &misc.UserData{
-				UserId: userId,
-				Name:   "John",
-				Email:  "john@gmail.com",
-				Phone:  "8801855533367",
-			},
-		}
-		ctx = misc.SetInContextThreadObject(ctx, threadObject)
+		ctx = test_helper.SetContextUser(ctx, userId, []string{"supplierpanel:allservices:view"})
 	})
 
 	Context("Supplier List", func() {
@@ -481,6 +468,7 @@ var _ = Describe("ListSupplier", func() {
 
 	Context("When ServiceTypes filter is applied", func() {
 		It("Should Respond with corresponding suppliers", func() {
+			fmt.Println("Hereeeee")
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
 			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
 

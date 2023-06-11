@@ -66,6 +66,18 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
 	}
 
+	allowedServiceTypes := GetServiceTypesForFiltering(ctx, params.GetServiceTypes())
+	fmt.Println("allowedServiceTypessss", allowedServiceTypes)
+	if len(allowedServiceTypes) != 0 {
+		var serviceTypes []utils.ServiceType
+		for _, serviceType := range allowedServiceTypes {
+			if val, ok := utils.PartnerServiceTypeMapping[serviceType]; ok {
+				serviceTypes = append(serviceTypes, val)
+			}
+		}
+		query = query.Where("partner_service_mappings.service_type IN (?)", serviceTypes)
+	}
+
 	// partner_service_mappings is already joined in places where PrepareFilter is called
 	if len(params.GetTypes()) != 0 {
 		query = query.Where("partner_service_mappings.service_level IN (?)", params.GetTypes())
@@ -79,16 +91,6 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 			}
 		}
 		query = query.Where("partner_service_mappings.service_level IN (?)", serviceLevels)
-	}
-
-	if len(params.GetServiceTypes()) != 0 {
-		var serviceTypes []utils.ServiceType
-		for _, serviceType := range params.GetServiceTypes() {
-			if val, ok := utils.PartnerServiceTypeMapping[serviceType]; ok {
-				serviceTypes = append(serviceTypes, val)
-			}
-		}
-		query = query.Where("partner_service_mappings.service_type IN (?)", serviceTypes)
 	}
 	return query
 }
@@ -289,4 +291,50 @@ func isValidStatusTransition(oldStatus, newStatus models.SupplierStatus) (valid 
 
 func GetDefaultServiceType(ctx context.Context) utils.ServiceType {
 	return utils.ServiceType(aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "default_service_type", int64(utils.Supplier)).(int64))
+}
+
+func GetServiceTypesForFiltering(ctx context.Context, serviceTypes []string) []string {
+	allowedServiceTypes := GetAllowedServiceTypes(ctx)
+	fmt.Println("allowedServiceTypes", allowedServiceTypes)
+	// if no service type is passed in filter, then return allowed service types
+	if len(serviceTypes) == 0 {
+		return allowedServiceTypes
+	}
+
+	// use common service types of allowed types and api filter types
+	allowedServiceTypes = utils.GetCommonElements(allowedServiceTypes, serviceTypes)
+	if len(allowedServiceTypes) == 0 {
+		log.Printf("User does not have permission to view any service type")
+		allowedServiceTypes = []string{""} // to return no records // return query.Where("1=0")
+	}
+	fmt.Println("allowedServiceTypes2", allowedServiceTypes)
+	return allowedServiceTypes
+}
+
+func GetAllowedServiceTypes(ctx context.Context) []string {
+	var allowedServiceTypes []string
+
+	supplierPermission := "supplierpanel:supplierservice:view"
+	transportPermission := "supplierpanel:transportservice:view"
+	globalPermission := "supplierpanel:allservices:view"
+	permissions := utils.GetCurrentUserPermissions(ctx)
+	fmt.Println("permissions", permissions)
+
+	// if user has global permission, then no need to check for other permissions
+	if utils.IsInclude(permissions, globalPermission) {
+		for serviceType, _ := range utils.PartnerServiceTypeMapping {
+			allowedServiceTypes = append(allowedServiceTypes, serviceType)
+		}
+		return allowedServiceTypes
+	}
+
+	if utils.IsInclude(permissions, supplierPermission) {
+		allowedServiceTypes = append(allowedServiceTypes, utils.Supplier.String())
+	}
+
+	if utils.IsInclude(permissions, transportPermission) {
+		allowedServiceTypes = append(allowedServiceTypes, utils.Transporter.String())
+	}
+
+	return allowedServiceTypes
 }
