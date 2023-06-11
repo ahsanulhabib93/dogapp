@@ -2,7 +2,6 @@ package supplier_service_test
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -26,7 +25,7 @@ var _ = Describe("ListSupplier", func() {
 	BeforeEach(func() {
 		mocks.UnsetOpcMock()
 		test_utils.GetContext(&ctx)
-		ctx = test_helper.SetContextUser(ctx, userId, []string{"supplierpanel:allservices:view"})
+		ctx = test_helper.SetContextUser(&ctx, userId, []string{"supplierpanel:allservices:view"})
 	})
 
 	Context("Supplier List", func() {
@@ -467,8 +466,7 @@ var _ = Describe("ListSupplier", func() {
 	})
 
 	Context("When ServiceTypes filter is applied", func() {
-		It("Should Respond with corresponding suppliers", func() {
-			fmt.Println("Hereeeee")
+		It("Should Respond with supplier service type data", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
 			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
 
@@ -480,6 +478,34 @@ var _ = Describe("ListSupplier", func() {
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
 			Expect(supplierData1.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+		})
+	})
+
+	Context("When User has only supplier permission", func() {
+		It("Should Respond with only supplier service type data", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier1.Email))
+			Expect(supplierData1.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+		})
+	})
+
+	Context("When User has only supplier permission and transporter service type filter is applied", func() {
+		It("Should Respond with no supplier data", func() {
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{ServiceTypes: []string{"Transporter"}})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(0)))
+			Expect(len(res.Data)).To(Equal(0))
 		})
 	})
 
