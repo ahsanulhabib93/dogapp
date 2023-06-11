@@ -16,28 +16,44 @@ var _ = Describe("PartnerTypesList", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		test_utils.SetPermission(&ctx, []string{"supplierpanel:allservices:view"})
 	})
 
-	Context("When no params are given", func() {
-		It("Should return success response", func() {
-			param := psmpb.PartnerServiceObject{}
+	Context("When user has global permission", func() {
+		BeforeEach(func() {
+			test_utils.SetPermission(&ctx, []string{"supplierpanel:allservices:view"})
+		})
 
-			res, _ := new(services.PartnerServiceMappingService).PartnerTypesList(ctx, &param)
+		It("Should return all service types data", func() {
+			res, _ := new(services.PartnerServiceMappingService).PartnerTypesList(ctx, &psmpb.PartnerServiceObject{})
 
 			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(2))
 
 			supplier := res.PartnerServiceTypeMappings[0]
-
 			Expect(supplier.PartnerType).To(Equal("Supplier"))
 			Expect(len(supplier.ServiceTypes)).To(Equal(5))
 			Expect(supplier.ServiceTypes).To(Equal([]string{"L0", "L1", "L2", "L3", "Hlc"}))
 
 			transport := res.PartnerServiceTypeMappings[1]
-
 			Expect(transport.PartnerType).To(Equal("Transporter"))
 			Expect(len(transport.ServiceTypes)).To(Equal(4))
 			Expect(transport.ServiceTypes).To(Equal([]string{"Captive", "Driver", "CashVendor", "RedxHubVendor"}))
+		})
+	})
+
+	Context("When user has supplier permission", func() {
+		BeforeEach(func() {
+			test_utils.SetPermission(&ctx, []string{"supplierpanel:supplierservice:view"})
+		})
+
+		It("Should return only supplier service type data", func() {
+			res, _ := new(services.PartnerServiceMappingService).PartnerTypesList(ctx, &psmpb.PartnerServiceObject{})
+
+			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(1))
+
+			supplier := res.PartnerServiceTypeMappings[0]
+			Expect(supplier.PartnerType).To(Equal("Supplier"))
+			Expect(len(supplier.ServiceTypes)).To(Equal(5))
+			Expect(supplier.ServiceTypes).To(Equal([]string{"L0", "L1", "L2", "L3", "Hlc"}))
 		})
 	})
 })

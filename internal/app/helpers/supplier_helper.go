@@ -67,8 +67,10 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 	}
 
 	allowedServiceTypes := GetServiceTypesForFiltering(ctx, params.GetServiceTypes())
-	fmt.Println("allowedServiceTypessss", allowedServiceTypes)
-	if len(allowedServiceTypes) != 0 {
+	if len(allowedServiceTypes) == 0 {
+		log.Println("User does not have permission to view any service type")
+		return query.Where("1=0")
+	} else {
 		var serviceTypes []utils.ServiceType
 		for _, serviceType := range allowedServiceTypes {
 			if val, ok := utils.PartnerServiceTypeMapping[serviceType]; ok {
@@ -295,7 +297,7 @@ func GetDefaultServiceType(ctx context.Context) utils.ServiceType {
 
 func GetServiceTypesForFiltering(ctx context.Context, serviceTypes []string) []string {
 	allowedServiceTypes := GetAllowedServiceTypes(ctx)
-	fmt.Println("allowedServiceTypes", allowedServiceTypes)
+
 	// if no service type is passed in filter, then return allowed service types
 	if len(serviceTypes) == 0 {
 		return allowedServiceTypes
@@ -303,11 +305,6 @@ func GetServiceTypesForFiltering(ctx context.Context, serviceTypes []string) []s
 
 	// use common service types of allowed types and api filter types
 	allowedServiceTypes = utils.GetCommonElements(allowedServiceTypes, serviceTypes)
-	if len(allowedServiceTypes) == 0 {
-		log.Printf("User does not have permission to view any service type")
-		allowedServiceTypes = []string{""} // to return no records // return query.Where("1=0")
-	}
-	fmt.Println("allowedServiceTypes2", allowedServiceTypes)
 	return allowedServiceTypes
 }
 
@@ -318,7 +315,6 @@ func GetAllowedServiceTypes(ctx context.Context) []string {
 	transportPermission := "supplierpanel:transportservice:view"
 	globalPermission := "supplierpanel:allservices:view"
 	permissions := utils.GetCurrentUserPermissions(ctx)
-	fmt.Println("permissions", permissions)
 
 	// if user has global permission, then no need to check for other permissions
 	if utils.IsInclude(permissions, globalPermission) {
