@@ -71,12 +71,7 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 		log.Println("User does not have permission to view any service type")
 		return query.Where("1=0")
 	} else {
-		var serviceTypes []utils.ServiceType
-		for _, serviceType := range allowedServiceTypes {
-			if val, ok := utils.PartnerServiceTypeMapping[serviceType]; ok {
-				serviceTypes = append(serviceTypes, val)
-			}
-		}
+		serviceTypes := ParseServiceTypes(ctx, allowedServiceTypes)
 		query = query.Where("partner_service_mappings.service_type IN (?)", serviceTypes)
 	}
 
@@ -138,14 +133,19 @@ func PrepareOpcMapping(ctx context.Context, ids []uint64, fetchOpc bool) []model
 }
 
 func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse) (data []*supplierPb.SupplierObject) {
+	allowedServiceTypes := GetAllowedServiceTypes(ctx)
+	serviceTypes := ParseServiceTypes(ctx, allowedServiceTypes)
+
 	supplierIDs := make([]uint64, len(suppliersData))
 	for i, supplierData := range suppliersData {
 		supplierIDs[i] = supplierData.ID
 	}
 
 	suppliers := []models.Supplier{}
-	database.DBAPM(ctx).Model(&models.Supplier{}).Preload("PartnerServiceMappings").
-		Where("id IN (?)", supplierIDs).Find(&suppliers)
+	database.DBAPM(ctx).Model(&models.Supplier{}).
+		Preload("PartnerServiceMappings", "partner_service_mappings.service_type IN (?)", serviceTypes).
+		Where("id IN (?)", supplierIDs).
+		Find(&suppliers)
 
 	supplierMap := make(map[uint64]models.Supplier)
 	for _, supplier := range suppliers {
@@ -312,7 +312,7 @@ func GetAllowedServiceTypes(ctx context.Context) []string {
 	var allowedServiceTypes []string
 
 	supplierPermission := "supplierpanel:supplierservice:view"
-	transportPermission := "supplierpanel:transportservice:view"
+	transportPermission := "supplierpanel:transporterservice:view"
 	globalPermission := "supplierpanel:allservices:view"
 	permissions := utils.GetCurrentUserPermissions(ctx)
 
@@ -334,4 +334,14 @@ func GetAllowedServiceTypes(ctx context.Context) []string {
 	}
 
 	return allowedServiceTypes
+}
+
+func ParseServiceTypes(ctx context.Context, allowedServiceTypes []string) []utils.ServiceType {
+	var serviceTypes []utils.ServiceType
+	for _, serviceType := range allowedServiceTypes {
+		if val, ok := utils.PartnerServiceTypeMapping[serviceType]; ok {
+			serviceTypes = append(serviceTypes, val)
+		}
+	}
+	return serviceTypes
 }

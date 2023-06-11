@@ -487,6 +487,11 @@ var _ = Describe("ListSupplier", func() {
 		})
 		It("Should Respond with only supplier service type data", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
+			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+				SupplierId:   supplier1.ID,
+				ServiceType:  utils.Transporter,
+				ServiceLevel: utils.Driver,
+			})
 			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
@@ -495,6 +500,7 @@ var _ = Describe("ListSupplier", func() {
 
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
+			Expect(supplierData1.PartnerServices).To(HaveLen(1))
 			Expect(supplierData1.PartnerServices[0].ServiceType).To(Equal("Supplier"))
 		})
 	})

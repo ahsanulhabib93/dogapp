@@ -25,8 +25,12 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	resp := supplierpb.SupplierResponse{Success: false}
 
 	supplier := models.Supplier{}
+	allowedServiceTypes := helpers.GetAllowedServiceTypes(ctx)
+	serviceTypes := helpers.ParseServiceTypes(ctx, allowedServiceTypes)
+
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).
-		Preload("SupplierAddresses").Preload("PartnerServiceMappings").
+		Preload("SupplierAddresses").
+		Preload("PartnerServiceMappings", "partner_service_mappings.service_type IN (?)", serviceTypes).
 		First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		return &resp, nil
@@ -36,7 +40,9 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
 		Joins(models.GetPartnerServiceMappingsJoinStr()).
-		Where("suppliers.id = ?", supplier.ID).Group("suppliers.id").
+		Where("suppliers.id = ?", supplier.ID).
+		Where("partner_service_mappings.service_type IN (?)", serviceTypes).
+		Group("suppliers.id").
 		Select(ss.getResponseField()).Scan(&supplierData)
 	supplierData.SupplierAddresses = supplier.SupplierAddresses
 
