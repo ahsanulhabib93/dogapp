@@ -161,13 +161,13 @@
             "vaccount_id": 12
         },
         {
-            "id": "supplierpanel:transportservice:view",
+            "id": "supplierpanel:transporterservice:view",
             "description": "Access to view transport service type data",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         },
         {
-            "id": "supplierpanel:transportservice:view",
+            "id": "supplierpanel:transporterservice:view",
             "description": "Access to view transport service type data",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
@@ -621,7 +621,7 @@
         },
         {
             "role_name": "Cargo SS2 Admin",
-            "permission_id": "supplierpanel:transportservice:view",
+            "permission_id": "supplierpanel:transporterservice:view",
             "vaccount_id": 12
         },
         {

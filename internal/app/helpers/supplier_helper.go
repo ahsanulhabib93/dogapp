@@ -310,27 +310,17 @@ func GetServiceTypesForFiltering(ctx context.Context, serviceTypes []string) []s
 
 func GetAllowedServiceTypes(ctx context.Context) []string {
 	var allowedServiceTypes []string
-
-	supplierPermission := "supplierpanel:supplierservice:view"
-	transportPermission := "supplierpanel:transporterservice:view"
-	globalPermission := "supplierpanel:allservices:view"
 	permissions := utils.GetCurrentUserPermissions(ctx)
 
 	frameworkUser := utils.GetCurrentUserID(ctx) == nil
-	allServiceAccess := utils.IsInclude(permissions, globalPermission)
-	if frameworkUser || allServiceAccess {
-		for serviceType, _ := range utils.PartnerServiceTypeMapping {
-			allowedServiceTypes = append(allowedServiceTypes, serviceType)
+	globalPermission := utils.IsInclude(permissions, "supplierpanel:allservices:view")
+	allServiceAccess := frameworkUser || globalPermission
+
+	for serviceType := range utils.PartnerServiceTypeLevelMapping {
+		requiedPermission := fmt.Sprintf("supplierpanel:%sservice:view", strings.ToLower(serviceType.String()))
+		if allServiceAccess || utils.IsInclude(permissions, requiedPermission) {
+			allowedServiceTypes = append(allowedServiceTypes, serviceType.String())
 		}
-		return allowedServiceTypes
-	}
-
-	if utils.IsInclude(permissions, supplierPermission) {
-		allowedServiceTypes = append(allowedServiceTypes, utils.Supplier.String())
-	}
-
-	if utils.IsInclude(permissions, transportPermission) {
-		allowedServiceTypes = append(allowedServiceTypes, utils.Transporter.String())
 	}
 
 	return allowedServiceTypes
