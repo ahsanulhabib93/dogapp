@@ -41,6 +41,10 @@ var _ = Describe("VerifyOtp", func() {
 		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
 	})
 
+	AfterEach(func() {
+		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
+	})
+
 	Context("For Invalid Supplier", func() {
 		It("Should return error", func() {
 			param := &supplierpb.VerifyOtpParam{SupplierId: 100, OtpCode: "1234"}

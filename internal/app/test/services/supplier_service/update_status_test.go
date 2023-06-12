@@ -11,6 +11,7 @@ import (
 	aaaMocks "github.com/voonik/goFramework/pkg/aaa/models/mocks"
 	"github.com/voonik/ss2/internal/app/publisher"
 	mockPublisher "github.com/voonik/ss2/internal/app/publisher/mocks"
+	"github.com/voonik/ss2/internal/app/utils"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goConnect/api/go/vigeon/notify"
@@ -49,12 +50,16 @@ var _ = Describe("UpdateStatus", func() {
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
 		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
+		appPreferenceMockInstance.On("GetValue", ctx, "enabled_account_number_validation", false).Return(false)
+		appPreferenceMockInstance.On("GetValue", ctx, "enabled_otp_verification", []string{}).Return([]string{"L0"})
+		appPreferenceMockInstance.On("GetValue", ctx, "enabled_primary_doc_verification", []string{}).Return([]string{"L0"})
 	})
 
 	AfterEach(func() {
 		mocks.UnsetApiCallerMock()
 		mocks.UnsetVigeonHelperMock()
 		mocks.UnsetAuditLogMock()
+		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
 	Context("Update Supplier status", func() {
@@ -330,6 +335,36 @@ var _ = Describe("UpdateStatus", func() {
 		})
 	})
 
+	Context("When at least one primary document required for given supplier type", func() {
+		It("Should return error", func() {
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
+				SupplierType:    utils.L0,
+				IsPhoneVerified: &isPhoneVerified,
+				Status:          models.SupplierStatusBlocked,
+			})
+			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
+			param := &supplierpb.UpdateStatusParam{
+				Id:     supplier.ID,
+				Status: string(models.SupplierStatusVerified),
+			}
+
+			t := &testing.T{}
+
+			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
+			defer resetEventBus()
+
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+
+			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("At least one primary document required for supplier type: L0"))
+			mockedEventBus.AssertExpectations(t)
+		})
+	})
+
 	Context("Should return error", func() {
 		It("Updating with status for which transition not allowed", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusFailed})
@@ -400,41 +435,11 @@ var _ = Describe("UpdateStatus", func() {
 			mockedEventBus.AssertExpectations(t)
 		})
 
-		It("When at least one primary document required for given supplier type", func() {
-			appPreferenceMockInstance.On("GetValue", ctx, "enabled_primary_doc_verification", []string{"Hlc"}).Return([]string{"Hlc"})
-
-			isPhoneVerified := true
-			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
-				IsPhoneVerified: &isPhoneVerified,
-				Status:          models.SupplierStatusBlocked,
-			})
-			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
-			param := &supplierpb.UpdateStatusParam{
-				Id:     supplier.ID,
-				Status: string(models.SupplierStatusVerified),
-			}
-
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
-			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("At least one primary document required for supplier type: Hlc"))
-			mockedEventBus.AssertExpectations(t)
-		})
-
 		It("When otp verification required for given supplier type", func() {
-			appPreferenceMockInstance.On("GetValue", ctx, "enabled_otp_verification", []string{"Hlc"}).Return([]string{"Hlc"})
-
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
-				Status:    models.SupplierStatusBlocked,
-				NidNumber: "1234567890",
+				SupplierType: utils.L0,
+				Status:       models.SupplierStatusBlocked,
+				NidNumber:    "1234567890",
 			})
 			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 			param := &supplierpb.UpdateStatusParam{
@@ -453,7 +458,7 @@ var _ = Describe("UpdateStatus", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("OTP verification required for supplier type: Hlc"))
+			Expect(res.Message).To(Equal("OTP verification required for supplier type: L0"))
 			mockedEventBus.AssertExpectations(t)
 		})
 	})

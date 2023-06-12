@@ -48,6 +48,12 @@ var _ = Describe("RemoveDocument", func() {
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
 		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
+		permission := "supplierpanel:editverifiedblockedsupplieronly:admin"
+		appPreferenceMockInstance.On("GetValue", mock.Anything, "supplier_update_allowed_permission", permission).Return(permission)
+	})
+
+	AfterEach(func() {
+		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
 	Context("Removing primary document", func() {
