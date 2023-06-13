@@ -25,7 +25,6 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 	if len(supplier.PartnerServiceMappings) != 0 {
 		partnerServiceMapping = supplier.PartnerServiceMappings[0]
 	}
-	partnerServiceMapping.ServiceType = utils.Supplier
 	partnerServiceMapping.Active = true
 
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
@@ -48,6 +47,10 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 		partnerServiceMapping.ServiceLevel = supplier.SupplierType
 	} else if partnerServiceMapping.ServiceLevel == 0 {
 		partnerServiceMapping.ServiceLevel = utils.Hlc
+	}
+
+	if partnerServiceMapping.ServiceType == 0 {
+		partnerServiceMapping.ServiceType = utils.Supplier
 	}
 
 	supplier.PartnerServiceMappings = []models.PartnerServiceMapping{partnerServiceMapping}
@@ -147,7 +150,8 @@ func CreateBank(ctx context.Context, bank *models.Bank) *models.Bank {
 	return bank
 }
 
-func SetContextUser(ctx context.Context, userId uint64, permissions []string) context.Context {
+func SetContextUser(ctx *context.Context, userId uint64, permissions []string) *context.Context {
+	*ctx = context.Background()
 	threadObject := &misc.ThreadObject{
 		VaccountId:    1,
 		PortalId:      1,
@@ -161,5 +165,6 @@ func SetContextUser(ctx context.Context, userId uint64, permissions []string) co
 			Permissions: permissions,
 		},
 	}
-	return misc.SetInContextThreadObject(ctx, threadObject)
+	*ctx = misc.SetInContextThreadObject(*ctx, threadObject)
+	return ctx
 }
