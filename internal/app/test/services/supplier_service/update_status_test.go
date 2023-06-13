@@ -33,7 +33,7 @@ var _ = Describe("UpdateStatus", func() {
 		aaaModels.CreateAppPreferenceServiceInterface()
 
 		header := map[string]string{"authorization": "random"}
-		ctx = test_helper.SetContextUser(ctx, userId, []string{})
+		test_helper.SetContextUser(&ctx, userId, []string{})
 		ctx = metadata.NewIncomingContext(ctx, metadata.New(header))
 
 		mock1, mock2, mockAudit = mocks.SetApiCallerMock(), mocks.SetVigeonAPIHelperMock(), mocks.SetAuditLogMock()

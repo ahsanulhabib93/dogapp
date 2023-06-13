@@ -25,8 +25,12 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	resp := supplierpb.SupplierResponse{Success: false}
 
 	supplier := models.Supplier{}
+	allowedServiceTypes := helpers.GetAllowedServiceTypes(ctx)
+	serviceTypes := helpers.ParseServiceTypes(ctx, allowedServiceTypes)
+
 	result := database.DBAPM(ctx).Model(&models.Supplier{}).
-		Preload("SupplierAddresses").Preload("PartnerServiceMappings").
+		Preload("SupplierAddresses").
+		Preload("PartnerServiceMappings", "partner_service_mappings.service_type IN (?)", serviceTypes).
 		First(&supplier, params.GetId())
 	if result.RecordNotFound() {
 		return &resp, nil
@@ -36,7 +40,9 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Joins(models.GetCategoryMappingJoinStr()).Joins(models.GetOpcMappingJoinStr()).
 		Joins(models.GetPartnerServiceMappingsJoinStr()).
-		Where("suppliers.id = ?", supplier.ID).Group("suppliers.id").
+		Where("suppliers.id = ?", supplier.ID).
+		Where("partner_service_mappings.service_type IN (?)", serviceTypes).
+		Group("suppliers.id").
 		Select(ss.getResponseField()).Scan(&supplierData)
 	supplierData.SupplierAddresses = supplier.SupplierAddresses
 
@@ -104,7 +110,16 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		return &resp, nil
 	}
 
-	errorMessage := ss.checkAllowedSupplierTypes(ctx, params.GetSupplierType())
+	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
+	if serviceType == 0 {
+		serviceType = helpers.GetDefaultServiceType(ctx)
+	}
+	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
+	if serviceLevel == 0 {
+		serviceLevel = utils.SupplierType(params.GetSupplierType())
+	}
+
+	errorMessage := ss.checkAllowedSupplierTypes(ctx, serviceLevel)
 	if errorMessage != "" {
 		resp.Message = errorMessage
 		return &resp, nil
@@ -133,8 +148,8 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		SupplierOpcMappings:       helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
 		SupplierAddresses:         helpers.PrepareSupplierAddress(params),
 		PartnerServiceMappings: []models.PartnerServiceMapping{{
-			ServiceType:  helpers.GetDefaultServiceType(ctx),
-			ServiceLevel: utils.SupplierType(params.GetSupplierType()),
+			ServiceType:  serviceType,
+			ServiceLevel: serviceLevel,
 			Active:       true,
 		}},
 	}
@@ -186,7 +201,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			status = models.SupplierStatusPending // Moving to Pending if any data is updated
 		}
 
-		errorMessage := ss.checkAllowedSupplierTypes(ctx, params.GetSupplierType())
+		errorMessage := ss.checkAllowedSupplierTypes(ctx, utils.SupplierType(params.GetSupplierType()))
 		if errorMessage != "" {
 			resp.Message = errorMessage
 			return &resp, nil
@@ -503,8 +518,8 @@ func (ss *SupplierService) getResponseField() string {
 	return strings.Join(s, ",")
 }
 
-func (ss *SupplierService) checkAllowedSupplierTypes(ctx context.Context, supplierType uint64) string {
-	typeValue := utils.SupplierTypeValue[utils.SupplierType(supplierType)]
+func (ss *SupplierService) checkAllowedSupplierTypes(ctx context.Context, supplierType utils.SupplierType) string {
+	typeValue := utils.SupplierTypeValue[supplierType]
 	allowedSupplierTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).([]string)
 
 	if supplierType != utils.Zero && !utils.IsInclude(allowedSupplierTypes, typeValue) {
