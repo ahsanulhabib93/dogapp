@@ -31,7 +31,7 @@ var _ = Describe("RemoveDocument", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		ctx = test_helper.SetContextUser(ctx, 101, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
+		test_helper.SetContextUser(&ctx, 101, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
 
 		supplierData := models.Supplier{
 			GuarantorNidFrontImageUrl: "abc/xyz.jpg",

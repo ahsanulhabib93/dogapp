@@ -166,3 +166,20 @@ func Includes(array interface{}, item interface{}) bool {
 	}
 	return false
 }
+
+func GetCommonElements(arr1 []string, arr2 []string) []string {
+	elementMap := make(map[string]bool)
+	commonElements := []string{}
+
+	for _, element := range arr1 {
+		elementMap[element] = true
+	}
+
+	for _, element := range arr2 {
+		if elementMap[element] {
+			commonElements = append(commonElements, element)
+		}
+	}
+
+	return commonElements
+}
