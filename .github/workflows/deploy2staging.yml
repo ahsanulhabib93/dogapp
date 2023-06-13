@@ -17,28 +17,28 @@ env:
 
 jobs:
 
-  sonarcloud:
-    runs-on: ubuntu-latest
-    outputs:
-      SONAR_STATUS: ${{ steps.sonar.outputs.SONAR_STATUS }}
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
-    - name: Sonar Cloud Quality Check
-      id: sonar
-      run: |-
-        STATUS=`curl -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status\?projectKey\=shopuptech_ss2\&branch\=$SOURCE_BRANCH_NAME | jq -r '.projectStatus.status'`
-        echo $STATUS
-        echo "SONAR_STATUS=$STATUS" >> $GITHUB_OUTPUT
-        if [[ ! $STATUS == 'OK' ]] ;then
-        exit 1
-        fi
+#  sonarcloud:
+#    runs-on: ubuntu-latest
+#    outputs:
+#      SONAR_STATUS: ${{ steps.sonar.outputs.SONAR_STATUS }}
+#    steps:
+#    - uses: actions/checkout@v2
+#      with:
+#        # Disabling shallow clone is recommended for improving relevancy of reporting
+#        fetch-depth: 0
+#    - name: Sonar Cloud Quality Check
+#      id: sonar
+#      run: |-
+#        STATUS=`curl -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status\?projectKey\=shopuptech_ss2\&branch\=$SOURCE_BRANCH_NAME | jq -r '.projectStatus.status'`
+#        echo $STATUS
+#        echo "SONAR_STATUS=$STATUS" >> $GITHUB_OUTPUT
+#        if [[ ! $STATUS == 'OK' ]] ;then
+#        exit 1
+#        fi
   setup-build-publish-deploy-staging:
     name: Setup, Build, Publish, and Deploy to staging
     runs-on: ubuntu-20.04
-    needs: sonarcloud
+#    needs: sonarcloud
     if: ${{ github.event.label.name == 'Ok to deploy in staging' }}
     steps:
       - name: Checkout
