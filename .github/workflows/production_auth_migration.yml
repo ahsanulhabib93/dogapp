@@ -26,7 +26,5 @@ jobs:
           (ls ${{ env.FILE_NAME }} && echo "File Exists") || (echo "File Does not Exists. Creating an Empty file" && echo "{}" > ${{ env.FILE_NAME }})
       
       - name: curl
-        uses: wei/curl@v1
-        with:
-          args: |
-            -X POST '${{ env.AUTH_MIGRATION_API }}' --header 'Authorization: bearer ${{ env.AUTH_TOKEN }}' --form 'json_file=@${{ env.FILE_NAME }}'
+        run: |
+          curl -X POST '${{ env.AUTH_MIGRATION_API }}' --header 'Authorization: bearer ${{ env.AUTH_TOKEN }}' --form 'json_file=@${{ env.FILE_NAME }}'

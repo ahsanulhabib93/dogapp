@@ -28,7 +28,7 @@ var _ = Describe("EditSupplier", func() {
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		ctx = test_helper.SetContextUser(ctx, 101, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
+		test_helper.SetContextUser(&ctx, 101, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
 
 		mocks.SetAuditLogMock()
 		mockAudit = mocks.SetAuditLogMock()

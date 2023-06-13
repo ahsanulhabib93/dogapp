@@ -126,6 +126,7 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
 			})
 		})
+
 		Context("PaymentAccountDetails Have Warehouses Mapped", func() {
 			It("Should Return only Given Warehouse Mapped PaymentAccountDetails", func() {
 				isPhoneVerified := true
@@ -217,7 +218,35 @@ var _ = Describe("GetSupplier", func() {
 					return resp.Data.PaymentAccountDetails[1].Warehouses[i] < resp.Data.PaymentAccountDetails[1].Warehouses[j]
 				})
 				Expect(resp.Data.PaymentAccountDetails[1].Warehouses).To(Equal([]uint64{10}))
+			})
+		})
 
+		Context("When user has only transporter service type permission", func() {
+			BeforeEach(func() {
+				test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:transporterservice:view"})
+			})
+			It("Should return supplier data only", func() {
+				supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
+					PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.Hlc}},
+				})
+				test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+					SupplierId:   supplier.ID,
+					ServiceType:  utils.Transporter,
+					ServiceLevel: utils.Driver,
+					Active:       false,
+				})
+
+				resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{Id: supplier.ID})
+
+				Expect(err).To(BeNil())
+				Expect(resp.Success).To(Equal(true))
+
+				Expect(resp.Data.Email).To(Equal(supplier.Email))
+				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Driver)))
+				Expect(len(resp.Data.PartnerServices)).To(Equal(1))
+				Expect(resp.Data.PartnerServices[0].ServiceType).To(Equal("Transporter"))
+				Expect(resp.Data.PartnerServices[0].ServiceLevel).To(Equal("Driver"))
+				Expect(resp.Data.PartnerServices[0].Active).To(Equal(false))
 			})
 		})
 	})
