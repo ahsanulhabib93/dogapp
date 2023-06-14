@@ -251,7 +251,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			resp.Message = "Supplier Edited Successfully"
 			resp.Success = true
 
-			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, "", updatedSupplier); err != nil {
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier); err != nil {
 				log.Println(err)
 			}
 		}

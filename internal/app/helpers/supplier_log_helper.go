@@ -64,12 +64,8 @@ func supplierLog(ctx context.Context, supplier models.Supplier, metadata map[str
 	}
 
 	event := &core.Event{
-		Id:             "",
-		Ordering:       0,
-		Timestamp:      nil,
-		SequenceNumber: 0,
-		ReferenceId:    "",
-		Metadata:       metadata,
+		Id:       "",
+		Metadata: metadata,
 	}
 
 	key := &ss2.SupplierLogKey{
