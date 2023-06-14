@@ -251,6 +251,9 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			resp.Message = "Supplier Edited Successfully"
 			resp.Success = true
 
+			log.Printf("[AuditAction] Params supplier catgory mappings: %+v\n", params.GetCategoryIds())
+			log.Printf("[AuditAction] Updated supplier catgory mappings: %+v\n", updatedSupplier.SupplierCategoryMappings)
+			log.Printf("[AuditAction] Supplier catgory mappings: %+v\n", supplier.SupplierCategoryMappings)
 			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier); err != nil {
 				log.Println(err)
 			}
