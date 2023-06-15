@@ -31,3 +31,9 @@ var SupplierSecondaryDocumentType = []string{
 	"guarantor_nid_back_image_url",
 	"cheque_image_url",
 }
+
+var PartnerServiceTypeLevelMapping = map[ServiceType][]SupplierType{
+	// service type - service level
+	Supplier:    {L0, L1, L2, L3, Hlc},
+	Transporter: {L0, L1, L2, L3, Hlc, Captive, Driver, CashVendor, RedxHubVendor},
+}

@@ -25,7 +25,7 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 	if len(supplier.PartnerServiceMappings) != 0 {
 		partnerServiceMapping = supplier.PartnerServiceMappings[0]
 	}
-	partnerServiceMapping.ServiceType = utils.Supplier
+	partnerServiceMapping.Active = true
 
 	supplier.Email = fmt.Sprintf("test-%v@shopup.org", id)
 	supplier.AlternatePhone = fmt.Sprintf("8801234567890%v", id)
@@ -49,6 +49,10 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 		partnerServiceMapping.ServiceLevel = utils.Hlc
 	}
 
+	if partnerServiceMapping.ServiceType == 0 {
+		partnerServiceMapping.ServiceType = utils.Supplier
+	}
+
 	supplier.PartnerServiceMappings = []models.PartnerServiceMapping{partnerServiceMapping}
 	database.DBAPM(ctx).Save(supplier)
 	return supplier
@@ -56,8 +60,9 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 
 func CreatePartnerServiceMapping(ctx context.Context, partnerServiceMapping *models.PartnerServiceMapping) *models.PartnerServiceMapping {
 	id := getUniqueID()
-	partnerServiceMapping.TradeLicenseUrl = fmt.Sprintf("/ss2/test_trade_license_url/%v", id)
-	partnerServiceMapping.AgreementUrl = fmt.Sprintf("/ss2/test_agreement_url/%v", id)
+	partnerServiceMapping.TradeLicenseUrl = fmt.Sprintf("trade_license_url_%v", id)
+	partnerServiceMapping.AgreementUrl = fmt.Sprintf("agreement_url_%v", id)
+
 	database.DBAPM(ctx).Save(partnerServiceMapping)
 	return partnerServiceMapping
 }
@@ -72,12 +77,6 @@ func CreateSupplierWithAddress(ctx context.Context, supplier *models.Supplier) *
 	supplier = CreateSupplier(ctx, supplier)
 	CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID, IsDefault: true})
 	return supplier
-}
-
-func CreateServiceMapping(ctx context.Context, supplier *models.Supplier, servicetype utils.ServiceType, servicelevel utils.SupplierType) *models.PartnerServiceMapping {
-	serviceMapping := &models.PartnerServiceMapping{SupplierId: supplier.ID, ServiceType: servicetype, ServiceLevel: servicelevel, Active: true}
-	database.DBAPM(ctx).Save(serviceMapping)
-	return serviceMapping
 }
 
 func CreateSupplierAddress(ctx context.Context, supplierAddress *models.SupplierAddress) *models.SupplierAddress {
@@ -151,7 +150,8 @@ func CreateBank(ctx context.Context, bank *models.Bank) *models.Bank {
 	return bank
 }
 
-func SetContextUser(ctx context.Context, userId uint64, permissions []string) context.Context {
+func SetContextUser(ctx *context.Context, userId uint64, permissions []string) *context.Context {
+	*ctx = context.Background()
 	threadObject := &misc.ThreadObject{
 		VaccountId:    1,
 		PortalId:      1,
@@ -165,5 +165,6 @@ func SetContextUser(ctx context.Context, userId uint64, permissions []string) co
 			Permissions: permissions,
 		},
 	}
-	return misc.SetInContextThreadObject(ctx, threadObject)
+	*ctx = misc.SetInContextThreadObject(*ctx, threadObject)
+	return ctx
 }

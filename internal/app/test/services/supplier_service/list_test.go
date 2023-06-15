@@ -10,7 +10,6 @@ import (
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
-	"github.com/voonik/goFramework/pkg/misc"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
@@ -26,33 +25,26 @@ var _ = Describe("ListSupplier", func() {
 	BeforeEach(func() {
 		mocks.UnsetOpcMock()
 		test_utils.GetContext(&ctx)
-
-		threadObject := &misc.ThreadObject{
-			VaccountId:    1,
-			PortalId:      1,
-			CurrentActId:  1,
-			XForwardedFor: "5079327",
-			UserData: &misc.UserData{
-				UserId: userId,
-				Name:   "John",
-				Email:  "john@gmail.com",
-				Phone:  "8801855533367",
-			},
-		}
-		ctx = misc.SetInContextThreadObject(ctx, threadObject)
+		test_helper.SetContextUser(&ctx, userId, []string{"supplierpanel:allservices:view"})
 	})
 
 	Context("Supplier List", func() {
 		It("Should Respond with all the suppliers", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierType:             utils.Hlc,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
+				PartnerServiceMappings:   []models.PartnerServiceMapping{{ServiceLevel: utils.Hlc}},
 			})
+			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+				SupplierId:   supplier1.ID,
+				ServiceType:  utils.Transporter,
+				ServiceLevel: utils.Driver,
+			})
+
 			isPhoneVerified := true
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierType:    utils.L1,
-				IsPhoneVerified: &isPhoneVerified,
+				IsPhoneVerified:        &isPhoneVerified,
+				PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L1}},
 			})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
@@ -74,6 +66,12 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusPending)))
 
+			Expect(supplierData1.PartnerServices).To(HaveLen(2))
+			Expect(supplierData1.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+			Expect(supplierData1.PartnerServices[0].ServiceLevel).To(Equal("Hlc"))
+			Expect(supplierData1.PartnerServices[1].ServiceType).To(Equal("Transporter"))
+			Expect(supplierData1.PartnerServices[1].ServiceLevel).To(Equal("Driver"))
+
 			supplierData2 := res.Data[1]
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
@@ -87,6 +85,10 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.OpcIds).To(Equal([]uint64{}))
 			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(supplierData2.Status).To(Equal(string(models.SupplierStatusPending)))
+
+			Expect(supplierData2.PartnerServices).To(HaveLen(1))
+			Expect(supplierData2.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+			Expect(supplierData2.PartnerServices[0].ServiceLevel).To(Equal("L1"))
 		})
 	})
 
@@ -441,4 +443,81 @@ var _ = Describe("ListSupplier", func() {
 
 		})
 	})
+
+	Context("When ServiceLevels filter is applied", func() {
+		It("Should Respond with corresponding suppliers", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.Hlc}}})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L0}}})
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L1}}})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{ServiceLevels: []string{"Hlc", "L0"}})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(2)))
+			Expect(len(res.Data)).To(Equal(2))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier1.Email))
+			Expect(supplierData1.PartnerServices[0].ServiceLevel).To(Equal("Hlc"))
+
+			supplierData2 := res.Data[1]
+			Expect(supplierData2.Email).To(Equal(supplier2.Email))
+			Expect(supplierData2.PartnerServices[0].ServiceLevel).To(Equal("L0"))
+		})
+	})
+
+	Context("When ServiceTypes filter is applied", func() {
+		It("Should Respond with supplier service type data", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{ServiceTypes: []string{"Supplier"}})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier1.Email))
+			Expect(supplierData1.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+		})
+	})
+
+	Context("When User has only supplier permission", func() {
+		BeforeEach(func() {
+			test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:supplierservice:view"})
+		})
+		It("Should Respond with only supplier service type data", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
+			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+				SupplierId:   supplier1.ID,
+				ServiceType:  utils.Transporter,
+				ServiceLevel: utils.Driver,
+			})
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(1)))
+			Expect(len(res.Data)).To(Equal(1))
+
+			supplierData1 := res.Data[0]
+			Expect(supplierData1.Email).To(Equal(supplier1.Email))
+			Expect(supplierData1.PartnerServices).To(HaveLen(1))
+			Expect(supplierData1.PartnerServices[0].ServiceType).To(Equal("Supplier"))
+		})
+	})
+
+	Context("When User has only supplier permission and transporter service type filter is applied", func() {
+		BeforeEach(func() {
+			test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:supplierservice:view"})
+		})
+		It("Should Respond with no supplier data", func() {
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
+
+			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{ServiceTypes: []string{"Transporter"}})
+			Expect(err).To(BeNil())
+			Expect(res.TotalCount).To(Equal(uint64(0)))
+			Expect(len(res.Data)).To(Equal(0))
+		})
+	})
+
 })

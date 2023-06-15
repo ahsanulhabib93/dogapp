@@ -37,7 +37,7 @@ var _ = Describe("AddSupplier", func() {
 		test_utils.GetContext(&ctx)
 		mocks.UnsetOpcMock()
 
-		ctx = test_helper.SetContextUser(ctx, userId, []string{})
+		test_helper.SetContextUser(&ctx, userId, []string{})
 		mockAudit = mocks.SetAuditLogMock()
 		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 
@@ -169,6 +169,41 @@ var _ = Describe("AddSupplier", func() {
 				}
 			}
 			Expect(actualCalls).To(Equal(1))
+		})
+	})
+
+	Context("Adding new Supplier with ServiceType and ServiceLevel ", func() {
+		It("Should create supplier and return success response", func() {
+			param := &supplierpb.SupplierParam{
+				Name:         "Name",
+				Email:        "Email",
+				BusinessName: "BusinessName",
+				Phone:        "8801234567890",
+				ServiceType:  "Supplier",
+				ServiceLevel: "Hlc",
+			}
+			res, err := new(services.SupplierService).Add(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier Added Successfully"))
+
+			supplier := &models.Supplier{}
+			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).First(&supplier)
+			Expect(res.Id).To(Equal(supplier.ID))
+			Expect(supplier.Email).To(Equal(param.Email))
+			Expect(*supplier.UserID).To(Equal(userId))
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+			Expect(supplier.BusinessName).To(Equal(param.BusinessName))
+			Expect(supplier.Phone).To(Equal(param.Phone))
+
+			partnerServices := []*models.PartnerServiceMapping{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PartnerServiceMappings").Find(&partnerServices)
+			Expect(len(partnerServices)).To(Equal(1))
+			partnerService := partnerServices[0]
+			Expect(partnerService.ServiceType).To(Equal(utils.Supplier))
+			Expect(partnerService.ServiceLevel).To(Equal(utils.Hlc))
+			Expect(partnerService.Active).To(Equal(true))
 		})
 	})
 
@@ -377,7 +412,7 @@ var _ = Describe("AddSupplier", func() {
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: service_level can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: partner_service_mappings can't be blank"))
 		})
 	})
 
@@ -402,7 +437,7 @@ var _ = Describe("AddSupplier", func() {
 			supplier := &models.Supplier{}
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: service_level can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Supplier: partner_service_mappings can't be blank"))
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierOpcMappings").First(&supplier)
 			Expect(len(supplier.SupplierOpcMappings)).To(Equal(0))
 		})

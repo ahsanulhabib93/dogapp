@@ -11,6 +11,7 @@ import (
 	"github.com/jinzhu/gorm"
 	supplierPb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -64,11 +65,30 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 	if params.GetOpcId() != 0 {
 		query = query.Where("supplier_opc_mappings.processing_center_id = ?", params.GetOpcId())
 	}
+
+	allowedServiceTypes := GetServiceTypesForFiltering(ctx, params.GetServiceTypes())
+	if len(allowedServiceTypes) == 0 {
+		log.Println("User does not have permission to view any service type")
+		return query.Where("1=0")
+	} else {
+		serviceTypes := ParseServiceTypes(ctx, allowedServiceTypes)
+		query = query.Where("partner_service_mappings.service_type IN (?)", serviceTypes)
+	}
+
+	// partner_service_mappings is already joined in places where PrepareFilter is called
 	if len(params.GetTypes()) != 0 {
-		// partner_service_mappings is already joined in places where PrepareFilter is called
 		query = query.Where("partner_service_mappings.service_level IN (?)", params.GetTypes())
 	}
 
+	if len(params.GetServiceLevels()) != 0 {
+		var serviceLevels []utils.SupplierType
+		for _, serviceLevel := range params.GetServiceLevels() {
+			if val, ok := utils.PartnerServiceLevelMapping[serviceLevel]; ok {
+				serviceLevels = append(serviceLevels, val)
+			}
+		}
+		query = query.Where("partner_service_mappings.service_level IN (?)", serviceLevels)
+	}
 	return query
 }
 
@@ -112,37 +132,74 @@ func PrepareOpcMapping(ctx context.Context, ids []uint64, fetchOpc bool) []model
 	return processCenters
 }
 
-func PrepareListResponse(suppliers []SupplierDBResponse, total uint64) supplierPb.ListResponse {
-	data := []*supplierPb.SupplierObject{}
-	for _, supplier := range suppliers {
-		data = append(data, PrepareSupplierResponse(supplier))
+func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse) (data []*supplierPb.SupplierObject) {
+	allowedServiceTypes := GetAllowedServiceTypes(ctx)
+	serviceTypes := ParseServiceTypes(ctx, allowedServiceTypes)
+
+	supplierIDs := make([]uint64, len(suppliersData))
+	for i, supplierData := range suppliersData {
+		supplierIDs[i] = supplierData.ID
 	}
 
-	return supplierPb.ListResponse{Data: data, TotalCount: total}
+	suppliers := []models.Supplier{}
+	database.DBAPM(ctx).Model(&models.Supplier{}).
+		Preload("PartnerServiceMappings", "partner_service_mappings.service_type IN (?)", serviceTypes).
+		Where("id IN (?)", supplierIDs).
+		Find(&suppliers)
+
+	supplierMap := make(map[uint64]models.Supplier)
+	for _, supplier := range suppliers {
+		supplierMap[supplier.ID] = supplier
+	}
+
+	for _, supplierData := range suppliersData {
+		supplier := supplierMap[supplierData.ID]
+		data = append(data, PrepareSupplierResponse(ctx, supplier, supplierData))
+	}
+	return data
 }
 
-func PrepareSupplierResponse(supplier SupplierDBResponse) *supplierPb.SupplierObject {
-	temp, _ := json.Marshal(supplier)
-	so := &supplierPb.SupplierObject{}
-	json.Unmarshal(temp, so)
+func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supplierData SupplierDBResponse) *supplierPb.SupplierObject {
+	temp, _ := json.Marshal(supplierData)
+	supplierObject := &supplierPb.SupplierObject{}
+	json.Unmarshal(temp, supplierObject)
 
-	so.CategoryIds = []uint64{}
-	for _, cId := range strings.Split(supplier.CategoryIds, ",") {
+	supplierObject.CategoryIds = []uint64{}
+	for _, cId := range strings.Split(supplierData.CategoryIds, ",") {
 		if cId := strings.TrimSpace(cId); cId != "" {
 			v, _ := strconv.Atoi(cId)
-			so.CategoryIds = append(so.CategoryIds, uint64(v))
+			supplierObject.CategoryIds = append(supplierObject.CategoryIds, uint64(v))
 		}
 	}
 
-	so.OpcIds = []uint64{}
-	for _, saId := range strings.Split(supplier.OpcIds, ",") {
+	supplierObject.OpcIds = []uint64{}
+	for _, saId := range strings.Split(supplierData.OpcIds, ",") {
 		if opcId := strings.TrimSpace(saId); opcId != "" {
 			v, _ := strconv.Atoi(saId)
-			so.OpcIds = append(so.OpcIds, uint64(v))
+			supplierObject.OpcIds = append(supplierObject.OpcIds, uint64(v))
 		}
 	}
 
-	return so
+	supplierObject.PartnerServices = GetPartnerServiceMappings(ctx, supplier)
+	return supplierObject
+}
+
+func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []*supplierPb.PartnerServiceObject {
+	partnerServiceData := []*supplierPb.PartnerServiceObject{}
+
+	partnerServices := supplier.PartnerServiceMappings // preloaded
+	for _, partnerService := range partnerServices {
+		partnerServiceData = append(partnerServiceData, &supplierPb.PartnerServiceObject{
+			Id:              partnerService.ID,
+			Active:          partnerService.Active,
+			AgreementUrl:    partnerService.AgreementUrl,
+			TradeLicenseUrl: partnerService.TradeLicenseUrl,
+			ServiceType:     partnerService.ServiceType.String(),
+			ServiceLevel:    partnerService.ServiceLevel.String(),
+		})
+	}
+
+	return partnerServiceData
 }
 
 func PrepareSupplierAddress(params *supplierPb.SupplierParam) []models.SupplierAddress {
@@ -236,4 +293,45 @@ func isValidStatusTransition(oldStatus, newStatus models.SupplierStatus) (valid 
 
 func GetDefaultServiceType(ctx context.Context) utils.ServiceType {
 	return utils.ServiceType(aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "default_service_type", int64(utils.Supplier)).(int64))
+}
+
+func GetServiceTypesForFiltering(ctx context.Context, serviceTypes []string) []string {
+	allowedServiceTypes := GetAllowedServiceTypes(ctx)
+
+	// if no service type is passed in filter, then return allowed service types
+	if len(serviceTypes) == 0 {
+		return allowedServiceTypes
+	}
+
+	// use common service types of allowed types and api filter types
+	allowedServiceTypes = utils.GetCommonElements(allowedServiceTypes, serviceTypes)
+	return allowedServiceTypes
+}
+
+func GetAllowedServiceTypes(ctx context.Context) []string {
+	var allowedServiceTypes []string
+	permissions := utils.GetCurrentUserPermissions(ctx)
+
+	frameworkUser := utils.GetCurrentUserID(ctx) == nil
+	globalPermission := utils.IsInclude(permissions, "supplierpanel:allservices:view")
+	allServiceAccess := frameworkUser || globalPermission
+
+	for serviceType := range utils.PartnerServiceTypeLevelMapping {
+		requiedPermission := fmt.Sprintf("supplierpanel:%sservice:view", strings.ToLower(serviceType.String()))
+		if allServiceAccess || utils.IsInclude(permissions, requiedPermission) {
+			allowedServiceTypes = append(allowedServiceTypes, serviceType.String())
+		}
+	}
+
+	return allowedServiceTypes
+}
+
+func ParseServiceTypes(ctx context.Context, allowedServiceTypes []string) []utils.ServiceType {
+	var serviceTypes []utils.ServiceType
+	for _, serviceType := range allowedServiceTypes {
+		if val, ok := utils.PartnerServiceTypeMapping[serviceType]; ok {
+			serviceTypes = append(serviceTypes, val)
+		}
+	}
+	return serviceTypes
 }
