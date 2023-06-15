@@ -177,6 +177,12 @@
             "description": "Remove Document API access",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:removedocument:admin",
+            "description": "Remove Document API access",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
         }
     ],
     "route_permissions": [
