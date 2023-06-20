@@ -171,6 +171,18 @@
             "description": "Access to view transport service type data",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:removedocument:admin",
+            "description": "Remove Document API access",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:removedocument:admin",
+            "description": "Remove Document API access",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
         }
     ],
     "route_permissions": [
@@ -683,6 +695,41 @@
             "role_name": "lrmspoultryadmin",
             "permission_id": "supplierpanel:supplierservice:view",
             "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "oms:opclist:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "oms:opclist:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "wmsroutes:Warehouse:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "wmsroutes:Warehouse:admin",
+            "vaccount_id": 2
+        },
+                {
+            "role_name": "ss2owner",
+            "permission_id": "supplierpanel:removedocument:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "supplierpanel:removedocument:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:removedocument:admin",
+            "vaccount_id": 12
         }
     ]
 }
