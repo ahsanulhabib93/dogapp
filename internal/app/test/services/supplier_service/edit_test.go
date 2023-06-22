@@ -65,7 +65,6 @@ var _ = Describe("EditSupplier", func() {
 				Id:                        supplier.ID,
 				Name:                      "Name",
 				Email:                     "Email",
-				SupplierType:              uint64(utils.L1),
 				BusinessName:              "BusinessName",
 				Phone:                     "8801234567890",
 				AlternatePhone:            "8801234567891",
@@ -111,12 +110,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(len(updatedSupplier.SupplierCategoryMappings)).To(Equal(3))
 			Expect(len(updatedSupplier.SupplierOpcMappings)).To(Equal(2))
 			Expect(updatedSupplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(2)))
-
-			partnerService := models.PartnerServiceMapping{}
-			database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Where("supplier_id = ?", supplier.ID).First(&partnerService)
-			Expect(partnerService.ServiceLevel).To(Equal(utils.L1))
-			Expect(partnerService.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
-			Expect(partnerService.AgreementUrl).To(Equal(param.AgreementUrl))
 
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 		})

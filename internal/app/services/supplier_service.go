@@ -111,13 +111,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	}
 
 	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
-	if serviceType == 0 {
-		serviceType = helpers.GetDefaultServiceType(ctx)
-	}
 	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
-	if serviceLevel == 0 {
-		serviceLevel = utils.SupplierType(params.GetSupplierType())
-	}
 
 	errorMessage := ss.checkAllowedSupplierTypes(ctx, serviceLevel)
 	if errorMessage != "" {
@@ -231,21 +225,9 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
 		} else {
-			partnerServiceMapping := models.PartnerServiceMapping{}
-			database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID).First(&partnerServiceMapping)
-			err = database.DBAPM(ctx).Model(&partnerServiceMapping).Updates(models.PartnerServiceMapping{
-				ServiceLevel:    utils.SupplierType(params.GetSupplierType()),
-				TradeLicenseUrl: params.GetTradeLicenseUrl(),
-				AgreementUrl:    params.GetAgreementUrl(),
-			})
-
-			if err != nil && err.Error != nil {
-				resp.Message = fmt.Sprintf("Error while updating PartnerServiceMapping: %s", err.Error)
-			} else {
-				resp.Message = "Supplier Edited Successfully"
-				resp.Success = true
-				helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
-			}
+			resp.Message = "Supplier Edited Successfully"
+			resp.Success = true
+			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
 		}
 	}
 	log.Printf("EditSupplierResponse: %+v", resp)

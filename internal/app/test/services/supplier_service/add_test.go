@@ -77,7 +77,6 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:                     "Name",
 				Email:                    "Email",
-				SupplierType:             uint64(utils.Hlc),
 				BusinessName:             "BusinessName",
 				Phone:                    "8801234567890",
 				AlternatePhone:           "8801234567891",
@@ -103,6 +102,8 @@ var _ = Describe("AddSupplier", func() {
 				ChequeImageUrl:           "ChequeImageUrl",
 				CategoryIds:              []uint64{1, 30},
 				OpcIds:                   opcIds,
+				ServiceType:              "Supplier",
+				ServiceLevel:             "Hlc",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -212,7 +213,6 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:             "Name",
 				Email:            "Email",
-				SupplierType:     uint64(utils.Hlc),
 				BusinessName:     "BusinessName",
 				Phone:            "8801234567890",
 				AlternatePhone:   "8801234567891",
@@ -232,6 +232,8 @@ var _ = Describe("AddSupplier", func() {
 				NidFrontImageUrl: "NidFrontImageUrl",
 				NidBackImageUrl:  "NidBackImageUrl",
 				CategoryIds:      []uint64{1, 30},
+				ServiceType:      "Supplier",
+				ServiceLevel:     "Hlc",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -248,7 +250,8 @@ var _ = Describe("AddSupplier", func() {
 				Name:         "Name",
 				Email:        "Email",
 				Phone:        "8801234567890",
-				SupplierType: uint64(utils.Hlc),
+				ServiceType:  "Supplier",
+				ServiceLevel: "Hlc",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -365,10 +368,11 @@ var _ = Describe("AddSupplier", func() {
 		It("Should return error response", func() {
 			param := &supplierpb.SupplierParam{
 				Email:        "Email",
-				SupplierType: uint64(utils.Hlc),
 				Phone:        "8801234567890",
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
+				ServiceType:  "Supplier",
+				ServiceLevel: "Hlc",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -385,9 +389,10 @@ var _ = Describe("AddSupplier", func() {
 				Name:         supplier1.Name,
 				Email:        "Email",
 				Phone:        "8801234567890",
-				SupplierType: uint64(utils.Hlc),
 				Address1:     "Address1",
 				Zipcode:      "Zipcode",
+				ServiceType:  "Supplier",
+				ServiceLevel: "Hlc",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -400,14 +405,15 @@ var _ = Describe("AddSupplier", func() {
 		})
 	})
 
-	Context("Adding Supplier without supplier type", func() {
+	Context("Adding Supplier without service level", func() {
 		It("Should return error response", func() {
 			param := &supplierpb.SupplierParam{
-				Name:     "Name",
-				Email:    "Email",
-				Phone:    "8801234567890",
-				Address1: "Address1",
-				Zipcode:  "Zipcode",
+				Name:        "Name",
+				Email:       "Email",
+				Phone:       "8801234567890",
+				Address1:    "Address1",
+				Zipcode:     "Zipcode",
+				ServiceType: "Supplier",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -437,7 +443,7 @@ var _ = Describe("AddSupplier", func() {
 			supplier := &models.Supplier{}
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Supplier: partner_service_mappings can't be blank"))
+			Expect(res.Message).To(ContainSubstring("Error while creating Supplier: partner_service_mappings can't be blank"))
 			database.DBAPM(ctx).Model(&models.Supplier{}).Where("name = ?", param.Name).Preload("SupplierOpcMappings").First(&supplier)
 			Expect(len(supplier.SupplierOpcMappings)).To(Equal(0))
 		})
@@ -480,9 +486,10 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
 				Phone:                "8801234567890",
-				SupplierType:         uint64(utils.Hlc),
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
+				ServiceType:          "Supplier",
+				ServiceLevel:         "Hlc",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -504,10 +511,11 @@ var _ = Describe("AddSupplier", func() {
 
 			param := &supplierpb.SupplierParam{
 				Name:                 "Name",
-				SupplierType:         uint64(utils.Hlc),
 				Phone:                "8801234567890",
 				OpcIds:               opcIds,
 				CreateWithOpcMapping: true,
+				ServiceType:          "Supplier",
+				ServiceLevel:         "Hlc",
 			}
 
 			res, err := new(services.SupplierService).Add(ctx, param)
@@ -527,7 +535,8 @@ var _ = Describe("AddSupplier", func() {
 				Name:         "Name",
 				Email:        "Email",
 				Phone:        "1234567890",
-				SupplierType: uint64(utils.Hlc),
+				ServiceType:  "Supplier",
+				ServiceLevel: "Hlc",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -541,7 +550,8 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				Email:        "Email",
-				SupplierType: uint64(utils.Hlc),
+				ServiceType:  "Supplier",
+				ServiceLevel: "Hlc",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 
@@ -557,7 +567,8 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				Email:        "Email",
-				SupplierType: uint64(utils.Hlc),
+				ServiceType:  "Supplier",
+				ServiceLevel: "Hlc",
 				Phone:        "8801234567890",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
@@ -573,7 +584,8 @@ var _ = Describe("AddSupplier", func() {
 			param := &supplierpb.SupplierParam{
 				Name:         "Name",
 				Email:        "Email",
-				SupplierType: uint64(utils.Captive),
+				ServiceType:  "Supplier",
+				ServiceLevel: "Captive",
 				Phone:        "8801234567112",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
