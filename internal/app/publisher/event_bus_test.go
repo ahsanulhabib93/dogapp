@@ -7,9 +7,10 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/shopuptech/event-bus-logs-go/core"
 	"github.com/shopuptech/event-bus-logs-go/ss2"
-	"github.com/stretchr/testify/assert"
 	eventBus "github.com/voonik/goConnect/api/go/event_bus/publisher"
 	"github.com/voonik/ss2/internal/app/publisher/mocks"
 )
@@ -63,7 +64,10 @@ func TestPublish(t *testing.T) {
 
 		t.Run("failed to marshal key", func(t *testing.T) {
 			protoMarshal = func(m proto.Message) ([]byte, error) {
-				return nil, fmt.Errorf("proto marshal key error")
+				if isSupplierLogKey(t, m) {
+					return nil, fmt.Errorf("proto marshal key error")
+				}
+				return proto.Marshal(m)
 			}
 			defer func() { protoMarshal = proto.Marshal }()
 
@@ -71,6 +75,21 @@ func TestPublish(t *testing.T) {
 
 			assert.Nil(t, res)
 			assert.EqualError(t, err, "failed to marshal key with error: proto marshal key error")
+		})
+
+		t.Run("failed to marshal value", func(t *testing.T) {
+			protoMarshal = func(m proto.Message) ([]byte, error) {
+				if isSupplierLogValue(t, m) {
+					return nil, fmt.Errorf("proto marshal value error")
+				}
+				return proto.Marshal(m)
+			}
+			defer func() { protoMarshal = proto.Marshal }()
+
+			res, err := Publish(ctx, topic, key, value)
+
+			assert.Nil(t, res)
+			assert.EqualError(t, err, "failed to marshal value with error: proto marshal value error")
 		})
 	})
 }
@@ -90,4 +109,14 @@ func getLog(t *testing.T) (*ss2.SupplierLogKey, *ss2.SupplierLogValue) {
 	}
 
 	return key, value
+}
+
+func isSupplierLogKey(_ *testing.T, m proto.Message) bool {
+	_, ok := m.(*ss2.SupplierLogKey)
+	return ok
+}
+
+func isSupplierLogValue(_ *testing.T, m proto.Message) bool {
+	_, ok := m.(*ss2.SupplierLogValue)
+	return ok
 }
