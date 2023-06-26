@@ -24,19 +24,21 @@ type Auditor interface {
 func AuditAction(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}, supplier models.Supplier) error {
 	log.Printf("[AuditAction] Received action: %v with data %+v supplier: %+v\n", action, data, supplier)
 
-	auditRecord, err := CreateAuditLog(ctx, supplierId, entity, action, data)
-	if err != nil {
-		return fmt.Errorf("[AuditAction] Failed to create audit log with error: %s", err.Error())
-	}
+	if appPreference.ShouldSendAuditLog(ctx) {
+		auditRecord, err := CreateAuditLog(ctx, supplierId, entity, action, data)
+		if err != nil {
+			return fmt.Errorf("[AuditAction] Failed to create audit log with error: %s", err.Error())
+		}
 
-	log.Printf("[AuditAction] Sending data to kafka action: %v with data %+v supplier: %+v\n", action, data, supplier)
-	if err = getAuditInstance().RecordAuditAction(ctx, auditRecord); err != nil {
-		return fmt.Errorf("[AuditAction] Failed to publish audit log with error: %s", err.Error())
+		log.Printf("[AuditAction] Sending data to kafka action: %v with data %+v supplier: %+v\n", action, data, supplier)
+		if err = getAuditInstance().RecordAuditAction(ctx, auditRecord); err != nil {
+			return fmt.Errorf("[AuditAction] Failed to publish audit log with error: %s", err.Error())
+		}
 	}
 
 	if appPreference.ShouldSendSupplierLog(ctx) {
 		log.Printf("[AuditAction] Publishing data to event-bus action: %v with data %+v supplier: %+v\n", action, data, supplier)
-		if err = PublishSupplierLog(ctx, action, supplier, data); err != nil {
+		if err := PublishSupplierLog(ctx, action, supplier, data); err != nil {
 			return fmt.Errorf("[AuditAction] failed to publish supplier log with err: %s", err.Error())
 		}
 	}
