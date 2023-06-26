@@ -167,7 +167,10 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		resp.Success = true
 		resp.Id = supplier.ID
 		helpers.CreateIdentityServiceUser(ctx, supplier)
-		helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionCreateSupplier, supplier)
+
+		if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionCreateSupplier, "", supplier); err != nil {
+			log.Println(err)
+		}
 	}
 	log.Printf("AddSupplierResponse: %+v", resp)
 	return &resp, nil
@@ -244,7 +247,10 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			} else {
 				resp.Message = "Supplier Edited Successfully"
 				resp.Success = true
-				helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
+
+				if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier); err != nil {
+					log.Println(err)
+				}
 			}
 		}
 	}
@@ -309,7 +315,10 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 	} else {
 		resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
 		resp.Success = true
-		helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionRemoveSupplierDocuments, params)
+
+		if err = helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionRemoveSupplierDocuments, params, supplier); err != nil {
+			log.Println(err)
+		}
 	}
 
 	log.Printf("RemoveDocumentResponse: %+v", resp)
@@ -348,7 +357,9 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 				helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus), params.GetReason())
 			}
 
-			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplierStatus, updateDetails)
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplierStatus, updateDetails, supplier); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 	log.Printf("UpdateStatusResponse: %+v", resp)
@@ -479,7 +490,10 @@ func (ss *SupplierService) VerifyOtp(ctx context.Context, params *supplierpb.Ver
 			database.DBAPM(ctx).Model(&supplier).Update("IsPhoneVerified", true)
 			resp.Message = otpResponse.Message
 			resp.Success = true
-			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionVerifySupplierPhoneNumber, params)
+
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionVerifySupplierPhoneNumber, params, supplier); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 

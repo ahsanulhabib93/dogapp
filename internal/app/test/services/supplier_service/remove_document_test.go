@@ -2,10 +2,16 @@ package supplier_service_test
 
 import (
 	"context"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
+	eventBus "github.com/voonik/goConnect/api/go/event_bus/publisher"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	aaaMocks "github.com/voonik/goFramework/pkg/aaa/models/mocks"
+	"github.com/voonik/ss2/internal/app/publisher"
+	mockPublisher "github.com/voonik/ss2/internal/app/publisher/mocks"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
@@ -21,6 +27,7 @@ var _ = Describe("RemoveDocument", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
 	var supplier *models.Supplier
+	var appPreferenceMockInstance *aaaMocks.AppPreferenceInterface
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
@@ -37,6 +44,16 @@ var _ = Describe("RemoveDocument", func() {
 
 		mockAudit = mocks.SetAuditLogMock()
 		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
+
+		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
+		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
+		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
+		permission := "supplierpanel:editverifiedblockedsupplieronly:admin"
+		appPreferenceMockInstance.On("GetValue", mock.Anything, "supplier_update_allowed_permission", permission).Return(permission)
+	})
+
+	AfterEach(func() {
+		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
 	Context("Removing primary document", func() {
@@ -45,6 +62,14 @@ var _ = Describe("RemoveDocument", func() {
 				Id:           supplier.ID,
 				DocumentType: "agreement_url",
 			}
+
+			t := &testing.T{}
+
+			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
+			defer resetEventBus()
+
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+
 			res, err := new(services.SupplierService).RemoveDocument(ctx, param)
 
 			Expect(err).To(BeNil())
@@ -62,6 +87,7 @@ var _ = Describe("RemoveDocument", func() {
 			Expect(partnerServices[0].Active).To(Equal(false))
 
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
+			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
@@ -71,6 +97,14 @@ var _ = Describe("RemoveDocument", func() {
 				Id:           supplier.ID,
 				DocumentType: "guarantor_nid_front_image_url",
 			}
+
+			t := &testing.T{}
+
+			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
+			defer resetEventBus()
+
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+
 			res, err := new(services.SupplierService).RemoveDocument(ctx, param)
 
 			Expect(err).To(BeNil())
@@ -83,6 +117,7 @@ var _ = Describe("RemoveDocument", func() {
 			Expect(updatedSupplier.GuarantorNidFrontImageUrl).To(Equal(""))
 
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
+			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
@@ -101,6 +136,14 @@ var _ = Describe("RemoveDocument", func() {
 				DocumentType:     "agreement_url",
 				PartnerServiceId: partnerService.ID,
 			}
+
+			t := &testing.T{}
+
+			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
+			defer resetEventBus()
+
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+
 			res, err := new(services.SupplierService).RemoveDocument(ctx, param)
 
 			Expect(err).To(BeNil())
@@ -117,6 +160,7 @@ var _ = Describe("RemoveDocument", func() {
 			Expect(partnerServices[1].Active).To(Equal(false))
 
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
+			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
@@ -126,6 +170,14 @@ var _ = Describe("RemoveDocument", func() {
 				Id:           supplier.ID,
 				DocumentType: "agreement_url_abc",
 			}
+
+			t := &testing.T{}
+
+			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
+			defer resetEventBus()
+
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+
 			res, err := new(services.SupplierService).RemoveDocument(ctx, param)
 
 			Expect(err).To(BeNil())
@@ -133,6 +185,7 @@ var _ = Describe("RemoveDocument", func() {
 			Expect(res.Message).To(Equal("Invalid Document Type"))
 
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(0))
+			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
@@ -144,6 +197,14 @@ var _ = Describe("RemoveDocument", func() {
 				Id:           supplier.ID,
 				DocumentType: "agreement_url",
 			}
+
+			t := &testing.T{}
+
+			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
+			defer resetEventBus()
+
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+
 			res, err := new(services.SupplierService).RemoveDocument(ctx, param)
 
 			Expect(err).To(BeNil())
@@ -159,6 +220,7 @@ var _ = Describe("RemoveDocument", func() {
 			Expect(len(partnerServices)).To(Equal(1))
 			Expect(partnerServices[0].AgreementUrl).To(Equal("abc/xyz.pdf"))
 			Expect(partnerServices[0].Active).To(Equal(true))
+			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
@@ -169,6 +231,14 @@ var _ = Describe("RemoveDocument", func() {
 				DocumentType:     "agreement_url",
 				PartnerServiceId: 100,
 			}
+
+			t := &testing.T{}
+
+			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
+			defer resetEventBus()
+
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+
 			res, err := new(services.SupplierService).RemoveDocument(ctx, param)
 
 			Expect(err).To(BeNil())
@@ -176,6 +246,7 @@ var _ = Describe("RemoveDocument", func() {
 			Expect(res.Message).To(Equal("ParnerServiceMapping not found"))
 
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(0))
+			mockedEventBus.AssertExpectations(t)
 		})
 	})
 })
