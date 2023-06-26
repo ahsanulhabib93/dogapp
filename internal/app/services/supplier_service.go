@@ -210,7 +210,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			return &resp, nil
 		}
 
-		updatedSupplier := models.Supplier{
+		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Status:                    status,
 			Name:                      params.GetName(),
 			Email:                     params.GetEmail(),
@@ -229,9 +229,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			GuarantorNidBackImageUrl:  params.GetGuarantorNidBackImageUrl(),
 			ChequeImageUrl:            params.GetChequeImageUrl(),
 			SupplierCategoryMappings:  helpers.UpdateSupplierCategoryMapping(ctx, supplier.ID, params.GetCategoryIds()),
-		}
-
-		err := database.DBAPM(ctx).Model(&supplier).Updates(updatedSupplier)
+		})
 
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
@@ -246,16 +244,13 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 
 			if err != nil && err.Error != nil {
 				resp.Message = fmt.Sprintf("Error while updating PartnerServiceMapping: %s", err.Error)
-			}
+			} else {
+				resp.Message = "Supplier Edited Successfully"
+				resp.Success = true
 
-			resp.Message = "Supplier Edited Successfully"
-			resp.Success = true
-
-			log.Printf("[AuditAction] Params supplier catgory mappings: %+v\n", params.GetCategoryIds())
-			log.Printf("[AuditAction] Updated supplier catgory mappings: %+v\n", updatedSupplier.SupplierCategoryMappings)
-			log.Printf("[AuditAction] Supplier catgory mappings: %+v\n", supplier.SupplierCategoryMappings)
-			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier); err != nil {
-				log.Println(err)
+				if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier); err != nil {
+					log.Println(err)
+				}
 			}
 		}
 	}
