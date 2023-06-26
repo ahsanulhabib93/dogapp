@@ -72,8 +72,6 @@ var _ = Describe("EditSupplier", func() {
 				NidNumber:                 "12345",
 				NidFrontImageUrl:          "ss2/shop_images/test.png",
 				NidBackImageUrl:           "ss2/shop_images/test.png",
-				TradeLicenseUrl:           "ss2/shop_images/test.pdf",
-				AgreementUrl:              "ss2/shop_images/test.pdf",
 				ShopOwnerImageUrl:         "ss2/shop_images/test.png",
 				GuarantorImageUrl:         "ss2/shop_images/test.png",
 				GuarantorNidNumber:        "12345",
@@ -123,9 +121,8 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusBlocked,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				SupplierType: uint64(utils.L1),
+				Id:   supplier.ID,
+				Name: "Name",
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -163,9 +160,8 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusPending,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				SupplierType: uint64(utils.L1),
+				Id:   supplier.ID,
+				Name: "Name",
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -225,9 +221,8 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusVerified,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				SupplierType: uint64(utils.Hlc),
+				Id:   supplier.ID,
+				Name: "Name",
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 
@@ -272,11 +267,10 @@ var _ = Describe("EditSupplier", func() {
 			})
 
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{100, 101, 102},
+				Id:          supplier.ID,
+				Name:        "Name",
+				Email:       "Email",
+				CategoryIds: []uint64{100, 101, 102},
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 			Expect(err).To(BeNil())
@@ -310,11 +304,10 @@ var _ = Describe("EditSupplier", func() {
 			})
 
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{100, 101, 102},
+				Id:          supplier.ID,
+				Name:        "Name",
+				Email:       "Email",
+				CategoryIds: []uint64{100, 101, 102},
 			}
 			res, err := new(services.SupplierService).Edit(ctx, param)
 			Expect(err).To(BeNil())
@@ -351,11 +344,10 @@ var _ = Describe("EditSupplier", func() {
 			})
 
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{101, 200, 567},
+				Id:          supplier.ID,
+				Name:        "Name",
+				Email:       "Email",
+				CategoryIds: []uint64{101, 200, 567},
 			}
 
 			res, err := new(services.SupplierService).Edit(ctx, param)
@@ -410,20 +402,4 @@ var _ = Describe("EditSupplier", func() {
 		})
 	})
 
-	Context("Editing Supplier with invalid supplier type", func() {
-		It("Should return error response", func() {
-			test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567891"})
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567800"})
-			param := &supplierpb.SupplierObject{
-				Id:           supplier1.ID,
-				Phone:        "8801234567890",
-				SupplierType: uint64(utils.Captive),
-			}
-			res, err := new(services.SupplierService).Edit(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Supplier Type: Captive is not Allowed for this Supplier"))
-		})
-	})
 })

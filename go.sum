@@ -1140,6 +1140,10 @@ github.com/voonik/goConnect v0.0.0-20230605071816-5eb78c191615 h1:6fEWcHVD+fXMD5
 github.com/voonik/goConnect v0.0.0-20230605071816-5eb78c191615/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
 github.com/voonik/goConnect v0.0.0-20230608042932-bbdbc580db28 h1:zN4y1+UBVkYiJ8a3rbj8QxynW/GN+494+j99EOB47CQ=
 github.com/voonik/goConnect v0.0.0-20230608042932-bbdbc580db28/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
+github.com/voonik/goConnect v0.0.0-20230622095403-c2b7029b1db8 h1:EB9uYEI9gdRFjG3IWil0iVHnA/MYfGOqUwC8XddxLsA=
+github.com/voonik/goConnect v0.0.0-20230622095403-c2b7029b1db8/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
+github.com/voonik/goConnect v0.0.0-20230622100221-68602f44dda1 h1:gPk9YoUxN7HMxi25JQqbpFXzdDfZULrFxWAoE7ditr8=
+github.com/voonik/goConnect v0.0.0-20230622100221-68602f44dda1/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
 github.com/voonik/goFramework v0.0.0-20221006080900-34f22876386b/go.mod h1:IOtcJERqfsdL3ckoUICj4DSkY6LWEBUDWG3lTlz8JmY=
 github.com/voonik/goFramework v0.0.0-20230425044616-f044dcd96534 h1:ffZ4hKMcJsBwvKCa/zpY5NpkpM6y6pN01x1upUKeaPM=
 github.com/voonik/goFramework v0.0.0-20230425044616-f044dcd96534/go.mod h1:BOptdsc6c/LrT5qNjHmAbrFCmyjss/dbdPxGP3TM/34=

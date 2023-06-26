@@ -92,7 +92,6 @@ var _ = Describe("AddSupplier", func() {
 				Zipcode:                  "Zipcode",
 				GstNumber:                "GstNumber",
 				NidNumber:                "123456789",
-				TradeLicenseUrl:          "TradeLicenseUrl",
 				NidFrontImageUrl:         "NidFrontImageUrl",
 				NidBackImageUrl:          "NidBackImageUrl",
 				ShopOwnerImageUrl:        "ShopOwnerImageUrl",
@@ -124,7 +123,6 @@ var _ = Describe("AddSupplier", func() {
 			Expect(supplier.NidNumber).To(Equal(param.NidNumber))
 			Expect(supplier.NidFrontImageUrl).To(Equal(param.NidFrontImageUrl))
 			Expect(supplier.NidBackImageUrl).To(Equal(param.NidBackImageUrl))
-			Expect(supplier.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
 			Expect(supplier.ShopOwnerImageUrl).To(Equal(param.ShopOwnerImageUrl))
 			Expect(supplier.GuarantorImageUrl).To(Equal(param.GuarantorImageUrl))
 			Expect(supplier.GuarantorNidNumber).To(Equal(param.GuarantorNidNumber))
@@ -228,7 +226,6 @@ var _ = Describe("AddSupplier", func() {
 				Zipcode:          "Zipcode",
 				GstNumber:        "GstNumber",
 				NidNumber:        "nid_number",
-				TradeLicenseUrl:  "TradeLicenseUrl",
 				NidFrontImageUrl: "NidFrontImageUrl",
 				NidBackImageUrl:  "NidBackImageUrl",
 				CategoryIds:      []uint64{1, 30},
@@ -271,12 +268,11 @@ var _ = Describe("AddSupplier", func() {
 			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(&userPb.UserInfo{})
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			param := &supplierpb.SupplierParam{
-				Name:         supplier1.Name,
-				Email:        "Email",
-				Phone:        phone,
-				SupplierType: uint64(utils.Hlc),
-				Address1:     "Address1",
-				Zipcode:      "Zipcode",
+				Name:     supplier1.Name,
+				Email:    "Email",
+				Phone:    phone,
+				Address1: "Address1",
+				Zipcode:  "Zipcode",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -300,7 +296,6 @@ var _ = Describe("AddSupplier", func() {
 				Email:          "Email",
 				Phone:          phone,
 				AlternatePhone: altPhone,
-				SupplierType:   uint64(utils.Hlc),
 				Address1:       "Address1",
 				Zipcode:        "Zipcode",
 			}
@@ -321,12 +316,11 @@ var _ = Describe("AddSupplier", func() {
 			IdentityUserApiHelperInstance.On("GetUserDetailsApiByPhone", ctx, phone).Return(&helpers.IdentityUserObject{})
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			param := &supplierpb.SupplierParam{
-				Name:         supplier1.Name,
-				Email:        "Email",
-				Phone:        phone,
-				SupplierType: uint64(utils.Hlc),
-				Address1:     "Address1",
-				Zipcode:      "Zipcode",
+				Name:     supplier1.Name,
+				Email:    "Email",
+				Phone:    phone,
+				Address1: "Address1",
+				Zipcode:  "Zipcode",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())
@@ -346,12 +340,11 @@ var _ = Describe("AddSupplier", func() {
 			apiHelperInstance.On("FindTalentXUserByPhone", ctx, phone).Return([]*employeePb.EmployeeRecord{{Name: "employee"}})
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
 			param := &supplierpb.SupplierParam{
-				Name:         supplier1.Name,
-				Email:        "Email",
-				Phone:        phone,
-				SupplierType: uint64(utils.Hlc),
-				Address1:     "Address1",
-				Zipcode:      "Zipcode",
+				Name:     supplier1.Name,
+				Email:    "Email",
+				Phone:    phone,
+				Address1: "Address1",
+				Zipcode:  "Zipcode",
 			}
 			res, err := new(services.SupplierService).Add(ctx, param)
 			Expect(err).To(BeNil())

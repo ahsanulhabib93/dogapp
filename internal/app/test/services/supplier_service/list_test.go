@@ -63,7 +63,6 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.IsPhoneVerified).To(Equal(false))
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusPending)))
 
 			Expect(supplierData1.PartnerServices).To(HaveLen(2))
@@ -83,7 +82,6 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.IsPhoneVerified).To(Equal(true))
 			Expect(supplierData2.CategoryIds).To(Equal([]uint64{}))
 			Expect(supplierData2.OpcIds).To(Equal([]uint64{}))
-			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(supplierData2.Status).To(Equal(string(models.SupplierStatusPending)))
 
 			Expect(supplierData2.PartnerServices).To(HaveLen(1))
@@ -259,7 +257,6 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.Name).To(Equal(supplier1.Name))
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusVerified)))
 		})
 	})

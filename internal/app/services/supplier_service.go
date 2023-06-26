@@ -130,8 +130,6 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		NidNumber:                 params.GetNidNumber(),
 		NidFrontImageUrl:          params.GetNidFrontImageUrl(),
 		NidBackImageUrl:           params.GetNidBackImageUrl(),
-		TradeLicenseUrl:           params.GetTradeLicenseUrl(),
-		AgreementUrl:              params.GetAgreementUrl(),
 		ShopOwnerImageUrl:         params.GetShopOwnerImageUrl(),
 		GuarantorImageUrl:         params.GetGuarantorImageUrl(),
 		GuarantorNidNumber:        params.GetGuarantorNidNumber(),
@@ -193,12 +191,6 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		var status models.SupplierStatus
 		if supplier.Status == models.SupplierStatusVerified || supplier.Status == models.SupplierStatusFailed {
 			status = models.SupplierStatusPending // Moving to Pending if any data is updated
-		}
-
-		errorMessage := ss.checkAllowedSupplierTypes(ctx, utils.SupplierType(params.GetSupplierType()))
-		if errorMessage != "" {
-			resp.Message = errorMessage
-			return &resp, nil
 		}
 
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
