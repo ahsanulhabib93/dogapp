@@ -6,7 +6,7 @@ require (
 	github.com/360EntSecGroup-Skylar/excelize v1.4.1
 	github.com/alexflint/go-filemutex v1.1.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/khaiql/dbcleaner v2.3.0+incompatible
@@ -21,10 +21,10 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
 	github.com/voonik/goConnect v0.0.0-20230608042932-bbdbc580db28
-	github.com/voonik/goFramework v0.0.0-20230425044616-f044dcd96534
+	github.com/voonik/goFramework v0.0.0-20230619072252-b6efcd247e77
 	github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae
 	golang.org/x/net v0.10.0 // indirect
-	google.golang.org/grpc v1.53.0
+	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
