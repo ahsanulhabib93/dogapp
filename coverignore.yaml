@@ -11,6 +11,7 @@
 files:
   - <->
   - app/helpers/worker_helper.go
+  - app/publisher/mocks/event_bus.go
 dirs:
   - <->
   - app/handlers
