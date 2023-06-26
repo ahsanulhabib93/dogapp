@@ -34,7 +34,6 @@ func AuditAction(ctx context.Context, supplierId uint64, entity string, action m
 		return fmt.Errorf("[AuditAction] Failed to publish audit log with error: %s", err.Error())
 	}
 
-	log.Printf("[AuditAction] Supplier Log flag: %v", appPreference.ShouldSendSupplierLog(ctx))
 	if appPreference.ShouldSendSupplierLog(ctx) {
 		log.Printf("[AuditAction] Publishing data to event-bus action: %v with data %+v supplier: %+v\n", action, data, supplier)
 		if err = PublishSupplierLog(ctx, action, supplier, data); err != nil {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/shopuptech/event-bus-logs-go/core"
@@ -19,10 +18,7 @@ import (
 const supplierLogTopic = "supplier-service-log"
 
 func PublishSupplierLog(ctx context.Context, action models.AuditActionType, supplier models.Supplier, data interface{}) error {
-	log.Printf("[SupplierLog] Supplier: %+v", supplier)
 	key, value := supplierLog(ctx, supplier, supplierMetadata(ctx, action, data))
-
-	log.Printf("[SupplierLog] key: %+v value: %+v", key, value)
 
 	_, err := publisher.Publish(ctx, supplierLogTopic, key, value)
 	if err != nil {
