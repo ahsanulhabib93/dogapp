@@ -291,17 +291,12 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 		query.First(&partnerServiceMapping)
 		if partnerServiceMapping.ID == utils.Zero {
 			resp.Message = "ParnerServiceMapping not found"
-			return &resp, nil
-			if err := query.Error; err != nil {
-				resp.Message = fmt.Sprintf("Error While Removing Supplier Document: %s", err.Error())
-			} else {
-				resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
-				resp.Success = true
 
-				if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionRemoveSupplierDocuments, params, supplier); err != nil {
-					log.Println(err)
-				}
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionRemoveSupplierDocuments, params, supplier); err != nil {
+				log.Println(err)
 			}
+
+			return &resp, nil
 		}
 	}
 
@@ -325,7 +320,10 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 	} else {
 		resp.Message = fmt.Sprintf("Supplier %s Removed Successfully", params.GetDocumentType())
 		resp.Success = true
-		helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionRemoveSupplierDocuments, params, supplier)
+
+		if err = helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionRemoveSupplierDocuments, params, supplier); err != nil {
+			log.Println(err)
+		}
 	}
 
 	log.Printf("RemoveDocumentResponse: %+v", resp)
