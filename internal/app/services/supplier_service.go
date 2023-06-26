@@ -291,11 +291,6 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 		query.First(&partnerServiceMapping)
 		if partnerServiceMapping.ID == utils.Zero {
 			resp.Message = "ParnerServiceMapping not found"
-
-			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionRemoveSupplierDocuments, params, supplier); err != nil {
-				log.Println(err)
-			}
-
 			return &resp, nil
 		}
 	}
