@@ -36,4 +36,13 @@ func init() {
 			return nil
 		},
 	})
+	migrator.Register(&gormigrate.Migration{
+		ID: "20230625130730",
+		Migrate: func(tx *gorm.DB) error {
+			return tx.AutoMigrate(&aaaModels.AppPreference{}).AddUniqueIndex("pref_key", "preference_key", "vaccount_id", "portal_id").Error
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	})
 }
