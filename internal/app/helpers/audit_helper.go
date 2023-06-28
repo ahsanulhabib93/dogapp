@@ -6,47 +6,51 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/golang/protobuf/proto"
 	supplierPb "github.com/voonik/goConnect/api/go/audit_log_service/supplier"
-
 	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/goFramework/pkg/pubsub/publisher"
 	"github.com/voonik/goFramework/pkg/serviceapiconfig"
+	"github.com/voonik/ss2/internal/app/appPreference"
+	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
-type AuditActionType string
-
-const (
-	ActionUpdateSupplierStatus      AuditActionType = "update_supplier_status"
-	ActionUpdateSupplier            AuditActionType = "update_supplier"
-	ActionCreateSupplier            AuditActionType = "create_supplier"
-	ActionVerifySupplierPhoneNumber AuditActionType = "verify_supplier_phone_number"
-	ActionRemoveSupplierDocuments   AuditActionType = "remove_supplier_document"
-)
-
 type AuditHelper struct{}
-type AuditActionInterface interface {
-	RecordAuditAction(ctx context.Context, auditRecord *supplierPb.AuditRecord) error
+type Auditor interface {
+	RecordAuditAction(ctx context.Context, auditRecord proto.Message) error
 }
 
-var auditAction AuditActionInterface
+func AuditAction(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}, supplier models.Supplier) error {
+	log.Printf("[AuditAction] Received action: %v with data %+v supplier: %+v\n", action, data, supplier)
 
-func InjectMockAuditActionInstance(mockObj AuditActionInterface) {
-	auditAction = mockObj
-}
+	if appPreference.ShouldSendAuditLog(ctx) {
+		auditRecord, err := CreateAuditLog(ctx, supplierId, entity, action, data)
+		if err != nil {
+			return fmt.Errorf("[AuditAction] Failed to create audit log with error: %s", err.Error())
+		}
 
-func getAuditInstance() AuditActionInterface {
-	if auditAction == nil {
-		return new(AuditHelper)
+		log.Printf("[AuditAction] Sending data to kafka action: %v with data %+v supplier: %+v\n", action, data, supplier)
+		if err = getAuditInstance().RecordAuditAction(ctx, auditRecord); err != nil {
+			return fmt.Errorf("[AuditAction] Failed to publish audit log with error: %s", err.Error())
+		}
 	}
-	return auditAction
+
+	if appPreference.ShouldSendSupplierLog(ctx) {
+		log.Printf("[AuditAction] Publishing data to event-bus action: %v with data %+v supplier: %+v\n", action, data, supplier)
+		if err := PublishSupplierLog(ctx, action, supplier, data); err != nil {
+			return fmt.Errorf("[AuditAction] failed to publish supplier log with err: %s", err.Error())
+		}
+	}
+
+	return nil
 }
 
-func AuditAction(ctx context.Context, supplierId uint64, entity string, action AuditActionType, data interface{}) error {
+func CreateAuditLog(ctx context.Context, supplierId uint64, entity string, action models.AuditActionType, data interface{}) (*supplierPb.AuditRecord, error) {
 	dump, err := json.Marshal(data)
+
 	if err != nil {
-		log.Println("AuditAction: Failed to create dump. Error: ", err.Error())
-		return err
+		return nil, fmt.Errorf("failed to create dump with error: %s", err.Error())
 	}
 
 	var userId uint64
@@ -63,15 +67,10 @@ func AuditAction(ctx context.Context, supplierId uint64, entity string, action A
 		DataDump:   string(dump),
 		VaccountId: uint64(utils.GetVaccount(ctx)),
 	}
-
-	if err := getAuditInstance().RecordAuditAction(ctx, auditRecord); err != nil {
-		log.Println("AuditAction: Failed to publish audit log. Error: ", err.Error())
-	}
-
-	return nil
+	return auditRecord, nil
 }
 
-func (a *AuditHelper) RecordAuditAction(ctx context.Context, auditRecord *supplierPb.AuditRecord) error {
+func (a *AuditHelper) RecordAuditAction(ctx context.Context, auditRecord proto.Message) error {
 	fmt.Print("auditRecord: ", auditRecord)
 
 	transportconf := serviceapiconfig.NewClientOptions(
@@ -80,4 +79,17 @@ func (a *AuditHelper) RecordAuditAction(ctx context.Context, auditRecord *suppli
 		serviceapiconfig.WithPubSubKlass("AuditLogService::Supplier::AuditRecord"),
 	)
 	return publisher.ProduceMessage(ctx, auditRecord, &misc.PubSubMessage{}, utils.SupplierAuditTopic, "", "", transportconf)
+}
+
+func getAuditInstance() Auditor {
+	if auditAction == nil {
+		return new(AuditHelper)
+	}
+	return auditAction
+}
+
+var auditAction Auditor
+
+func InjectMockAuditActionInstance(mockObj Auditor) {
+	auditAction = mockObj
 }
