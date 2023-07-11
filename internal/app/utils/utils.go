@@ -28,6 +28,18 @@ func GetVaccount(ctx context.Context) int64 {
 	return misc.ExtractThreadObject(ctx).VaccountId
 }
 
+func GetPortalId(ctx context.Context) int64 {
+	return misc.ExtractThreadObject(ctx).PortalId
+}
+
+func GetCurrentActId(ctx context.Context) int64 {
+	return misc.ExtractThreadObject(ctx).CurrentActId
+}
+
+func GetXRequestId(ctx context.Context) string {
+	return misc.ExtractThreadObject(ctx).XRequestId
+}
+
 func GetCurrentUserPermissions(ctx context.Context) []string {
 	threadUser := misc.ExtractThreadObject(ctx).UserData
 	if threadUser != nil {
@@ -153,4 +165,21 @@ func Includes(array interface{}, item interface{}) bool {
 		}
 	}
 	return false
+}
+
+func GetCommonElements(arr1 []string, arr2 []string) []string {
+	elementMap := make(map[string]bool)
+	commonElements := []string{}
+
+	for _, element := range arr1 {
+		elementMap[element] = true
+	}
+
+	for _, element := range arr2 {
+		if elementMap[element] {
+			commonElements = append(commonElements, element)
+		}
+	}
+
+	return commonElements
 }

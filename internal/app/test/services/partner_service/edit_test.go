@@ -28,7 +28,7 @@ var _ = Describe("EditPartnerService", func() {
 		test_utils.GetContext(&ctx)
 		mocks.UnsetOpcMock()
 
-		ctx = test_helper.SetContextUser(ctx, userId, []string{})
+		test_helper.SetContextUser(&ctx, userId, []string{})
 		mockAudit = mocks.SetAuditLogMock()
 		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 	})
@@ -100,8 +100,8 @@ var _ = Describe("EditPartnerService", func() {
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
 				PartnerServiceId: partnerservice1.ID,
-				ServiceType:      "Transporter",
-				ServiceLevel:     "L0",
+				ServiceType:      "Supplier",
+				ServiceLevel:     "CashVendor",
 				TradeLicenseUrl:  "trade_license_url",
 				AgreementUrl:     "agreement_url",
 			}

@@ -135,6 +135,54 @@
             "description": "Partner Service Admin APIs",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:allservices:view",
+            "description": "Access to view all service types data",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:allservices:view",
+            "description": "Access to view all service types data",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:supplierservice:view",
+            "description": "Access to view supplier service type data",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:supplierservice:view",
+            "description": "Access to view supplier service type data",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:transporterservice:view",
+            "description": "Access to view transport service type data",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:transporterservice:view",
+            "description": "Access to view transport service type data",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:removedocument:admin",
+            "description": "Remove Document API access",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:removedocument:admin",
+            "description": "Remove Document API access",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
         }
     ],
     "route_permissions": [
@@ -582,6 +630,116 @@
             "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:partnerservice:admin",
             "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:transporterservice:view",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "PR Admin",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Promotion Admin",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "crt_service",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "lrmsadmin",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "lrmscategoryadmin",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "lrmsreconadmin",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "SourcingSupervisor",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "crtadmin",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "vehiclerequisitionmanager",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "lrmspoultryadmin",
+            "permission_id": "supplierpanel:supplierservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "oms:opclist:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "oms:opclist:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "wmsroutes:Warehouse:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "wmsroutes:Warehouse:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "supplierpanel:removedocument:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "supplierpanel:removedocument:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:removedocument:admin",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "wmsroutes:Warehouse:listWarehouses",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Digital Credit Team",
+            "permission_id": "wmsroutes:Warehouse:listWarehouses",
+            "vaccount_id": 2
         }
     ]
 }

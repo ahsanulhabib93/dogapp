@@ -7,6 +7,7 @@ import (
 
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -155,11 +156,16 @@ func (psm *PartnerServiceMappingService) UpdateStatus(ctx context.Context, param
 func (psm *PartnerServiceMappingService) PartnerTypesList(ctx context.Context, params *psmpb.PartnerServiceObject) (*psmpb.PartnerTypeListResponse, error) {
 	responseMappings := []*psmpb.PartnerServiceTypeMapping{}
 
-	for key, value := range utils.PartnerServiceTypeLevelMapping {
+	allowedServiceTypes := helpers.GetAllowedServiceTypes(ctx)
+	for serviceType, serviceLevels := range utils.PartnerServiceTypeLevelMapping {
+		if !utils.Includes(allowedServiceTypes, serviceType.String()) {
+			continue // Skipping if not allowed
+		}
+
 		object := psmpb.PartnerServiceTypeMapping{}
-		object.PartnerType = key.String()
-		for _, v := range value {
-			object.ServiceTypes = append(object.ServiceTypes, v.String())
+		object.PartnerType = serviceType.String()
+		for _, serviceLevel := range serviceLevels {
+			object.ServiceTypes = append(object.ServiceTypes, serviceLevel.String())
 		}
 
 		responseMappings = append(responseMappings, &object)
