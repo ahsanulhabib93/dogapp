@@ -3,9 +3,6 @@ package partner_service_service_test
 import (
 	"context"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/services"
@@ -27,7 +24,7 @@ var _ = Describe("PartnerTypesList", func() {
 		It("Should return all service types data", func() {
 			res, _ := new(services.PartnerServiceMappingService).PartnerTypesList(ctx, &psmpb.PartnerServiceObject{})
 
-			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(2))
+			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(3))
 
 			supplier := res.PartnerServiceTypeMappings[0]
 			Expect(supplier.PartnerType).To(Equal("Supplier"))

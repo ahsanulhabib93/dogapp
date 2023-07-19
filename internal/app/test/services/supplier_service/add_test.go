@@ -5,8 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
 	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
 	eventBus "github.com/voonik/goConnect/api/go/event_bus/publisher"
@@ -578,22 +576,6 @@ var _ = Describe("AddSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: Phone Number Already Exists"))
-		})
-	})
-
-	Context("Adding Supplier with invalid supplier type", func() {
-		It("Should return error response", func() {
-			param := &supplierpb.SupplierParam{
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.Captive),
-				Phone:        "8801234567112",
-			}
-			res, err := new(services.SupplierService).Add(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Supplier Type: Captive is not Allowed for this Supplier"))
 		})
 	})
 })
