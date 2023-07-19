@@ -3,6 +3,9 @@ package partner_service_service_test
 import (
 	"context"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/services"
