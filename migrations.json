@@ -774,11 +774,6 @@
         },
         {
             "role_name": "Vendor Panel Manager",
-            "permission_id": "supplierpanel:pendingsuppliermodule:admin",
-            "vaccount_id": 2
-        },
-        {
-            "role_name": "Vendor Panel Manager",
             "permission_id": "supplierpanel:removedocument:admin",
             "vaccount_id": 2
         },
@@ -800,11 +795,6 @@
         {
             "role_name": "Vendor Panel Manager",
             "permission_id": "supplierpanel:supplierphoneverificationpi:admin",
-            "vaccount_id": 2
-        },
-        {
-            "role_name": "Vendor Panel Manager",
-            "permission_id": "supplierpanel:supplierservice:view",
             "vaccount_id": 2
         },
         {
