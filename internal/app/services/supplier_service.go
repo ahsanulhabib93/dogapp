@@ -222,7 +222,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		} else {
 			resp.Message = "Supplier Edited Successfully"
 			resp.Success = true
-			helpers.AuditAction(ctx, supplier.ID, "supplier", helpers.ActionUpdateSupplier, params)
+			helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier)
 		}
 	}
 	log.Printf("EditSupplierResponse: %+v", resp)

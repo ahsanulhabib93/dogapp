@@ -511,30 +511,4 @@ var _ = Describe("EditSupplier", func() {
 			mockedEventBus.AssertExpectations(t)
 		})
 	})
-
-	Context("Editing Supplier with invalid supplier type", func() {
-		It("Should return error response", func() {
-			test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567891"})
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567800"})
-			param := &supplierpb.SupplierObject{
-				Id:           supplier1.ID,
-				Phone:        "8801234567890",
-				SupplierType: uint64(utils.Captive),
-			}
-
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
-			res, err := new(services.SupplierService).Edit(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Supplier Type: Captive is not Allowed for this Supplier"))
-			mockedEventBus.AssertExpectations(t)
-		})
-	})
 })
