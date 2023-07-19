@@ -3,12 +3,13 @@ package supplier_service_test
 import (
 	"context"
 	"errors"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
-
 	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
+	eventBus "github.com/voonik/goConnect/api/go/event_bus/publisher"
 	opcPb "github.com/voonik/goConnect/api/go/oms/processing_center"
 	employeePb "github.com/voonik/goConnect/api/go/sr_service/attendance"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
@@ -18,6 +19,8 @@ import (
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
+	"github.com/voonik/ss2/internal/app/publisher"
+	mockPublisher "github.com/voonik/ss2/internal/app/publisher/mocks"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
@@ -56,6 +59,7 @@ var _ = Describe("AddSupplier", func() {
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
 		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Hlc"})
 		appPreferenceMockInstance.On("GetValue", ctx, "default_service_type", int64(1)).Return(int64(1))
+		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
 	})
 
 	AfterEach(func() {
@@ -104,6 +108,13 @@ var _ = Describe("AddSupplier", func() {
 				ServiceType:              "Supplier",
 				ServiceLevel:             "Hlc",
 			}
+
+			t := &testing.T{}
+			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
+			defer resetEventBus()
+
+			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+
 			res, err := new(services.SupplierService).Add(ctx, param)
 
 			Expect(err).To(BeNil())
@@ -168,6 +179,8 @@ var _ = Describe("AddSupplier", func() {
 				}
 			}
 			Expect(actualCalls).To(Equal(1))
+
+			mockedEventBus.AssertExpectations(t)
 		})
 	})
 

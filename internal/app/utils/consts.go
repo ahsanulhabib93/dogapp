@@ -20,6 +20,7 @@ const (
 	Driver
 	CashVendor
 	RedxHubVendor
+	CreditVendor
 )
 
 var SupplierTypeValue = map[SupplierType]string{
@@ -32,6 +33,7 @@ var SupplierTypeValue = map[SupplierType]string{
 	Driver:        "Driver",
 	CashVendor:    "Cash Vendor",
 	RedxHubVendor: "Redx Hub Vendor",
+	CreditVendor:  "Credit Vendor",
 }
 
 const (
@@ -74,4 +76,5 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 	"Driver":        Driver,
 	"CashVendor":    CashVendor,
 	"RedxHubVendor": RedxHubVendor,
+	"CreditVendor":  CreditVendor,
 }
