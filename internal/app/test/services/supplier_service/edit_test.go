@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
 	eventBus "github.com/voonik/goConnect/api/go/event_bus/publisher"
 	"github.com/voonik/ss2/internal/app/publisher"
