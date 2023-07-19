@@ -57,7 +57,6 @@ var _ = Describe("AddSupplier", func() {
 
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
-		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Hlc"})
 		appPreferenceMockInstance.On("GetValue", ctx, "default_service_type", int64(1)).Return(int64(1))
 		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
 	})

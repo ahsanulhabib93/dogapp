@@ -40,7 +40,6 @@ var _ = Describe("EditSupplier", func() {
 
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
-		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"L1", "Hlc"})
 		appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
 		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
 	})
@@ -177,7 +176,6 @@ var _ = Describe("EditSupplier", func() {
 			test_utils.SetPermission(&ctx, []string{})
 			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 
-			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"L1", "Hlc"})
 			appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
 		})
 
