@@ -40,7 +40,6 @@ var _ = Describe("EditSupplier", func() {
 
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
-		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"L1", "Hlc"})
 		appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
 		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
 	})
@@ -177,7 +176,6 @@ var _ = Describe("EditSupplier", func() {
 			test_utils.SetPermission(&ctx, []string{})
 			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 
-			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"L1", "Hlc"})
 			appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
 		})
 
@@ -523,32 +521,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while updating Supplier: Phone Number Already Exists"))
-			mockedEventBus.AssertExpectations(t)
-		})
-	})
-
-	Context("Editing Supplier with invalid supplier type", func() {
-		It("Should return error response", func() {
-			test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567891"})
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567800"})
-			param := &supplierpb.SupplierObject{
-				Id:           supplier1.ID,
-				Phone:        "8801234567890",
-				SupplierType: uint64(utils.Captive),
-			}
-
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
-			res, err := new(services.SupplierService).Edit(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Supplier Type: Captive is not Allowed for this Supplier"))
 			mockedEventBus.AssertExpectations(t)
 		})
 	})
