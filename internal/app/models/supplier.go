@@ -40,8 +40,6 @@ type Supplier struct {
 	NidNumber                 string                 `json:"nid_number"`
 	NidFrontImageUrl          string                 `gorm:"type:varchar(512)" json:"nid_front_image_url"`
 	NidBackImageUrl           string                 `gorm:"type:varchar(512)" json:"nid_back_image_url"`
-	TradeLicenseUrl           string                 `gorm:"type:varchar(512)" json:"trade_license_url"`
-	AgreementUrl              string                 `gorm:"type:varchar(512)" json:"agreement_url"`
 	ShopOwnerImageUrl         string                 `gorm:"type:varchar(512)" json:"shop_owner_image_url"`
 	GuarantorImageUrl         string                 `gorm:"type:varchar(512)" json:"guarantor_image_url"`
 	GuarantorNidNumber        string                 `json:"guarantor_nid_number"`
@@ -128,8 +126,7 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 }
 
 func (supplier *Supplier) IsAnyDocumentPresent() bool {
-	return !(supplier.NidNumber == "" && supplier.NidFrontImageUrl == "" && supplier.NidBackImageUrl == "" &&
-		supplier.TradeLicenseUrl == "" && supplier.AgreementUrl == "")
+	return !(supplier.NidNumber == "" && supplier.NidFrontImageUrl == "" && supplier.NidBackImageUrl == "")
 }
 
 func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
