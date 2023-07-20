@@ -10,11 +10,12 @@ func _() {
 	var x [1]struct{}
 	_ = x[Supplier-1]
 	_ = x[Transporter-2]
+	_ = x[RentVendor-3]
 }
 
-const _ServiceType_name = "SupplierTransporter"
+const _ServiceType_name = "SupplierTransporterRentVendor"
 
-var _ServiceType_index = [...]uint8{0, 8, 19}
+var _ServiceType_index = [...]uint8{0, 8, 19, 29}
 
 func (i ServiceType) String() string {
 	i -= 1

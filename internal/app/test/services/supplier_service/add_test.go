@@ -57,7 +57,6 @@ var _ = Describe("AddSupplier", func() {
 
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
-		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"Hlc"})
 		appPreferenceMockInstance.On("GetValue", ctx, "default_service_type", int64(1)).Return(int64(1))
 		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
 	})
@@ -582,23 +581,6 @@ var _ = Describe("AddSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while creating Supplier: Phone Number Already Exists"))
-		})
-	})
-
-	Context("Adding Supplier with invalid supplier type", func() {
-		It("Should return error response", func() {
-			param := &supplierpb.SupplierParam{
-				Name:         "Name",
-				Email:        "Email",
-				ServiceType:  "Supplier",
-				ServiceLevel: "Captive",
-				Phone:        "8801234567112",
-			}
-			res, err := new(services.SupplierService).Add(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Supplier Type: Captive is not Allowed for this Supplier"))
 		})
 	})
 })

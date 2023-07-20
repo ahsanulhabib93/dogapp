@@ -113,12 +113,6 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
 	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
 
-	errorMessage := ss.checkAllowedSupplierTypes(ctx, serviceLevel)
-	if errorMessage != "" {
-		resp.Message = errorMessage
-		return &resp, nil
-	}
-
 	supplier := models.Supplier{
 		Name:                      params.GetName(),
 		Email:                     params.GetEmail(),
@@ -503,16 +497,4 @@ func (ss *SupplierService) getResponseField() string {
 	}
 
 	return strings.Join(s, ",")
-}
-
-func (ss *SupplierService) checkAllowedSupplierTypes(ctx context.Context, supplierType utils.SupplierType) string {
-	typeValue := utils.SupplierTypeValue[supplierType]
-	allowedSupplierTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).([]string)
-
-	if supplierType != utils.Zero && !utils.IsInclude(allowedSupplierTypes, typeValue) {
-		resp := fmt.Sprintf("Supplier Type: %s is not Allowed for this Supplier", typeValue)
-		return resp
-	}
-
-	return ""
 }
