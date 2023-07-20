@@ -84,8 +84,6 @@ func supplierLog(ctx context.Context, supplier models.Supplier, metadata map[str
 		NidNumber:                 supplier.NidNumber,
 		NidFrontImageUrl:          supplier.NidFrontImageUrl,
 		NidBackImageUrl:           supplier.NidBackImageUrl,
-		TradeLicenseUrl:           supplier.TradeLicenseUrl,
-		AgreementUrl:              supplier.AgreementUrl,
 		ShopOwnerImageUrl:         supplier.ShopOwnerImageUrl,
 		GuarantorImageUrl:         supplier.GuarantorImageUrl,
 		GuarantorNidNumber:        supplier.GuarantorNidNumber,
