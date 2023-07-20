@@ -22,7 +22,6 @@ import (
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
-	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("EditSupplier", func() {
@@ -53,7 +52,6 @@ var _ = Describe("EditSupplier", func() {
 		It("Should update supplier and return success response", func() {
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierType:    utils.Hlc,
 				IsPhoneVerified: &isPhoneVerified,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 1},

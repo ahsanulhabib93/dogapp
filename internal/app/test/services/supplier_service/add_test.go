@@ -278,7 +278,7 @@ var _ = Describe("AddSupplier", func() {
 			apiHelperInstance = new(mocks.APIHelperInterface)
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(&userPb.UserInfo{})
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierParam{
 				Name:     supplier1.Name,
 				Email:    "Email",
@@ -302,7 +302,7 @@ var _ = Describe("AddSupplier", func() {
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(nil)
 			apiHelperInstance.On("FindUserByPhone", ctx, altPhone).Return(&userPb.UserInfo{})
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierParam{
 				Name:           supplier1.Name,
 				Email:          "Email",
@@ -326,7 +326,7 @@ var _ = Describe("AddSupplier", func() {
 			IdentityUserApiHelperInstance = new(mocks.IdentityUserApiHelperInterface)
 			helpers.InjectMockIdentityUserApiHelperInstance(IdentityUserApiHelperInstance)
 			IdentityUserApiHelperInstance.On("GetUserDetailsApiByPhone", ctx, phone).Return(&helpers.IdentityUserObject{})
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierParam{
 				Name:     supplier1.Name,
 				Email:    "Email",
@@ -350,7 +350,7 @@ var _ = Describe("AddSupplier", func() {
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			apiHelperInstance.On("FindUserByPhone", ctx, phone).Return(nil)
 			apiHelperInstance.On("FindTalentXUserByPhone", ctx, phone).Return([]*employeePb.EmployeeRecord{{Name: "employee"}})
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierParam{
 				Name:     supplier1.Name,
 				Email:    "Email",
@@ -389,7 +389,7 @@ var _ = Describe("AddSupplier", func() {
 
 	Context("Adding Supplier with existing name", func() {
 		It("Should create supplier", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := &supplierpb.SupplierParam{
 				Name:         supplier1.Name,
 				Email:        "Email",

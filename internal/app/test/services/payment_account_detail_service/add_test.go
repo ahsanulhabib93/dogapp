@@ -27,7 +27,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 	Context("Add", func() {
 		It("Should create payment account detail and return success", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier.ID,
@@ -66,7 +66,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 		It("Should return error if user in blocked state", func() {
 			test_utils.SetPermission(&ctx, []string{})
 
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc, Status: models.SupplierStatusBlocked})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusBlocked})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier.ID,
@@ -88,7 +88,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 	Context("While adding default payment account", func() {
 		It("Should return success response and other default payment should be updated as non-default", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc, Status: models.SupplierStatusVerified})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
@@ -141,7 +141,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 	Context("While adding payment account detail without account name", func() {
 		It("Should return error response", func() {
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier.ID,
 				AccountNumber:  "AccountNumber",
@@ -161,7 +161,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 	Context("While adding payment account detail without account number and account type", func() {
 		It("Should return error response", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:  supplier.ID,
 				AccountName: "AccountName",
@@ -178,7 +178,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 	Context("While adding non-default payment account detail first time", func() {
 		It("Should return error response", func() {
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier.ID,
 				AccountName:    "AccountName",
@@ -200,7 +200,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 	Context("While adding with invalid account subtype", func() {
 		It("Should return error response", func() {
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier.ID,
 				AccountType:    uint64(utils.Bank),
@@ -220,7 +220,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 	Context("While adding with invalid bank ID", func() {
 		It("Should return error response", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier.ID,
 				AccountType:    uint64(utils.Bank),
@@ -240,7 +240,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 	Context("While adding bank type payment account", func() {
 		It("Should return error response for empty bank id", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			// bank := test_helper.CreateBank(ctx, &models.Bank{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier.ID,
@@ -258,7 +258,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: For Bank account type BankID and BranchName needed"))
 		})
 		It("Should return error response for empty branch name", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			param := paymentpb.PaymentAccountDetailParam{
 				SupplierId:     supplier.ID,
@@ -279,8 +279,8 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 	Context("While adding payment account detail with existing account number with AppPreference", func() {
 		It("Should return error response", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			_ = test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, AccountNumber: "AccountNum", IsDefault: true})
 			aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
@@ -308,8 +308,8 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 	Context("While adding payment account detail with existing account number without AppPreference", func() {
 		It("Should return error response", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			_ = test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, AccountNumber: "AccountNum", IsDefault: true})
 			aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{

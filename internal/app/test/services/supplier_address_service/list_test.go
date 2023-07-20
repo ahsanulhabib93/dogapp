@@ -11,7 +11,6 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
-	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("ListSupplier", func() {
@@ -24,7 +23,7 @@ var _ = Describe("ListSupplier", func() {
 	Context("Supplier Address List When Filtered with Supplier id", func() {
 		It("Should Respond with corresponding addresses", func() {
 			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			supplierAddress2 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
@@ -65,7 +64,7 @@ var _ = Describe("ListSupplier", func() {
 	Context("Supplier Address List When Filtered with  id", func() {
 		It("Should Respond with corresponding addresses", func() {
 			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
 			res, err := new(services.SupplierAddressService).List(ctx, &addresspb.ListSupplierAddressParams{Id: supplierAddress1.ID})

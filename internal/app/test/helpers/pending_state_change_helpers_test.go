@@ -16,7 +16,6 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
-	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("ChangePendingState", func() {
@@ -29,13 +28,11 @@ var _ = Describe("ChangePendingState", func() {
 	It("Should update status successfully", func() {
 		lastMonth := time.Now().Add(-time.Hour * 24 * 31)
 		s1 := test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
-			SupplierType:             utils.Hlc,
 			SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 			SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 		}, lastMonth)
 		isPhoneVerified := true
 		s2 := test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
-			SupplierType:    utils.L1,
 			IsPhoneVerified: &isPhoneVerified,
 			Status:          models.SupplierStatusPending,
 		}, lastMonth)
@@ -64,7 +61,6 @@ var _ = Describe("ChangePendingState", func() {
 		Expect(supplierData1.AlternatePhone).To(Equal(s2.AlternatePhone))
 		Expect(supplierData1.BusinessName).To(Equal(s2.BusinessName))
 		Expect(*supplierData1.IsPhoneVerified).To(Equal(true))
-		Expect(supplierData1.SupplierType).To(Equal(utils.L1))
 		Expect(supplierData1.Status).To(Equal(models.SupplierStatusFailed))
 		Expect(supplierData1.CreatedAt.Day()).To(Equal(lastMonth.Day()))
 		Expect(supplierData1.UpdatedAt.Day()).To(Equal(time.Now().Day()))
@@ -78,14 +74,12 @@ var _ = Describe("ChangePendingState", func() {
 		date := time.Now().Add(-time.Hour * 24 * 31)
 		isPhoneVerified := true
 		test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
-			SupplierType:    utils.L1,
 			IsPhoneVerified: &isPhoneVerified,
 			Status:          models.SupplierStatusVerified,
 		}, date)
 
 		date = time.Now().Add(-time.Hour * 24 * 8)
 		test_helper.CreateSupplierWithDateTime(ctx, &models.Supplier{
-			SupplierType:    utils.L1,
 			IsPhoneVerified: &isPhoneVerified,
 			Status:          models.SupplierStatusPending,
 		}, date)

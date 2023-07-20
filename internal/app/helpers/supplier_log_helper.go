@@ -90,7 +90,6 @@ func supplierLog(ctx context.Context, supplier models.Supplier, metadata map[str
 		GuarantorNidFrontImageUrl: supplier.GuarantorNidFrontImageUrl,
 		GuarantorNidBackImageUrl:  supplier.GuarantorNidBackImageUrl,
 		ChequeImageUrl:            supplier.ChequeImageUrl,
-		SupplierType:              ss2.SupplierType(supplier.SupplierType),
 		SupplierAddresses:         getSupplierAddresses(supplier.SupplierAddresses),
 		PaymentAccountDetails:     getPaymentAccountDetails(supplier.PaymentAccountDetails),
 		CategoryIds:               getCategoryIds(supplier.SupplierCategoryMappings),

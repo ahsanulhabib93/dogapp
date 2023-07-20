@@ -46,7 +46,6 @@ type Supplier struct {
 	GuarantorNidFrontImageUrl string                 `gorm:"type:varchar(512)" json:"guarantor_nid_front_image_url"`
 	GuarantorNidBackImageUrl  string                 `gorm:"type:varchar(512)" json:"guarantor_nid_back_image_url"`
 	ChequeImageUrl            string                 `gorm:"type:varchar(512)" json:"cheque_image_url"`
-	SupplierType              utils.SupplierType     `json:"supplier_type"`
 	SupplierAddresses         []SupplierAddress      `json:"supplier_addresses"`
 	PaymentAccountDetails     []PaymentAccountDetail `json:"payment_account_details"`
 	KeyAccountManagers        []KeyAccountManager
