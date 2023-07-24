@@ -69,9 +69,6 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.GuarantorImageUrl).To(Equal(supplier.GuarantorImageUrl))
 				Expect(resp.Data.Status).To(Equal(string(models.SupplierStatusPending)))
 
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
-				Expect(resp.Data.AgreementUrl).To(Equal("abc.com"))
-
 				Expect(resp.Data.PartnerServices).To(HaveLen(2))
 				Expect(resp.Data.PartnerServices[0].ServiceType).To(Equal("Supplier"))
 				Expect(resp.Data.PartnerServices[0].ServiceLevel).To(Equal("Hlc"))
@@ -123,7 +120,6 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.Name).To(Equal(supplier.Name))
 				Expect(resp.Data.CategoryIds).To(Equal([]uint64{2}))
 				Expect(resp.Data.OpcIds).To(Equal([]uint64{2, 4}))
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
 			})
 		})
 
@@ -174,9 +170,6 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.GuarantorNidNumber).To(Equal(supplier.GuarantorNidNumber))
 				Expect(resp.Data.GuarantorImageUrl).To(Equal(supplier.GuarantorImageUrl))
 				Expect(resp.Data.Status).To(Equal(string(models.SupplierStatusPending)))
-
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
-				Expect(resp.Data.AgreementUrl).To(Equal("abc.com"))
 
 				Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))
 				Expect(resp.Data.SupplierAddresses[0].Firstname).To(Equal(supplierAddress.Firstname))
@@ -242,7 +235,6 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Success).To(Equal(true))
 
 				Expect(resp.Data.Email).To(Equal(supplier.Email))
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Driver)))
 				Expect(len(resp.Data.PartnerServices)).To(Equal(1))
 				Expect(resp.Data.PartnerServices[0].ServiceType).To(Equal("Transporter"))
 				Expect(resp.Data.PartnerServices[0].ServiceLevel).To(Equal("Driver"))

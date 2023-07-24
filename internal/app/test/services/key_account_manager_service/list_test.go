@@ -11,7 +11,6 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
-	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("ListKeyAccountManager", func() {
@@ -23,7 +22,7 @@ var _ = Describe("ListKeyAccountManager", func() {
 
 	Context("List", func() {
 		It("Should Respond with all the Key Account Managers", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			accountManager1 := test_helper.CreateKeyAccountManager(ctx, &models.KeyAccountManager{SupplierID: supplier1.ID})
 			accountManager2 := test_helper.CreateKeyAccountManager(ctx, &models.KeyAccountManager{SupplierID: supplier1.ID})
 

@@ -2,6 +2,7 @@ package supplier_service_test
 
 import (
 	"context"
+	"log"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -339,9 +340,11 @@ var _ = Describe("UpdateStatus", func() {
 		It("Should return error", func() {
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
-				SupplierType:    utils.L0,
 				IsPhoneVerified: &isPhoneVerified,
 				Status:          models.SupplierStatusBlocked,
+				PartnerServiceMappings: []models.PartnerServiceMapping{
+					{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
+				},
 			})
 			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 			param := &supplierpb.UpdateStatusParam{
@@ -349,6 +352,7 @@ var _ = Describe("UpdateStatus", func() {
 				Status: string(models.SupplierStatusVerified),
 			}
 
+			log.Printf("===> logger <=== %+v", supplier)
 			t := &testing.T{}
 
 			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
@@ -437,9 +441,11 @@ var _ = Describe("UpdateStatus", func() {
 
 		It("When otp verification required for given supplier type", func() {
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
-				SupplierType: utils.L0,
-				Status:       models.SupplierStatusBlocked,
-				NidNumber:    "1234567890",
+				Status:    models.SupplierStatusBlocked,
+				NidNumber: "1234567890",
+				PartnerServiceMappings: []models.PartnerServiceMapping{
+					{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
+				},
 			})
 			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 			param := &supplierpb.UpdateStatusParam{

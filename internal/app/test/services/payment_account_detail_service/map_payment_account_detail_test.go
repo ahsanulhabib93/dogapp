@@ -23,7 +23,7 @@ var _ = Describe("MapPaymentAccountDetail", func() {
 	var accountDetail2 *models.PaymentAccountDetail
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
-		supplier1 = test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+		supplier1 = test_helper.CreateSupplier(ctx, &models.Supplier{})
 		accountDetail1 = test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Mfs, IsDefault: true})
 		bank := test_helper.CreateBank(ctx, &models.Bank{})
 		accountDetail2 = test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, BankID: bank.ID})

@@ -23,10 +23,10 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 	Context("Without any filters", func() {
 		It("Should return all the suppliers with addresses", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			supplierAddress1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
 			isPhoneVerified := true
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1, IsPhoneVerified: &isPhoneVerified})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{IsPhoneVerified: &isPhoneVerified})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
@@ -38,7 +38,6 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier1.Email))
 			Expect(supplierData1.Name).To(Equal(supplier1.Name))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(supplierData1.Phone).To(Equal(supplier1.Phone))
 			Expect(supplierData1.AlternatePhone).To(Equal(supplier1.AlternatePhone))
 			Expect(supplierData1.BusinessName).To(Equal(supplier1.BusinessName))
@@ -64,7 +63,6 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			supplierData2 := res.Data[1]
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
-			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(supplierData2.Phone).To(Equal(supplier2.Phone))
 			Expect(supplierData2.AlternatePhone).To(Equal(supplier2.AlternatePhone))
 			Expect(supplierData2.BusinessName).To(Equal(supplier2.BusinessName))
@@ -80,9 +78,9 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 	Context("With Supplier Id filter", func() {
 		It("Should return corresponding supplier addresses", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
@@ -94,16 +92,15 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier2.Email))
 			Expect(supplierData1.Name).To(Equal(supplier2.Name))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
 		})
 	})
 
 	Context("With Supplier name filter", func() {
 		It("Should return corresponding supplier addresses", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{Name: "string 123", SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{Name: "string 123"})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
@@ -115,16 +112,15 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier2.Email))
 			Expect(supplierData1.Name).To(Equal(supplier2.Name))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
 		})
 	})
 
 	Context("With Supplier email filter", func() {
 		It("Should return corresponding supplier addresses", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
@@ -136,16 +132,15 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier2.Email))
 			Expect(supplierData1.Name).To(Equal(supplier2.Name))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
 		})
 	})
 
 	Context("With Phone filter", func() {
 		It("Should return corresponding supplier addresses", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
@@ -158,16 +153,15 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			Expect(supplierData1.Email).To(Equal(supplier2.Email))
 			Expect(supplierData1.Name).To(Equal(supplier2.Name))
 			Expect(supplierData1.Phone).To(Equal(supplier2.Phone))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
 		})
 	})
 
 	Context("With City filter", func() {
 		It("Should return corresponding supplier addresses", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier1.ID})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			address1 := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 			test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier2.ID})
 
@@ -179,7 +173,6 @@ var _ = Describe("ListSupplierWithAddress", func() {
 			supplierData1 := res.Data[0]
 			Expect(supplierData1.Email).To(Equal(supplier2.Email))
 			Expect(supplierData1.Name).To(Equal(supplier2.Name))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(len(supplierData1.SupplierAddresses)).To(Equal(2))
 		})
 	})
@@ -201,11 +194,17 @@ var _ = Describe("ListSupplierWithAddress", func() {
 	})
 
 	Context("With supplier Types filter", func() {
-		var supplier1, supplier2, supplier3 *models.Supplier
+		var supplier1, supplier3 *models.Supplier
 		BeforeEach(func() {
-			supplier1 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{SupplierType: utils.Captive})
-			supplier2 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{SupplierType: utils.L0})
-			supplier3 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{SupplierType: utils.L1})
+			partnerService1 := []models.PartnerServiceMapping{
+				{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
+			}
+			partnerService3 := []models.PartnerServiceMapping{
+				{ServiceType: utils.Supplier, ServiceLevel: utils.Captive},
+			}
+			supplier1 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{PartnerServiceMappings: partnerService1})
+			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
+			supplier3 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{PartnerServiceMappings: partnerService3})
 		})
 
 		Context("for given supplier type", func() {
@@ -216,13 +215,13 @@ var _ = Describe("ListSupplierWithAddress", func() {
 				Expect(res.TotalCount).To(Equal(uint64(1)))
 				Expect(len(res.Data)).To(Equal(1))
 
-				Expect(res.Data[0].Email).To(Equal(supplier2.Email))
+				Expect(res.Data[0].Email).To(Equal(supplier1.Email))
 			})
 		})
 
 		Context("for given multiple supplier types", func() {
 			It("Should return corresponding suppliers for given multiple supplier types", func() {
-				res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{uint64(utils.L1), uint64(utils.Captive)}})
+				res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{uint64(utils.L0), uint64(utils.Captive)}})
 				Expect(err).To(BeNil())
 				Expect(res.TotalCount).To(Equal(uint64(2)))
 				Expect(len(res.Data)).To(Equal(2))

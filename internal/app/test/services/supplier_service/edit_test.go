@@ -22,7 +22,6 @@ import (
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
-	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("EditSupplier", func() {
@@ -53,7 +52,6 @@ var _ = Describe("EditSupplier", func() {
 		It("Should update supplier and return success response", func() {
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierType:    utils.Hlc,
 				IsPhoneVerified: &isPhoneVerified,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 1},
@@ -69,7 +67,6 @@ var _ = Describe("EditSupplier", func() {
 				Id:                        supplier.ID,
 				Name:                      "Name",
 				Email:                     "Email",
-				SupplierType:              uint64(utils.L1),
 				BusinessName:              "BusinessName",
 				Phone:                     "8801234567890",
 				AlternatePhone:            "8801234567891",
@@ -77,8 +74,6 @@ var _ = Describe("EditSupplier", func() {
 				NidNumber:                 "12345",
 				NidFrontImageUrl:          "ss2/shop_images/test.png",
 				NidBackImageUrl:           "ss2/shop_images/test.png",
-				TradeLicenseUrl:           "ss2/shop_images/test.pdf",
-				AgreementUrl:              "ss2/shop_images/test.pdf",
 				ShopOwnerImageUrl:         "ss2/shop_images/test.png",
 				GuarantorImageUrl:         "ss2/shop_images/test.png",
 				GuarantorNidNumber:        "12345",
@@ -123,12 +118,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(len(updatedSupplier.SupplierOpcMappings)).To(Equal(2))
 			Expect(updatedSupplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(2)))
 
-			partnerService := models.PartnerServiceMapping{}
-			database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Where("supplier_id = ?", supplier.ID).First(&partnerService)
-			Expect(partnerService.ServiceLevel).To(Equal(utils.L1))
-			Expect(partnerService.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
-			Expect(partnerService.AgreementUrl).To(Equal(param.AgreementUrl))
-
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 			mockedEventBus.AssertExpectations(t)
 		})
@@ -142,9 +131,8 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusBlocked,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				SupplierType: uint64(utils.L1),
+				Id:   supplier.ID,
+				Name: "Name",
 			}
 
 			t := &testing.T{}
@@ -190,9 +178,8 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusPending,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				SupplierType: uint64(utils.L1),
+				Id:   supplier.ID,
+				Name: "Name",
 			}
 
 			t := &testing.T{}
@@ -278,9 +265,8 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusVerified,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				SupplierType: uint64(utils.Hlc),
+				Id:   supplier.ID,
+				Name: "Name",
 			}
 
 			t := &testing.T{}
@@ -343,11 +329,10 @@ var _ = Describe("EditSupplier", func() {
 			})
 
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{100, 101, 102},
+				Id:          supplier.ID,
+				Name:        "Name",
+				Email:       "Email",
+				CategoryIds: []uint64{100, 101, 102},
 			}
 
 			t := &testing.T{}
@@ -390,11 +375,10 @@ var _ = Describe("EditSupplier", func() {
 			})
 
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{100, 101, 102},
+				Id:          supplier.ID,
+				Name:        "Name",
+				Email:       "Email",
+				CategoryIds: []uint64{100, 101, 102},
 			}
 
 			t := &testing.T{}
@@ -440,11 +424,10 @@ var _ = Describe("EditSupplier", func() {
 			})
 
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{101, 200, 567},
+				Id:          supplier.ID,
+				Name:        "Name",
+				Email:       "Email",
+				CategoryIds: []uint64{101, 200, 567},
 			}
 
 			test := &testing.T{}
