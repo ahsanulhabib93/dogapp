@@ -29,7 +29,7 @@ jobs:
     steps:  
       - name: Setup Env Vars and work dir
         run: |
-          test -d "GoLang/src/github.com/voonik/sr_service" || mkdir -p "GoLang/src/github.com/voonik/sr_service"
+          test -d "GoLang/src/github.com/voonik/ss2" || mkdir -p "GoLang/src/github.com/voonik/ss2"
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -61,8 +61,8 @@ jobs:
         env:
           ENV: test
         run: |
-          export GONOSUMDB=github.com/voonik/*,github.com/shopuptech/*
-          export GOPRIVATE=github.com/voonik/*,github.com/shopuptech/*
+          export GONOSUMDB="github.com/voonik/*,github.com/shopuptech/*"
+          export GOPRIVATE="github.com/voonik/*,github.com/shopuptech/*""
           git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/voonik/".insteadOf "https://github.com/voonik/"
           git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/shopuptech/".insteadOf "https://github.com/shopuptech/"
           export PATH=$PATH:GoLang/bin
