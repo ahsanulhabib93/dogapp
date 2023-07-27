@@ -5,6 +5,7 @@ on: ["push"]
 env:
   SOURCE_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
   GONOSUMDB: github.com/voonik/*,github.com/shopuptech/*
+  GOPRIVATE: github.com/voonik/*,github.com/shopuptech/*
 
 jobs:
   tests:
@@ -35,6 +36,14 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: GoLang/src/github.com/voonik/ss2
+          fetch-depth: 0
+
+      - name: Checkout shopup-ss2
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: "Add known public keys of github here"
+          if_key_exists: replace
 
       - name: Verify MySQL
         run: |
@@ -61,11 +70,7 @@ jobs:
         env:
           ENV: test
         run: |
-          export GO111MODULE=on
-          export GONOSUMDB="github.com/voonik/*,github.com/shopuptech/*"
-          export GOPRIVATE="github.com/voonik/*,github.com/shopuptech/*"
-          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/voonik/".insteadOf "https://github.com/voonik/"
-          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/shopuptech/".insteadOf "https://github.com/shopuptech/"
+          git config --global --add url."git@github.com:".insteadOf "https://github.com/"
           export PATH=$PATH:GoLang/bin
           cd GoLang/src/github.com/voonik/ss2
           go mod download
