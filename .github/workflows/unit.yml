@@ -36,12 +36,6 @@ jobs:
         with:
           path: GoLang/src/github.com/voonik/ss2
 
-      - name: Install SSH keys
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: "Add known public keys of github here"
-
       - name: Verify MySQL
         run: |
           sudo apt-get update
@@ -67,7 +61,8 @@ jobs:
         env:
           ENV: test
         run: |
-          git config --global --add url."git@github.com:".insteadOf "https://github.com/"
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/voonik/".insteadOf "https://github.com/voonik/"
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/shopuptech/".insteadOf "https://github.com/shopuptech/"
           export PATH=$PATH:GoLang/bin
           cd GoLang/src/github.com/voonik/ss2
           go mod download
