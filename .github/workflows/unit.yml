@@ -38,7 +38,7 @@ jobs:
           path: GoLang/src/github.com/voonik/ss2
           fetch-depth: 0
 
-      - name: Checkout shopup-ss2
+      - name: ssh key setup
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
