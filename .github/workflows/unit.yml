@@ -61,6 +61,7 @@ jobs:
         env:
           ENV: test
         run: |
+          export GO111MODULE=on
           export GONOSUMDB="github.com/voonik/*,github.com/shopuptech/*"
           export GOPRIVATE="github.com/voonik/*,github.com/shopuptech/*"
           git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/voonik/".insteadOf "https://github.com/voonik/"
