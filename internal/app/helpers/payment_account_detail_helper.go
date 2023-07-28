@@ -40,6 +40,11 @@ func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, war
 		resp.Warehouses = warehouses[paymentDetail.Id]
 		dhCodes := strings.Split(paymentDetail.DhCode, ",")
 		for _, code := range dhCodes {
+			code = strings.TrimSpace(code)
+			if code == utils.EmptyString {
+				continue
+			}
+
 			dhCode, _ := strconv.Atoi(code)
 			resp.DhCode = append(resp.DhCode, uint64(dhCode))
 		}
