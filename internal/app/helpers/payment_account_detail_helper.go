@@ -15,7 +15,7 @@ import (
 func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, warehouseID uint64) []*supplierpb.PaymentAccountDetailObject {
 	type dbResponse struct {
 		*supplierpb.PaymentAccountDetailObject
-		DhCode string
+		DhCodeStr string `json:"dh_code_str,omitempty"`
 	}
 	paymentDetails := []*dbResponse{}
 	query := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).
@@ -23,7 +23,7 @@ func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, war
 	selectQuery := "payment_account_details.*, banks.name bank_name"
 	if warehouseID != 0 {
 		query = query.Joins(models.JoinPaymentAccountDetailWarehouseMappings()).Where("warehouse_id = ?", warehouseID)
-		selectQuery = "payment_account_details.*, banks.name bank_name, payment_account_detail_warehouse_mappings.dh_code dh_code"
+		selectQuery = "payment_account_details.*, banks.name bank_name, payment_account_detail_warehouse_mappings.dh_code dh_code_str"
 	}
 	query.Select(selectQuery).Scan(&paymentDetails)
 
@@ -38,7 +38,7 @@ func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, war
 	for _, paymentDetail := range paymentDetails {
 		resp := paymentDetail.PaymentAccountDetailObject
 		resp.Warehouses = warehouses[paymentDetail.Id]
-		dhCodes := strings.Split(paymentDetail.DhCode, ",")
+		dhCodes := strings.Split(paymentDetail.DhCodeStr, ",")
 		for _, code := range dhCodes {
 			code = strings.TrimSpace(code)
 			if code == utils.EmptyString {
