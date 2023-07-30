@@ -143,10 +143,10 @@ var _ = Describe("GetSupplier", func() {
 				paymentDetail1 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 				paymentDetail2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
 				paymentDetail3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
-				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, PaymentAccountDetailID: paymentDetail1.ID})
-				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, PaymentAccountDetailID: paymentDetail1.ID})
-				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, PaymentAccountDetailID: paymentDetail2.ID})
-				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, PaymentAccountDetailID: paymentDetail3.ID})
+				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, DhCode: "1,2", PaymentAccountDetailID: paymentDetail1.ID})
+				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, DhCode: "3", PaymentAccountDetailID: paymentDetail1.ID})
+				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, DhCode: "4", PaymentAccountDetailID: paymentDetail2.ID})
+				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, DhCode: "5", PaymentAccountDetailID: paymentDetail3.ID})
 
 				resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{
 					Id:          supplier.ID,
@@ -196,6 +196,7 @@ var _ = Describe("GetSupplier", func() {
 					return resp.Data.PaymentAccountDetails[0].Warehouses[i] < resp.Data.PaymentAccountDetails[0].Warehouses[j]
 				})
 				Expect(resp.Data.PaymentAccountDetails[0].Warehouses).To(Equal([]uint64{10, 11}))
+				Expect(resp.Data.PaymentAccountDetails[0].DhCode).To(Equal([]uint64{1, 2}))
 
 				Expect(resp.Data.PaymentAccountDetails[1].Id).To(Equal(paymentDetail2.ID))
 				Expect(resp.Data.PaymentAccountDetails[1].AccountName).To(Equal(paymentDetail2.AccountName))
@@ -211,6 +212,7 @@ var _ = Describe("GetSupplier", func() {
 					return resp.Data.PaymentAccountDetails[1].Warehouses[i] < resp.Data.PaymentAccountDetails[1].Warehouses[j]
 				})
 				Expect(resp.Data.PaymentAccountDetails[1].Warehouses).To(Equal([]uint64{10}))
+				Expect(resp.Data.PaymentAccountDetails[1].DhCode).To(Equal([]uint64{4}))
 			})
 		})
 

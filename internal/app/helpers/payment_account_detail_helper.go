@@ -3,6 +3,8 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
@@ -11,23 +13,45 @@ import (
 )
 
 func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, warehouseID uint64) []*supplierpb.PaymentAccountDetailObject {
-	paymentDetails := []*supplierpb.PaymentAccountDetailObject{}
+	type dbResponse struct {
+		*supplierpb.PaymentAccountDetailObject
+		DhCodeStr string `json:"dh_code_str,omitempty"`
+	}
+	paymentDetails := []*dbResponse{}
 	query := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).
 		Joins(models.GetBankJoinStr()).Where("supplier_id = ?", supplier.ID)
+	selectQuery := "payment_account_details.*, banks.name bank_name"
 	if warehouseID != 0 {
 		query = query.Joins(models.JoinPaymentAccountDetailWarehouseMappings()).Where("warehouse_id = ?", warehouseID)
+		selectQuery = "payment_account_details.*, banks.name bank_name, payment_account_detail_warehouse_mappings.dh_code dh_code_str"
 	}
-	query.Select("payment_account_details.*, banks.name bank_name").Scan(&paymentDetails)
+	query.Select(selectQuery).Scan(&paymentDetails)
 
 	var paymentDetailIds []uint64
 	for _, paymentDetail := range paymentDetails {
 		paymentDetailIds = append(paymentDetailIds, paymentDetail.Id)
 	}
+
+	paymentResponse := []*supplierpb.PaymentAccountDetailObject{}
+
 	warehouses := GetWarehousesForPaymentAccountDetails(ctx, paymentDetailIds)
 	for _, paymentDetail := range paymentDetails {
-		paymentDetail.Warehouses = warehouses[paymentDetail.Id]
+		resp := paymentDetail.PaymentAccountDetailObject
+		resp.Warehouses = warehouses[paymentDetail.Id]
+		dhCodes := strings.Split(paymentDetail.DhCodeStr, ",")
+		for _, code := range dhCodes {
+			code = strings.TrimSpace(code)
+			if code == utils.EmptyString {
+				continue
+			}
+
+			dhCode, _ := strconv.Atoi(code)
+			resp.DhCode = append(resp.DhCode, uint64(dhCode))
+		}
+		paymentResponse = append(paymentResponse, resp)
 	}
-	return paymentDetails
+
+	return paymentResponse
 }
 
 func GetWarehousesForPaymentAccountDetails(ctx context.Context, paymentDetailIds []uint64) map[uint64][]uint64 {
