@@ -3,7 +3,6 @@ package helpers
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
@@ -34,37 +33,37 @@ func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, war
 
 	paymentResponse := []*supplierpb.PaymentAccountDetailObject{}
 
-	warehouses := GetWarehousesForPaymentAccountDetails(ctx, paymentDetailIds)
+	warehouseDhCodeMap := GetWarehouseDhCodeForPaymentAccountDetails(ctx, paymentDetailIds)
 	for _, paymentDetail := range paymentDetails {
 		resp := paymentDetail.PaymentAccountDetailObject
-		resp.Warehouses = warehouses[paymentDetail.Id]
-		dhCodes := strings.Split(paymentDetail.DhCodeStr, ",")
-		for _, code := range dhCodes {
-			code = strings.TrimSpace(code)
-			if code == utils.EmptyString {
-				continue
-			}
-
-			dhCode, _ := strconv.Atoi(code)
-			resp.DhCode = append(resp.DhCode, uint64(dhCode))
+		warehouses := []uint64{}
+		for whId := range warehouseDhCodeMap[paymentDetail.Id] {
+			warehouses = append(warehouses, whId)
 		}
+		resp.Warehouses = warehouses
+		resp.DhCode = strings.Split(paymentDetail.DhCodeStr, ",")
+		resp.WarehouseDhCodeMap = warehouseDhCodeMap[paymentDetail.Id]
 		paymentResponse = append(paymentResponse, resp)
 	}
 
 	return paymentResponse
 }
 
-func GetWarehousesForPaymentAccountDetails(ctx context.Context, paymentDetailIds []uint64) map[uint64][]uint64 {
-	warehouses := make(map[uint64][]uint64)
+func GetWarehouseDhCodeForPaymentAccountDetails(ctx context.Context, paymentDetailIds []uint64) map[uint64]map[uint64]*supplierpb.DhCodes {
+	warehouseDhCodeMap := make(map[uint64]map[uint64]*supplierpb.DhCodes)
 	var paymentAccountDetailWarehouseMappings []*models.PaymentAccountDetailWarehouseMapping
 	database.DBAPM(ctx).Model(&models.PaymentAccountDetailWarehouseMapping{}).Where(
 		"payment_account_detail_id IN (?)", paymentDetailIds,
 	).Find(&paymentAccountDetailWarehouseMappings)
 	for _, paymentDetailWarehouseMapping := range paymentAccountDetailWarehouseMappings {
 		paymentAccountDetailID := paymentDetailWarehouseMapping.PaymentAccountDetailID
-		warehouses[paymentAccountDetailID] = append(warehouses[paymentAccountDetailID], paymentDetailWarehouseMapping.WarehouseID)
+		if warehouseDhCodeMap[paymentAccountDetailID] == nil {
+			warehouseDhCodeMap[paymentAccountDetailID] = map[uint64]*supplierpb.DhCodes{}
+		}
+
+		warehouseDhCodeMap[paymentAccountDetailID][paymentDetailWarehouseMapping.WarehouseID] = &supplierpb.DhCodes{DhCode: strings.Split(paymentDetailWarehouseMapping.DhCode, ",")}
 	}
-	return warehouses
+	return warehouseDhCodeMap
 }
 
 func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAccountDetailId uint64, warehouseIds []uint64) error {
