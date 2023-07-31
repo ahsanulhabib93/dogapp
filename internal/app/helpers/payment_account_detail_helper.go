@@ -95,6 +95,10 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 		}
 	}
 
+	if warehousesToDelete == nil {
+		warehousesToDelete = []uint64{}
+	}
+
 	warehouseToUpdate, err := utils.SliceDifference(existingWarehouseIds, warehousesToDelete)
 	if err == nil && warehouseToUpdate != nil && warehouseDhCodeMap != nil {
 		for _, warehouseId := range warehouseToUpdate.([]uint64) {

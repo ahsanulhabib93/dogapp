@@ -37,7 +37,7 @@ var _ = Describe("MapPaymentAccountDetail", func() {
 			test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, PaymentAccountDetailID: accountDetail2.ID})
 		})
 		Context("With Proper params", func() {
-			It("Should Add & Delete Mappiggs according to given warehouse_ids", func() {
+			It("Should Add & Delete Mappings according to given warehouse_ids", func() {
 				res, err := new(services.PaymentAccountDetailService).MapPaymentAccountDetail(ctx, &paymentpb.MappingParam{
 					Id: accountDetail1.ID, MappableType: "warehouses", MappableIds: []uint64{10, 11, 50},
 					WarehouseDhCodeMap: map[uint64]*paymentpb.DhCodes{
@@ -64,6 +64,35 @@ var _ = Describe("MapPaymentAccountDetail", func() {
 				Expect(paymentAccountDetailWarehouseMappings[1].DhCode).To(Equal("10,30"))
 				Expect(paymentAccountDetailWarehouseMappings[2].WarehouseID).To(Equal(uint64(50)))
 				Expect(paymentAccountDetailWarehouseMappings[2].DhCode).To(Equal("50"))
+			})
+
+			It("Update DH Code Mappings according to given warehouse_ids", func() {
+				res, err := new(services.PaymentAccountDetailService).MapPaymentAccountDetail(ctx, &paymentpb.MappingParam{
+					Id: accountDetail1.ID, MappableType: "warehouses", MappableIds: []uint64{10, 11, 12},
+					WarehouseDhCodeMap: map[uint64]*paymentpb.DhCodes{
+						10: {DhCode: []string{"1", "2", "3"}},
+						11: {DhCode: []string{"10", "30"}},
+						12: {DhCode: []string{"100", "300"}},
+					},
+				})
+				Expect(err).To(BeNil())
+				Expect(res.Success).To(BeTrue())
+				Expect(res.Message).To(Equal("Mapping Updated Successfully"))
+
+				paymentAccountDetailWarehouseMappings := []*models.PaymentAccountDetailWarehouseMapping{}
+				database.DBAPM(ctx).Model(&accountDetail1).Association("PaymentAccountDetailWarehouseMappings").Find(&paymentAccountDetailWarehouseMappings)
+
+				sort.Slice(paymentAccountDetailWarehouseMappings, func(i, j int) bool {
+					return paymentAccountDetailWarehouseMappings[i].WarehouseID < paymentAccountDetailWarehouseMappings[j].WarehouseID
+				})
+
+				Expect(len(paymentAccountDetailWarehouseMappings)).To(Equal(3))
+				Expect(paymentAccountDetailWarehouseMappings[0].WarehouseID).To(Equal(uint64(10)))
+				Expect(paymentAccountDetailWarehouseMappings[0].DhCode).To(Equal("1,2,3"))
+				Expect(paymentAccountDetailWarehouseMappings[1].WarehouseID).To(Equal(uint64(11)))
+				Expect(paymentAccountDetailWarehouseMappings[1].DhCode).To(Equal("10,30"))
+				Expect(paymentAccountDetailWarehouseMappings[2].WarehouseID).To(Equal(uint64(12)))
+				Expect(paymentAccountDetailWarehouseMappings[2].DhCode).To(Equal("100,300"))
 			})
 		})
 
