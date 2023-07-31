@@ -96,8 +96,12 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	}
 
 	warehouseToUpdate, err := utils.SliceDifference(existingWarehouseIds, warehousesToDelete)
-	if err == nil && warehouseToUpdate != nil {
+	if err == nil && warehouseToUpdate != nil && warehouseDhCodeMap != nil {
 		for _, warehouseId := range warehouseToUpdate.([]uint64) {
+			if warehouseDhCodeMap[warehouseId].GetDhCode() == nil {
+				continue
+			}
+
 			database.DBAPM(ctx).Model(&models.PaymentAccountDetailWarehouseMapping{}).
 				Where("payment_account_detail_id = ? and warehouse_id = ?", paymentAccountDetailId, warehouseId).
 				UpdateColumn("dh_code", strings.Join(warehouseDhCodeMap[warehouseId].GetDhCode(), ","))
@@ -105,8 +109,12 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	}
 
 	// insert new warehouse_ids
-	if warehousesToMap, err := utils.SliceDifference(warehouseIds, existingWarehouseIds); err == nil && warehousesToMap != nil {
+	if warehousesToMap, err := utils.SliceDifference(warehouseIds, existingWarehouseIds); err == nil && warehousesToMap != nil && warehouseDhCodeMap != nil {
 		for _, warehouseId := range warehousesToMap.([]uint64) {
+			if warehouseDhCodeMap[warehouseId].GetDhCode() == nil {
+				continue
+			}
+
 			database.DBAPM(ctx).Model(&paymentAccountDetail).Association("PaymentAccountDetailWarehouseMappings").Append(&models.PaymentAccountDetailWarehouseMapping{
 				WarehouseID: warehouseId,
 				DhCode:      strings.Join(warehouseDhCodeMap[warehouseId].GetDhCode(), ","),
