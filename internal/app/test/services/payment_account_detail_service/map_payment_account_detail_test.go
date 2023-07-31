@@ -38,7 +38,14 @@ var _ = Describe("MapPaymentAccountDetail", func() {
 		})
 		Context("With Proper params", func() {
 			It("Should Add & Delete Mappiggs according to given warehouse_ids", func() {
-				res, err := new(services.PaymentAccountDetailService).MapPaymentAccountDetail(ctx, &paymentpb.MappingParam{Id: accountDetail1.ID, MappableType: "warehouses", MappableIds: []uint64{10, 11, 50}})
+				res, err := new(services.PaymentAccountDetailService).MapPaymentAccountDetail(ctx, &paymentpb.MappingParam{
+					Id: accountDetail1.ID, MappableType: "warehouses", MappableIds: []uint64{10, 11, 50},
+					WarehouseDhCodeMap: map[uint64]*paymentpb.DhCodes{
+						10: {DhCode: []string{"1", "2", "3"}},
+						11: {DhCode: []string{"10", "30"}},
+						50: {DhCode: []string{"50"}},
+					},
+				})
 				Expect(err).To(BeNil())
 				Expect(res.Success).To(BeTrue())
 				Expect(res.Message).To(Equal("Mapping Updated Successfully"))
@@ -52,8 +59,11 @@ var _ = Describe("MapPaymentAccountDetail", func() {
 
 				Expect(len(paymentAccountDetailWarehouseMappings)).To(Equal(3))
 				Expect(paymentAccountDetailWarehouseMappings[0].WarehouseID).To(Equal(uint64(10)))
+				Expect(paymentAccountDetailWarehouseMappings[0].DhCode).To(Equal("1,2,3"))
 				Expect(paymentAccountDetailWarehouseMappings[1].WarehouseID).To(Equal(uint64(11)))
+				Expect(paymentAccountDetailWarehouseMappings[1].DhCode).To(Equal("10,30"))
 				Expect(paymentAccountDetailWarehouseMappings[2].WarehouseID).To(Equal(uint64(50)))
+				Expect(paymentAccountDetailWarehouseMappings[2].DhCode).To(Equal("50"))
 			})
 		})
 

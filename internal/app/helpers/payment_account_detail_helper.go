@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
+
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
@@ -66,7 +68,7 @@ func GetWarehouseDhCodeForPaymentAccountDetails(ctx context.Context, paymentDeta
 	return warehouseDhCodeMap
 }
 
-func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAccountDetailId uint64, warehouseIds []uint64) error {
+func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAccountDetailId uint64, warehouseIds []uint64, warehouseDhCodeMap map[uint64]*paymentpb.DhCodes) error {
 	paymentAccountDetail := models.PaymentAccountDetail{}
 	result := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccountDetail, "id = ?", paymentAccountDetailId)
 	if result.RecordNotFound() {
@@ -86,9 +88,19 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	}
 
 	// Deleting mappings for warehouse_ids not given
-	if warehousesToDelete, err := utils.SliceDifference(existingWarehouseIds, warehouseIds); err == nil && warehousesToDelete != nil {
+	warehousesToDelete, err := utils.SliceDifference(existingWarehouseIds, warehouseIds)
+	if err == nil && warehousesToDelete != nil {
 		for _, warehouseId := range warehousesToDelete.([]uint64) {
 			database.DBAPM(ctx).Delete(&models.PaymentAccountDetailWarehouseMapping{}, existingMappings[warehouseId])
+		}
+	}
+
+	warehouseToUpdate, err := utils.SliceDifference(existingWarehouseIds, warehousesToDelete)
+	if err == nil && warehouseToUpdate != nil {
+		for _, warehouseId := range warehouseToUpdate.([]uint64) {
+			database.DBAPM(ctx).Model(&models.PaymentAccountDetailWarehouseMapping{}).
+				Where("payment_account_detail_id = ? and warehouse_id = ?", paymentAccountDetailId, warehouseId).
+				UpdateColumn("dh_code", strings.Join(warehouseDhCodeMap[warehouseId].GetDhCode(), ","))
 		}
 	}
 
@@ -97,6 +109,7 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 		for _, warehouseId := range warehousesToMap.([]uint64) {
 			database.DBAPM(ctx).Model(&paymentAccountDetail).Association("PaymentAccountDetailWarehouseMappings").Append(&models.PaymentAccountDetailWarehouseMapping{
 				WarehouseID: warehouseId,
+				DhCode:      strings.Join(warehouseDhCodeMap[warehouseId].GetDhCode(), ","),
 			})
 		}
 	}
