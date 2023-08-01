@@ -113,16 +113,17 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	}
 
 	// insert new warehouse_ids
-	if warehousesToMap, err := utils.SliceDifference(warehouseIds, existingWarehouseIds); err == nil && warehousesToMap != nil && warehouseDhCodeMap != nil {
+	if warehousesToMap, err := utils.SliceDifference(warehouseIds, existingWarehouseIds); err == nil && warehousesToMap != nil {
 		for _, warehouseId := range warehousesToMap.([]uint64) {
-			if warehouseDhCodeMap[warehouseId] == nil {
-				continue
+			payload := &models.PaymentAccountDetailWarehouseMapping{
+				WarehouseID: warehouseId,
 			}
 
-			database.DBAPM(ctx).Model(&paymentAccountDetail).Association("PaymentAccountDetailWarehouseMappings").Append(&models.PaymentAccountDetailWarehouseMapping{
-				WarehouseID: warehouseId,
-				DhCode:      strings.Join(warehouseDhCodeMap[warehouseId].GetDhCode(), ","),
-			})
+			if warehouseDhCodeMap[warehouseId].GetDhCode() != nil {
+				payload.DhCode = strings.Join(warehouseDhCodeMap[warehouseId].GetDhCode(), ",")
+			}
+
+			database.DBAPM(ctx).Model(&paymentAccountDetail).Association("PaymentAccountDetailWarehouseMappings").Append(payload)
 		}
 	}
 
