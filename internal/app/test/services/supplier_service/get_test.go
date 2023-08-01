@@ -196,7 +196,9 @@ var _ = Describe("GetSupplier", func() {
 					return resp.Data.PaymentAccountDetails[0].Warehouses[i] < resp.Data.PaymentAccountDetails[0].Warehouses[j]
 				})
 				Expect(resp.Data.PaymentAccountDetails[0].Warehouses).To(Equal([]uint64{10, 11}))
-				Expect(resp.Data.PaymentAccountDetails[0].DhCode).To(Equal([]uint64{1, 2}))
+				Expect(resp.Data.PaymentAccountDetails[0].DhCode).To(Equal([]string{"1", "2"}))
+				Expect(resp.Data.PaymentAccountDetails[0].WarehouseDhCodeMap[10].GetDhCode()).To(Equal([]string{"1", "2"}))
+				Expect(resp.Data.PaymentAccountDetails[0].WarehouseDhCodeMap[11].GetDhCode()).To(Equal([]string{"3"}))
 
 				Expect(resp.Data.PaymentAccountDetails[1].Id).To(Equal(paymentDetail2.ID))
 				Expect(resp.Data.PaymentAccountDetails[1].AccountName).To(Equal(paymentDetail2.AccountName))
@@ -212,7 +214,8 @@ var _ = Describe("GetSupplier", func() {
 					return resp.Data.PaymentAccountDetails[1].Warehouses[i] < resp.Data.PaymentAccountDetails[1].Warehouses[j]
 				})
 				Expect(resp.Data.PaymentAccountDetails[1].Warehouses).To(Equal([]uint64{10}))
-				Expect(resp.Data.PaymentAccountDetails[1].DhCode).To(Equal([]uint64{4}))
+				Expect(resp.Data.PaymentAccountDetails[1].DhCode).To(Equal([]string{"4"}))
+				Expect(resp.Data.PaymentAccountDetails[1].WarehouseDhCodeMap[10].GetDhCode()).To(Equal([]string{"4"}))
 			})
 		})
 
