@@ -102,7 +102,7 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	warehouseToUpdate, err := utils.SliceDifference(existingWarehouseIds, warehousesToDelete)
 	if err == nil && warehouseToUpdate != nil && warehouseDhCodeMap != nil {
 		for _, warehouseId := range warehouseToUpdate.([]uint64) {
-			if warehouseDhCodeMap[warehouseId].GetDhCode() == nil {
+			if warehouseDhCodeMap[warehouseId] == nil {
 				continue
 			}
 
@@ -115,7 +115,7 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	// insert new warehouse_ids
 	if warehousesToMap, err := utils.SliceDifference(warehouseIds, existingWarehouseIds); err == nil && warehousesToMap != nil && warehouseDhCodeMap != nil {
 		for _, warehouseId := range warehousesToMap.([]uint64) {
-			if warehouseDhCodeMap[warehouseId].GetDhCode() == nil {
+			if warehouseDhCodeMap[warehouseId] == nil {
 				continue
 			}
 
