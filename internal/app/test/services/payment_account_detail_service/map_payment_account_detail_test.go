@@ -120,7 +120,7 @@ var _ = Describe("MapPaymentAccountDetail", func() {
 
 			It("Ignore DH Code Mappings update according to given warehouse_ids", func() {
 				res, err := new(services.PaymentAccountDetailService).MapPaymentAccountDetail(ctx, &paymentpb.MappingParam{
-					Id: accountDetail2.ID, MappableType: "warehouses", MappableIds: []uint64{10},
+					Id: accountDetail2.ID, MappableType: "warehouses", MappableIds: []uint64{10, 11},
 					WarehouseDhCodeMap: map[uint64]*paymentpb.DhCodes{},
 				})
 				Expect(err).To(BeNil())
@@ -134,9 +134,11 @@ var _ = Describe("MapPaymentAccountDetail", func() {
 					return paymentAccountDetailWarehouseMappings[i].WarehouseID < paymentAccountDetailWarehouseMappings[j].WarehouseID
 				})
 
-				Expect(len(paymentAccountDetailWarehouseMappings)).To(Equal(1))
+				Expect(len(paymentAccountDetailWarehouseMappings)).To(Equal(2))
 				Expect(paymentAccountDetailWarehouseMappings[0].WarehouseID).To(Equal(uint64(10)))
 				Expect(paymentAccountDetailWarehouseMappings[0].DhCode).To(Equal("10001,10002"))
+				Expect(paymentAccountDetailWarehouseMappings[1].WarehouseID).To(Equal(uint64(11)))
+				Expect(paymentAccountDetailWarehouseMappings[1].DhCode).To(Equal(""))
 			})
 		})
 
