@@ -206,7 +206,7 @@
             "vaccount_id": 2
         },
         {
-            "id": "supplierpanel:mwsservice:view",
+            "id": "supplierpanel:mwsownerservice:view",
             "description": "Access to view mws vendors",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
@@ -825,7 +825,7 @@
         },
         {
             "role_name": "Mws Management",
-            "permission_id": "supplierpanel:mwsservice:view",
+            "permission_id": "supplierpanel:mwsownerservice:view",
             "vaccount_id": 2
         }
     ]

@@ -45,9 +45,9 @@ var _ = Describe("PartnerTypesList", func() {
 			Expect(rent.ServiceTypes).To(Equal([]string{"HubRent", "WarehouseRent", "DBHouseRent", "OfficeRent"}))
 
 			mws := res.PartnerServiceTypeMappings[3]
-			Expect(mws.PartnerType).To(Equal("Mws"))
+			Expect(mws.PartnerType).To(Equal("MwsOwner"))
 			Expect(len(mws.ServiceTypes)).To(Equal(1))
-			Expect(mws.ServiceTypes).To(Equal([]string{"MwsOwner"}))
+			Expect(mws.ServiceTypes).To(Equal([]string{"Mws"}))
 		})
 	})
 
@@ -70,7 +70,7 @@ var _ = Describe("PartnerTypesList", func() {
 
 	Context("When user has mws permission", func() {
 		BeforeEach(func() {
-			test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:mwsservice:view"})
+			test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:mwsownerservice:view"})
 		})
 
 		It("Should return only supplier service type data", func() {
@@ -79,9 +79,9 @@ var _ = Describe("PartnerTypesList", func() {
 			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(1))
 
 			mws := res.PartnerServiceTypeMappings[0]
-			Expect(mws.PartnerType).To(Equal("Mws"))
+			Expect(mws.PartnerType).To(Equal("MwsOwner"))
 			Expect(len(mws.ServiceTypes)).To(Equal(1))
-			Expect(mws.ServiceTypes).To(Equal([]string{"MwsOwner"}))
+			Expect(mws.ServiceTypes).To(Equal([]string{"Mws"}))
 		})
 	})
 })
