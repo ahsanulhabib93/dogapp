@@ -36,6 +36,11 @@
             "name": "Rent Vendor",
             "description": "Role for rent vendors",
             "vaccount_id": 2
+        },
+        {
+            "name": "Mws Management",
+            "description": "Role for Manging Mws",
+            "vaccount_id": 2
         }
     ],
     "role_scopes": [
@@ -197,6 +202,12 @@
         {
             "id": "supplierpanel:rentvendorservice:view",
             "description": "Access to view rent vendors",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:mwsownerservice:view",
+            "description": "Access to view mws vendors",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -810,6 +821,11 @@
         {
             "role_name": "Rent Vendor",
             "permission_id": "supplierpanel:rentvendorservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Mws Management",
+            "permission_id": "supplierpanel:mwsownerservice:view",
             "vaccount_id": 2
         }
     ]
