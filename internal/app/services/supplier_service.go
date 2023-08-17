@@ -111,19 +111,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	}
 
 	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
-	if serviceType == 0 {
-		serviceType = helpers.GetDefaultServiceType(ctx)
-	}
 	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
-	if serviceLevel == 0 {
-		serviceLevel = utils.SupplierType(params.GetSupplierType())
-	}
-
-	errorMessage := ss.checkAllowedSupplierTypes(ctx, serviceLevel)
-	if errorMessage != "" {
-		resp.Message = errorMessage
-		return &resp, nil
-	}
 
 	supplier := models.Supplier{
 		Name:                      params.GetName(),
@@ -136,8 +124,6 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		NidNumber:                 params.GetNidNumber(),
 		NidFrontImageUrl:          params.GetNidFrontImageUrl(),
 		NidBackImageUrl:           params.GetNidBackImageUrl(),
-		TradeLicenseUrl:           params.GetTradeLicenseUrl(),
-		AgreementUrl:              params.GetAgreementUrl(),
 		ShopOwnerImageUrl:         params.GetShopOwnerImageUrl(),
 		GuarantorImageUrl:         params.GetGuarantorImageUrl(),
 		GuarantorNidNumber:        params.GetGuarantorNidNumber(),
@@ -204,12 +190,6 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			status = models.SupplierStatusPending // Moving to Pending if any data is updated
 		}
 
-		errorMessage := ss.checkAllowedSupplierTypes(ctx, utils.SupplierType(params.GetSupplierType()))
-		if errorMessage != "" {
-			resp.Message = errorMessage
-			return &resp, nil
-		}
-
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Status:                    status,
 			Name:                      params.GetName(),
@@ -234,23 +214,10 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
 		} else {
-			partnerServiceMapping := models.PartnerServiceMapping{}
-			database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID).First(&partnerServiceMapping)
-			err = database.DBAPM(ctx).Model(&partnerServiceMapping).Updates(models.PartnerServiceMapping{
-				ServiceLevel:    utils.SupplierType(params.GetSupplierType()),
-				TradeLicenseUrl: params.GetTradeLicenseUrl(),
-				AgreementUrl:    params.GetAgreementUrl(),
-			})
-
-			if err != nil && err.Error != nil {
-				resp.Message = fmt.Sprintf("Error while updating PartnerServiceMapping: %s", err.Error)
-			} else {
-				resp.Message = "Supplier Edited Successfully"
-				resp.Success = true
-
-				if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier); err != nil {
-					log.Println(err)
-				}
+			resp.Message = "Supplier Edited Successfully"
+			resp.Success = true
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier); err != nil {
+				log.Println(err)
 			}
 		}
 	}
@@ -530,16 +497,4 @@ func (ss *SupplierService) getResponseField() string {
 	}
 
 	return strings.Join(s, ",")
-}
-
-func (ss *SupplierService) checkAllowedSupplierTypes(ctx context.Context, supplierType utils.SupplierType) string {
-	typeValue := utils.SupplierTypeValue[supplierType]
-	allowedSupplierTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).([]string)
-
-	if supplierType != utils.Zero && !utils.IsInclude(allowedSupplierTypes, typeValue) {
-		resp := fmt.Sprintf("Supplier Type: %s is not Allowed for this Supplier", typeValue)
-		return resp
-	}
-
-	return ""
 }

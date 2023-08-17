@@ -114,7 +114,7 @@ func (ps *PaymentAccountDetailService) MapPaymentAccountDetail(ctx context.Conte
 	resp := &paymentpb.BasicApiResponse{}
 	switch strings.ToLower(params.MappableType) {
 	case "warehouses":
-		err := helpers.UpdatePaymentAccountDetailWarehouseMapping(ctx, params.GetId(), params.GetMappableIds())
+		err := helpers.UpdatePaymentAccountDetailWarehouseMapping(ctx, params.GetId(), params.GetMappableIds(), params.GetWarehouseDhCodeMap())
 		if err != nil {
 			resp.Message = err.Error()
 		} else {

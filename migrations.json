@@ -26,6 +26,21 @@
             "name": "supplier",
             "description": "supplier role",
             "vaccount_id": 2
+        },
+        {
+            "name": "Vendor Panel Manager",
+            "description": "Base roles for all vendors",
+            "vaccount_id": 2
+        },
+        {
+            "name": "Rent Vendor",
+            "description": "Role for rent vendors",
+            "vaccount_id": 2
+        },
+        {
+            "name": "Mws Management",
+            "description": "Role for Manging Mws",
+            "vaccount_id": 2
         }
     ],
     "role_scopes": [
@@ -183,6 +198,18 @@
             "description": "Remove Document API access",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:rentvendorservice:view",
+            "description": "Access to view rent vendors",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:mwsownerservice:view",
+            "description": "Access to view mws vendors",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
         }
     ],
     "route_permissions": [
@@ -775,6 +802,66 @@
         {
             "role_name": "Digital Credit Team",
             "permission_id": "wmsroutes:Warehouse:listWarehouses",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "oms:opclist:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:partnermodule:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:removedocument:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:supplierlist:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:supplierphoneverificationpi:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "wmsroutes:Warehouse:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "wmsroutes:Warehouse:listWarehouses",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Rent Vendor",
+            "permission_id": "supplierpanel:rentvendorservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Mws Management",
+            "permission_id": "supplierpanel:mwsownerservice:view",
             "vaccount_id": 2
         }
     ]

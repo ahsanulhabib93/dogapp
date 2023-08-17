@@ -22,7 +22,6 @@ import (
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
-	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("EditSupplier", func() {
@@ -40,7 +39,6 @@ var _ = Describe("EditSupplier", func() {
 
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
-		appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"L1", "Hlc"})
 		appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
 		appPreferenceMockInstance.On("GetValue", ctx, "should_send_supplier_log", "true").Return("true")
 	})
@@ -54,7 +52,6 @@ var _ = Describe("EditSupplier", func() {
 		It("Should update supplier and return success response", func() {
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierType:    utils.Hlc,
 				IsPhoneVerified: &isPhoneVerified,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 1},
@@ -70,7 +67,6 @@ var _ = Describe("EditSupplier", func() {
 				Id:                        supplier.ID,
 				Name:                      "Name",
 				Email:                     "Email",
-				SupplierType:              uint64(utils.L1),
 				BusinessName:              "BusinessName",
 				Phone:                     "8801234567890",
 				AlternatePhone:            "8801234567891",
@@ -78,8 +74,6 @@ var _ = Describe("EditSupplier", func() {
 				NidNumber:                 "12345",
 				NidFrontImageUrl:          "ss2/shop_images/test.png",
 				NidBackImageUrl:           "ss2/shop_images/test.png",
-				TradeLicenseUrl:           "ss2/shop_images/test.pdf",
-				AgreementUrl:              "ss2/shop_images/test.pdf",
 				ShopOwnerImageUrl:         "ss2/shop_images/test.png",
 				GuarantorImageUrl:         "ss2/shop_images/test.png",
 				GuarantorNidNumber:        "12345",
@@ -124,12 +118,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(len(updatedSupplier.SupplierOpcMappings)).To(Equal(2))
 			Expect(updatedSupplier.SupplierCategoryMappings[1].CategoryID).To(Equal(uint64(2)))
 
-			partnerService := models.PartnerServiceMapping{}
-			database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Where("supplier_id = ?", supplier.ID).First(&partnerService)
-			Expect(partnerService.ServiceLevel).To(Equal(utils.L1))
-			Expect(partnerService.TradeLicenseUrl).To(Equal(param.TradeLicenseUrl))
-			Expect(partnerService.AgreementUrl).To(Equal(param.AgreementUrl))
-
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 			mockedEventBus.AssertExpectations(t)
 		})
@@ -143,9 +131,8 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusBlocked,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				SupplierType: uint64(utils.L1),
+				Id:   supplier.ID,
+				Name: "Name",
 			}
 
 			t := &testing.T{}
@@ -177,7 +164,6 @@ var _ = Describe("EditSupplier", func() {
 			test_utils.SetPermission(&ctx, []string{})
 			mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
 
-			appPreferenceMockInstance.On("GetValue", ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).Return([]string{"L1", "Hlc"})
 			appPreferenceMockInstance.On("GetValue", ctx, "supplier_update_allowed_permission", mock.Anything).Return("supplierpanel:editverifiedblockedsupplieronly:admin")
 		})
 
@@ -192,9 +178,8 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusPending,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				SupplierType: uint64(utils.L1),
+				Id:   supplier.ID,
+				Name: "Name",
 			}
 
 			t := &testing.T{}
@@ -280,9 +265,8 @@ var _ = Describe("EditSupplier", func() {
 				Status:          models.SupplierStatusVerified,
 			})
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				SupplierType: uint64(utils.Hlc),
+				Id:   supplier.ID,
+				Name: "Name",
 			}
 
 			t := &testing.T{}
@@ -345,11 +329,10 @@ var _ = Describe("EditSupplier", func() {
 			})
 
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{100, 101, 102},
+				Id:          supplier.ID,
+				Name:        "Name",
+				Email:       "Email",
+				CategoryIds: []uint64{100, 101, 102},
 			}
 
 			t := &testing.T{}
@@ -392,11 +375,10 @@ var _ = Describe("EditSupplier", func() {
 			})
 
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{100, 101, 102},
+				Id:          supplier.ID,
+				Name:        "Name",
+				Email:       "Email",
+				CategoryIds: []uint64{100, 101, 102},
 			}
 
 			t := &testing.T{}
@@ -442,11 +424,10 @@ var _ = Describe("EditSupplier", func() {
 			})
 
 			param := &supplierpb.SupplierObject{
-				Id:           supplier.ID,
-				Name:         "Name",
-				Email:        "Email",
-				SupplierType: uint64(utils.L1),
-				CategoryIds:  []uint64{101, 200, 567},
+				Id:          supplier.ID,
+				Name:        "Name",
+				Email:       "Email",
+				CategoryIds: []uint64{101, 200, 567},
 			}
 
 			test := &testing.T{}
@@ -523,32 +504,6 @@ var _ = Describe("EditSupplier", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Error while updating Supplier: Phone Number Already Exists"))
-			mockedEventBus.AssertExpectations(t)
-		})
-	})
-
-	Context("Editing Supplier with invalid supplier type", func() {
-		It("Should return error response", func() {
-			test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567891"})
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Phone: "8801234567800"})
-			param := &supplierpb.SupplierObject{
-				Id:           supplier1.ID,
-				Phone:        "8801234567890",
-				SupplierType: uint64(utils.Captive),
-			}
-
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
-			res, err := new(services.SupplierService).Edit(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Supplier Type: Captive is not Allowed for this Supplier"))
 			mockedEventBus.AssertExpectations(t)
 		})
 	})

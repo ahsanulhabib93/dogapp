@@ -63,7 +63,6 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.IsPhoneVerified).To(Equal(false))
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusPending)))
 
 			Expect(supplierData1.PartnerServices).To(HaveLen(2))
@@ -83,7 +82,6 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.IsPhoneVerified).To(Equal(true))
 			Expect(supplierData2.CategoryIds).To(Equal([]uint64{}))
 			Expect(supplierData2.OpcIds).To(Equal([]uint64{}))
-			Expect(supplierData2.SupplierType).To(Equal(uint64(utils.L1)))
 			Expect(supplierData2.Status).To(Equal(string(models.SupplierStatusPending)))
 
 			Expect(supplierData2.PartnerServices).To(HaveLen(1))
@@ -96,7 +94,6 @@ var _ = Describe("ListSupplier", func() {
 		It("Should Respond with all the suppliers with non-deleted opc/category ids", func() {
 			deletedAt := time.Now()
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierType: utils.Hlc,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{
 					{CategoryID: 1},
 					{CategoryID: 2, DeletedAt: &deletedAt},
@@ -107,7 +104,7 @@ var _ = Describe("ListSupplier", func() {
 					{ProcessingCenterID: 4, DeletedAt: &deletedAt},
 				},
 			})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
@@ -130,11 +127,10 @@ var _ = Describe("ListSupplier", func() {
 		It("Should Respond with all the suppliers with empty opc/category ids", func() {
 			deletedAt := time.Now()
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
-				SupplierType:             utils.Hlc,
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1, DeletedAt: &deletedAt}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 4, DeletedAt: &deletedAt}},
 			})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
 			Expect(err).To(BeNil())
@@ -159,30 +155,26 @@ var _ = Describe("ListSupplier", func() {
 			deletedAt := time.Now()
 			suppliers := []*models.Supplier{
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType: utils.Hlc,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 1},
 						{ProcessingCenterID: 2},
 					},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType: utils.Hlc,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 2},
 						{ProcessingCenterID: 3, DeletedAt: &deletedAt},
 					},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType:        utils.Hlc,
 					SupplierOpcMappings: []models.SupplierOpcMapping{{ProcessingCenterID: 3}},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType:        utils.Hlc,
 					SupplierOpcMappings: []models.SupplierOpcMapping{{ProcessingCenterID: 4}},
 				}),
 			}
 
-			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			test_helper.CreateSupplier(ctx, &models.Supplier{})
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{OpcIds: []uint64{1, 3}})
 			Expect(err).To(BeNil())
 			Expect(res.TotalCount).To(Equal(uint64(2)))
@@ -200,30 +192,26 @@ var _ = Describe("ListSupplier", func() {
 			deletedAt := time.Now()
 			suppliers := []*models.Supplier{
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType: utils.Hlc,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 1},
 						{ProcessingCenterID: 2},
 					},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType: utils.Hlc,
 					SupplierOpcMappings: []models.SupplierOpcMapping{
 						{ProcessingCenterID: 2},
 						{ProcessingCenterID: 3, DeletedAt: &deletedAt},
 					},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType:        utils.Hlc,
 					SupplierOpcMappings: []models.SupplierOpcMapping{{ProcessingCenterID: 3}},
 				}),
 				test_helper.CreateSupplier(ctx, &models.Supplier{
-					SupplierType:        utils.Hlc,
 					SupplierOpcMappings: []models.SupplierOpcMapping{{ProcessingCenterID: 4}},
 				}),
 			}
 
-			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			test_helper.CreateSupplier(ctx, &models.Supplier{})
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{OpcId: uint64(1)})
 			Expect(err).To(BeNil())
 			Expect(res.TotalCount).To(Equal(uint64(1)))
@@ -241,7 +229,6 @@ var _ = Describe("ListSupplier", func() {
 					{CategoryID: 1},
 					{CategoryID: 2},
 				},
-				SupplierType: utils.Hlc,
 				SupplierOpcMappings: []models.SupplierOpcMapping{
 					{ProcessingCenterID: 3},
 					{ProcessingCenterID: 4},
@@ -249,7 +236,7 @@ var _ = Describe("ListSupplier", func() {
 				Status: models.SupplierStatusVerified,
 			})
 
-			test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1})
+			test_helper.CreateSupplier(ctx, &models.Supplier{})
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{Status: string(models.SupplierStatusVerified)})
 			Expect(err).To(BeNil())
 			Expect(res.TotalCount).To(Equal(uint64(1)))
@@ -259,7 +246,6 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.Name).To(Equal(supplier1.Name))
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
-			Expect(supplierData1.SupplierType).To(Equal(uint64(utils.Hlc)))
 			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusVerified)))
 		})
 	})
@@ -267,10 +253,10 @@ var _ = Describe("ListSupplier", func() {
 	Context("With pagination", func() {
 		It("Should Respond with corresponding suppliers", func() {
 			suppliers := []*models.Supplier{
-				test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1}),
-				test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.L1}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{}),
+				test_helper.CreateSupplier(ctx, &models.Supplier{}),
 			}
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{

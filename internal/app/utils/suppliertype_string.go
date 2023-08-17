@@ -18,11 +18,16 @@ func _() {
 	_ = x[CashVendor-8]
 	_ = x[RedxHubVendor-9]
 	_ = x[CreditVendor-10]
+	_ = x[HubRent-11]
+	_ = x[WarehouseRent-12]
+	_ = x[DBHouseRent-13]
+	_ = x[OfficeRent-14]
+	_ = x[Mws-15]
 }
 
-const _SupplierType_name = "L0L1L2L3HlcCaptiveDriverCashVendorRedxHubVendorCreditVendor"
+const _SupplierType_name = "L0L1L2L3HlcCaptiveDriverCashVendorRedxHubVendorCreditVendorHubRentWarehouseRentDBHouseRentOfficeRentMws"
 
-var _SupplierType_index = [...]uint8{0, 2, 4, 6, 8, 11, 18, 24, 34, 47, 59}
+var _SupplierType_index = [...]uint8{0, 2, 4, 6, 8, 11, 18, 24, 34, 47, 59, 66, 79, 90, 100, 103}
 
 func (i SupplierType) String() string {
 	i -= 1

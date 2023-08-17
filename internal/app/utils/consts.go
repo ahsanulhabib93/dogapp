@@ -8,6 +8,8 @@ type AccountSubType uint16
 const (
 	Supplier ServiceType = 1 + iota
 	Transporter
+	RentVendor
+	MwsOwner
 )
 
 const (
@@ -21,6 +23,11 @@ const (
 	CashVendor
 	RedxHubVendor
 	CreditVendor
+	HubRent
+	WarehouseRent
+	DBHouseRent
+	OfficeRent
+	Mws
 )
 
 var SupplierTypeValue = map[SupplierType]string{
@@ -34,6 +41,11 @@ var SupplierTypeValue = map[SupplierType]string{
 	CashVendor:    "Cash Vendor",
 	RedxHubVendor: "Redx Hub Vendor",
 	CreditVendor:  "Credit Vendor",
+	HubRent:       "Hub Rent",
+	WarehouseRent: "Warehouse Rent",
+	DBHouseRent:   "DBHouse Rent",
+	OfficeRent:    "Office Rent",
+	Mws:           "Mws",
 }
 
 const (
@@ -64,6 +76,8 @@ const ScheduleEveryDay = "0 0 * * *"
 var PartnerServiceTypeMapping = map[string]ServiceType{
 	"Supplier":    Supplier,
 	"Transporter": Transporter,
+	"RentVendor":  RentVendor,
+	"MwsOwner":    MwsOwner,
 }
 
 var PartnerServiceLevelMapping = map[string]SupplierType{
@@ -77,4 +91,9 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 	"CashVendor":    CashVendor,
 	"RedxHubVendor": RedxHubVendor,
 	"CreditVendor":  CreditVendor,
+	"HubRent":       HubRent,
+	"WarehouseRent": WarehouseRent,
+	"DBHouseRent":   DBHouseRent,
+	"OfficeRent":    OfficeRent,
+	"Mws":           Mws,
 }
