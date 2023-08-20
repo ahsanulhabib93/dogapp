@@ -145,7 +145,7 @@ var _ = Describe("GetSupplier", func() {
 				paymentDetail3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
 				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, DhCode: "1,2", PaymentAccountDetailID: paymentDetail1.ID})
 				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, DhCode: "3", PaymentAccountDetailID: paymentDetail1.ID})
-				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, DhCode: "4", PaymentAccountDetailID: paymentDetail2.ID})
+				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, PaymentAccountDetailID: paymentDetail2.ID})
 				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, DhCode: "5", PaymentAccountDetailID: paymentDetail3.ID})
 
 				resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{
@@ -214,8 +214,8 @@ var _ = Describe("GetSupplier", func() {
 					return resp.Data.PaymentAccountDetails[1].Warehouses[i] < resp.Data.PaymentAccountDetails[1].Warehouses[j]
 				})
 				Expect(resp.Data.PaymentAccountDetails[1].Warehouses).To(Equal([]uint64{10}))
-				Expect(resp.Data.PaymentAccountDetails[1].DhCode).To(Equal([]string{"4"}))
-				Expect(resp.Data.PaymentAccountDetails[1].WarehouseDhCodeMap[10].GetDhCode()).To(Equal([]string{"4"}))
+				Expect(resp.Data.PaymentAccountDetails[1].DhCode).To(HaveLen(0))
+				Expect(resp.Data.PaymentAccountDetails[1].WarehouseDhCodeMap[10].GetDhCode()).To(HaveLen(0))
 			})
 		})
 
