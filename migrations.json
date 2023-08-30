@@ -41,6 +41,11 @@
             "name": "Mws Management",
             "description": "Role for Manging Mws",
             "vaccount_id": 2
+        },
+        {
+            "name": "Do Trader",
+            "description": "Role for DO Trader",
+            "vaccount_id": 2
         }
     ],
     "role_scopes": [
@@ -208,6 +213,12 @@
         {
             "id": "supplierpanel:mwsownerservice:view",
             "description": "Access to view mws vendors",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:dotraderservice:view",
+            "description": "Access to view do traders",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -826,6 +837,11 @@
         {
             "role_name": "Mws Management",
             "permission_id": "supplierpanel:mwsownerservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Do Trader",
+            "permission_id": "supplierpanel:dotraderservice:view",
             "vaccount_id": 2
         }
     ]
