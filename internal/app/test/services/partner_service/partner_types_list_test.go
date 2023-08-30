@@ -27,7 +27,7 @@ var _ = Describe("PartnerTypesList", func() {
 		It("Should return all service types data", func() {
 			res, _ := new(services.PartnerServiceMappingService).PartnerTypesList(ctx, &psmpb.PartnerServiceObject{})
 
-			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(4))
+			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(5))
 
 			supplier := res.PartnerServiceTypeMappings[0]
 			Expect(supplier.PartnerType).To(Equal("Supplier"))
@@ -48,6 +48,11 @@ var _ = Describe("PartnerTypesList", func() {
 			Expect(mws.PartnerType).To(Equal("MwsOwner"))
 			Expect(len(mws.ServiceTypes)).To(Equal(1))
 			Expect(mws.ServiceTypes).To(Equal([]string{"Mws"}))
+
+			do := res.PartnerServiceTypeMappings[4]
+			Expect(do.PartnerType).To(Equal("DoTrader"))
+			Expect(len(do.ServiceTypes)).To(Equal(1))
+			Expect(do.ServiceTypes).To(Equal([]string{"Trader"}))
 		})
 	})
 
