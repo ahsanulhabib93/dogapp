@@ -38,4 +38,5 @@ var PartnerServiceTypeLevelMapping = map[ServiceType][]SupplierType{
 	Transporter: {Captive, Driver, CashVendor, RedxHubVendor, CreditVendor},
 	RentVendor:  {HubRent, WarehouseRent, DBHouseRent, OfficeRent},
 	MwsOwner:    {Mws},
+	DoTrader:    {Trader},
 }
