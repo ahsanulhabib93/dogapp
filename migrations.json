@@ -63,6 +63,11 @@
             "role_name": "Cargo SS2 Admin",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
+        },
+        {
+            "role_name": "Do Trader",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
         }
     ],
     "permissions": [
