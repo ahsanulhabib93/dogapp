@@ -41,6 +41,11 @@
             "name": "Mws Management",
             "description": "Role for Manging Mws",
             "vaccount_id": 2
+        },
+        {
+            "name": "Do Buyer",
+            "description": "Role for DO Buyer",
+            "vaccount_id": 2
         }
     ],
     "role_scopes": [
@@ -58,6 +63,11 @@
             "role_name": "Cargo SS2 Admin",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
+        },
+        {
+            "role_name": "Do Buyer",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
         }
     ],
     "permissions": [
@@ -208,6 +218,12 @@
         {
             "id": "supplierpanel:mwsownerservice:view",
             "description": "Access to view mws vendors",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:dobuyerservice:view",
+            "description": "Access to view do buyers",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -826,6 +842,11 @@
         {
             "role_name": "Mws Management",
             "permission_id": "supplierpanel:mwsownerservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Do Buyer",
+            "permission_id": "supplierpanel:dobuyerservice:view",
             "vaccount_id": 2
         }
     ]
