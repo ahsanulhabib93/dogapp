@@ -23,12 +23,12 @@ func _() {
 	_ = x[DBHouseRent-13]
 	_ = x[OfficeRent-14]
 	_ = x[Mws-15]
-	_ = x[Trader-16]
+	_ = x[Buyer-16]
 }
 
-const _SupplierType_name = "L0L1L2L3HlcCaptiveDriverCashVendorRedxHubVendorCreditVendorHubRentWarehouseRentDBHouseRentOfficeRentMwsTrader"
+const _SupplierType_name = "L0L1L2L3HlcCaptiveDriverCashVendorRedxHubVendorCreditVendorHubRentWarehouseRentDBHouseRentOfficeRentMwsBuyer"
 
-var _SupplierType_index = [...]uint8{0, 2, 4, 6, 8, 11, 18, 24, 34, 47, 59, 66, 79, 90, 100, 103, 109}
+var _SupplierType_index = [...]uint8{0, 2, 4, 6, 8, 11, 18, 24, 34, 47, 59, 66, 79, 90, 100, 103, 108}
 
 func (i SupplierType) String() string {
 	i -= 1

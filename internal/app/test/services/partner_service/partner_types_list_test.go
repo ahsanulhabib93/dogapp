@@ -50,9 +50,9 @@ var _ = Describe("PartnerTypesList", func() {
 			Expect(mws.ServiceTypes).To(Equal([]string{"Mws"}))
 
 			do := res.PartnerServiceTypeMappings[4]
-			Expect(do.PartnerType).To(Equal("DoTrader"))
+			Expect(do.PartnerType).To(Equal("DoBuyer"))
 			Expect(len(do.ServiceTypes)).To(Equal(1))
-			Expect(do.ServiceTypes).To(Equal([]string{"Trader"}))
+			Expect(do.ServiceTypes).To(Equal([]string{"Buyer"}))
 		})
 	})
 

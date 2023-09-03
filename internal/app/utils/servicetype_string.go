@@ -12,12 +12,12 @@ func _() {
 	_ = x[Transporter-2]
 	_ = x[RentVendor-3]
 	_ = x[MwsOwner-4]
-	_ = x[DoTrader-5]
+	_ = x[DoBuyer-5]
 }
 
-const _ServiceType_name = "SupplierTransporterRentVendorMwsOwnerDoTrader"
+const _ServiceType_name = "SupplierTransporterRentVendorMwsOwnerDoBuyer"
 
-var _ServiceType_index = [...]uint8{0, 8, 19, 29, 37, 45}
+var _ServiceType_index = [...]uint8{0, 8, 19, 29, 37, 44}
 
 func (i ServiceType) String() string {
 	i -= 1
