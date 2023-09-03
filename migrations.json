@@ -43,8 +43,8 @@
             "vaccount_id": 2
         },
         {
-            "name": "Do Trader",
-            "description": "Role for DO Trader",
+            "name": "Do Buyer",
+            "description": "Role for DO Buyer",
             "vaccount_id": 2
         }
     ],
@@ -65,7 +65,7 @@
             "vaccount_id": 12
         },
         {
-            "role_name": "Do Trader",
+            "role_name": "Do Buyer",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -222,8 +222,8 @@
             "vaccount_id": 2
         },
         {
-            "id": "supplierpanel:dotraderservice:view",
-            "description": "Access to view do traders",
+            "id": "supplierpanel:dobuyerservice:view",
+            "description": "Access to view do buyers",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -845,8 +845,8 @@
             "vaccount_id": 2
         },
         {
-            "role_name": "Do Trader",
-            "permission_id": "supplierpanel:dotraderservice:view",
+            "role_name": "Do Buyer",
+            "permission_id": "supplierpanel:dobuyerservice:view",
             "vaccount_id": 2
         }
     ]
