@@ -99,6 +99,9 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 		response.Message = "Partner/Partner Service Not Found"
 	} else if utils.ServiceType(partnerService.ServiceType) != utils.ServiceType(serviceType) {
 		response.Message = "Not allowed to edit Partner Type"
+	} else if !helpers.ValidateSericeLevelEdit(ctx, serviceLevel, partnerService.ServiceLevel) {
+		response.Message = "Not allowed to edit Partner Service Level"
+		return &response, nil
 	} else {
 		err := database.DBAPM(ctx).Model(&partnerService).Updates(models.PartnerServiceMapping{
 			ServiceLevel:    serviceLevel,

@@ -49,7 +49,7 @@ var _ = Describe("EditPartnerService", func() {
 				SupplierId:       supplier1.ID,
 				PartnerServiceId: partnerservice2.ID,
 				ServiceType:      "Transporter",
-				ServiceLevel:     "CashVendor",
+				ServiceLevel:     "Captive",
 			}
 
 			res, _ := new(services.PartnerServiceMappingService).Edit(ctx, &param)
@@ -130,6 +130,26 @@ var _ = Describe("EditPartnerService", func() {
 			Expect(res.Success).To(Equal(false))
 		})
 	})
+
+	Context("When service level edit is not allowed", func() {
+		It("Should return failure response", func() {
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.Captive, SupplierId: supplier1.ID})
+
+			param := psmpb.PartnerServiceObject{
+				SupplierId:       supplier1.ID,
+				PartnerServiceId: partnerservice1.ID,
+				ServiceType:      "Transporter",
+				ServiceLevel:     "CashVendor",
+			}
+
+			res, _ := new(services.PartnerServiceMappingService).Edit(ctx, &param)
+
+			Expect(res.Message).To(Equal("Not allowed to edit Partner Service Level"))
+			Expect(res.Success).To(Equal(false))
+		})
+	})
+
 	Context("When partner service id is not passed", func() {
 		It("Should return failure response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
