@@ -126,7 +126,7 @@ var _ = Describe("EditPartnerService", func() {
 
 			res, _ := new(services.PartnerServiceMappingService).Edit(ctx, &param)
 
-			Expect(res.Message).To(Equal("Not allowed to edit Partner Type"))
+			Expect(res.Message).To(Equal("Not allowed to edit Partner Service Info"))
 			Expect(res.Success).To(Equal(false))
 		})
 	})
@@ -145,7 +145,7 @@ var _ = Describe("EditPartnerService", func() {
 
 			res, _ := new(services.PartnerServiceMappingService).Edit(ctx, &param)
 
-			Expect(res.Message).To(Equal("Not allowed to edit Partner Service Level"))
+			Expect(res.Message).To(Equal("Not allowed to edit Partner Service Info"))
 			Expect(res.Success).To(Equal(false))
 		})
 	})
