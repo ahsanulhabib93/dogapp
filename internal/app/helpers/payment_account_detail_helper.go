@@ -43,6 +43,7 @@ func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, war
 			warehouses = append(warehouses, whId)
 		}
 		resp.Warehouses = warehouses
+		resp.DhCode = []string{}
 		if strings.TrimSpace(paymentDetail.DhCodeStr) != utils.EmptyString {
 			resp.DhCode = strings.Split(paymentDetail.DhCodeStr, ",")
 		}
@@ -65,6 +66,7 @@ func GetWarehouseDhCodeForPaymentAccountDetails(ctx context.Context, paymentDeta
 			warehouseDhCodeMap[paymentAccountDetailID] = map[uint64]*supplierpb.DhCodes{}
 		}
 
+		warehouseDhCodeMap[paymentAccountDetailID][paymentDetailWarehouseMapping.WarehouseID] = &supplierpb.DhCodes{}
 		if strings.TrimSpace(paymentDetailWarehouseMapping.DhCode) != utils.EmptyString {
 			warehouseDhCodeMap[paymentAccountDetailID][paymentDetailWarehouseMapping.WarehouseID] = &supplierpb.DhCodes{DhCode: strings.Split(paymentDetailWarehouseMapping.DhCode, ",")}
 		}

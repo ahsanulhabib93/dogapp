@@ -10,6 +10,7 @@ const (
 	Transporter
 	RentVendor
 	MwsOwner
+	DoBuyer
 )
 
 const (
@@ -28,6 +29,7 @@ const (
 	DBHouseRent
 	OfficeRent
 	Mws
+	Buyer
 )
 
 var SupplierTypeValue = map[SupplierType]string{
@@ -46,6 +48,7 @@ var SupplierTypeValue = map[SupplierType]string{
 	DBHouseRent:   "DBHouse Rent",
 	OfficeRent:    "Office Rent",
 	Mws:           "Mws",
+	Buyer:         "Buyer",
 }
 
 const (
@@ -78,6 +81,7 @@ var PartnerServiceTypeMapping = map[string]ServiceType{
 	"Transporter": Transporter,
 	"RentVendor":  RentVendor,
 	"MwsOwner":    MwsOwner,
+	"DoBuyer":     DoBuyer,
 }
 
 var PartnerServiceLevelMapping = map[string]SupplierType{
@@ -96,4 +100,5 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 	"DBHouseRent":   DBHouseRent,
 	"OfficeRent":    OfficeRent,
 	"Mws":           Mws,
+	"Buyer":         Buyer,
 }
