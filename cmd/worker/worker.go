@@ -2,15 +2,12 @@ package main
 
 import (
 	"github.com/shopuptech/go-libs/logger"
-	"github.com/voonik/goFramework/pkg/config"
+	"github.com/voonik/ss2/internal/app/helpers"
 )
 
 func main() {
-	if config.AsynqConfigEnabled() {
-		logger.Log().Infof("initialising go-jobs")
-		initGoJobs()
-	} else {
-		logger.Log().Infof("initialising go-worker")
-		initGoWorker()
-	}
+	logger.Log().Infof("initialising go-jobs")
+	helpers.InitGoJobsWorker()
+	helpers.ScheduleJobs()
+	helpers.StartWorker()
 }

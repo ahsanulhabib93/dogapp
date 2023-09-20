@@ -33,9 +33,7 @@ func main() {
 		reflection.Register(server.GrpcServer)
 	}
 
-	if config.AsynqConfigEnabled() {
-		helpers.InitGoJobsWorker()
-	}
+	helpers.InitGoJobsWorker()
 
 	server.Start()
 	defer server.Finish()

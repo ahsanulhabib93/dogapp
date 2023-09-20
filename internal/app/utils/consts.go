@@ -71,6 +71,7 @@ const (
 const (
 	EmptyString = ""
 	Zero        = 0
+	Ten         = 10
 )
 
 const ChangePendingSupplierStatus = "change_pending_supplier_status"
