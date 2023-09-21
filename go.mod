@@ -7,6 +7,7 @@ require (
 	github.com/alexflint/go-filemutex v1.1.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/golang/protobuf v1.5.3
+	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/khaiql/dbcleaner v2.3.0+incompatible

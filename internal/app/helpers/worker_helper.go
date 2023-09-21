@@ -6,10 +6,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/gomodule/redigo/redis"
 	worker "github.com/shopuptech/go-jobs/v3"
 	"github.com/shopuptech/go-jobs/v3/backend"
 	"github.com/shopuptech/go-jobs/v3/backend/rabbitmq"
+	backendRedis "github.com/shopuptech/go-jobs/v3/backend/redis"
 	goJobsConfig "github.com/shopuptech/go-jobs/v3/config"
 	"github.com/shopuptech/go-jobs/v3/handler"
 	"github.com/shopuptech/go-jobs/v3/jobs"
@@ -22,42 +25,88 @@ import (
 	"github.com/voonik/work"
 )
 
-var Wrk *worker.Worker
+var wrk *worker.Worker
+
+func GetWorkerInstance() *worker.Worker {
+	if wrk == nil {
+		InitGoJobsWorker()
+	}
+	return wrk
+}
 
 func InitGoJobsWorker() {
-	backend, err := initRabbitMQ()
-	if err != nil {
-		logger.Log().Panicf("failed to initialise backend: %+v", err)
+	var backend backend.Backend
+	var err error
+	if config.AsynqConfigEnabled() {
+		backend, err = initRabbitMQBackend()
+	} else {
+		backend, err = initRedisBackend()
 	}
 
+	if err != nil {
+		logger.Log().Errorf("failed to initialise backend: %+v", err)
+	}
 	if config.StatsdConfigEnabled() {
 		defer worker.SetReporterHost(config.StatsdConfigHost() + ":" + config.StatsdConfigPort())()
 	}
-
-	Wrk, err = worker.NewWorker(backend, config.AsynqConfigTeamName(), config.AsynqConfigServiceName())
+	wrk, err = worker.NewWorker(backend, config.AsynqConfigTeamName(), config.AsynqConfigServiceName())
 	if err != nil {
-		logger.Log().Panicf("failed to initialise worker: %+v", err)
+		logger.Log().Errorf("failed to initialise worker: %+v", err)
 	}
-
-	RegisterJobs(Wrk)
+	registerJobs(wrk)
 }
 
-func initRabbitMQ() (backend.Backend, error) {
-	return rabbitmq.NewRMQBackend(config.AsynqConfigRMQConnString(),
+func initRedisBackend() (backend.Backend, error) {
+	redisPool := initRedis(config.JobsBackendConnString())
+	return backendRedis.NewRedisBackend(backendRedis.VaccountContext{}, uint(utils.Ten), config.AsynqConfigServiceName(), redisPool)
+}
+
+func initRedis(address string) *redis.Pool {
+	opts := []redis.DialOption{redis.DialDatabase(12)} //nolint:revive,gomnd
+	redisPool := &redis.Pool{
+		MaxActive:   10,                //nolint:revive,gomnd
+		MaxIdle:     10,                //nolint:revive,gomnd
+		IdleTimeout: 300 * time.Second, //nolint:revive,gomnd
+		Wait:        true,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial("tcp", address, opts...)
+		},
+	}
+
+	testRedisConn(redisPool)
+	return redisPool
+}
+
+func testRedisConn(pool *redis.Pool) {
+	conn := pool.Get()
+	defer conn.Close()
+	_, err := conn.Do("PING")
+	if err != nil {
+		logger.Log().Errorf("Not able to connect to redis pool with connection string, check the connection")
+		return
+	}
+	logger.Log().Infof("Connection to redis successful")
+}
+
+func initRabbitMQBackend() (backend.Backend, error) {
+	return rabbitmq.NewRMQBackend(config.JobsBackendConnString(),
 		config.AsynqConfigPoolSize(), config.AsynqConfigTeamName(), config.AsynqConfigServiceName())
 }
 
-func RegisterJobs(wrk *worker.Worker) {
-	h := handler.NewHandler(changePendingState, opts.WithPriority(10))
-	wrk.RegisterJob(utils.ChangePendingSupplierStatus, h)
-
-	vcontext := []*goJobsConfig.VContext{{VAccountID: 1, PortalID: 1}, {VAccountID: 2, PortalID: 2}}
-	wrk.ScheduleJob(utils.ChangePendingSupplierStatus, vcontext, utils.ScheduleEveryDay, map[string]interface{}{})
+func registerJobs(wrk *worker.Worker) {
 
 }
 
+func ScheduleJobs() {
+	h := handler.NewHandler(changePendingState, opts.WithPriority(utils.Ten))
+	GetWorkerInstance().RegisterJob(utils.ChangePendingSupplierStatus, h)
+
+	vcontext := []*goJobsConfig.VContext{{VAccountID: 1, PortalID: 1}, {VAccountID: 2, PortalID: 2}}
+	GetWorkerInstance().ScheduleJob(utils.ChangePendingSupplierStatus, vcontext, utils.ScheduleEveryDay, map[string]interface{}{})
+}
+
 func StartWorker() {
-	err := Wrk.Start()
+	err := GetWorkerInstance().Start()
 	if err != nil {
 		panic(fmt.Errorf("failed to start go-jobs consumer: %w", err))
 	}
@@ -65,7 +114,7 @@ func StartWorker() {
 	c := make(chan os.Signal, 1)                                       //nolint:revive
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL) //nolint:staticcheck
 	<-c
-	Wrk.Stop()
+	GetWorkerInstance().Stop()
 }
 
 func changePendingState(ctx context.Context, _ jobs.Job) error {
