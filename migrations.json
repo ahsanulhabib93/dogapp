@@ -503,6 +503,27 @@
             "vaccount_id": 2
         },
         {
+            "route": "/app_preferences/index",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "admin:appPreferencePanel:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/app_preferences/create",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "admin:appPreferencePanel:create",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/app_preferences/update",
+            "request_method": "PUT",
+            "service": "ss2",
+            "required_permission_id": "admin:appPreferencePanel:update",
+            "vaccount_id": 12
+        },
+        {
             "route": "/partner_service/add",
             "request_method": "POST",
             "service": "ss2",
@@ -660,6 +681,16 @@
             "vaccount_id": 2
         },
         {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "admin:appPreferencePanel:view",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "admin:appPreferencePanel:update",
+            "vaccount_id": 12
+        },
+        {
             "role_name": "ss2owner",
             "permission_id": "supplierpanel:partnerservice:admin",
             "vaccount_id": 2
@@ -672,6 +703,11 @@
         {
             "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "admin:appPreferencePanel:create",
             "vaccount_id": 12
         },
         {
