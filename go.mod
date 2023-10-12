@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
 	github.com/voonik/goConnect v0.0.0-20230731062043-635f376fea4a
-	github.com/voonik/goFramework v0.0.0-20230619072252-b6efcd247e77
+	github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e
 	github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae
 	golang.org/x/net v0.10.0 // indirect
 	google.golang.org/grpc v1.55.0
