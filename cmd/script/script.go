@@ -53,9 +53,9 @@ func addSuppliersInBulk() cli.Command {
 		Action: func(ctx *cli.Context) error {
 			bgCtx := context.Background()
 			threadObject := &misc.ThreadObject{
-				VaccountId:    12,
-				PortalId:      12,
-				CurrentActId:  12,
+				VaccountId:    2,
+				PortalId:      2,
+				CurrentActId:  2,
 				XForwardedFor: "5079327",
 				UserData: &misc.UserData{
 					UserId: 18,
