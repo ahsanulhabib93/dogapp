@@ -42,8 +42,16 @@ func AddSuppliersFromExcel(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("failed to get rows from excel file: %v", err)
 	}
-
+	phoneNumbers := make(map[string]bool)
 	for _, row := range rows[1:] {
+		phone := row[3]
+		if _, exists := phoneNumbers[phone]; exists {
+			log.Printf("Duplicate phone number found: %s", phone)
+			return
+		}
+
+		phoneNumbers[phone] = true
+
 		row = trimRowSpaces(row)
 		if err := validateSupplierData(ctx, row); err != nil {
 			log.Fatalf("data validation failed: %v", err)
