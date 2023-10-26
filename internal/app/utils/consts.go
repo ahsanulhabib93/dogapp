@@ -4,6 +4,11 @@ type ServiceType uint16
 type SupplierType uint16
 type AccountType uint16
 type AccountSubType uint16
+type VerificationStatus uint16
+type BusinessType uint16
+type ColorCode uint16
+type GSTStatus uint16
+type SellerPriceVerified uint16
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -13,6 +18,56 @@ const (
 	DoBuyer
 	ProcurementVendor
 )
+
+const (
+	NotVerified VerificationStatus = 1 + iota
+	Verified
+	Rejected
+)
+
+var VAVerificationStatus = map[VerificationStatus]string{
+	NotVerified: "NOT_VERIFIED",
+	Verified:    "VERIFIED",
+	Rejected:    "REJECTED",
+}
+
+const (
+	Manufacturer BusinessType = 1 + iota
+	Trader
+)
+
+var SellerBusinessType = map[BusinessType]string{
+	Manufacturer: "MANUFACTURER",
+	Trader:       "TRADER",
+}
+
+const (
+	Platinum ColorCode = 1 + iota
+	Gold
+	Green
+	Brown
+	Black
+)
+
+var SellerColorCode = map[ColorCode]string{
+	Platinum: "PLATINUM",
+	Gold:     "GOLD",
+	Green:    "GREEN",
+	Brown:    "BROWN",
+	Black:    "BLACK",
+}
+
+const (
+	PriceNotVerified SellerPriceVerified = 1 + iota
+	PriceVerified
+	PriceAutoVerified
+)
+
+var SellerPriceVerifiedValue = map[SellerPriceVerified]string{
+	PriceNotVerified:  "NOT_VERIFIED",
+	PriceVerified:     "VERIFIED",
+	PriceAutoVerified: "AUTO_VERIFIED",
+}
 
 const (
 	L0 SupplierType = 1 + iota
