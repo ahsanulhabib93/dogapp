@@ -27,7 +27,7 @@ import (
 // 9 - routing_number
 
 const (
-	supplierFileName  = "internal/app/helpers/scripts/procurement_vendors_26_10_2023.xlsx"
+	supplierFileName  = "internal/app/helpers/scripts/procurement_vendors_29_10_23.xlsx"
 	supplierSheetName = "Sheet1"
 )
 
@@ -63,17 +63,18 @@ func AddSuppliersFromExcel(ctx context.Context) {
 	tx := database.DBAPM(ctx).Begin()
 	for _, row := range rows[1:] {
 		row = trimRowSpaces(row)
-		if err := addSupplierToDB(tx, row); err != nil {
+		supplierId, err := addSupplierToDB(tx, row)
+		if err != nil {
 			tx.Rollback()
 			return
 		}
 
-		if err := addSupplierAddressToDB(tx, row); err != nil {
+		if err := addSupplierAddressToDB(tx, row, supplierId); err != nil {
 			tx.Rollback()
 			return
 		}
 
-		if err := addPaymentDetailToDB(tx, row); err != nil {
+		if err := addPaymentDetailToDB(tx, row, supplierId); err != nil {
 			tx.Rollback()
 			return
 		}
@@ -99,7 +100,7 @@ func validateSupplierData(ctx context.Context, row []string) error {
 	return nil
 }
 
-func addSupplierToDB(tx *gorm.DB, row []string) error {
+func addSupplierToDB(tx *gorm.DB, row []string) (uint64, error) {
 	supplier := models.Supplier{
 		Name:            row[0],
 		Status:          "Verified",
@@ -108,22 +109,26 @@ func addSupplierToDB(tx *gorm.DB, row []string) error {
 		BusinessName:    row[1],
 		IsPhoneVerified: &[]bool{true}[0],
 	}
-	return tx.Model(&models.Supplier{}).Save(&supplier).Error
+	if err := tx.Model(&models.Supplier{}).Save(&supplier).Error; err != nil {
+		return 0, err
+	}
+	return supplier.ID, nil
 }
 
-func addSupplierAddressToDB(tx *gorm.DB, row []string) error {
+func addSupplierAddressToDB(tx *gorm.DB, row []string, supplierId uint64) error {
 	address := models.SupplierAddress{
-		Firstname: row[0],
-		Address1:  row[2],
-		City:      "Dhaka",
-		Country:   "Bangladesh",
-		Phone:     row[3],
-		IsDefault: true,
+		Firstname:  row[0],
+		Address1:   row[2],
+		City:       "Dhaka",
+		Country:    "Bangladesh",
+		Phone:      row[3],
+		IsDefault:  true,
+		SupplierID: supplierId,
 	}
 	return tx.Model(&models.SupplierAddress{}).Save(&address).Error
 }
 
-func addPaymentDetailToDB(tx *gorm.DB, row []string) error {
+func addPaymentDetailToDB(tx *gorm.DB, row []string, supplierId uint64) error {
 	payment := models.PaymentAccountDetail{
 		AccountType:    1,
 		AccountSubType: 2,
@@ -133,6 +138,7 @@ func addPaymentDetailToDB(tx *gorm.DB, row []string) error {
 		BranchName:     row[9],
 		RoutingNumber:  row[10],
 		IsDefault:      true,
+		SupplierID:     supplierId,
 	}
 	return tx.Model(&models.PaymentAccountDetail{}).Save(&payment).Error
 }
