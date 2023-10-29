@@ -29,6 +29,8 @@ import (
 const (
 	supplierFileName  = "internal/app/helpers/scripts/procurement_vendors_29_10_23.xlsx"
 	supplierSheetName = "Sheet1"
+	serviceType       = 6
+	serviceLevel      = 17
 )
 
 func AddSuppliersFromExcel(ctx context.Context) {
@@ -75,6 +77,11 @@ func AddSuppliersFromExcel(ctx context.Context) {
 		}
 
 		if err := addPaymentDetailToDB(tx, row, supplierId); err != nil {
+			tx.Rollback()
+			return
+		}
+
+		if err := addPartnerServiceMappingsToDB(tx, row, supplierId); err != nil {
 			tx.Rollback()
 			return
 		}
@@ -141,6 +148,16 @@ func addPaymentDetailToDB(tx *gorm.DB, row []string, supplierId uint64) error {
 		SupplierID:     supplierId,
 	}
 	return tx.Model(&models.PaymentAccountDetail{}).Save(&payment).Error
+}
+
+func addPartnerServiceMappingsToDB(tx *gorm.DB, row []string, supplierId uint64) error {
+	partnerServiceMapping := models.PartnerServiceMapping{
+		SupplierId:   supplierId,
+		ServiceType:  serviceType,
+		ServiceLevel: serviceLevel,
+		Active:       true,
+	}
+	return tx.Model(&models.PartnerServiceMapping{}).Save(&partnerServiceMapping).Error
 }
 
 func atoui(s string) int {
