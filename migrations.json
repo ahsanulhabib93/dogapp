@@ -46,6 +46,11 @@
             "name": "Do Buyer",
             "description": "Role for DO Buyer",
             "vaccount_id": 2
+        },
+        {
+            "name": "Procurement Vendor",
+            "description": "Role for Procurement Vendor",
+            "vaccount_id": 2
         }
     ],
     "role_scopes": [
@@ -66,6 +71,11 @@
         },
         {
             "role_name": "Do Buyer",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Procurement Vendor",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -224,6 +234,12 @@
         {
             "id": "supplierpanel:dobuyerservice:view",
             "description": "Access to view do buyers",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:procurementvendorservice:view",
+            "description": "Access to view procurement vendors",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -898,6 +914,11 @@
         {
             "role_name": "DO Liquidator",
             "permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Procurement Vendor",
+            "permission_id": "supplierpanel:procurementvendorservice:view",
             "vaccount_id": 2
         }
     ]

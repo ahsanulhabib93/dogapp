@@ -16,6 +16,7 @@ const (
 	RentVendor
 	MwsOwner
 	DoBuyer
+	ProcurementVendor
 )
 
 const (
@@ -85,6 +86,7 @@ const (
 	OfficeRent
 	Mws
 	Buyer
+	Procurement
 )
 
 var SupplierTypeValue = map[SupplierType]string{
@@ -104,6 +106,7 @@ var SupplierTypeValue = map[SupplierType]string{
 	OfficeRent:    "Office Rent",
 	Mws:           "Mws",
 	Buyer:         "Buyer",
+	Procurement:   "Procurement",
 }
 
 const (
@@ -133,11 +136,12 @@ const ChangePendingSupplierStatus = "change_pending_supplier_status"
 const ScheduleEveryDay = "0 0 * * *"
 
 var PartnerServiceTypeMapping = map[string]ServiceType{
-	"Supplier":    Supplier,
-	"Transporter": Transporter,
-	"RentVendor":  RentVendor,
-	"MwsOwner":    MwsOwner,
-	"DoBuyer":     DoBuyer,
+	"Supplier":          Supplier,
+	"Transporter":       Transporter,
+	"RentVendor":        RentVendor,
+	"MwsOwner":          MwsOwner,
+	"DoBuyer":           DoBuyer,
+	"ProcurementVendor": ProcurementVendor,
 }
 
 var PartnerServiceLevelMapping = map[string]SupplierType{
@@ -157,4 +161,5 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 	"OfficeRent":    OfficeRent,
 	"Mws":           Mws,
 	"Buyer":         Buyer,
+	"Procurement":   Procurement,
 }

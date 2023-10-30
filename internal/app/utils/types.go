@@ -34,9 +34,10 @@ var SupplierSecondaryDocumentType = []string{
 
 var PartnerServiceTypeLevelMapping = map[ServiceType][]SupplierType{
 	// service type - service level
-	Supplier:    {L0, L1, L2, L3, Hlc},
-	Transporter: {Captive, Driver, CashVendor, RedxHubVendor, CreditVendor},
-	RentVendor:  {HubRent, WarehouseRent, DBHouseRent, OfficeRent},
-	MwsOwner:    {Mws},
-	DoBuyer:     {Buyer},
+	Supplier:          {L0, L1, L2, L3, Hlc},
+	Transporter:       {Captive, Driver, CashVendor, RedxHubVendor, CreditVendor},
+	RentVendor:        {HubRent, WarehouseRent, DBHouseRent, OfficeRent},
+	MwsOwner:          {Mws},
+	DoBuyer:           {Buyer},
+	ProcurementVendor: {Procurement},
 }
