@@ -9,13 +9,13 @@ import (
 
 type Seller struct {
 	database.VaccountGorm
-	UserID                       int
+	UserID                       uint64
 	AffiliateURL                 string
 	IsDirect                     bool `gorm:"default:false"`
 	Configuration                string
 	DataMapping                  string
 	FullfillmentType             int
-	DeletedAt                    time.Time
+	DeletedAt                    *time.Time
 	BrandName                    string
 	CompanyName                  string
 	PrimaryEmail                 string
@@ -42,7 +42,6 @@ type Seller struct {
 	ColorCode                    utils.ColorCode
 	EmailConfirmed               bool `gorm:"default:false"`
 	StateReason                  int
-	VaccountID                   int `gorm:"not null"`
 	GSTNumber                    string
 	GSTStatus                    string `gorm:"default:'NOT_VERIFIED'"`
 	GSTRelatedPanNumber          string
@@ -58,4 +57,9 @@ type Seller struct {
 	DeliveryType                 int `gorm:"default:1"`
 	ProcessingType               int `gorm:"default:1"`
 	BusinessUnit                 int
+	SellerConfig                 *SellerConfig
+	VendorAddresses              []*VendorAddress
+	SellerBankDetail             *SellerBankDetail
+	SellerPricingDetails         []*SellerPricingDetail
+	SellerAccountManagers        []*SellerAccountManager
 }

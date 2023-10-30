@@ -28,3 +28,7 @@ func GetKeyAccountManagerInstance() *services.KeyAccountManagerService {
 func GetPartnerServiceMappingInstance() *services.PartnerServiceMappingService {
 	return new(services.PartnerServiceMappingService)
 }
+
+func GetSellerInstance() *services.SellerService {
+	return new(services.SellerService)
+}

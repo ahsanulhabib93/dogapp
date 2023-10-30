@@ -65,6 +65,14 @@ func CreatePartnerServiceMapping(ctx context.Context, partnerServiceMapping *mod
 	return partnerServiceMapping
 }
 
+func CreateSeller(ctx context.Context, seller *models.Seller) *models.Seller {
+	id := getUniqueID()
+	seller.PrimaryEmail = fmt.Sprintf("test-%v@shopup.org", id)
+	seller.PrimaryPhone = fmt.Sprintf("8801%v", id[:9])
+	database.DBAPM(ctx).Save(seller)
+	return seller
+}
+
 func CreateSupplierWithDateTime(ctx context.Context, supplier *models.Supplier, createAt time.Time) *models.Supplier {
 	supplier.CreatedAt = createAt
 	supplier.UpdatedAt = createAt

@@ -16,7 +16,6 @@ type SellerConfig struct {
 	PickupType            int  `gorm:"default:1"`
 	QCFrequency           int  `gorm:"type:integer;size:1;default:0;not null"`
 	AllowVendorCoupons    bool `gorm:"default:true"`
-	VaccountID            int
 	TPEnabled             bool `gorm:"default:false"`
 	Properties            string
 	SellerStockEnabled    bool `gorm:"default:true"`
