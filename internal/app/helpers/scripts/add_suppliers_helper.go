@@ -85,8 +85,14 @@ func AddSuppliersFromExcel(ctx context.Context) {
 			return
 		}
 
-		if err := addPartnerServiceMappingsToDB(tx, row, supplierId); err != nil {
+		if err := addPartnerServiceMappingsToDB(tx, supplierId); err != nil {
 			log.Printf("Error while adding partner service mappings to DB %v", err)
+			tx.Rollback()
+			return
+		}
+
+		if err := updateSuppierStatus(tx, supplierId); err != nil {
+			log.Printf("Error while updating supplier status to DB %v", err)
 			tx.Rollback()
 			return
 		}
@@ -113,13 +119,14 @@ func validateSupplierData(ctx context.Context, row []string) error {
 }
 
 func addSupplierToDB(tx *gorm.DB, row []string) (uint64, error) {
+	phoneVerified := true
 	supplier := models.Supplier{
 		Name:            row[0],
-		Status:          "Verified",
+		Status:          models.SupplierStatusVerified,
 		Email:           row[4],
 		Phone:           row[3],
 		BusinessName:    row[1],
-		IsPhoneVerified: &[]bool{true}[0],
+		IsPhoneVerified: &phoneVerified,
 	}
 	if err := tx.Model(&models.Supplier{}).Save(&supplier).Error; err != nil {
 		return 0, err
@@ -155,7 +162,7 @@ func addPaymentDetailToDB(tx *gorm.DB, row []string, supplierId uint64) error {
 	return tx.Model(&models.PaymentAccountDetail{}).Save(&payment).Error
 }
 
-func addPartnerServiceMappingsToDB(tx *gorm.DB, row []string, supplierId uint64) error {
+func addPartnerServiceMappingsToDB(tx *gorm.DB, supplierId uint64) error {
 	partnerServiceMapping := models.PartnerServiceMapping{
 		SupplierId:   supplierId,
 		ServiceType:  serviceType,
@@ -165,12 +172,18 @@ func addPartnerServiceMappingsToDB(tx *gorm.DB, row []string, supplierId uint64)
 	return tx.Model(&models.PartnerServiceMapping{}).Save(&partnerServiceMapping).Error
 }
 
+func updateSuppierStatus(tx *gorm.DB, supplierId uint64) error {
+	return tx.Model(&models.Supplier{}).Where("id = ?", supplierId).Update("status", models.SupplierStatusVerified).Error
+}
+
 func atoui(s string) int {
-	i, err := strconv.Atoi(s)
+	floatValue, err := strconv.ParseFloat(s, 64)
 	if err != nil {
+		fmt.Println(err)
 		return 0
 	}
-	return i
+	intValue := int(floatValue)
+	return intValue
 }
 
 func trimRowSpaces(row []string) []string {
