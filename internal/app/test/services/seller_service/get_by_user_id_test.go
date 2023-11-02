@@ -2,7 +2,6 @@ package seller_service_test
 
 import (
 	"context"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -54,17 +53,24 @@ var _ = Describe("Get seller by user ID", func() {
 				UserID:    userId,
 				BrandName: "test_brand",
 			})
-			fmt.Println("seller here")
-			fmt.Println(seller)
-
 			param := spb.GetByUserIDParams{
 				UserId: userId,
 			}
-
 			res, err := new(services.SellerService).GetByUserID(ctx, &param)
 			Expect(res.Seller.BrandName).To(Equal(seller.BrandName))
 			Expect(res.Seller.UserId).To(Equal(seller.UserID))
 			Expect(err).To(BeNil())
+		})
+	})
+
+	Context("When params are given", func() {
+		It("Should return seller details", func() {
+			param := spb.GetByUserIDParams{
+				UserId: 123,
+			}
+			res, err := new(services.SellerService).GetByUserID(ctx, &param)
+			Expect(res).To(BeNil())
+			Expect(err.Error()).To(Equal("Seller not found"))
 		})
 	})
 })

@@ -18,7 +18,10 @@ func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserI
 	}
 	seller := &spb.SellerObject{}
 	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", userId)
-	query.Scan(seller)
+	err := query.Scan(seller).Error
+	if err != nil {
+		return nil, errors.New("Seller not found")
+	}
 	response := spb.GetByUserIDResponse{
 		Seller: seller,
 	}
