@@ -6,6 +6,7 @@ import (
 
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
+
 	"github.com/voonik/ss2/internal/app/models"
 )
 
@@ -25,5 +26,6 @@ func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserI
 	response := spb.GetByUserIDResponse{
 		Seller: seller,
 	}
+
 	return &response, nil
 }
