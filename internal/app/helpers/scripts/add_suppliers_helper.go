@@ -27,7 +27,7 @@ import (
 // 9 - routing_number
 
 const (
-	supplierFileName  = "internal/app/helpers/scripts/procurement_vendors_29_10_23.xlsx"
+	supplierFileName  = "internal/app/helpers/scripts/procurement_vendors_02_11_23.xlsx"
 	supplierSheetName = "Sheet1"
 	serviceType       = 6
 	serviceLevel      = 17
@@ -67,21 +67,26 @@ func AddSuppliersFromExcel(ctx context.Context) {
 		row = trimRowSpaces(row)
 		supplierId, err := addSupplierToDB(tx, row)
 		if err != nil {
+			log.Printf("Error while adding supplier to DB %v", err)
 			tx.Rollback()
 			return
 		}
+		log.Printf("supplierId data: %v\n", supplierId)
 
 		if err := addSupplierAddressToDB(tx, row, supplierId); err != nil {
+			log.Printf("Error while adding supplier address to DB %v", err)
 			tx.Rollback()
 			return
 		}
 
 		if err := addPaymentDetailToDB(tx, row, supplierId); err != nil {
+			log.Printf("Error while adding payment detail to DB %v", err)
 			tx.Rollback()
 			return
 		}
 
 		if err := addPartnerServiceMappingsToDB(tx, row, supplierId); err != nil {
+			log.Printf("Error while adding partner service mappings to DB %v", err)
 			tx.Rollback()
 			return
 		}
