@@ -17,7 +17,7 @@ type SellerPricingDetail struct {
 	DiscountPercent           float64
 	CommissionPercent         float64   `gorm:"default:20.0;not null"`
 	FlatShipping              bool      `gorm:"default:true"`
-	StartDate                 time.Time `gorm:"default:2015-05-28 01:43:53"`
+	StartDate                 time.Time `gorm:"default:'2015-05-28 01:43:53'"`
 	EndDate                   time.Time
 	DeletedAt                 *time.Time
 	SellerID                  int

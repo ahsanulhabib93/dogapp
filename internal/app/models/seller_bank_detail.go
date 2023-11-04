@@ -41,7 +41,7 @@ type SellerBankDetail struct {
 	AadharCardContentType      string
 	AadharCardFileSize         int
 	AadharCardUpdatedAt        time.Time
-	VerificationStatus         utils.VerificationStatus `gorm:"default:'1'"`
+	VerificationStatus         utils.VerificationStatus `gorm:"default:'NOT_VERIFIED'"`
 	GSTCardFileName            string
 	GSTCardContentType         string
 	GSTCardFileSize            int
