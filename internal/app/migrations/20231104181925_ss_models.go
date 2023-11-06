@@ -11,13 +11,22 @@ func init() {
 	migrator.Register(&gormigrate.Migration{
 		ID: "20231104181925",
 		Migrate: func(tx *gorm.DB) error {
-			return tx.AutoMigrate(
+			models := []interface{}{
 				models.Seller{},
 				models.VendorAddress{},
 				models.SellerBankDetail{},
 				models.SellerPricingDetail{},
 				models.SellerConfig{},
-			).Error
+			}
+
+			for _, model := range models {
+				if !tx.HasTable(model) {
+					if err := tx.AutoMigrate(model).Error; err != nil {
+						return err
+					}
+				}
+			}
+			return nil
 		},
 		Rollback: func(tx *gorm.DB) error {
 			return nil
