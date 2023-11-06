@@ -5,6 +5,7 @@ import (
 	kampb "github.com/voonik/goConnect/api/go/ss2/key_account_manager"
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
+	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	addresspb "github.com/voonik/goConnect/api/go/ss2/supplier_address"
 	"github.com/voonik/goFramework/pkg/config"
@@ -28,6 +29,7 @@ func main() {
 	paymentpb.RegisterPaymentAccountDetailServer(server.GrpcServer, handlers.GetPaymentAccountDetailInstance())
 	kampb.RegisterKeyAccountManagerServer(server.GrpcServer, handlers.GetKeyAccountManagerInstance())
 	psmpb.RegisterPartnerServiceMappingServer(server.GrpcServer, handlers.GetPartnerServiceMappingInstance())
+	spb.RegisterSellerServer(server.GrpcServer, handlers.GetSellerInstance())
 
 	if config.GRPCServerConfigReflection() {
 		reflection.Register(server.GrpcServer)
