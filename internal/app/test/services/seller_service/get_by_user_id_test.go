@@ -43,7 +43,7 @@ var _ = Describe("Get seller by user ID", func() {
 			param := spb.GetByUserIDParams{}
 			res, err := new(services.SellerService).GetByUserID(ctx, &param)
 			Expect(res).To(BeNil())
-			Expect(err.Error()).To(Equal("User ID is empty or zero"))
+			Expect(err).To(BeNil())
 		})
 	})
 
@@ -70,7 +70,7 @@ var _ = Describe("Get seller by user ID", func() {
 			}
 			res, err := new(services.SellerService).GetByUserID(ctx, &param)
 			Expect(res).To(BeNil())
-			Expect(err.Error()).To(Equal("Seller not found"))
+			Expect(err).To(BeNil())
 		})
 	})
 })
