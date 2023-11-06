@@ -17,9 +17,9 @@ type SellerPricingDetail struct {
 	DiscountPercent           float64
 	CommissionPercent         float64   `gorm:"default:20.0;not null"`
 	FlatShipping              bool      `gorm:"default:true"`
-	StartDate                 time.Time `gorm:"default:2015-05-28 01:43:53"`
+	StartDate                 time.Time `gorm:"default:'2015-05-28 01:43:53'"`
 	EndDate                   time.Time
-	DeletedAt                 time.Time
+	DeletedAt                 *time.Time
 	SellerID                  int
 	LeadShippingDays          int `gorm:"default:2"`
 	SellerPaymentType         int `gorm:"type:integer;size:2;default:1"`
@@ -31,7 +31,6 @@ type SellerPricingDetail struct {
 	RTOCharges                float64 `gorm:"default:140.0;not null"`
 	StockoutChargePercent     float64 `gorm:"default:2.0;not null"`
 	CancellationChargePercent float64 `gorm:"default:4.0;not null"`
-	VaccountID                int     `gorm:"not null"`
 	TcsEnabled                bool    `gorm:"default:true"`
 	TcsDeclarationFileName    string
 	TcsDeclarationContentType string

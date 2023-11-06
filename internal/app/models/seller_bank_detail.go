@@ -15,7 +15,7 @@ type SellerBankDetail struct {
 	AccountType                int
 	BankName                   string
 	BankBranch                 string
-	DeletedAt                  time.Time
+	DeletedAt                  *time.Time
 	PanCardFileName            string
 	PanCardContentType         string
 	PanCardFileSize            int
@@ -42,7 +42,6 @@ type SellerBankDetail struct {
 	AadharCardFileSize         int
 	AadharCardUpdatedAt        time.Time
 	VerificationStatus         utils.VerificationStatus `gorm:"default:'NOT_VERIFIED'"`
-	VaccountID                 int                      `gorm:"not null"`
 	GSTCardFileName            string
 	GSTCardContentType         string
 	GSTCardFileSize            int
