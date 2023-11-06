@@ -42,7 +42,7 @@ var _ = Describe("Get seller by user ID", func() {
 		It("Should return error", func() {
 			param := spb.GetByUserIDParams{}
 			res, err := new(services.SellerService).GetByUserID(ctx, &param)
-			Expect(res).To(BeNil())
+			Expect(res).To(Equal(&spb.GetByUserIDResponse{}))
 			Expect(err).To(BeNil())
 		})
 	})
@@ -69,7 +69,7 @@ var _ = Describe("Get seller by user ID", func() {
 				UserId: 123,
 			}
 			res, err := new(services.SellerService).GetByUserID(ctx, &param)
-			Expect(res).To(BeNil())
+			Expect(res).To(Equal(&spb.GetByUserIDResponse{}))
 			Expect(err).To(BeNil())
 		})
 	})

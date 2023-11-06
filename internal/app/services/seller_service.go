@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log"
 
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
@@ -17,7 +18,8 @@ func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserI
 	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", userId)
 	err := query.Scan(seller).Error
 	if err != nil {
-		return nil, nil
+		log.Println("Error in seller service:", err.Error())
+		return &spb.GetByUserIDResponse{}, nil
 	}
 	response := spb.GetByUserIDResponse{
 		Seller: seller,
