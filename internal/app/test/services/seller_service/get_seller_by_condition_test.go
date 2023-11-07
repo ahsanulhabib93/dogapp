@@ -55,7 +55,6 @@ var _ = Describe("Get seller by condition", func() {
 				UserID:    userId,
 				BrandName: "test_brand",
 			})
-			fmt.Print("user_id = ?", seller1.UserID)
 			param := spb.GetSellerByConditionParams{
 				Condition: fmt.Sprint("user_id = ", seller1.UserID),
 			}
@@ -80,7 +79,6 @@ var _ = Describe("Get seller by condition", func() {
 				UserID:    uint64(200),
 				BrandName: "test_brand",
 			})
-			fmt.Print("user_id = ?", seller1.UserID)
 			param := spb.GetSellerByConditionParams{
 				Condition: fmt.Sprintf("brand_name = '%s'", seller2.BrandName),
 				Fields:    fmt.Sprint("user_id, brand_name, primary_phone"),
@@ -102,11 +100,6 @@ var _ = Describe("Get seller by condition", func() {
 
 	Context("When invalid condition is passed in the param", func() {
 		It("Should return seller details", func() {
-			seller1 := test_helper.CreateSeller(ctx, &models.Seller{
-				UserID:    userId,
-				BrandName: "test_brand",
-			})
-			fmt.Print("user_id = ?", seller1.UserID)
 			param := spb.GetSellerByConditionParams{
 				Condition: fmt.Sprint("brand_name = 'test'"),
 				Fields:    fmt.Sprint("user_id, brand_name"),

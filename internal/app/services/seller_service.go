@@ -37,7 +37,7 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 	condition := params.GetCondition()
 	if condition == "" {
 		logger.FromContext(ctx).Info("No condition specified")
-		response.Status = string(utils.SellerStatusFailure)
+		response.Status = utils.Failure
 		response.Message = "no condition specified"
 		return &response, nil
 	}
@@ -47,18 +47,18 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 	}
 	if err := query.Scan(&sellers).Error; err != nil {
 		logger.FromContext(ctx).Info("Error in seller service GetSellerByCondition API", err.Error())
-		response.Status = string(utils.SellerStatusFailure)
+		response.Status = utils.Failure
 		response.Message = err.Error()
 		return &response, nil
 	}
 	if len(sellers) == 0 {
 		logger.FromContext(ctx).Info("Seller not found")
-		response.Status = string(utils.SellerStatusFailure)
+		response.Status = utils.Failure
 		response.Message = "seller not found"
 		return &response, nil
 	}
 	response.Seller = sellers
-	response.Status = string(utils.SellerStatusSuccess)
+	response.Status = utils.Success
 	response.Message = "fetched seller details successfully"
 	return &response, nil
 }
