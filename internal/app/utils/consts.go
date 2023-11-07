@@ -9,6 +9,7 @@ type BusinessType uint16
 type ColorCode uint16
 type GSTStatus uint16
 type SellerPriceVerified string
+type SellerStatus string
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -26,8 +27,8 @@ const (
 )
 
 const (
-	Success = "success"
-	Failure = "failure"
+	SellerStatusSuccess SellerStatus = "success"
+	SellerStatusFailure SellerStatus = "failure"
 )
 
 const (

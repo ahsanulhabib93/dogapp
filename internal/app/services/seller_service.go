@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
 
@@ -35,8 +36,8 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 	fields := params.GetFields()
 	condition := params.GetCondition()
 	if condition == "" {
-		log.Println("No condition specified")
-		response.Status = utils.Failure
+		logger.FromContext(ctx).Info("No condition specified")
+		response.Status = string(utils.SellerStatusFailure)
 		response.Message = "no condition specified"
 		return &response, nil
 	}
@@ -44,15 +45,20 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 	if fields != "" {
 		query = query.Select(fields)
 	}
-	query.Scan(&sellers)
+	if err := query.Scan(&sellers).Error; err != nil {
+		logger.FromContext(ctx).Info("Error in seller service GetSellerByCondition API", err.Error())
+		response.Status = string(utils.SellerStatusFailure)
+		response.Message = err.Error()
+		return &response, nil
+	}
 	if len(sellers) == 0 {
-		log.Println("Seller not found")
-		response.Status = utils.Failure
+		logger.FromContext(ctx).Info("Seller not found")
+		response.Status = string(utils.SellerStatusFailure)
 		response.Message = "seller not found"
 		return &response, nil
 	}
 	response.Seller = sellers
-	response.Status = utils.Success
+	response.Status = string(utils.SellerStatusSuccess)
 	response.Message = "fetched seller details successfully"
 	return &response, nil
 }

@@ -80,8 +80,6 @@ var _ = Describe("Get seller by condition", func() {
 				UserID:    uint64(200),
 				BrandName: "test_brand",
 			})
-			// fmt.Println("seller here")
-			// fmt.Println(seller)
 			fmt.Print("user_id = ?", seller1.UserID)
 			param := spb.GetSellerByConditionParams{
 				Condition: fmt.Sprintf("brand_name = '%s'", seller2.BrandName),
