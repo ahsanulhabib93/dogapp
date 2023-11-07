@@ -2,7 +2,6 @@ package seller_service_test
 
 import (
 	"context"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -56,7 +55,10 @@ var _ = Describe("Get seller by condition", func() {
 				BrandName: "test_brand",
 			})
 			param := spb.GetSellerByConditionParams{
-				Condition: fmt.Sprint("user_id = ", seller1.UserID),
+				Condition: map[string]string{
+					"brand_name": "test_brand",
+					"user_id":    "101",
+				},
 			}
 
 			res, err := new(services.SellerService).GetSellerByCondition(ctx, &param)
@@ -80,8 +82,8 @@ var _ = Describe("Get seller by condition", func() {
 				BrandName: "test_brand",
 			})
 			param := spb.GetSellerByConditionParams{
-				Condition: fmt.Sprintf("brand_name = '%s'", seller2.BrandName),
-				Fields:    fmt.Sprint("user_id, brand_name, primary_phone"),
+				Condition: map[string]string{"brand_name": seller2.BrandName},
+				Fields:    []string{"user_id", "brand_name", "primary_phone"},
 			}
 
 			res, err := new(services.SellerService).GetSellerByCondition(ctx, &param)
@@ -99,10 +101,10 @@ var _ = Describe("Get seller by condition", func() {
 	})
 
 	Context("When invalid condition is passed in the param", func() {
-		It("Should return seller details", func() {
+		It("Should return seller not found", func() {
 			param := spb.GetSellerByConditionParams{
-				Condition: fmt.Sprint("brand_name = 'test'"),
-				Fields:    fmt.Sprint("user_id, brand_name"),
+				Condition: map[string]string{"brand_name": "test"},
+				Fields:    []string{"user_id", "brand_name"},
 			}
 
 			res, err := new(services.SellerService).GetSellerByCondition(ctx, &param)

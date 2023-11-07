@@ -2,7 +2,9 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
@@ -35,14 +37,19 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 	sellers := []*spb.SellerObject{}
 	fields := params.GetFields()
 	condition := params.GetCondition()
-	if condition == "" {
+	if condition == nil {
 		logger.FromContext(ctx).Info("No condition specified")
 		response.Status = utils.Failure
 		response.Message = "no condition specified"
 		return &response, nil
 	}
-	query := database.DBAPM(ctx).Model(&models.Seller{}).Where(condition)
-	if fields != "" {
+	conditionString := make([]string, 0)
+	for key, value := range condition {
+		conditionString = append(conditionString, fmt.Sprintf("%s = '%s'", key, value))
+	}
+	queryCondition := strings.Join(conditionString, " AND ")
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where(queryCondition)
+	if fields != nil {
 		query = query.Select(fields)
 	}
 	if err := query.Scan(&sellers).Error; err != nil {
