@@ -4,10 +4,12 @@ import (
 	"context"
 	"log"
 
+	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
 
 	"github.com/voonik/ss2/internal/app/models"
+	"github.com/voonik/ss2/internal/app/utils"
 )
 
 type SellerService struct{}
@@ -33,7 +35,30 @@ func (ss *SellerService) GetSellerByCondition(ctx context.Context, params *spb.G
 }
 
 func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *spb.GetSellersRelatedToOrderParams) (*spb.GetSellersResponse, error) {
-	return nil, nil
+	userIds := params.GetSellerIds()
+	response := spb.GetSellersResponse{
+		Status: utils.Failure,
+	}
+	if len(userIds) == 0 {
+		response.Message = "no valid param"
+		return &response, nil
+	}
+	sellers := []*spb.SellerObject{}
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id in (?)", userIds)
+	err := query.Scan(&sellers).Error
+	if err != nil {
+		logger.FromContext(ctx).Info("Error in seller service GetSellerByCondition API", err.Error())
+		response.Message = err.Error()
+		return &response, nil
+	}
+	if len(sellers) == 0 {
+		response.Message = "seller not found"
+		return &response, nil
+	}
+	response.Seller = sellers
+	response.Status = utils.Success
+	response.Message = "fetched seller details successfully"
+	return &response, nil
 }
 
 func (ss *SellerService) SmallReport(ctx context.Context, params *spb.SmallReportParams) (*spb.GetSellersResponse, error) {
