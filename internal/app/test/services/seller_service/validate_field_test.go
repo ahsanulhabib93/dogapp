@@ -11,8 +11,10 @@ import (
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
+	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
+	"github.com/voonik/ss2/internal/app/test/test_helper"
 )
 
 var _ = Describe("Validate Field", func() {
@@ -34,13 +36,48 @@ var _ = Describe("Validate Field", func() {
 		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
-	Context("Success Case", func() {
-		It("Should return data", func() {
-
+	Context("When no param is passed", func() {
+		It("Should return false as status", func() {
 			param := spb.ValidateFieldParams{}
-
 			res, err := new(services.SellerService).ValidateField(ctx, &param)
-			Expect(res).To(BeNil())
+			Expect(res.Status).To(BeFalse())
+			Expect(err).To(BeNil())
+		})
+	})
+
+	Context("When existing data is passed", func() {
+		It("Should return false as status", func() {
+			test_helper.CreateSeller(ctx, &models.Seller{
+				UserID:    uint64(102),
+				BrandName: "test_brand",
+			})
+			param := spb.ValidateFieldParams{
+				Data: map[string]string{"user_id": "102"},
+			}
+			res, err := new(services.SellerService).ValidateField(ctx, &param)
+			Expect(res.Status).To(BeFalse())
+			Expect(err).To(BeNil())
+		})
+	})
+
+	Context("When non existing data is passed", func() {
+		It("Should return true as status", func() {
+			param := spb.ValidateFieldParams{
+				Data: map[string]string{"user_id": "102"},
+			}
+			res, err := new(services.SellerService).ValidateField(ctx, &param)
+			Expect(res.Status).To(BeTrue())
+			Expect(err).To(BeNil())
+		})
+	})
+
+	Context("When non existing field is passed", func() {
+		It("Should return true as status", func() {
+			param := spb.ValidateFieldParams{
+				Data: map[string]string{"new_field": "102"},
+			}
+			res, err := new(services.SellerService).ValidateField(ctx, &param)
+			Expect(res.Status).To(BeTrue())
 			Expect(err).To(BeNil())
 		})
 	})
