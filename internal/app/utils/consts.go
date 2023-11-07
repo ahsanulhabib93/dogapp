@@ -4,11 +4,11 @@ type ServiceType uint16
 type SupplierType uint16
 type AccountType uint16
 type AccountSubType uint16
-type VerificationStatus uint16
+type VerificationStatus string
 type BusinessType uint16
 type ColorCode uint16
 type GSTStatus uint16
-type SellerPriceVerified uint16
+type SellerPriceVerified string
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -20,16 +20,10 @@ const (
 )
 
 const (
-	NotVerified VerificationStatus = 1 + iota
-	Verified
-	Rejected
+	Verified    VerificationStatus = "VERIFIED"
+	Rejected    VerificationStatus = "REJECTED"
+	NotVerified VerificationStatus = "NOT_VERIFIED"
 )
-
-var VAVerificationStatus = map[VerificationStatus]string{
-	NotVerified: "NOT_VERIFIED",
-	Verified:    "VERIFIED",
-	Rejected:    "REJECTED",
-}
 
 const (
 	Manufacturer BusinessType = 1 + iota
@@ -58,16 +52,10 @@ var SellerColorCode = map[ColorCode]string{
 }
 
 const (
-	PriceNotVerified SellerPriceVerified = 1 + iota
-	PriceVerified
-	PriceAutoVerified
+	PriceNotVerified  SellerPriceVerified = "NOT_VERIFIED"
+	PriceVerified     SellerPriceVerified = "VERIFIED"
+	PriceAutoVerified SellerPriceVerified = "AUTO_VERIFIED"
 )
-
-var SellerPriceVerifiedValue = map[SellerPriceVerified]string{
-	PriceNotVerified:  "NOT_VERIFIED",
-	PriceVerified:     "VERIFIED",
-	PriceAutoVerified: "AUTO_VERIFIED",
-}
 
 const (
 	L0 SupplierType = 1 + iota

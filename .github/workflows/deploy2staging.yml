@@ -107,7 +107,7 @@ jobs:
             "ss2.key_account_manager.KeyAccountManager"
             "ss2.supplier_address.SupplierAddress"
             "ss2.partner_service_mapping.PartnerServiceMapping"
-             "ss2.seller.Seller"
+            "ss2.seller.Seller"
           )
           i=0
           for value in "${custom[@]}"; do

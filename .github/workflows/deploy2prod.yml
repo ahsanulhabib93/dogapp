@@ -54,7 +54,7 @@ jobs:
             GOOGLEAPIS_DIR=./googleapis
             cp goConnect/api/proto/health/health_v1.proto .
             cp goConnect/api/proto/app_preference_service/app_preference_service.proto .
-            cp goConnect/api/proto/ss2/{supplier*,payment*,key*,partner_service_mapping*,,seller*} .
+            cp goConnect/api/proto/ss2/{supplier*,payment*,key*,partner_service_mapping*,seller*} .
             sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto
             sudo apt install -y protobuf-compiler
             protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto

@@ -23,14 +23,13 @@ type VendorAddress struct {
 	SellerID                     int
 	LandMark                     string
 	DefaultAddress               bool `gorm:"default:false"`
-	DeletedAt                    time.Time
+	DeletedAt                    *time.Time
 	Phone                        int64
 	AddressProofFileName         string
 	AddressProofContentType      string
 	AddressProofFileSize         int
 	AddressProofUpdatedAt        string
 	VerificationStatus           utils.VerificationStatus `gorm:"default:'NOT_VERIFIED'"`
-	VaccountID                   int                      `gorm:"not null"`
 	UUID                         string                   `gorm:"type:varchar(50)"`
 	GSTNumber                    string
 	GSTStatus                    string `gorm:"default:'NOT_VERIFIED'"`
