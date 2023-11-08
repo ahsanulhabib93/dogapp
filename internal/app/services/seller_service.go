@@ -60,7 +60,7 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 	}
 	if len(sellers) == 0 {
 		logger.FromContext(ctx).Info("Seller not found")
-		response.Status = utils.Failure
+		response.Status = utils.Success
 		response.Message = "seller not found"
 		return &response, nil
 	}

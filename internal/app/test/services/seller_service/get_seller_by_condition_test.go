@@ -109,7 +109,7 @@ var _ = Describe("Get seller by condition", func() {
 
 			res, err := new(services.SellerService).GetSellerByCondition(ctx, &param)
 			Expect(len(res.Seller)).To(Equal(0))
-			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Status).To(Equal("success"))
 			Expect(res.Message).To(Equal("seller not found"))
 			Expect(err).To(BeNil())
 		})
