@@ -54,7 +54,7 @@ var _ = Describe("Seller Phone Relation", func() {
 			}
 			res, err := new(services.SellerService).SellerPhoneRelation(ctx, &param)
 			Expect(len(res.Seller)).To(Equal(0))
-			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Status).To(Equal("success"))
 			Expect(res.Message).To(Equal("seller not found"))
 			Expect(err).To(BeNil())
 		})

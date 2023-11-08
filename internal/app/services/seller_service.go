@@ -61,6 +61,7 @@ func (ss *SellerService) SellerPhoneRelation(ctx context.Context, params *spb.Se
 		return &response, nil
 	}
 	if len(sellers) == 0 {
+		response.Status = "success"
 		response.Message = "seller not found"
 		return &response, nil
 	}
