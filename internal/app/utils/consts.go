@@ -26,6 +26,11 @@ const (
 )
 
 const (
+	Success = "success"
+	Failure = "failure"
+)
+
+const (
 	Manufacturer BusinessType = 1 + iota
 	Trader
 )

@@ -8,6 +8,7 @@ import (
 	"github.com/voonik/goFramework/pkg/database"
 
 	"github.com/voonik/ss2/internal/app/models"
+	"github.com/voonik/ss2/internal/app/utils"
 )
 
 type SellerService struct{}
@@ -45,7 +46,29 @@ func (ss *SellerService) ValidateField(ctx context.Context, params *spb.Validate
 }
 
 func (ss *SellerService) SellerPhoneRelation(ctx context.Context, params *spb.SellerPhoneRelationParams) (*spb.GetSellersResponse, error) {
-	return nil, nil
+	phone := params.GetPhone()
+	response := spb.GetSellersResponse{}
+	response.Status = utils.Failure
+	if len(phone) == 0 {
+		response.Message = "no valid param"
+		return &response, nil
+	}
+	sellers := []*spb.SellerObject{}
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("primary_phone in (?)", phone)
+	err := query.Scan(&sellers).Error
+	if err != nil {
+		response.Message = "error in SellerPhoneRelation"
+		return &response, nil
+	}
+	if len(sellers) == 0 {
+		response.Message = "seller not found"
+		return &response, nil
+	}
+	response.Seller = sellers
+	response.Status = "success"
+	response.Message = "fetched seller details successfully"
+	return &response, nil
+
 }
 
 func (ss *SellerService) ApproveProducts(ctx context.Context, params *spb.ApproveProductsParams) (*spb.BasicApiResponse, error) {
