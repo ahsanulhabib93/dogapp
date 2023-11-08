@@ -52,6 +52,7 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 		return &response, nil
 	}
 	if len(sellers) == 0 {
+		response.Status = utils.Success
 		response.Message = "seller not found"
 		return &response, nil
 	}
