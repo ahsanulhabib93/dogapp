@@ -2,8 +2,11 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 
+	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
 
@@ -29,8 +32,42 @@ func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserI
 	return &response, nil
 }
 
-func (ss *SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSellerByConditionParams) (*spb.GetSellersResponse, error) {
-	return nil, nil
+func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSellerByConditionParams) (*spb.GetSellersResponse, error) {
+	response := spb.GetSellersResponse{}
+	sellers := []*spb.SellerObject{}
+	fields := params.GetFields()
+	condition := params.GetCondition()
+	if condition == nil {
+		logger.FromContext(ctx).Info("No condition specified")
+		response.Status = utils.Failure
+		response.Message = "no condition specified"
+		return &response, nil
+	}
+	conditionString := make([]string, 0)
+	for key, value := range condition {
+		conditionString = append(conditionString, fmt.Sprintf("%s = '%s'", key, value))
+	}
+	queryCondition := strings.Join(conditionString, " AND ")
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where(queryCondition)
+	if fields != nil {
+		query = query.Select(fields)
+	}
+	if err := query.Scan(&sellers).Error; err != nil {
+		logger.FromContext(ctx).Info("Error in seller service GetSellerByCondition API", err.Error())
+		response.Status = utils.Failure
+		response.Message = err.Error()
+		return &response, nil
+	}
+	if len(sellers) == 0 {
+		logger.FromContext(ctx).Info("Seller not found")
+		response.Status = utils.Success
+		response.Message = "seller not found"
+		return &response, nil
+	}
+	response.Seller = sellers
+	response.Status = utils.Success
+	response.Message = "fetched seller details successfully"
+	return &response, nil
 }
 
 func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *spb.GetSellersRelatedToOrderParams) (*spb.GetSellersResponse, error) {
