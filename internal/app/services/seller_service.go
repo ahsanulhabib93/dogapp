@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/jinzhu/gorm"
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
@@ -114,7 +115,35 @@ func (ss *SellerService) ApproveProducts(ctx context.Context, params *spb.Approv
 }
 
 func (ss *SellerService) ConfirmEmailFromAdminPanel(ctx context.Context, params *spb.GetByUserIDParams) (*spb.BasicApiResponse, error) {
-	return nil, nil
+	response := spb.BasicApiResponse{Status: utils.Failure}
+	userId := params.GetUserId()
+	if userId == 0 {
+		response.Message = "param not specified"
+		return &response, nil
+	}
+	seller := models.Seller{}
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", userId)
+	err := query.Scan(&seller).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			response.Status = "success"
+			response.Message = "seller not found"
+			return &response, nil
+		}
+		logger.FromContext(ctx).Info("Error in seller service ConfirmEmailFromAdminPanel API", err.Error())
+		response.Message = fmt.Sprint("not able to confirm email: ", err.Error())
+		return &response, nil
+	}
+	seller.EmailConfirmed = true
+	err = database.DBAPM(ctx).Save(&seller).Error
+	if err != nil {
+		logger.FromContext(ctx).Info("Error in seller service ConfirmEmailFromAdminPanel API", err.Error())
+		response.Message = fmt.Sprint("not able to confirm email: ", err.Error())
+		return &response, nil
+	}
+	response.Status = utils.Success
+	response.Message = "email confirmed successfully"
+	return &response, nil
 }
 
 func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (*spb.BasicApiResponse, error) {
