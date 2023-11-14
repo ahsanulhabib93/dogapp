@@ -18,7 +18,7 @@ type Seller struct {
 	DeletedAt                    *time.Time
 	BrandName                    string
 	CompanyName                  string
-	PrimaryEmail                 string
+	PrimaryEmail                 string `json:"primary_email"`
 	PrimaryPhone                 string
 	SupportEmail                 string
 	SupportPhone                 string

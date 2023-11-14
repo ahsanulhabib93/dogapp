@@ -2,10 +2,12 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
 
+	"github.com/jinzhu/gorm"
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
@@ -118,7 +120,54 @@ func (ss *SellerService) ConfirmEmailFromAdminPanel(ctx context.Context, params 
 }
 
 func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (*spb.BasicApiResponse, error) {
-	return nil, nil
+	response := spb.BasicApiResponse{Status: utils.Failure}
+	id := params.GetId()
+	sellerParam := params.GetSeller()
+	fmt.Println("seller param: ", sellerParam)
+	if id == 0 || sellerParam == nil {
+		response.Message = "param not specified"
+		return &response, nil
+	}
+	seller := models.Seller{}
+	err := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", id).First(&seller).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			response.Status = "success"
+			response.Message = "seller not found"
+			return &response, nil
+		}
+		logger.FromContext(ctx).Info("Error in seller service Update API", err.Error())
+		response.Message = fmt.Sprint("unable to update seller1: ", err.Error())
+		return &response, nil
+	}
+	paramJson, err := json.Marshal(sellerParam)
+	fmt.Println("seller param json: ", paramJson)
+	if err != nil {
+		logger.FromContext(ctx).Info("Error marshaling SellerObject to JSON", err.Error())
+		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
+		return &response, nil
+	}
+	sellerParamValue := models.Seller{}
+	err = json.Unmarshal(paramJson, &sellerParamValue)
+	fmt.Println("seller param value: ", sellerParamValue)
+	if err != nil {
+		logger.FromContext(ctx).Info("Error unmarshaling JSON to Seller struct", err.Error())
+		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
+		return &response, nil
+	}
+	seller = sellerParamValue
+	seller.UserID = id
+	fmt.Println("seller here: ", seller)
+	fmt.Println("seller user id: ", seller.UserID)
+	err = database.DBAPM(ctx).Save(&seller).Error
+	if err != nil {
+		logger.FromContext(ctx).Info("Error in seller service Update API", err.Error())
+		response.Message = fmt.Sprint("unable to update seller: ", err.Error())
+		return &response, nil
+	}
+	response.Status = utils.Success
+	response.Message = "seller details updated successfully"
+	return &response, nil
 }
 
 func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.SendActivationMailParams) (*spb.BasicApiResponse, error) {
