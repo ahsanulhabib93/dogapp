@@ -5,9 +5,8 @@ type SupplierType uint16
 type AccountType uint16
 type AccountSubType uint16
 type VerificationStatus string
-type BusinessType uint16
-type ColorCode uint16
-type GSTStatus uint16
+type BusinessType uint8
+type ColorCode uint8
 type SellerPriceVerified string
 
 const (
