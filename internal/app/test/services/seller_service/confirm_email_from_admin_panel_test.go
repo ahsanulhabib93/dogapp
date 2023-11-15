@@ -75,4 +75,25 @@ var _ = Describe("Confirm email from admin panel", func() {
 			Expect(err).To(BeNil())
 		})
 	})
+
+	Context("When called for same seller twice", func() {
+		It("Should return already confirmed message", func() {
+			seller := test_helper.CreateSeller(ctx, &models.Seller{UserID: 208})
+			param := spb.GetByUserIDParams{
+				UserId: 208,
+			}
+			res, err := new(services.SellerService).ConfirmEmailFromAdminPanel(ctx, &param)
+			database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", 208).Scan(&seller)
+			Expect(res.Status).To(Equal("success"))
+			Expect(res.Message).To(Equal("email confirmed successfully"))
+			Expect(seller.EmailConfirmed).To(BeTrue())
+			Expect(err).To(BeNil())
+
+			res1, _ := new(services.SellerService).ConfirmEmailFromAdminPanel(ctx, &param)
+			database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", 208).Scan(&seller)
+			Expect(res1.Status).To(Equal("success"))
+			Expect(res1.Message).To(Equal("email already confirmed"))
+			Expect(seller.EmailConfirmed).To(BeTrue())
+		})
+	})
 })
