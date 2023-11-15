@@ -116,7 +116,38 @@ func (ss *SellerService) ApproveProducts(ctx context.Context, params *spb.Approv
 }
 
 func (ss *SellerService) ConfirmEmailFromAdminPanel(ctx context.Context, params *spb.GetByUserIDParams) (*spb.BasicApiResponse, error) {
-	return nil, nil
+	response := spb.BasicApiResponse{Status: utils.Failure}
+	userId := params.GetUserId()
+	if userId == 0 {
+		response.Message = "param not specified"
+		return &response, nil
+	}
+	seller := models.Seller{}
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", userId)
+	err := query.Scan(&seller).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			response.Message = "seller not found"
+			return &response, nil
+		}
+		logger.FromContext(ctx).Error("Error in seller service ConfirmEmailFromAdminPanel API", err.Error())
+		response.Message = fmt.Sprint("not able to confirm email: ", err.Error())
+		return &response, nil
+	}
+	if seller.EmailConfirmed {
+		response.Status = "success"
+		response.Message = "email already confirmed"
+		return &response, nil
+	}
+	err = query.Update("email_confirmed", true).Error
+	if err != nil {
+		logger.FromContext(ctx).Error("Error in seller service ConfirmEmailFromAdminPanel API", err.Error())
+		response.Message = fmt.Sprint("not able to confirm email: ", err.Error())
+		return &response, nil
+	}
+	response.Status = utils.Success
+	response.Message = "email confirmed successfully"
+	return &response, nil
 }
 
 func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (*spb.BasicApiResponse, error) {
