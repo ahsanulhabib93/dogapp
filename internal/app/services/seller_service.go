@@ -129,7 +129,7 @@ func (ss *SellerService) ConfirmEmailFromAdminPanel(ctx context.Context, params 
 			response.Message = "seller not found"
 			return &response, nil
 		}
-		logger.FromContext(ctx).Info("Error in seller service ConfirmEmailFromAdminPanel API", err.Error())
+		logger.FromContext(ctx).Error("Error in seller service ConfirmEmailFromAdminPanel API", err.Error())
 		response.Message = fmt.Sprint("not able to confirm email: ", err.Error())
 		return &response, nil
 	}
