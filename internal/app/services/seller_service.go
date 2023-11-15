@@ -126,7 +126,7 @@ func (ss *SellerService) ConfirmEmailFromAdminPanel(ctx context.Context, params 
 	err := query.Scan(&seller).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
-			response.Status = "success"
+			response.Status = "failure"
 			response.Message = "seller not found"
 			return &response, nil
 		}
@@ -137,7 +137,7 @@ func (ss *SellerService) ConfirmEmailFromAdminPanel(ctx context.Context, params 
 	seller.EmailConfirmed = true
 	err = database.DBAPM(ctx).Save(&seller).Error
 	if err != nil {
-		logger.FromContext(ctx).Info("Error in seller service ConfirmEmailFromAdminPanel API", err.Error())
+		logger.FromContext(ctx).Error("Error in seller service ConfirmEmailFromAdminPanel API", err.Error())
 		response.Message = fmt.Sprint("not able to confirm email: ", err.Error())
 		return &response, nil
 	}

@@ -70,7 +70,7 @@ var _ = Describe("Confirm email from admin panel", func() {
 				UserId: 100,
 			}
 			res, err := new(services.SellerService).ConfirmEmailFromAdminPanel(ctx, &param)
-			Expect(res.Status).To(Equal("success"))
+			Expect(res.Status).To(Equal("failure"))
 			Expect(res.Message).To(Equal("seller not found"))
 			Expect(err).To(BeNil())
 		})
