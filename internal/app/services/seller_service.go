@@ -154,7 +154,6 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 	response := spb.BasicApiResponse{Status: utils.Failure}
 	id := params.GetId()
 	sellerParam := params.GetSeller()
-	fmt.Println("seller param: ", sellerParam)
 	if id == 0 || sellerParam == nil {
 		response.Message = "param not specified"
 		return &response, nil
@@ -172,7 +171,6 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 		return &response, nil
 	}
 	paramJson, err := json.Marshal(sellerParam)
-	fmt.Println("seller param json: ", paramJson)
 	if err != nil {
 		logger.FromContext(ctx).Info("Error marshaling SellerObject to JSON", err.Error())
 		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
@@ -180,7 +178,6 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 	}
 	sellerParamValue := models.Seller{}
 	err = json.Unmarshal(paramJson, &sellerParamValue)
-	fmt.Println("seller param value: ", sellerParamValue)
 	if err != nil {
 		logger.FromContext(ctx).Info("Error unmarshaling JSON to Seller struct", err.Error())
 		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
@@ -188,8 +185,6 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 	}
 	seller = sellerParamValue
 	seller.UserID = id
-	fmt.Println("seller here: ", seller)
-	fmt.Println("seller user id: ", seller.UserID)
 	err = database.DBAPM(ctx).Save(&seller).Error
 	if err != nil {
 		logger.FromContext(ctx).Info("Error in seller service Update API", err.Error())
