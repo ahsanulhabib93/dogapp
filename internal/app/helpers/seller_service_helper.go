@@ -51,9 +51,9 @@ func VerifyVendorAddress(ctx context.Context, seller *models.Seller, action stri
 	successfulStateChanges := utils.Zero
 	vendorAddresses, verifiedCount, defaultCount := GetVendorAddressBySellerID(ctx, seller.ID)
 	addressCount := len(vendorAddresses)
-	if verifiedCount == utils.Zero && addressCount > utils.Zero {
+	if verifiedCount == utils.Zero && addressCount > utils.One {
 		resp.Message += fmt.Sprintf("%s: Make at least one address as verified", strconv.Itoa(int(seller.UserID)))
-	} else if defaultCount == utils.Zero && addressCount > utils.Zero {
+	} else if defaultCount == utils.Zero && addressCount > utils.One {
 		resp.Message += fmt.Sprintf("%s: Make at least one address as default", strconv.Itoa(int(seller.UserID)))
 	} else if addressCount == utils.Zero {
 		resp.Message += fmt.Sprintf("%s: At least one address should be present", strconv.Itoa(int(seller.UserID)))
@@ -128,7 +128,7 @@ func GetVendorAddressBySellerID(ctx context.Context, sellerID uint64) ([]models.
 	var defaultAddressCount, verifiedStatusCount uint64
 	query.Where("default_address = ?", true).Count(&defaultAddressCount)
 	query.Where("verification_status = ?", utils.Verified).Count(&verifiedStatusCount)
-	return vendorAddress, defaultAddressCount, verifiedStatusCount
+	return vendorAddress, verifiedStatusCount, defaultAddressCount
 }
 
 func CheckRestrictiveSellerState(sellerState utils.ActivationState) bool {

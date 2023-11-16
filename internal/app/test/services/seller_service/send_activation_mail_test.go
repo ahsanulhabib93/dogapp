@@ -101,8 +101,11 @@ var _ = Describe("Send Activation Mail", func() {
 			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
 			database.DBAPM(ctx).Create(&sellerBankDetail)
 
-			vendorAddress := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", DefaultAddress: true}
+			vendorAddress := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", VerificationStatus: "VERIFIED"}
 			database.DBAPM(ctx).Create(&vendorAddress)
+
+			vendorAddress2 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "Status1"}
+			database.DBAPM(ctx).Create(&vendorAddress2)
 
 			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
@@ -129,7 +132,7 @@ var _ = Describe("Send Activation Mail", func() {
 			vendorAddress := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED"}
 			database.DBAPM(ctx).Create(&vendorAddress)
 
-			vendorAddress2 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", VerificationStatus: "VERIFIED"}
+			vendorAddress2 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "Status2", DefaultAddress: true}
 			database.DBAPM(ctx).Create(&vendorAddress2)
 
 			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
@@ -168,6 +171,40 @@ var _ = Describe("Send Activation Mail", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
 			Expect(res.Message).To(Equal("1: Seller pricing details are not present"))
+		})
+
+		It("Should return status failure for seller price details not present", func() {
+			productQuality := utils.PRODUCT_QUALITY
+			seller = models.Seller{
+				UserID:          1,
+				PanNumber:       "PAN123",
+				EmailConfirmed:  true,
+				MouAgreed:       true,
+				ActivationState: utils.ACTIVATED,
+				StateReason:     &productQuality,
+			}
+			database.DBAPM(ctx).Create(&seller)
+			seller.SellerPricingDetails = []*models.SellerPricingDetail{{Verified: utils.SellerPriceVerified(utils.NotVerified),
+				SellerID: int(seller.ID)}}
+			database.DBAPM(ctx).Save(&seller)
+
+			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
+			database.DBAPM(ctx).Create(&sellerBankDetail)
+
+			vendorAddress := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED"}
+			database.DBAPM(ctx).Create(&vendorAddress)
+
+			vendorAddress2 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", VerificationStatus: "VERIFIED"}
+			database.DBAPM(ctx).Create(&vendorAddress2)
+
+			vendorAddress3 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", DefaultAddress: true}
+			database.DBAPM(ctx).Create(&vendorAddress3)
+
+			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Message).To(Equal("1: Seller pricing details are not verified"))
 		})
 	})
 
@@ -220,6 +257,42 @@ var _ = Describe("Send Activation Mail", func() {
 			Expect(err2).To(BeNil())
 			Expect(res2.Status).To(Equal("success"))
 			Expect(res2.Message).To(Equal("Seller account activated successfully"))
+		})
+	})
+
+	Context("success case", func() {
+		BeforeEach(func() {
+			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 100, PortalId: 100,
+				UserData: &misc.UserData{UserId: 11}})
+
+			productQuality := utils.PRODUCT_QUALITY
+			seller = models.Seller{
+				UserID:          2,
+				PanNumber:       "PAN123",
+				EmailConfirmed:  true,
+				MouAgreed:       true,
+				ActivationState: utils.ACTIVATED,
+				StateReason:     &productQuality,
+			}
+			database.DBAPM(ctx).Create(&seller)
+
+			seller.SellerPricingDetails = []*models.SellerPricingDetail{{Verified: utils.SellerPriceVerified(utils.Verified),
+				SellerID: int(seller.ID)}}
+			database.DBAPM(ctx).Save(&seller)
+
+			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
+			database.DBAPM(ctx).Create(&sellerBankDetail)
+
+			vendorAddress := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", VerificationStatus: "VERIFIED", DefaultAddress: true}
+			database.DBAPM(ctx).Create(&vendorAddress)
+		})
+
+		It("Should return status success and update vendor address verification status", func() {
+			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate", IsSellerOnboardingTeam: true}
+			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal("success"))
+			Expect(res.Message).To(Equal("Seller account activated successfully"))
 		})
 	})
 })
