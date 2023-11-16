@@ -25,9 +25,7 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 				var successfulStateChanges int
 				resp, successfulStateChanges = VerifyVendorAddress(ctx, seller, params.GetAction())
 				if resp.Status == utils.Success && successfulStateChanges > utils.One {
-					resp.Message += fmt.Sprintf("%d Seller accounts activated successfully", successfulStateChanges)
-				} else if resp.Status == utils.Success {
-					resp.Message += "Seller account activated successfully"
+					resp.Message = fmt.Sprintf("%d Seller accounts activated successfully", successfulStateChanges)
 				}
 				noAccess = FindNonAccessSellers(params, seller)
 				if len(noAccess) > utils.Zero {
@@ -44,7 +42,7 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 	return resp
 }
 
-func VerifyVendorAddress(ctx context.Context, seller models.Seller, action string) (*spb.BasicApiResponse, int) {
+func VerifyVendorAddress(ctx context.Context, seller *models.Seller, action string) (*spb.BasicApiResponse, int) {
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
 	successfulStateChanges := utils.Zero
 	vendorAddresses, verifiedCount, defaultCount := GetVendorAddressBySellerID(ctx, seller.ID)
@@ -55,7 +53,9 @@ func VerifyVendorAddress(ctx context.Context, seller models.Seller, action strin
 		resp.Message += fmt.Sprintf("%s: Make at least one address as default", strconv.Itoa(int(seller.UserID)))
 	} else if addressCount == utils.Zero {
 		resp.Message += fmt.Sprintf("%s: At least one address should be present", strconv.Itoa(int(seller.UserID)))
-	} else if IsSellerPricingDetailsNotVerified(ctx, seller.SellerPricingDetails) {
+	} else if len(seller.SellerPricingDetails) == utils.Zero {
+		resp.Message += fmt.Sprintf("%s: Seller pricing details are not present", strconv.Itoa(int(seller.UserID)))
+	} else if IsSellerPricingDetailsNotVerified(ctx, seller.SellerPricingDetails[utils.Zero]) {
 		resp.Message += fmt.Sprintf("%s: Seller pricing details are not verified", strconv.Itoa(int(seller.UserID)))
 	} else {
 		if addressCount == utils.One {
@@ -63,24 +63,25 @@ func VerifyVendorAddress(ctx context.Context, seller models.Seller, action strin
 			vendorAddresses[utils.Zero].DefaultAddress = true
 			database.DBAPM(ctx).Save(&vendorAddresses[utils.Zero])
 		}
-		response, err := ActivateSeller(ctx, seller)
+		var err error
+		resp, err = ActivateSeller(ctx, *seller)
 		if err != nil {
 			// NewRelic::Agent.notice_error(err)
 			logger.Log().Errorf("Error during seller Activation for %s. Issue - %s\n", seller.UserID, err.Error())
 			resp.Message += fmt.Sprintf("%s activation failed - %s", strconv.Itoa(int(seller.UserID)), err.Error())
 		} else {
-			if response.Status == utils.Success {
+			if resp.Status == utils.Success {
 				successfulStateChanges += 1
 				CreateSellerActivityLog(ctx, seller.ID, action)
 			} else {
-				resp.Message += fmt.Sprintf("%s: %s", strconv.Itoa(int(seller.UserID)), response.Message)
+				resp.Message += fmt.Sprintf("%s: %s", strconv.Itoa(int(seller.UserID)), resp.Message)
 			}
 		}
 	}
 	return resp, successfulStateChanges
 }
 
-func FindNonAccessSellers(params *spb.SendActivationMailParams, seller models.Seller) []uint64 {
+func FindNonAccessSellers(params *spb.SendActivationMailParams, seller *models.Seller) []uint64 {
 	var noAccess []uint64
 
 	sellerState, stateReason := seller.ActivationState, seller.StateReason
@@ -102,13 +103,13 @@ func FindNonAccessSellers(params *spb.SendActivationMailParams, seller models.Se
 	return noAccess
 }
 
-func GetSellerByIds(ctx context.Context, userIds []uint64) []models.Seller {
-	sellerDetails := []models.Seller{}
-	database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id in (?)", userIds).Scan(&sellerDetails)
+func GetSellerByIds(ctx context.Context, userIds []uint64) []*models.Seller {
+	sellerDetails := []*models.Seller{}
+	database.DBAPM(ctx).Preload("SellerPricingDetails").Model(&models.Seller{}).Where("user_id in (?)", userIds).Find(&sellerDetails)
 	return sellerDetails
 }
 
-func GetSellerBankDetails(ctx context.Context, seller models.Seller) []*models.SellerBankDetail {
+func GetSellerBankDetails(ctx context.Context, seller *models.Seller) []*models.SellerBankDetail {
 	sellerBankDetails := []*models.SellerBankDetail{}
 	database.DBAPM(ctx).Model(&models.SellerBankDetail{}).Where("seller_id = ? and deleted_at is NULL", seller.ID).Scan(&sellerBankDetails)
 	return sellerBankDetails
@@ -138,8 +139,8 @@ func SellerIsOnboardingStateReason(sellerState utils.StateReason) bool {
 	return sellerState == utils.PENDING_CONTACT_WITH_SS || sellerState == utils.VACATION_MODE
 }
 
-func IsSellerPricingDetailsNotVerified(ctx context.Context, details []*models.SellerPricingDetail) bool {
-	return details[utils.Zero].Verified == utils.SellerPriceVerified(utils.NotVerified)
+func IsSellerPricingDetailsNotVerified(ctx context.Context, sellerPrice *models.SellerPricingDetail) bool {
+	return sellerPrice.Verified == utils.SellerPriceVerified(utils.NotVerified)
 }
 
 func ActivateSeller(ctx context.Context, seller models.Seller) (*spb.BasicApiResponse, error) {

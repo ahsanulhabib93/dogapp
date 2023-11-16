@@ -18,7 +18,7 @@ type SellerPricingDetail struct {
 	CommissionPercent         float64   `gorm:"default:20.0;not null"`
 	FlatShipping              bool      `gorm:"default:true"`
 	StartDate                 time.Time `gorm:"default:'2015-05-28 01:43:53'"`
-	EndDate                   time.Time
+	EndDate                   *time.Time
 	DeletedAt                 *time.Time
 	SellerID                  int
 	LeadShippingDays          int `gorm:"default:2"`
@@ -35,5 +35,5 @@ type SellerPricingDetail struct {
 	TcsDeclarationFileName    string
 	TcsDeclarationContentType string
 	TcsDeclarationFileSize    int
-	TcsDeclarationUpdatedAt   time.Time
+	TcsDeclarationUpdatedAt   *time.Time
 }
