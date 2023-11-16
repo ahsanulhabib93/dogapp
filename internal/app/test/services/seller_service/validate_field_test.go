@@ -36,9 +36,7 @@ var _ = Describe("Validate Field", func() {
 
 	Context("Success Case", func() {
 		It("Should return data", func() {
-
 			param := spb.ValidateFieldParams{}
-
 			res, err := new(services.SellerService).ValidateField(ctx, &param)
 			Expect(res).To(BeNil())
 			Expect(err).To(BeNil())
