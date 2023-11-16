@@ -162,7 +162,7 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 	err := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", id).First(&seller).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
-			response.Status = "success"
+			response.Status = "failure"
 			response.Message = "seller not found"
 			return &response, nil
 		}

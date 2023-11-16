@@ -9,21 +9,21 @@ import (
 
 type Seller struct {
 	database.VaccountGorm
-	UserID                       uint64
+	UserID                       uint64 `json:"user_id"`
 	AffiliateURL                 string
 	IsDirect                     bool `gorm:"default:false"`
 	Configuration                string
 	DataMapping                  string
 	FullfillmentType             int
 	DeletedAt                    *time.Time
-	BrandName                    string
-	CompanyName                  string
+	BrandName                    string `json:"brand_name"`
+	CompanyName                  string `json:"company_name"`
 	PrimaryEmail                 string `json:"primary_email"`
-	PrimaryPhone                 string
+	PrimaryPhone                 string `json:"primary_phone"`
 	SupportEmail                 string
 	SupportPhone                 string
-	ActivationState              int `gorm:"default:1"`
-	Slug                         string
+	ActivationState              int    `gorm:"default:1" json:"activation_state"`
+	Slug                         string `json:"slug"`
 	ReturnExchangePolicy         string
 	TinNumber                    string
 	PanNumber                    string `gorm:"default:'AAAAA0000A'"`
@@ -49,14 +49,14 @@ type Seller struct {
 	GSTRelatedPanCardContentType string
 	GSTRelatedPanCardFileSize    int
 	GSTRelatedPanCardUpdatedAt   string
-	Hub                          string
+	Hub                          string `json:"hub"`
 	OfficeTime                   string
-	Slot                         string
+	Slot                         string `json:"slot"`
 	SellerCloseDay               string
 	AcceptedPaymentMethods       string
-	DeliveryType                 int `gorm:"default:1"`
-	ProcessingType               int `gorm:"default:1"`
-	BusinessUnit                 int
+	DeliveryType                 int `gorm:"default:1" json:"delivery_type"`
+	ProcessingType               int `gorm:"default:1" json:"processing_type"`
+	BusinessUnit                 int `json:"business_unit"`
 	SellerConfig                 *SellerConfig
 	VendorAddresses              []*VendorAddress
 	SellerBankDetail             *SellerBankDetail

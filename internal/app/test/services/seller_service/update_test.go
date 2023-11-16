@@ -55,7 +55,7 @@ var _ = Describe("Update", func() {
 				Seller: &spb.SellerObject{},
 			}
 			res, err := new(services.SellerService).Update(ctx, &param)
-			Expect(res.Status).To(Equal("success"))
+			Expect(res.Status).To(Equal("failure"))
 			Expect(res.Message).To(Equal("seller not found"))
 			Expect(err).To(BeNil())
 		})
@@ -74,6 +74,24 @@ var _ = Describe("Update", func() {
 			Expect(res.Status).To(Equal("success"))
 			Expect(res.Message).To(Equal("seller details updated successfully"))
 			Expect(seller.PrimaryEmail).To(Equal("abc@gmail.com"))
+			Expect(err).To(BeNil())
+		})
+	})
+
+	Context("When params with multiple fields are given", func() {
+		It("Should update seller", func() {
+			seller := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101})
+			newSeller := &spb.SellerObject{PrimaryEmail: "abc@gmail.com", PrimaryPhone: "880123456789"}
+			param := spb.UpdateParams{
+				Id:     101,
+				Seller: newSeller,
+			}
+			res, err := new(services.SellerService).Update(ctx, &param)
+			database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", 101).Scan(&seller)
+			Expect(res.Status).To(Equal("success"))
+			Expect(res.Message).To(Equal("seller details updated successfully"))
+			Expect(seller.PrimaryEmail).To(Equal("abc@gmail.com"))
+			Expect(seller.PrimaryPhone).To(Equal("880123456789"))
 			Expect(err).To(BeNil())
 		})
 	})
