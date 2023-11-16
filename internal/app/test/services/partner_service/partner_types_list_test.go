@@ -28,11 +28,10 @@ var _ = Describe("PartnerTypesList", func() {
 		It("Should return all service types data", func() {
 			res, _ := new(services.PartnerServiceMappingService).PartnerTypesList(ctx, &psmpb.PartnerServiceObject{})
 
+			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(6))
 			sort.Slice(res.PartnerServiceTypeMappings, func(i, j int) bool {
 				return res.PartnerServiceTypeMappings[i].PartnerType < res.PartnerServiceTypeMappings[j].PartnerType
 			})
-
-			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(6))
 
 			do := res.PartnerServiceTypeMappings[0]
 			Expect(do.PartnerType).To(Equal("DoBuyer"))

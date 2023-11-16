@@ -22,19 +22,18 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 		for _, seller := range sellerDetails {
 			sellerBankDetails := GetSellerBankDetails(ctx, seller)
 			if seller.PanNumber != utils.EmptyString && seller.EmailConfirmed && seller.MouAgreed && len(sellerBankDetails) > utils.Zero {
-				resp, successfulStateChanges := VerifyVendorAddress(ctx, seller, params.GetAction())
-				if successfulStateChanges > utils.One {
+				var successfulStateChanges int
+				resp, successfulStateChanges = VerifyVendorAddress(ctx, seller, params.GetAction())
+				if resp.Status == utils.Success && successfulStateChanges > utils.One {
 					resp.Message += fmt.Sprintf("%d Seller accounts activated successfully", successfulStateChanges)
-				} else {
+				} else if resp.Status == utils.Success {
 					resp.Message += "Seller account activated successfully"
 				}
-
 				noAccess = FindNonAccessSellers(params, seller)
 				if len(noAccess) > utils.Zero {
 					noAccessStr := utils.GetArrIntToArrStr(noAccess)
 					resp.Message += "You don't have access to activate this Seller(s) - " + strings.Join(noAccessStr, ",")
 				}
-
 			} else {
 				resp.Message += strconv.Itoa(int(seller.UserID)) + ": Seller Pan Number, Bank Detail, MOU and Email should be confirmed"
 			}
@@ -48,14 +47,12 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 func VerifyVendorAddress(ctx context.Context, seller models.Seller, action string) (*spb.BasicApiResponse, int) {
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
 	successfulStateChanges := utils.Zero
-
 	vendorAddresses, verifiedCount, defaultCount := GetVendorAddressBySellerID(ctx, seller.ID)
 	addressCount := len(vendorAddresses)
-
-	if verifiedCount == utils.Zero && addressCount > utils.One {
+	if verifiedCount == utils.Zero && addressCount > utils.Zero {
 		resp.Message += fmt.Sprintf("%s: Make at least one address as verified", strconv.Itoa(int(seller.UserID)))
-	} else if defaultCount == utils.Zero && addressCount > 1 {
-		resp.Message += fmt.Sprintf("%s: Make one address as default", strconv.Itoa(int(seller.UserID)))
+	} else if defaultCount == utils.Zero && addressCount > utils.Zero {
+		resp.Message += fmt.Sprintf("%s: Make at least one address as default", strconv.Itoa(int(seller.UserID)))
 	} else if addressCount == utils.Zero {
 		resp.Message += fmt.Sprintf("%s: At least one address should be present", strconv.Itoa(int(seller.UserID)))
 	} else if IsSellerPricingDetailsNotVerified(ctx, seller.SellerPricingDetails) {
@@ -121,10 +118,11 @@ func GetVendorAddressBySellerID(ctx context.Context, sellerID uint64) ([]models.
 	vendorAddress := []models.VendorAddress{}
 	query := database.DBAPM(ctx).Model(models.VendorAddress{}).Where(
 		"seller_id = ? and gst_status is not NULL and deleted_at is NULL", sellerID)
+	query.Scan(&vendorAddress)
+
 	var defaultAddressCount, verifiedStatusCount uint64
 	query.Where("default_address = ?", true).Count(&defaultAddressCount)
 	query.Where("verification_status = ?", utils.Verified).Count(&verifiedStatusCount)
-	query.Scan(&vendorAddress)
 	return vendorAddress, defaultAddressCount, verifiedStatusCount
 }
 

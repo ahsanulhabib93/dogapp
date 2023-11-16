@@ -18,5 +18,6 @@ var _ = AfterEach(func() {
 		"sellers",
 		"seller_bank_details",
 		"seller_activity_logs",
+		"vendor_addresses",
 	)
 })

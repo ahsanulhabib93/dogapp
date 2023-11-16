@@ -55,15 +55,80 @@ var _ = Describe("Send Activation Mail", func() {
 		})
 
 		It("Should return status false for seller bank detail not found", func() {
-			seller = models.Seller{
-				UserID: 1,
-			}
+			seller = models.Seller{UserID: 1}
 			database.DBAPM(ctx).Create(&seller)
+
 			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
 			Expect(res.Message).To(Equal("1: Seller Pan Number, Bank Detail, MOU and Email should be confirmed"))
+		})
+
+		It("Should return status false for > 1 vendor address", func() {
+			seller = models.Seller{
+				UserID:         1,
+				PanNumber:      "PAN123",
+				EmailConfirmed: true,
+				MouAgreed:      true,
+			}
+			database.DBAPM(ctx).Create(&seller)
+
+			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
+			database.DBAPM(ctx).Create(&sellerBankDetail)
+
+			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Message).To(Equal("1: At least one address should be present"))
+		})
+
+		It("Should return status false for no verify status address", func() {
+			seller = models.Seller{
+				UserID:         1,
+				PanNumber:      "PAN123",
+				EmailConfirmed: true,
+				MouAgreed:      true,
+			}
+			database.DBAPM(ctx).Create(&seller)
+
+			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
+			database.DBAPM(ctx).Create(&sellerBankDetail)
+
+			vendorAddress := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", DefaultAddress: true}
+			database.DBAPM(ctx).Create(&vendorAddress)
+
+			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Message).To(Equal("1: Make at least one address as default"))
+		})
+
+		It("Should return status false for no default status address", func() {
+			seller = models.Seller{
+				UserID:         1,
+				PanNumber:      "PAN123",
+				EmailConfirmed: true,
+				MouAgreed:      true,
+			}
+			database.DBAPM(ctx).Create(&seller)
+
+			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
+			database.DBAPM(ctx).Create(&sellerBankDetail)
+
+			vendorAddress := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED"}
+			database.DBAPM(ctx).Create(&vendorAddress)
+
+			vendorAddress2 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", VerificationStatus: "VERIFIED"}
+			database.DBAPM(ctx).Create(&vendorAddress2)
+
+			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Message).To(Equal("1: Make at least one address as verified"))
 		})
 	})
 })
