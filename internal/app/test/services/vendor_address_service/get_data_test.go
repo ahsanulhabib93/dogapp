@@ -1,4 +1,4 @@
-package seller_pricing_service_test
+package vendor_address_service_test
 
 import (
 	"context"
