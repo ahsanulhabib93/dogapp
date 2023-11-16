@@ -10,6 +10,7 @@ import (
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
@@ -82,15 +83,18 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
-			Expect(res.Message).To(Equal("1: At least one address should be present"))
+			Expect(res.Message).To(Equal("1: At least one address should be present Need ActivationState, StateReason to find Non Access Sellers"))
 		})
 
 		It("Should return status failure for no verify status address", func() {
+			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
-				UserID:         1,
-				PanNumber:      "PAN123",
-				EmailConfirmed: true,
-				MouAgreed:      true,
+				UserID:          1,
+				PanNumber:       "PAN123",
+				EmailConfirmed:  true,
+				MouAgreed:       true,
+				ActivationState: utils.ACTIVATED,
+				StateReason:     &productQuality,
 			}
 			database.DBAPM(ctx).Create(&seller)
 
@@ -108,11 +112,14 @@ var _ = Describe("Send Activation Mail", func() {
 		})
 
 		It("Should return status failure for no default status address", func() {
+			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
-				UserID:         1,
-				PanNumber:      "PAN123",
-				EmailConfirmed: true,
-				MouAgreed:      true,
+				UserID:          1,
+				PanNumber:       "PAN123",
+				EmailConfirmed:  true,
+				MouAgreed:       true,
+				ActivationState: utils.ACTIVATED,
+				StateReason:     &productQuality,
 			}
 			database.DBAPM(ctx).Create(&seller)
 
@@ -133,11 +140,14 @@ var _ = Describe("Send Activation Mail", func() {
 		})
 
 		It("Should return status failure for seller price details not present", func() {
+			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
-				UserID:         1,
-				PanNumber:      "PAN123",
-				EmailConfirmed: true,
-				MouAgreed:      true,
+				UserID:          1,
+				PanNumber:       "PAN123",
+				EmailConfirmed:  true,
+				MouAgreed:       true,
+				ActivationState: utils.ACTIVATED,
+				StateReason:     &productQuality,
 			}
 			database.DBAPM(ctx).Create(&seller)
 
@@ -162,12 +172,18 @@ var _ = Describe("Send Activation Mail", func() {
 	})
 
 	Context("success case", func() {
-		It("Should return status success", func() {
+		BeforeEach(func() {
+			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 100, PortalId: 100,
+				UserData: &misc.UserData{UserId: 11}})
+
+			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
-				UserID:         2,
-				PanNumber:      "PAN123",
-				EmailConfirmed: true,
-				MouAgreed:      true,
+				UserID:          2,
+				PanNumber:       "PAN123",
+				EmailConfirmed:  true,
+				MouAgreed:       true,
+				ActivationState: utils.ACTIVATED,
+				StateReason:     &productQuality,
 			}
 			database.DBAPM(ctx).Create(&seller)
 
@@ -186,12 +202,24 @@ var _ = Describe("Send Activation Mail", func() {
 
 			vendorAddress3 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", DefaultAddress: true}
 			database.DBAPM(ctx).Create(&vendorAddress3)
+		})
 
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+		It("Should return status success for seller onboarding team", func() {
+
+			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate", IsSellerOnboardingTeam: true}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("success"))
 			Expect(res.Message).To(Equal("Seller account activated successfully"))
+		})
+
+		It("Should return status success for quality team", func() {
+			//for coverage to handle IsQualityTeam
+			param2 := spb.SendActivationMailParams{Ids: []uint64{2}, Action: "activate", IsQualityTeam: true}
+			res2, err2 := new(services.SellerService).SendActivationMail(ctx, &param2)
+			Expect(err2).To(BeNil())
+			Expect(res2.Status).To(Equal("success"))
+			Expect(res2.Message).To(Equal("Seller account activated successfully"))
 		})
 	})
 })
