@@ -9,8 +9,10 @@ import (
 
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
+	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
+	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
 )
@@ -18,6 +20,7 @@ import (
 var _ = Describe("Send Activation Mail", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
+	var seller models.Seller
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
@@ -34,14 +37,33 @@ var _ = Describe("Send Activation Mail", func() {
 		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
-	Context("Success Case", func() {
-		It("Should return data", func() {
-
-			param := spb.SendActivationMailParams{}
-
+	Context("fail Case", func() {
+		It("Should return status false for invalid param", func() {
+			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
-			Expect(res).To(BeNil())
 			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Message).To(Equal("Seller Ids and Action Should be Present"))
+		})
+
+		It("Should return status false for seller not found", func() {
+			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Message).To(Equal("Seller not found"))
+		})
+
+		It("Should return status false for seller bank detail not found", func() {
+			seller = models.Seller{
+				UserID: 1,
+			}
+			database.DBAPM(ctx).Create(&seller)
+			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Message).To(Equal("1: Seller Pan Number, Bank Detail, MOU and Email should be confirmed"))
 		})
 	})
 })

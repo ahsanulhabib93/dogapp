@@ -11,6 +11,7 @@ import (
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
 
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -154,5 +155,12 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 }
 
 func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.SendActivationMailParams) (*spb.BasicApiResponse, error) {
-	return nil, nil
+	logger.Log().Infof("Send Activation Mail API Params: %+v", params)
+	resp := &spb.BasicApiResponse{Status: utils.Failure}
+	if len(params.GetIds()) > utils.Zero && params.GetAction() != utils.EmptyString { // TODO: validate params.GetAction()
+		resp = helpers.PerformSendActivationMail(ctx, params)
+	} else {
+		resp.Message = "Seller Ids and Action Should be Present"
+	}
+	return resp, nil
 }
