@@ -9,26 +9,26 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[NOT_ACTIVATED-1]
-	_ = x[DOWNLOADED_EXCEL-1]
-	_ = x[ACTIVATED-1]
-	_ = x[VERIFICATION_PENDING-1]
-	_ = x[HOLD_OFF-1]
-	_ = x[PRE_ACTIVATED-1]
-	_ = x[PENDING_QUALITY-1]
-	_ = x[POLICY_VIOLATED-1]
-	_ = x[FULFILMENT_VIOLATED-1]
-	_ = x[VACATION_PENDING-1]
-	_ = x[SUSPENDED-1]
-	_ = x[BLOCKED-1]
-	_ = x[FRAUD-1]
-	_ = x[ON_HOLD-1]
-	_ = x[GST_PENDING-1]
-	_ = x[UNDER_REVIEW-1]
+	_ = x[DOWNLOADED_EXCEL-2]
+	_ = x[ACTIVATED-3]
+	_ = x[VERIFICATION_PENDING-4]
+	_ = x[HOLD_OFF-5]
+	_ = x[PRE_ACTIVATED-6]
+	_ = x[PENDING_QUALITY-7]
+	_ = x[POLICY_VIOLATED-8]
+	_ = x[FULFILMENT_VIOLATED-9]
+	_ = x[VACATION_PENDING-10]
+	_ = x[SUSPENDED-11]
+	_ = x[BLOCKED-12]
+	_ = x[FRAUD-13]
+	_ = x[ON_HOLD-14]
+	_ = x[GST_PENDING-15]
+	_ = x[UNDER_REVIEW-16]
 }
 
-const _ActivationState_name = "NOT_ACTIVATED"
+const _ActivationState_name = "NOT_ACTIVATEDDOWNLOADED_EXCELACTIVATEDVERIFICATION_PENDINGHOLD_OFFPRE_ACTIVATEDPENDING_QUALITYPOLICY_VIOLATEDFULFILMENT_VIOLATEDVACATION_PENDINGSUSPENDEDBLOCKEDFRAUDON_HOLDGST_PENDINGUNDER_REVIEW"
 
-var _ActivationState_index = [...]uint8{0, 13}
+var _ActivationState_index = [...]uint8{0, 13, 29, 38, 58, 66, 79, 94, 109, 128, 144, 153, 160, 165, 172, 183, 195}
 
 func (i ActivationState) String() string {
 	i -= 1

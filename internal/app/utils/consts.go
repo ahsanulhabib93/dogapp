@@ -31,7 +31,7 @@ const (
 )
 
 const (
-	NOT_ACTIVATED ActivationState = 1
+	NOT_ACTIVATED ActivationState = 1 + iota
 	DOWNLOADED_EXCEL
 	ACTIVATED
 	VERIFICATION_PENDING

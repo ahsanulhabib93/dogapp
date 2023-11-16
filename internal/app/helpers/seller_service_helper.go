@@ -87,20 +87,18 @@ func VerifyVendorAddress(ctx context.Context, seller *models.Seller, action stri
 
 func FindNonAccessSellers(params *spb.SendActivationMailParams, seller *models.Seller) []uint64 {
 	var noAccess []uint64
-
-	sellerState, stateReason := seller.ActivationState, seller.StateReason
+	activationState, stateReason := seller.ActivationState, seller.StateReason
 	isQualityTeam := params.GetIsQualityTeam()
 	isRiskTeam := params.GetIsRiskTeam()
 	isSellerOnboardingTeam := params.GetIsSellerOnboardingTeam()
-
 	if isQualityTeam || isRiskTeam {
 		condition := (*stateReason == utils.PRODUCT_QUALITY && isQualityTeam) || (*stateReason != utils.PRODUCT_QUALITY && isRiskTeam)
-		condition = condition && CheckRestrictiveSellerState(sellerState)
+		condition = condition && CheckRestrictiveSellerState(activationState)
 		if !condition {
 			noAccess = append(noAccess, seller.ID)
 		}
 	} else if isSellerOnboardingTeam && (!isQualityTeam || !isRiskTeam) {
-		if !SellerIsOnboardingState(sellerState) && !SellerIsOnboardingStateReason(stateReason) {
+		if !SellerIsOnboardingState(activationState) && !SellerIsOnboardingStateReason(stateReason) {
 			noAccess = append(noAccess, seller.ID)
 		}
 	}
@@ -135,13 +133,13 @@ func CheckRestrictiveSellerState(sellerState utils.ActivationState) bool {
 	return sellerState == utils.SUSPENDED || sellerState == utils.BLOCKED || sellerState == utils.UNDER_REVIEW || sellerState == utils.FRAUD || sellerState == utils.ON_HOLD || sellerState == utils.HOLD_OFF
 }
 
-func SellerIsOnboardingState(sellerState utils.ActivationState) bool {
-	return sellerState == utils.NOT_ACTIVATED || sellerState == utils.VERIFICATION_PENDING || sellerState == utils.HOLD_OFF || sellerState == utils.VACATION_PENDING || sellerState == utils.GST_PENDING || sellerState == utils.UNDER_REVIEW
+func SellerIsOnboardingState(activationState utils.ActivationState) bool {
+	return activationState == utils.NOT_ACTIVATED || activationState == utils.VERIFICATION_PENDING || activationState == utils.HOLD_OFF || activationState == utils.VACATION_PENDING || activationState == utils.GST_PENDING || activationState == utils.UNDER_REVIEW
 
 }
 
-func SellerIsOnboardingStateReason(sellerState *utils.StateReason) bool {
-	return *sellerState == utils.PENDING_CONTACT_WITH_SS || *sellerState == utils.VACATION_MODE
+func SellerIsOnboardingStateReason(stateReason *utils.StateReason) bool {
+	return *stateReason == utils.PENDING_CONTACT_WITH_SS || *stateReason == utils.VACATION_MODE
 }
 
 func IsSellerPricingDetailsNotVerified(ctx context.Context, sellerPrice *models.SellerPricingDetail) bool {

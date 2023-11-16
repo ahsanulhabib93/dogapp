@@ -247,16 +247,20 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("success"))
-			Expect(res.Message).To(Equal("Seller account activated successfully"))
+			Expect(res.Message).To(Equal("Seller account activated successfully You don't have access to activate this Seller(s) - 1"))
 		})
 
 		It("Should return status success for quality team", func() {
+			fulFilmentViolation := utils.FULFILMENT_VIOLATION
+			seller.StateReason = &fulFilmentViolation
+			database.DBAPM(ctx).Save(&seller)
+
 			//for coverage to handle IsQualityTeam
 			param2 := spb.SendActivationMailParams{Ids: []uint64{2}, Action: "activate", IsQualityTeam: true}
 			res2, err2 := new(services.SellerService).SendActivationMail(ctx, &param2)
 			Expect(err2).To(BeNil())
 			Expect(res2.Status).To(Equal("success"))
-			Expect(res2.Message).To(Equal("Seller account activated successfully"))
+			Expect(res2.Message).To(Equal("Seller account activated successfully You don't have access to activate this Seller(s) - 1"))
 		})
 	})
 
@@ -271,7 +275,7 @@ var _ = Describe("Send Activation Mail", func() {
 				PanNumber:       "PAN123",
 				EmailConfirmed:  true,
 				MouAgreed:       true,
-				ActivationState: utils.ACTIVATED,
+				ActivationState: utils.NOT_ACTIVATED,
 				StateReason:     &productQuality,
 			}
 			database.DBAPM(ctx).Create(&seller)
