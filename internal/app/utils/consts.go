@@ -8,6 +8,8 @@ type VerificationStatus string
 type BusinessType uint8
 type ColorCode uint8
 type SellerPriceVerified string
+type StateReason uint64
+type ActivationState uint64
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -16,6 +18,35 @@ const (
 	MwsOwner
 	DoBuyer
 	ProcurementVendor
+)
+
+const (
+	POLICY_VIOLATION StateReason = 1 + iota
+	FULFILMENT_VIOLATION
+	PERFORMANCE
+	PRODUCT_QUALITY
+	PENDING_RISK_REVIEW
+	PENDING_CONTACT_WITH_SS
+	VACATION_MODE
+)
+
+const (
+	NOT_ACTIVATED ActivationState = 1
+	DOWNLOADED_EXCEL
+	ACTIVATED
+	VERIFICATION_PENDING
+	HOLD_OFF
+	PRE_ACTIVATED
+	PENDING_QUALITY
+	POLICY_VIOLATED
+	FULFILMENT_VIOLATED
+	VACATION_PENDING
+	SUSPENDED
+	BLOCKED
+	FRAUD
+	ON_HOLD
+	GST_PENDING
+	UNDER_REVIEW
 )
 
 const (
@@ -121,6 +152,7 @@ const (
 const (
 	EmptyString = ""
 	Zero        = 0
+	One         = 1
 	Ten         = 10
 )
 

@@ -22,7 +22,7 @@ type Seller struct {
 	PrimaryPhone                 string
 	SupportEmail                 string
 	SupportPhone                 string
-	ActivationState              int `gorm:"default:1"`
+	ActivationState              utils.ActivationState `gorm:"default:1"`
 	Slug                         string
 	ReturnExchangePolicy         string
 	TinNumber                    string
@@ -41,7 +41,7 @@ type Seller struct {
 	BusinessType                 utils.BusinessType
 	ColorCode                    utils.ColorCode
 	EmailConfirmed               bool `gorm:"default:false"`
-	StateReason                  int
+	StateReason                  *utils.StateReason
 	GSTNumber                    string
 	GSTStatus                    string `gorm:"default:'NOT_VERIFIED'"`
 	GSTRelatedPanNumber          string
