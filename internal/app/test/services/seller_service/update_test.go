@@ -74,6 +74,7 @@ var _ = Describe("Update", func() {
 			Expect(res.Status).To(Equal("success"))
 			Expect(res.Message).To(Equal("seller details updated successfully"))
 			Expect(seller.PrimaryEmail).To(Equal("abc@gmail.com"))
+			Expect(seller.PrimaryPhone).To(Equal(seller.PrimaryPhone))
 			Expect(err).To(BeNil())
 		})
 	})

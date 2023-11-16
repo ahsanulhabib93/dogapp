@@ -159,7 +159,8 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 		return &response, nil
 	}
 	seller := models.Seller{}
-	err := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", id).First(&seller).Error
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", id)
+	err := query.First(&seller).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			response.Status = "failure"
@@ -167,28 +168,25 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 			return &response, nil
 		}
 		logger.FromContext(ctx).Info("Error in seller service Update API", err.Error())
-		response.Message = fmt.Sprint("unable to update seller1: ", err.Error())
+		response.Message = fmt.Sprint("unable to update seller: ", err.Error())
 		return &response, nil
 	}
-	paramJson, err := json.Marshal(sellerParam)
+	paramJSON, err := json.Marshal(sellerParam)
 	if err != nil {
 		logger.FromContext(ctx).Info("Error marshaling SellerObject to JSON", err.Error())
 		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
 		return &response, nil
 	}
-	sellerParamValue := models.Seller{}
-	err = json.Unmarshal(paramJson, &sellerParamValue)
-	if err != nil {
-		logger.FromContext(ctx).Info("Error unmarshaling JSON to Seller struct", err.Error())
+	var sellerUpdates map[string]interface{}
+	if err := json.Unmarshal(paramJSON, &sellerUpdates); err != nil {
+		logger.FromContext(ctx).Info("Error unmarshaling JSON to map", err.Error())
 		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
 		return &response, nil
 	}
-	seller = sellerParamValue
-	seller.UserID = id
-	err = database.DBAPM(ctx).Save(&seller).Error
+	err = query.Updates(sellerUpdates).Error
 	if err != nil {
 		logger.FromContext(ctx).Info("Error in seller service Update API", err.Error())
-		response.Message = fmt.Sprint("unable to update seller: ", err.Error())
+		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
 		return &response, nil
 	}
 	response.Status = utils.Success
