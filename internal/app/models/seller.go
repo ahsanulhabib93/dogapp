@@ -36,11 +36,11 @@ type Seller struct {
 	SellerRating                 float64 `gorm:"type:decimal(5,2);default:0.0"`
 	TanNumber                    string
 	AadharCard                   string
-	AggregatorID                 int    `gorm:"default:0"`
-	InternationalEnabled         string `gorm:"default:'0'"`
-	BusinessType                 utils.BusinessType
-	ColorCode                    utils.ColorCode
-	EmailConfirmed               bool `gorm:"default:false"`
+	AggregatorID                 int                `gorm:"default:0"`
+	InternationalEnabled         string             `gorm:"default:'0'"`
+	BusinessType                 utils.BusinessType `gorm:"column:business_type;type:enum('MANUFACTURER', 'TRADER')"`
+	ColorCode                    utils.ColorCode    `gorm:"column:color_code;type:enum('PLATINUM','GOLD','GREEN','BROWN','BLACK')"`
+	EmailConfirmed               bool               `gorm:"default:false"`
 	StateReason                  int
 	GSTNumber                    string
 	GSTStatus                    string `gorm:"default:'NOT_VERIFIED'"`
