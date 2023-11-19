@@ -32,3 +32,15 @@ func GetPartnerServiceMappingInstance() *services.PartnerServiceMappingService {
 func GetSellerInstance() *services.SellerService {
 	return new(services.SellerService)
 }
+
+func GetSellerBankDetailInstance() *services.SellerBankDetailService {
+	return new(services.SellerBankDetailService)
+}
+
+func GetSellerPricingDetailInstance() *services.SellerPricingDetailService {
+	return new(services.SellerPricingDetailService)
+}
+
+func GetVendorAddressInstance() *services.VendorAddressService {
+	return new(services.VendorAddressService)
+}
