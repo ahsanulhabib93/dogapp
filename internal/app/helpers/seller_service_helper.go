@@ -18,7 +18,9 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
 	sellerDetails := GetSellerByIds(ctx, params.GetIds())
 	var noAccess []uint64
-	if len(sellerDetails) > utils.Zero {
+	if len(sellerDetails) == utils.Zero {
+		resp.Message = "Seller not found"
+	} else {
 		for _, seller := range sellerDetails {
 			sellerBankDetails := GetSellerBankDetails(ctx, seller)
 			if seller.PanNumber != utils.EmptyString && seller.EmailConfirmed && seller.MouAgreed && len(sellerBankDetails) > utils.Zero {
@@ -40,8 +42,6 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 				resp.Message += strconv.Itoa(int(seller.UserID)) + ": Seller Pan Number, Bank Detail, MOU and Email should be confirmed"
 			}
 		}
-	} else {
-		resp.Message = "Seller not found"
 	}
 	return resp
 }
