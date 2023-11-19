@@ -42,4 +42,5 @@ type VendorAddress struct {
 	GSTRelatedPanCardContentType string
 	GSTRelatedPanCardFileSize    int
 	GSTRelatedPanCardUpdatedAt   string
+	ExtraData                    string `gorm:"default:'{}'"`
 }
