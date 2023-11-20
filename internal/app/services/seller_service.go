@@ -83,8 +83,8 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id in (?)", userIds)
 	err := query.Scan(&sellers).Error
 	if err != nil {
-		logger.FromContext(ctx).Info("Error in seller service GetSellersRelatedToOrder API", err.Error())
-		response.Message = err.Error()
+		response.Message = fmt.Sprint("Error in seller service GetSellersRelatedToOrder API", err.Error())
+		logger.FromContext(ctx).Error(response.Message)
 		return &response, nil
 	}
 	if len(sellers) == 0 {
