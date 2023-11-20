@@ -8,6 +8,7 @@ import (
 	"github.com/shopuptech/go-libs/logger"
 	vapb "github.com/voonik/goConnect/api/go/ss2/vendor_address"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -33,7 +34,7 @@ func (vas *VendorAddressService) VerifyAddress(ctx context.Context, params *vapb
 			response.Message = "vendor address not found"
 			return &response, nil
 		}
-		response.Message = fmt.Sprint("error in vendor address service VerifyAddress API1: ", err.Error())
+		response.Message = fmt.Sprint("[VerifyAddress] Error while trying find Vendor Address: ", err.Error())
 		logger.FromContext(ctx).Error(response.Message)
 		return &response, nil
 	}
@@ -47,7 +48,7 @@ func (vas *VendorAddressService) VerifyAddress(ctx context.Context, params *vapb
 	seller := models.Seller{}
 	err = database.DBAPM(ctx).Model(&models.Seller{}).Where("id = ?", sellerID).Scan(&seller).Error
 	if err != nil {
-		response.Message = fmt.Sprint("error in vendor address service VerifyAddress API2: ", err.Error())
+		response.Message = fmt.Sprint("[VerifyAddress] Error while trying find seller: ", err.Error())
 		logger.FromContext(ctx).Error(response.Message)
 		return &response, nil
 	}
@@ -56,13 +57,9 @@ func (vas *VendorAddressService) VerifyAddress(ctx context.Context, params *vapb
 		Action:   "verify_address",
 		Notes:    `{"status":"verified"}`,
 	}
-	if uid := utils.GetCurrentUserID(ctx); uid != nil {
-		sellerActivityLog.UserID = *uid
-	}
-	err = database.DBAPM(ctx).Model(&models.SellerActivityLog{}).Create(&sellerActivityLog).Error
+	err = helpers.AddSellerActivityLog(ctx, sellerActivityLog)
 	if err != nil {
-		response.Message = fmt.Sprint("error in vendor address service VerifyAddress API3: ", err.Error())
-		logger.FromContext(ctx).Error(response.Message)
+		response.Message = fmt.Sprint("[VerifyAddress] Error while inserting into seller activity log: ", err.Error())
 		return &response, nil
 	}
 	response.Status = utils.Success
