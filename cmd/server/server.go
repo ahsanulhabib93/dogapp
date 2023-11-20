@@ -6,8 +6,11 @@ import (
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
+	sbdpb "github.com/voonik/goConnect/api/go/ss2/seller_bank_detail"
+	spdpb "github.com/voonik/goConnect/api/go/ss2/seller_pricing_detail"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	addresspb "github.com/voonik/goConnect/api/go/ss2/supplier_address"
+	vapb "github.com/voonik/goConnect/api/go/ss2/vendor_address"
 	"github.com/voonik/goFramework/pkg/config"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/goFramework/pkg/grpc/server"
@@ -30,6 +33,9 @@ func main() {
 	kampb.RegisterKeyAccountManagerServer(server.GrpcServer, handlers.GetKeyAccountManagerInstance())
 	psmpb.RegisterPartnerServiceMappingServer(server.GrpcServer, handlers.GetPartnerServiceMappingInstance())
 	spb.RegisterSellerServer(server.GrpcServer, handlers.GetSellerInstance())
+	sbdpb.RegisterSellerBankDetailServer(server.GrpcServer, handlers.GetSellerBankDetailInstance())
+	spdpb.RegisterSellerPricingDetailServer(server.GrpcServer, handlers.GetSellerPricingDetailInstance())
+	vapb.RegisterVendorAddressServer(server.GrpcServer, handlers.GetVendorAddressInstance())
 
 	if config.GRPCServerConfigReflection() {
 		reflection.Register(server.GrpcServer)

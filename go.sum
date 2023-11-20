@@ -1317,12 +1317,8 @@ github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGr
 github.com/urfave/cli v1.22.10 h1:p8Fspmz3iTctJstry1PYS3HVdllxnEzTEsgIgtxTrCk=
 github.com/urfave/cli v1.22.10/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli/v2 v2.16.3/go.mod h1:1CNUng3PtjQMtRzJO4FMXBQvkGtuYRxxiR9xMa7jMwI=
-github.com/voonik/goConnect v0.0.0-20231116074903-799d1dcd5e03 h1:y/3NrllO5ora2gceTUyNwM03/SRRgm7ZGh/QQlXK8xw=
-github.com/voonik/goConnect v0.0.0-20231116074903-799d1dcd5e03/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
-github.com/voonik/goConnect v0.0.0-20231116110903-7d1b66cb5283 h1:Vf6OqNw4UpIAJh8Y9ndImc/nAYMAng0v08mmpIqSbB0=
-github.com/voonik/goConnect v0.0.0-20231116110903-7d1b66cb5283/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
-github.com/voonik/goConnect v0.0.0-20231119044027-fe3d34fd659b h1:b4SKxYV6LYxoWo/K3vKjHnLOmCgk59WK7EyW5D2l+dY=
-github.com/voonik/goConnect v0.0.0-20231119044027-fe3d34fd659b/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
+github.com/voonik/goConnect v0.0.0-20231119070155-ee6f2038a9be h1:Dgd9M4Pyd39DVI0nxbwusOiqMymG2wvkf7CYMVznxhs=
+github.com/voonik/goConnect v0.0.0-20231119070155-ee6f2038a9be/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
 github.com/voonik/goFramework v0.0.0-20221006080900-34f22876386b/go.mod h1:IOtcJERqfsdL3ckoUICj4DSkY6LWEBUDWG3lTlz8JmY=
 github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e h1:Uj9sbjjKW5kMBOABMcm00UK5qOoxFBxm8BrAjYvr1lQ=
 github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e/go.mod h1:SiqmEebR79/yDgZVl45UJIm8odmpbaN8W9sR0kpNO7Y=

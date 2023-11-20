@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -151,7 +152,47 @@ func (ss *SellerService) ConfirmEmailFromAdminPanel(ctx context.Context, params 
 }
 
 func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (*spb.BasicApiResponse, error) {
-	return nil, nil
+	response := spb.BasicApiResponse{Status: utils.Failure}
+	id := params.GetId()
+	sellerParam := params.GetSeller()
+	if id == 0 || sellerParam == nil {
+		response.Message = "param not specified"
+		return &response, nil
+	}
+	seller := models.Seller{}
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", id)
+	err := query.First(&seller).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			response.Status = "failure"
+			response.Message = "seller not found"
+			return &response, nil
+		}
+		logger.FromContext(ctx).Info("Error in seller service Update API", err.Error())
+		response.Message = fmt.Sprint("unable to update seller: ", err.Error())
+		return &response, nil
+	}
+	paramJSON, err := json.Marshal(sellerParam)
+	if err != nil {
+		logger.FromContext(ctx).Info("Error marshaling SellerObject to JSON", err.Error())
+		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
+		return &response, nil
+	}
+	var sellerUpdates map[string]interface{}
+	if err := json.Unmarshal(paramJSON, &sellerUpdates); err != nil {
+		logger.FromContext(ctx).Info("Error unmarshaling JSON to map", err.Error())
+		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
+		return &response, nil
+	}
+	err = query.Updates(sellerUpdates).Error
+	if err != nil {
+		logger.FromContext(ctx).Info("Error in seller service Update API", err.Error())
+		response.Message = fmt.Sprintf("unable to update seller: %s", err.Error())
+		return &response, nil
+	}
+	response.Status = utils.Success
+	response.Message = "seller details updated successfully"
+	return &response, nil
 }
 
 func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.SendActivationMailParams) (*spb.BasicApiResponse, error) {

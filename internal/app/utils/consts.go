@@ -1,12 +1,14 @@
 package utils
 
+import "database/sql/driver"
+
 type ServiceType uint16
 type SupplierType uint16
 type AccountType uint16
 type AccountSubType uint16
 type VerificationStatus string
-type BusinessType uint8
-type ColorCode uint8
+type BusinessType string
+type ColorCode string
 type SellerPriceVerified string
 type StateReason uint64
 type ActivationState uint64
@@ -61,29 +63,34 @@ const (
 )
 
 const (
-	Manufacturer BusinessType = 1 + iota
-	Trader
+	Manufacturer BusinessType = "MANUFACTURER"
+	Trader       BusinessType = "TRADER"
 )
 
-var SellerBusinessType = map[BusinessType]string{
-	Manufacturer: "MANUFACTURER",
-	Trader:       "TRADER",
+func (bt *BusinessType) Scan(value interface{}) error {
+	*bt = BusinessType(value.([]byte))
+	return nil
+}
+
+func (bt BusinessType) Value() (driver.Value, error) {
+	return string(bt), nil
 }
 
 const (
-	Platinum ColorCode = 1 + iota
-	Gold
-	Green
-	Brown
-	Black
+	Platinum ColorCode = "PLATINUM"
+	Gold     ColorCode = "GOLD"
+	Green    ColorCode = "GREEN"
+	Brown    ColorCode = "BROWN"
+	Black    ColorCode = "BLACK"
 )
 
-var SellerColorCode = map[ColorCode]string{
-	Platinum: "PLATINUM",
-	Gold:     "GOLD",
-	Green:    "GREEN",
-	Brown:    "BROWN",
-	Black:    "BLACK",
+func (cd *ColorCode) Scan(value interface{}) error {
+	*cd = ColorCode(value.([]byte))
+	return nil
+}
+
+func (cd ColorCode) Value() (driver.Value, error) {
+	return string(cd), nil
 }
 
 const (
