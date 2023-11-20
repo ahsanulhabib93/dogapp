@@ -11,12 +11,12 @@ import (
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
-	"github.com/voonik/goFramework/pkg/misc"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
+	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
@@ -49,8 +49,7 @@ var _ = Describe("Approve Products", func() {
 		})
 
 		It("Should return seller not found msg", func() {
-			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 1, PortalId: 1,
-				UserData: &misc.UserData{UserId: 11}})
+			test_helper.SetContextUser(&ctx, 11, []string{})
 
 			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{Ids: []uint64{1312}})
 			Expect(err).To(BeNil())
@@ -59,8 +58,7 @@ var _ = Describe("Approve Products", func() {
 		})
 
 		It("Should return pickup address or pan number missing msg", func() {
-			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 1, PortalId: 1,
-				UserData: &misc.UserData{UserId: 10}})
+			test_helper.SetContextUser(&ctx, 10, []string{})
 
 			seller := models.Seller{UserID: 10}
 			database.DBAPM(ctx).Create(&seller)
@@ -71,8 +69,7 @@ var _ = Describe("Approve Products", func() {
 		})
 
 		It("Should return product approved count 0", func() {
-			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 1, PortalId: 1,
-				UserData: &misc.UserData{UserId: 10}})
+			test_helper.SetContextUser(&ctx, 10, []string{})
 
 			seller := models.Seller{UserID: 10, PanNumber: "24123413", ActivationState: 3}
 			database.DBAPM(ctx).Create(&seller)
@@ -95,8 +92,7 @@ var _ = Describe("Approve Products", func() {
 
 	Context("Success Case", func() {
 		It("Should return product approved count 1", func() {
-			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 1, PortalId: 1,
-				UserData: &misc.UserData{UserId: 10}})
+			test_helper.SetContextUser(&ctx, 10, []string{})
 
 			seller := models.Seller{UserID: 10, PanNumber: "24123413", ActivationState: 3}
 			database.DBAPM(ctx).Create(&seller)
