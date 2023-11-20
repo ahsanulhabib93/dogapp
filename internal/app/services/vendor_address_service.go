@@ -13,35 +13,40 @@ import (
 
 type VendorAddressService struct{}
 
+func ParamCount(params ...[]uint64) int {
+	count := 0
+	for _, param := range params {
+		if len(param) > 0 {
+			count += 1
+		}
+	}
+	return count
+}
+
 func (vas *VendorAddressService) GetData(ctx context.Context, params *vapb.GetDataParams) (*vapb.GetDataResponse, error) {
 	response := vapb.GetDataResponse{Status: utils.Failure}
 	userIds := params.GetUserIds()
 	sellerIds := params.GetSellerIds()
 	ids := params.GetIds()
 
-	if len(userIds) == 0 && len(sellerIds) == 0 && len(ids) == 0 {
+	if count := ParamCount(userIds, sellerIds, ids); count == 0 {
 		response.Message = "param not specified"
+		return &response, nil
+	} else if count > 1 {
+		response.Message = fmt.Sprint("specify any one param")
 		return &response, nil
 	}
 	query := database.DBAPM(ctx).Model(&models.VendorAddress{})
 	if len(ids) != 0 {
-		if len(sellerIds) != 0 || len(userIds) != 0 {
-			response.Message = fmt.Sprint("specify any one param")
-			return &response, nil
-		}
 		query = query.Where("id in (?)", ids)
 	} else if len(sellerIds) != 0 {
-		if len(userIds) != 0 {
-			response.Message = fmt.Sprint("specify any one param")
-			return &response, nil
-		}
 		query = query.Where("seller_id in (?)", sellerIds)
 	} else if len(userIds) != 0 {
 		sellers := []*models.Seller{}
 		err := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id in (?)", userIds).Scan(&sellers).Error
 		if err != nil {
-			logger.FromContext(ctx).Info("error in vendor address service GetData API")
 			response.Message = fmt.Sprint("error in vendor address service GetData API: ", err.Error())
+			logger.FromContext(ctx).Error(response.Message)
 			return &response, nil
 		}
 		if len(sellers) == 0 {
@@ -57,8 +62,8 @@ func (vas *VendorAddressService) GetData(ctx context.Context, params *vapb.GetDa
 	vendorAddress := []*vapb.VendorAddressObject{}
 	err := query.Scan(&vendorAddress).Error
 	if err != nil {
-		logger.FromContext(ctx).Info("error in vendor address service GetData API: ", err.Error())
 		response.Message = fmt.Sprint("error in vendor address service GetData API: ", err.Error())
+		logger.FromContext(ctx).Error(response.Message)
 		return &response, nil
 	}
 	response.Status = utils.Success
