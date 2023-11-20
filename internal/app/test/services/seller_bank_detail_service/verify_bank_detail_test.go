@@ -1,4 +1,4 @@
-package seller_service_test
+package seller_bank_service_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
 
-	spb "github.com/voonik/goConnect/api/go/ss2/seller"
+	sbdpb "github.com/voonik/goConnect/api/go/ss2/seller_bank_detail"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
@@ -15,7 +15,7 @@ import (
 	"github.com/voonik/ss2/internal/app/test/mocks"
 )
 
-var _ = Describe("Validate Field", func() {
+var _ = Describe("Verify Bank Detail", func() {
 	var ctx context.Context
 	var mockAudit *mocks.AuditLogMock
 
@@ -36,8 +36,10 @@ var _ = Describe("Validate Field", func() {
 
 	Context("Success Case", func() {
 		It("Should return data", func() {
-			param := spb.ValidateFieldParams{}
-			res, err := new(services.SellerService).ValidateField(ctx, &param)
+
+			param := sbdpb.VerifyBankDetailParams{}
+
+			res, err := new(services.SellerBankDetailService).VerifyBankDetail(ctx, &param)
 			Expect(res).To(BeNil())
 			Expect(err).To(BeNil())
 		})
