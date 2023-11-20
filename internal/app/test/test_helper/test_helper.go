@@ -73,6 +73,18 @@ func CreateSeller(ctx context.Context, seller *models.Seller) *models.Seller {
 	return seller
 }
 
+func CreateVendorAddress(ctx context.Context, vendor *models.VendorAddress) *models.VendorAddress {
+	id := getUniqueID()
+	vendor.Firstname = fmt.Sprintf("test")
+	vendor.Lastname = fmt.Sprintf("name-%v", id)
+	vendor.UUID = fmt.Sprintf("abc-%v", id)
+	err := database.DBAPM(ctx).Save(vendor).Error
+	if err != nil {
+		fmt.Println("ref: ", err)
+	}
+	return vendor
+}
+
 func CreateSupplierWithDateTime(ctx context.Context, supplier *models.Supplier, createAt time.Time) *models.Supplier {
 	supplier.CreatedAt = createAt
 	supplier.UpdatedAt = createAt
