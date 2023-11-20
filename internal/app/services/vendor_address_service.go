@@ -18,27 +18,6 @@ func (va *VendorAddressService) GetData(ctx context.Context, params *vapb.GetDat
 	return nil, nil
 }
 
-// def verify_address
-// 	params.permit!
-// 	current_user_id = current_agent_id
-// 	vendor_address = VendorAddress.unscoped.existing_address.find_by_uuid(params[:id])
-// 	vendor_address.verification_status = 'VERIFIED'
-// 	@seller_id = vendor_address.seller.user_id
-// 	SellerActivityLog.create({"seller_id"=>@seller_id,"action"=>"verify_address","user_id"=>current_user_id,"notes"=>{"status"=>'verified'}.to_json})
-// 	json_response = {:status => "success", :message=> "Address status was changed to verified successfully"}
-// 	unless vendor_address.save!
-// 		json_response[:status] = "failure"
-// 		json_response[:message] = vendor_address.errors.full_messages.to_sentence
-// 	else
-// 		from_email = "#{APP_CONFIG['brand'].camelize}<#{APP_CONFIG['reply_to_id']}>"
-// 		to_email = vendor_address.seller.primary_email
-// 		subject = "Address Verified"
-// 		content = "Dear #{vendor_address.seller.brand_name} ,<br>Your address request for #{vendor_address.address1} has been accepted and it has been verified .<br><br>Thanks,<br>Team #{APP_CONFIG['brand'].camelize} "
-// 		VMailer.send_html_mail(from_email, to_email, subject, content).deliver
-// 	end
-// 	json_response
-// end
-
 func (vas *VendorAddressService) VerifyAddress(ctx context.Context, params *vapb.VerifyAddressParams) (*vapb.BasicApiResponse, error) {
 	response := vapb.BasicApiResponse{Status: utils.Failure}
 	uuid := params.GetId()
