@@ -127,17 +127,45 @@ var _ = Describe("Get Data", func() {
 			Expect(res.Message).To(Equal("specify any one param"))
 			Expect(err).To(BeNil())
 		})
+
+		It("Should return error", func() {
+			seller1 := test_helper.CreateSeller(ctx, &models.Seller{})
+			seller2 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101})
+			test_helper.CreateVendorAddress(ctx, &models.VendorAddress{SellerID: int(seller1.ID)})
+			test_helper.CreateVendorAddress(ctx, &models.VendorAddress{SellerID: int(seller2.ID)})
+			param := vapb.GetDataParams{
+				UserIds:   []uint64{seller1.UserID},
+				SellerIds: []uint64{seller2.ID},
+			}
+
+			res, err := new(services.VendorAddressService).GetData(ctx, &param)
+			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Message).To(Equal("specify any one param"))
+			Expect(err).To(BeNil())
+		})
 	})
 
 	Context("When invalid user_id is passed in the param", func() {
 		It("Should return error", func() {
-			test_helper.CreateSeller(ctx, &models.Seller{})
 			param := vapb.GetDataParams{
 				UserIds: []uint64{101},
 			}
 			res, err := new(services.VendorAddressService).GetData(ctx, &param)
 			Expect(res.Status).To(Equal("failure"))
 			Expect(res.Message).To(Equal("seller not found with the user id"))
+			Expect(err).To(BeNil())
+		})
+	})
+
+	Context("When invalid user_id is passed in the param", func() {
+		It("Should return error", func() {
+			seller1 := test_helper.CreateSeller(ctx, &models.Seller{})
+			param := vapb.GetDataParams{
+				UserIds: []uint64{seller1.UserID},
+			}
+			res, err := new(services.VendorAddressService).GetData(ctx, &param)
+			Expect(res.Status).To(Equal("success"))
+			Expect(res.Message).To(Equal("vendor address not found"))
 			Expect(err).To(BeNil())
 		})
 	})
