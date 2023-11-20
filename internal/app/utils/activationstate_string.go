@@ -32,7 +32,7 @@ var _ActivationState_index = [...]uint8{0, 13, 29, 38, 58, 66, 79, 94, 109, 128,
 
 func (i ActivationState) String() string {
 	i -= 1
-	if i >= ActivationState(len(_ActivationState_index)-1) {
+	if i < 0 || i >= ActivationState(len(_ActivationState_index)-1) {
 		return "ActivationState(" + strconv.FormatInt(int64(i+1), 10) + ")"
 	}
 	return _ActivationState_name[_ActivationState_index[i]:_ActivationState_index[i+1]]

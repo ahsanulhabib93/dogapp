@@ -10,8 +10,8 @@ type VerificationStatus string
 type BusinessType string
 type ColorCode string
 type SellerPriceVerified string
-type StateReason uint64
-type ActivationState uint64
+type StateReason int
+type ActivationState int
 
 const (
 	Supplier ServiceType = 1 + iota

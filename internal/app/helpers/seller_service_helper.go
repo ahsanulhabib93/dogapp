@@ -29,7 +29,7 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 				if resp.Status == utils.Success && successfulStateChanges > utils.One {
 					resp.Message = fmt.Sprintf("%d Seller accounts activated successfully", successfulStateChanges)
 				}
-				if seller.StateReason != nil && seller.ActivationState > utils.Zero {
+				if seller.StateReason > utils.Zero && seller.ActivationState > utils.Zero {
 					noAccess = FindNonAccessSellers(params, seller)
 					if len(noAccess) > utils.Zero {
 						noAccessStr := utils.GetArrIntToArrStr(noAccess)
@@ -92,7 +92,7 @@ func FindNonAccessSellers(params *spb.SendActivationMailParams, seller *models.S
 	isRiskTeam := params.GetIsRiskTeam()
 	isSellerOnboardingTeam := params.GetIsSellerOnboardingTeam()
 	if isQualityTeam || isRiskTeam {
-		condition := (*stateReason == utils.PRODUCT_QUALITY && isQualityTeam) || (*stateReason != utils.PRODUCT_QUALITY && isRiskTeam)
+		condition := (stateReason == utils.PRODUCT_QUALITY && isQualityTeam) || (stateReason != utils.PRODUCT_QUALITY && isRiskTeam)
 		condition = condition && CheckRestrictiveSellerState(activationState)
 		if !condition {
 			noAccess = append(noAccess, seller.ID)
@@ -138,8 +138,8 @@ func SellerIsOnboardingState(activationState utils.ActivationState) bool {
 
 }
 
-func SellerIsOnboardingStateReason(stateReason *utils.StateReason) bool {
-	return *stateReason == utils.PENDING_CONTACT_WITH_SS || *stateReason == utils.VACATION_MODE
+func SellerIsOnboardingStateReason(stateReason utils.StateReason) bool {
+	return stateReason == utils.PENDING_CONTACT_WITH_SS || stateReason == utils.VACATION_MODE
 }
 
 func IsSellerPricingDetailsNotVerified(ctx context.Context, sellerPrice *models.SellerPricingDetail) bool {
@@ -148,8 +148,7 @@ func IsSellerPricingDetailsNotVerified(ctx context.Context, sellerPrice *models.
 
 func ActivateSeller(ctx context.Context, seller models.Seller) (*spb.BasicApiResponse, error) {
 	resp := spb.BasicApiResponse{Status: utils.Success, Message: "Seller account activated successfully"}
-	seller.ActivationState = utils.ACTIVATED
-	seller.StateReason = nil
+	seller.ActivationState, seller.StateReason = utils.ACTIVATED, 0
 	database.DBAPM(ctx).Save(&seller)
 	return &resp, nil
 }

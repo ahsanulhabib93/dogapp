@@ -23,7 +23,7 @@ var _StateReason_index = [...]uint8{0, 16, 36, 47, 62, 81, 104, 117}
 
 func (i StateReason) String() string {
 	i -= 1
-	if i >= StateReason(len(_StateReason_index)-1) {
+	if i < 0 || i >= StateReason(len(_StateReason_index)-1) {
 		return "StateReason(" + strconv.FormatInt(int64(i+1), 10) + ")"
 	}
 	return _StateReason_name[_StateReason_index[i]:_StateReason_index[i+1]]

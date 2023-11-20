@@ -87,14 +87,13 @@ var _ = Describe("Send Activation Mail", func() {
 		})
 
 		It("Should return status failure for no verify status address", func() {
-			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
 				UserID:          1,
 				PanNumber:       "PAN123",
 				EmailConfirmed:  true,
 				MouAgreed:       true,
-				ActivationState: utils.ACTIVATED,
-				StateReason:     &productQuality,
+				ActivationState: 3,
+				StateReason:     4,
 			}
 			database.DBAPM(ctx).Create(&seller)
 
@@ -115,14 +114,13 @@ var _ = Describe("Send Activation Mail", func() {
 		})
 
 		It("Should return status failure for no default status address", func() {
-			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
 				UserID:          1,
 				PanNumber:       "PAN123",
 				EmailConfirmed:  true,
 				MouAgreed:       true,
-				ActivationState: utils.ACTIVATED,
-				StateReason:     &productQuality,
+				ActivationState: 3,
+				StateReason:     4,
 			}
 			database.DBAPM(ctx).Create(&seller)
 
@@ -143,14 +141,13 @@ var _ = Describe("Send Activation Mail", func() {
 		})
 
 		It("Should return status failure for seller price details not present", func() {
-			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
 				UserID:          1,
 				PanNumber:       "PAN123",
 				EmailConfirmed:  true,
 				MouAgreed:       true,
-				ActivationState: utils.ACTIVATED,
-				StateReason:     &productQuality,
+				ActivationState: 3,
+				StateReason:     4,
 			}
 			database.DBAPM(ctx).Create(&seller)
 
@@ -174,19 +171,17 @@ var _ = Describe("Send Activation Mail", func() {
 		})
 
 		It("Should return status failure for seller price details not present", func() {
-			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
 				UserID:          1,
 				PanNumber:       "PAN123",
 				EmailConfirmed:  true,
 				MouAgreed:       true,
-				ActivationState: utils.ACTIVATED,
-				StateReason:     &productQuality,
+				ActivationState: 3,
+				StateReason:     4,
 			}
-			database.DBAPM(ctx).Create(&seller)
 			seller.SellerPricingDetails = []*models.SellerPricingDetail{{Verified: utils.SellerPriceVerified(utils.NotVerified),
 				SellerID: int(seller.ID)}}
-			database.DBAPM(ctx).Save(&seller)
+			database.DBAPM(ctx).Create(&seller)
 
 			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
 			database.DBAPM(ctx).Create(&sellerBankDetail)
@@ -213,20 +208,17 @@ var _ = Describe("Send Activation Mail", func() {
 			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 100, PortalId: 100,
 				UserData: &misc.UserData{UserId: 11}})
 
-			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
 				UserID:          2,
 				PanNumber:       "PAN123",
 				EmailConfirmed:  true,
 				MouAgreed:       true,
-				ActivationState: utils.ACTIVATED,
-				StateReason:     &productQuality,
+				ActivationState: 3,
+				StateReason:     4,
 			}
-			database.DBAPM(ctx).Create(&seller)
-
 			seller.SellerPricingDetails = []*models.SellerPricingDetail{{Verified: utils.SellerPriceVerified(utils.Verified),
 				SellerID: int(seller.ID)}}
-			database.DBAPM(ctx).Save(&seller)
+			database.DBAPM(ctx).Create(&seller)
 
 			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
 			database.DBAPM(ctx).Create(&sellerBankDetail)
@@ -251,8 +243,9 @@ var _ = Describe("Send Activation Mail", func() {
 		})
 
 		It("Should return status success for quality team", func() {
-			fulFilmentViolation := utils.FULFILMENT_VIOLATION
-			seller.StateReason = &fulFilmentViolation
+			seller.StateReason = 2
+			seller.BusinessType = utils.Manufacturer
+			seller.ColorCode = utils.Black
 			database.DBAPM(ctx).Save(&seller)
 
 			//for coverage to handle IsQualityTeam
@@ -269,20 +262,17 @@ var _ = Describe("Send Activation Mail", func() {
 			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 100, PortalId: 100,
 				UserData: &misc.UserData{UserId: 11}})
 
-			productQuality := utils.PRODUCT_QUALITY
 			seller = models.Seller{
 				UserID:          2,
 				PanNumber:       "PAN123",
 				EmailConfirmed:  true,
 				MouAgreed:       true,
-				ActivationState: utils.NOT_ACTIVATED,
-				StateReason:     &productQuality,
+				ActivationState: 1,
+				StateReason:     4,
 			}
-			database.DBAPM(ctx).Create(&seller)
-
 			seller.SellerPricingDetails = []*models.SellerPricingDetail{{Verified: utils.SellerPriceVerified(utils.Verified),
 				SellerID: int(seller.ID)}}
-			database.DBAPM(ctx).Save(&seller)
+			database.DBAPM(ctx).Create(&seller)
 
 			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
 			database.DBAPM(ctx).Create(&sellerBankDetail)
