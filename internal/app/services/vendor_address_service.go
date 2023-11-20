@@ -13,27 +13,17 @@ import (
 
 type VendorAddressService struct{}
 
-func ParamCount(params ...[]uint64) int {
-	count := 0
-	for _, param := range params {
-		if len(param) > 0 {
-			count += 1
-		}
-	}
-	return count
-}
-
 func (vas *VendorAddressService) GetData(ctx context.Context, params *vapb.GetDataParams) (*vapb.GetDataResponse, error) {
 	response := vapb.GetDataResponse{Status: utils.Failure}
 	userIds := params.GetUserIds()
 	sellerIds := params.GetSellerIds()
 	ids := params.GetIds()
 
-	if count := ParamCount(userIds, sellerIds, ids); count == 0 {
+	if count := utils.ParamCount(userIds, sellerIds, ids); count == 0 {
 		response.Message = "param not specified"
 		return &response, nil
 	} else if count > 1 {
-		response.Message = fmt.Sprint("specify any one param")
+		response.Message = "specify any one param"
 		return &response, nil
 	}
 	query := database.DBAPM(ctx).Model(&models.VendorAddress{})
