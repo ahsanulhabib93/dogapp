@@ -12,6 +12,7 @@ import (
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
 
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -112,7 +113,13 @@ func (ss *SellerService) SellerPhoneRelation(ctx context.Context, params *spb.Se
 }
 
 func (ss *SellerService) ApproveProducts(ctx context.Context, params *spb.ApproveProductsParams) (*spb.BasicApiResponse, error) {
-	return nil, nil
+	resp := spb.BasicApiResponse{Status: utils.Failure}
+	if len(params.GetIds()) == utils.Zero {
+		resp.Message = "Failed to approve the products - atleast one id should be present"
+	} else {
+		helpers.PerformApproveProductFunc(ctx, params.GetIds())
+	}
+	return &resp, nil
 }
 
 func (ss *SellerService) ConfirmEmailFromAdminPanel(ctx context.Context, params *spb.GetByUserIDParams) (*spb.BasicApiResponse, error) {

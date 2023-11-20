@@ -10,6 +10,7 @@ type VerificationStatus string
 type BusinessType string
 type ColorCode string
 type SellerPriceVerified string
+type ActivationState uint64
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -18,6 +19,25 @@ const (
 	MwsOwner
 	DoBuyer
 	ProcurementVendor
+)
+
+const (
+	NOT_ACTIVATED ActivationState = 1 + iota
+	DOWNLOADED_EXCEL
+	ACTIVATED
+	VERIFICATION_PENDING
+	HOLD_OFF
+	PRE_ACTIVATED
+	PENDING_QUALITY
+	POLICY_VIOLATED
+	FULFILMENT_VIOLATED
+	VACATION_PENDING
+	SUSPENDED
+	BLOCKED
+	FRAUD
+	ON_HOLD
+	GST_PENDING
+	UNDER_REVIEW
 )
 
 const (

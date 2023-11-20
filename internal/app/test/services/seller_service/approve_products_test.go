@@ -13,6 +13,7 @@ import (
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
+	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("Approve Products", func() {
@@ -34,14 +35,12 @@ var _ = Describe("Approve Products", func() {
 		aaaModels.InjectMockAppPreferenceServiceInstance(nil)
 	})
 
-	Context("Success Case", func() {
-		It("Should return data", func() {
-
-			param := spb.ApproveProductsParams{}
-
-			res, err := new(services.SellerService).ApproveProducts(ctx, &param)
-			Expect(res).To(BeNil())
+	Context("Fail Case", func() {
+		It("Should return invalid msg", func() {
+			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{})
 			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal(utils.Failure))
+			Expect(res.Message).To(Equal("Failed to approve the products - atleast one id should be present"))
 		})
 	})
 })
