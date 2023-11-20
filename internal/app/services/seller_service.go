@@ -35,13 +35,12 @@ func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserI
 }
 
 func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSellerByConditionParams) (*spb.GetSellersResponse, error) {
-	response := spb.GetSellersResponse{}
+	response := spb.GetSellersResponse{Status: utils.Failure}
 	sellers := []*spb.SellerObject{}
 	fields := params.GetFields()
 	condition := params.GetCondition()
 	if condition == nil {
 		logger.FromContext(ctx).Info("No condition specified")
-		response.Status = utils.Failure
 		response.Message = "no condition specified"
 		return &response, nil
 	}
@@ -55,9 +54,8 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 		query = query.Select(fields)
 	}
 	if err := query.Scan(&sellers).Error; err != nil {
-		logger.FromContext(ctx).Info("Error in seller service GetSellerByCondition API", err.Error())
-		response.Status = utils.Failure
-		response.Message = err.Error()
+		response.Message = fmt.Sprint("Error in seller service GetSellerByCondition API", err.Error())
+		logger.FromContext(ctx).Error(response.Message)
 		return &response, nil
 	}
 	if len(sellers) == 0 {
