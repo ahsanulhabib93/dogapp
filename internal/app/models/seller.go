@@ -22,8 +22,8 @@ type Seller struct {
 	PrimaryPhone                 string `json:"primary_phone"`
 	SupportEmail                 string
 	SupportPhone                 string
-	ActivationState              utils.ActivationState `gorm:"default:1" json:"activation_state"`
-	Slug                         string                `json:"slug"`
+	ActivationState              int    `gorm:"default:1" json:"activation_state"`
+	Slug                         string `json:"slug"`
 	ReturnExchangePolicy         string
 	TinNumber                    string
 	PanNumber                    string `gorm:"default:'AAAAA0000A'"`
