@@ -29,7 +29,6 @@ require (
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
-	gorm.io/datatypes v1.0.4
 )
 
 replace golang.org/x/sys => golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
