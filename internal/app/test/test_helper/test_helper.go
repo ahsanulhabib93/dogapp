@@ -77,10 +77,8 @@ func CreateVendorAddress(ctx context.Context, vendor *models.VendorAddress) *mod
 	id := getUniqueID()
 	vendor.Firstname = fmt.Sprintf("test")
 	vendor.Lastname = fmt.Sprintf("name-%v", id)
-	err := database.DBAPM(ctx).Save(vendor).Error
-	if err != nil {
-		fmt.Println("ref: ", err)
-	}
+	vendor.UUID = fmt.Sprintf("abc-%v", id)
+	database.DBAPM(ctx).Save(vendor)
 	return vendor
 }
 
