@@ -9,18 +9,18 @@ import (
 
 type VendorAddress struct {
 	database.VaccountGorm
-	FirstName                    string
-	LastName                     string
-	Address1                     string
-	Address2                     string
-	City                         string
-	ZipCode                      string
-	AlternativePhone             string
-	Company                      string
-	State                        string
-	Country                      string
+	Firstname                    string `gorm:"column:firstname"`
+	Lastname                     string `gorm:"column:lastname"`
+	Address1                     string `gorm:"column:address1"`
+	Address2                     string `gorm:"column:address2"`
+	City                         string `gorm:"column:city"`
+	Zipcode                      string `gorm:"column:zipcode"`
+	AlternativePhone             string `gorm:"column:alternate_phone"`
+	Company                      string `gorm:"column:company"`
+	State                        string `gorm:"column:state"`
+	Country                      string `gorm:"column:country"`
 	AddressType                  int
-	SellerID                     int
+	SellerID                     int `gorm:"column:seller_id"`
 	LandMark                     string
 	DefaultAddress               bool `gorm:"default:false"`
 	DeletedAt                    *time.Time
@@ -42,5 +42,5 @@ type VendorAddress struct {
 	GSTRelatedPanCardContentType string
 	GSTRelatedPanCardFileSize    int
 	GSTRelatedPanCardUpdatedAt   string
-	ExtraData                    string `gorm:"default:'{}'"`
+	ExtraData                    string `gorm:"default:'{}';column:extra_detail"`
 }

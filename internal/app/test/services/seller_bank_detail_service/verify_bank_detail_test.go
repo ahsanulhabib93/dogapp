@@ -1,4 +1,4 @@
-package seller_bank_service_test
+package seller_bank_detail_service_test
 
 import (
 	"context"
