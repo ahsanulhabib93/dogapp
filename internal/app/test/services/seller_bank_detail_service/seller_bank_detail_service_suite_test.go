@@ -1,4 +1,4 @@
-package seller_bank_service_test
+package seller_bank_detail_service_test
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 	"github.com/voonik/ss2/internal/app/test"
 )
 
-func TestSellerService(t *testing.T) {
+func TestSellerBankDetailService(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "SellerBankDetailService Suite")
 }
