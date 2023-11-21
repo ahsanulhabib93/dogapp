@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -158,14 +157,12 @@ func CreateSellerActivityLog(ctx context.Context, sellerID uint64, action string
 	if v := utils.GetCurrentUserID(ctx); v != nil {
 		currentUserId = *v
 	}
-	notesData := map[string]interface{}{"reason": "Activation without mail"}
-	jsonData, _ := json.Marshal(&notesData)
 
 	activityLog := models.SellerActivityLog{
 		UserID:   currentUserId,
 		SellerID: sellerID,
 		Action:   action,
-		Notes:    jsonData,
+		Notes:    `"reason": "Activation without mail"`,
 	}
 	database.DBAPM(ctx).Create(&activityLog)
 }
