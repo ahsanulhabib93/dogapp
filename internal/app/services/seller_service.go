@@ -36,13 +36,12 @@ func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserI
 }
 
 func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSellerByConditionParams) (*spb.GetSellersResponse, error) {
-	response := spb.GetSellersResponse{}
+	response := spb.GetSellersResponse{Status: utils.Failure}
 	sellers := []*spb.SellerObject{}
 	fields := params.GetFields()
 	condition := params.GetCondition()
 	if condition == nil {
 		logger.FromContext(ctx).Info("No condition specified")
-		response.Status = utils.Failure
 		response.Message = "no condition specified"
 		return &response, nil
 	}
@@ -56,9 +55,8 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 		query = query.Select(fields)
 	}
 	if err := query.Scan(&sellers).Error; err != nil {
-		logger.FromContext(ctx).Info("Error in seller service GetSellerByCondition API", err.Error())
-		response.Status = utils.Failure
-		response.Message = err.Error()
+		response.Message = fmt.Sprint("Error in seller service GetSellerByCondition API", err.Error())
+		logger.FromContext(ctx).Error(response.Message)
 		return &response, nil
 	}
 	if len(sellers) == 0 {
@@ -74,7 +72,31 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 }
 
 func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *spb.GetSellersRelatedToOrderParams) (*spb.GetSellersResponse, error) {
-	return nil, nil
+	userIds := params.GetSellerIds()
+	response := spb.GetSellersResponse{
+		Status: utils.Failure,
+	}
+	if len(userIds) == 0 {
+		response.Message = "no valid param"
+		return &response, nil
+	}
+	sellers := []*spb.SellerObject{}
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id in (?)", userIds)
+	err := query.Scan(&sellers).Error
+	if err != nil {
+		response.Message = fmt.Sprint("Error in seller service GetSellersRelatedToOrder API", err.Error())
+		logger.FromContext(ctx).Error(response.Message)
+		return &response, nil
+	}
+	if len(sellers) == 0 {
+		response.Status = utils.Success
+		response.Message = "seller not found"
+		return &response, nil
+	}
+	response.Seller = sellers
+	response.Status = utils.Success
+	response.Message = "fetched seller details successfully"
+	return &response, nil
 }
 
 func (ss *SellerService) SmallReport(ctx context.Context, params *spb.SmallReportParams) (*spb.GetSellersResponse, error) {
