@@ -87,6 +87,11 @@ func (vas *VendorAddressService) VerifyAddress(ctx context.Context, params *vapb
 		logger.FromContext(ctx).Error(response.Message)
 		return &response, nil
 	}
+	if vendorAddress.VerificationStatus == utils.Verified {
+		response.Status = utils.Success
+		response.Message = "vendor address already verified"
+		return &response, nil
+	}
 	err = query.Update("verification_status", utils.Verified).Error
 	if err != nil {
 		response.Message = fmt.Sprint("not able to update verification status: ", err.Error())

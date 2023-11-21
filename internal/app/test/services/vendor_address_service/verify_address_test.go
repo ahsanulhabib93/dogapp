@@ -82,4 +82,22 @@ var _ = Describe("Verify Address", func() {
 			Expect(err).To(BeNil())
 		})
 	})
+
+	Context("When vendor address is already verified", func() {
+		It("Should return verified message", func() {
+			seller := test_helper.CreateSeller(ctx, &models.Seller{})
+			vendorAddress1 := test_helper.CreateVendorAddress(ctx,
+				&models.VendorAddress{
+					SellerID:           int(seller.ID),
+					VerificationStatus: utils.Verified,
+				})
+			param := vapb.VerifyAddressParams{
+				Id: vendorAddress1.UUID,
+			}
+			res, err := new(services.VendorAddressService).VerifyAddress(ctx, &param)
+			Expect(res.Status).To(Equal("success"))
+			Expect(res.Message).To(Equal("vendor address already verified"))
+			Expect(err).To(BeNil())
+		})
+	})
 })
