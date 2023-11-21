@@ -8,7 +8,7 @@ import (
 	"github.com/voonik/ss2/internal/app/test"
 )
 
-func TestSellerService(t *testing.T) {
+func TestVendorAddressService(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "VendorAddressService Suite")
 }
