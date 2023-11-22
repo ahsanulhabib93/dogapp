@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
@@ -192,4 +193,12 @@ func GetCommonElements(arr1 []string, arr2 []string) []string {
 	}
 
 	return commonElements
+}
+
+func GetArrIntToArrStr(arrInt []uint64) []string {
+	arrStr := make([]string, len(arrInt))
+	for i, access := range arrInt {
+		arrStr[i] = strconv.Itoa(int(access))
+	}
+	return arrStr
 }

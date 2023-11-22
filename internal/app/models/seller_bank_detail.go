@@ -19,31 +19,31 @@ type SellerBankDetail struct {
 	PanCardFileName            string
 	PanCardContentType         string
 	PanCardFileSize            int
-	PanCardUpdatedAt           time.Time
+	PanCardUpdatedAt           *time.Time
 	CancelledChequeFileName    string
 	CancelledChequeContentType string
 	CancelledChequeFileSize    int
-	CancelledChequeUpdatedAt   time.Time
+	CancelledChequeUpdatedAt   *time.Time
 	AgreementCopyFileName      string
 	AgreementCopyContentType   string
 	AgreementCopyFileSize      int
-	AgreementCopyUpdatedAt     time.Time
+	AgreementCopyUpdatedAt     *time.Time
 	SellerID                   int
 	TinCardFileName            string
 	TinCardContentType         string
 	TinCardFileSize            int
-	TinCardUpdatedAt           time.Time
+	TinCardUpdatedAt           *time.Time
 	TanCardFileName            string
 	TanCardContentType         string
 	TanCardFileSize            int
-	TanCardUpdatedAt           time.Time
+	TanCardUpdatedAt           *time.Time
 	AadharCardFileName         string
 	AadharCardContentType      string
 	AadharCardFileSize         int
-	AadharCardUpdatedAt        time.Time
+	AadharCardUpdatedAt        *time.Time
 	VerificationStatus         utils.VerificationStatus `gorm:"default:'NOT_VERIFIED'"`
 	GSTCardFileName            string
 	GSTCardContentType         string
 	GSTCardFileSize            int
-	GSTCardUpdatedAt           time.Time
+	GSTCardUpdatedAt           *time.Time
 }

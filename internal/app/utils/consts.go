@@ -10,7 +10,8 @@ type VerificationStatus string
 type BusinessType string
 type ColorCode string
 type SellerPriceVerified string
-type ActivationState uint64
+type StateReason int
+type ActivationState int
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -19,6 +20,16 @@ const (
 	MwsOwner
 	DoBuyer
 	ProcurementVendor
+)
+
+const (
+	POLICY_VIOLATION StateReason = 1 + iota
+	FULFILMENT_VIOLATION
+	PERFORMANCE
+	PRODUCT_QUALITY
+	PENDING_RISK_REVIEW
+	PENDING_CONTACT_WITH_SS
+	VACATION_MODE
 )
 
 const (
@@ -148,6 +159,7 @@ const (
 const (
 	EmptyString = ""
 	Zero        = 0
+	One         = 1
 	Ten         = 10
 )
 
