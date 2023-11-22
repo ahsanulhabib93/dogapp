@@ -22,8 +22,8 @@ type Seller struct {
 	PrimaryPhone                 string `json:"primary_phone"`
 	SupportEmail                 string
 	SupportPhone                 string
-	ActivationState              int    `gorm:"default:1" json:"activation_state"`
-	Slug                         string `json:"slug"`
+	ActivationState              utils.ActivationState `gorm:"default:1" json:"activation_state"`
+	Slug                         string                `json:"slug"`
 	ReturnExchangePolicy         string
 	TinNumber                    string
 	PanNumber                    string `gorm:"default:'AAAAA0000A'"`
@@ -38,10 +38,10 @@ type Seller struct {
 	AadharCard                   string
 	AggregatorID                 int                `gorm:"default:0"`
 	InternationalEnabled         string             `gorm:"default:'0'"`
-	BusinessType                 utils.BusinessType `gorm:"column:business_type;type:enum('MANUFACTURER', 'TRADER')"`
-	ColorCode                    utils.ColorCode    `gorm:"column:color_code;type:enum('PLATINUM','GOLD','GREEN','BROWN','BLACK')"`
+	BusinessType                 utils.BusinessType `gorm:"column:business_type;type:enum('MANUFACTURER', 'TRADER');default:NULL"`
+	ColorCode                    utils.ColorCode    `gorm:"column:color_code;type:enum('PLATINUM','GOLD','GREEN','BROWN','BLACK');default:NULL"`
 	EmailConfirmed               bool               `gorm:"default:false"`
-	StateReason                  int
+	StateReason                  utils.StateReason
 	GSTNumber                    string
 	GSTStatus                    string `gorm:"default:'NOT_VERIFIED'"`
 	GSTRelatedPanNumber          string

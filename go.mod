@@ -21,7 +21,7 @@ require (
 	github.com/shopuptech/go-libs v0.0.12
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
-	github.com/voonik/goConnect v0.0.0-20231121094019-f05e79b052de
+	github.com/voonik/goConnect v0.0.0-20231121121134-5a96d2fd5afd
 	github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e
 	github.com/voonik/work v0.5.2-0.20210125131509-46074ae4f7ae
 	golang.org/x/net v0.10.0 // indirect
