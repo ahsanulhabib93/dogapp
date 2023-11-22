@@ -26,7 +26,7 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 				var successfulStateChanges int
 				resp, successfulStateChanges = VerifyVendorAddress(ctx, seller, params.GetAction())
 				if resp.Status == utils.Success && successfulStateChanges > utils.One {
-					resp.Message = fmt.Sprintf("%d Seller accounts activated successfully", successfulStateChanges)
+					resp.Message = fmt.Sprintf("%d Seller accounts activated successfully.", successfulStateChanges)
 				}
 				if seller.StateReason > utils.Zero && seller.ActivationState > utils.Zero {
 					noAccess = FindNonAccessSellers(params, seller)
@@ -35,10 +35,10 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 						resp.Message += " You don't have access to activate this Seller(s) - " + strings.Join(noAccessStr, ",")
 					}
 				} else {
-					resp.Message += " Need ActivationState, StateReason to find Non Access Sellers"
+					resp.Message += " Need ActivationState, StateReason to find Non Access Sellers."
 				}
 			} else {
-				resp.Message += strconv.Itoa(int(seller.UserID)) + ": Seller Pan Number, Bank Detail, MOU and Email should be confirmed"
+				resp.Message += strconv.Itoa(int(seller.UserID)) + ": Seller Pan Number, Bank Detail, MOU and Email should be confirmed."
 			}
 		}
 	}
@@ -51,15 +51,15 @@ func VerifyVendorAddress(ctx context.Context, seller *models.Seller, action stri
 	vendorAddresses, verifiedCount, defaultCount := GetVendorAddressBySellerID(ctx, seller.ID)
 	addressCount := len(vendorAddresses)
 	if verifiedCount == utils.Zero && addressCount > utils.One {
-		resp.Message += fmt.Sprintf("%s: Make at least one address as verified", strconv.Itoa(int(seller.UserID)))
+		resp.Message += fmt.Sprintf("%s: Make at least one address as verified.", strconv.Itoa(int(seller.UserID)))
 	} else if defaultCount == utils.Zero && addressCount > utils.One {
-		resp.Message += fmt.Sprintf("%s: Make at least one address as default", strconv.Itoa(int(seller.UserID)))
+		resp.Message += fmt.Sprintf("%s: Make at least one address as default.", strconv.Itoa(int(seller.UserID)))
 	} else if addressCount == utils.Zero {
-		resp.Message += fmt.Sprintf("%s: At least one address should be present", strconv.Itoa(int(seller.UserID)))
+		resp.Message += fmt.Sprintf("%s: At least one address should be present.", strconv.Itoa(int(seller.UserID)))
 	} else if len(seller.SellerPricingDetails) == utils.Zero {
-		resp.Message += fmt.Sprintf("%s: Seller pricing details are not present", strconv.Itoa(int(seller.UserID)))
+		resp.Message += fmt.Sprintf("%s: Seller pricing details are not present.", strconv.Itoa(int(seller.UserID)))
 	} else if IsSellerPricingDetailsNotVerified(ctx, seller.SellerPricingDetails[utils.Zero]) {
-		resp.Message += fmt.Sprintf("%s: Seller pricing details are not verified", strconv.Itoa(int(seller.UserID)))
+		resp.Message += fmt.Sprintf("%s: Seller pricing details are not verified.", strconv.Itoa(int(seller.UserID)))
 	} else {
 		if addressCount == utils.One {
 			vendorAddresses[utils.Zero].VerificationStatus = "VERIFIED"
