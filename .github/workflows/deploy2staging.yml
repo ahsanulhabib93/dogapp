@@ -66,7 +66,7 @@ jobs:
       - id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v1'
         with:
-          cluster_name: 'shopup-mokam-stg'
+          cluster_name: 'mokam-stg-autopilot'
           location: 'asia-southeast1'
 
       # Deploy to staging GKE cluster
@@ -128,7 +128,7 @@ jobs:
       - name: Deploying to GCP Cluster
         uses: fjogeleit/yaml-update-action@master
         with:
-          valueFile: 'charts/shopup/ss2/values-staging.yaml'
+          valueFile: 'charts/shopup/ss2/values-autopilot-stage.yaml'
           propertyPath: 'image.tag'
           value: ${{ steps.build.outputs.version }}
           repository: shopuptech/cicd-automation
