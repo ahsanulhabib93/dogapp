@@ -103,7 +103,24 @@ func (ss *SellerService) SmallReport(ctx context.Context, params *spb.SmallRepor
 }
 
 func (ss *SellerService) ValidateField(ctx context.Context, params *spb.ValidateFieldParams) (*spb.StatusResponse, error) {
-	return nil, nil
+	response := spb.StatusResponse{}
+	response.Status = false
+	seller := &spb.SellerObject{}
+	data := params.GetData()
+	if data == nil {
+		return &response, nil
+	}
+	conditionString := make([]string, 0)
+	for key, value := range data {
+		conditionString = append(conditionString, fmt.Sprintf("%s = '%s'", key, value))
+	}
+	queryCondition := strings.Join(conditionString, " AND ")
+	query := database.DBAPM(ctx).Model(&models.Seller{}).Where(queryCondition)
+	if err := query.Scan(seller).Error; err != nil {
+		response.Status = true
+		return &response, nil
+	}
+	return &response, nil
 }
 
 func (ss *SellerService) SellerPhoneRelation(ctx context.Context, params *spb.SellerPhoneRelationParams) (*spb.GetSellersResponse, error) {
