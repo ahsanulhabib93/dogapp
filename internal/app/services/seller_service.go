@@ -223,7 +223,7 @@ func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.Sen
 	if len(params.GetIds()) > utils.Zero { // TODO: validate params.GetAction()
 		resp = helpers.PerformSendActivationMail(ctx, params)
 	} else {
-		resp.Message = "Seller Ids and Action Should be Present"
+		resp.Message = "Seller UserIds Should be Present"
 	}
 	return resp, nil
 }

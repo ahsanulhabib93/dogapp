@@ -45,7 +45,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
-			Expect(res.Message).To(Equal("Seller Ids and Action Should be Present"))
+			Expect(res.Message).To(Equal("Seller UserIds Should be Present"))
 		})
 
 		It("Should return status failure for seller not found", func() {
