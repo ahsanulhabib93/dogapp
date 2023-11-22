@@ -1,4 +1,4 @@
-package seller_pricing_service_test
+package seller_pricing_detail_service_test
 
 import (
 	"context"

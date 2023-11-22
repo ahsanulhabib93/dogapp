@@ -50,6 +50,16 @@ func GetCurrentUserPermissions(ctx context.Context) []string {
 	return []string{}
 }
 
+func ParamCount(params ...[]uint64) int {
+	count := 0
+	for _, param := range params {
+		if len(param) > 0 {
+			count += 1
+		}
+	}
+	return count
+}
+
 func Int64Min(a, b uint64) uint64 {
 	if a < b {
 		return a

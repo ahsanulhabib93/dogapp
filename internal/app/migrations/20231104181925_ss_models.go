@@ -17,6 +17,7 @@ func init() {
 				models.SellerBankDetail{},
 				models.SellerPricingDetail{},
 				models.SellerConfig{},
+				models.SellerActivityLog{},
 			}
 
 			for _, model := range models {
