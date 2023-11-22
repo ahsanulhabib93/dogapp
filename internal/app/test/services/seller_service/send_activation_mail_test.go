@@ -41,7 +41,7 @@ var _ = Describe("Send Activation Mail", func() {
 
 	Context("fail Case", func() {
 		It("Should return status failure for invalid param", func() {
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}}
+			param := spb.SendActivationMailParams{}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
