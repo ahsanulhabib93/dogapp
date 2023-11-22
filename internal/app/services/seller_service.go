@@ -135,6 +135,7 @@ func (ss *SellerService) SellerPhoneRelation(ctx context.Context, params *spb.Se
 }
 
 func (ss *SellerService) ApproveProducts(ctx context.Context, params *spb.ApproveProductsParams) (*spb.BasicApiResponse, error) {
+	logger.Log().Info("Approve Products API Params: %+v", params)
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
 	if len(params.GetIds()) == utils.Zero {
 		resp.Message = "Failed to approve the products - atleast one id should be present"
