@@ -34,8 +34,6 @@ func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMa
 						noAccessStr := utils.GetArrIntToArrStr(noAccess)
 						resp.Message += " You don't have access to activate this Seller(s) - " + strings.Join(noAccessStr, ",")
 					}
-				} else {
-					resp.Message += " Need ActivationState, StateReason to find Non Access Sellers."
 				}
 			} else {
 				resp.Message += strconv.Itoa(int(seller.UserID)) + ": Seller Pan Number, Bank Detail, MOU and Email should be confirmed."

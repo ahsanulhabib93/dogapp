@@ -83,7 +83,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
-			Expect(res.Message).To(Equal("1: At least one address should be present. Need ActivationState, StateReason to find Non Access Sellers."))
+			Expect(res.Message).To(Equal("1: At least one address should be present."))
 		})
 
 		It("Should return status failure for no verify status address", func() {
