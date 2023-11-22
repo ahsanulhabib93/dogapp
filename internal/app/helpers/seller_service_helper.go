@@ -146,7 +146,7 @@ func IsSellerPricingDetailsNotVerified(ctx context.Context, sellerPrice *models.
 }
 
 func ActivateSeller(ctx context.Context, seller models.Seller) (*spb.BasicApiResponse, error) {
-	resp := spb.BasicApiResponse{Status: utils.Success, Message: "Seller account activated successfully"}
+	resp := spb.BasicApiResponse{Status: utils.Success, Message: "Seller account activated successfully."}
 	seller.ActivationState, seller.StateReason = utils.ACTIVATED, 0
 	database.DBAPM(ctx).Save(&seller)
 	return &resp, nil

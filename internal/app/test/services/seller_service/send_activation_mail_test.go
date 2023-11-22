@@ -64,7 +64,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
-			Expect(res.Message).To(Equal("1: Seller Pan Number, Bank Detail, MOU and Email should be confirmed"))
+			Expect(res.Message).To(Equal("1: Seller Pan Number, Bank Detail, MOU and Email should be confirmed."))
 		})
 
 		It("Should return status failure for > 1 vendor address", func() {
@@ -83,7 +83,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
-			Expect(res.Message).To(Equal("1: At least one address should be present Need ActivationState, StateReason to find Non Access Sellers"))
+			Expect(res.Message).To(Equal("1: At least one address should be present. Need ActivationState, StateReason to find Non Access Sellers."))
 		})
 
 		It("Should return status failure for no verify status address", func() {
@@ -110,7 +110,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
-			Expect(res.Message).To(Equal("1: Make at least one address as default"))
+			Expect(res.Message).To(Equal("1: Make at least one address as default."))
 		})
 
 		It("Should return status failure for no default status address", func() {
@@ -137,7 +137,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
-			Expect(res.Message).To(Equal("1: Make at least one address as verified"))
+			Expect(res.Message).To(Equal("1: Make at least one address as verified."))
 		})
 
 		It("Should return status failure for seller price details not present", func() {
@@ -167,7 +167,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
-			Expect(res.Message).To(Equal("1: Seller pricing details are not present"))
+			Expect(res.Message).To(Equal("1: Seller pricing details are not present."))
 		})
 
 		It("Should return status failure for seller price details not present", func() {
@@ -199,7 +199,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
-			Expect(res.Message).To(Equal("1: Seller pricing details are not verified"))
+			Expect(res.Message).To(Equal("1: Seller pricing details are not verified."))
 		})
 	})
 
@@ -239,7 +239,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("success"))
-			Expect(res.Message).To(Equal("Seller account activated successfully You don't have access to activate this Seller(s) - 1"))
+			Expect(res.Message).To(Equal("Seller account activated successfully. You don't have access to activate this Seller(s) - 1"))
 		})
 
 		It("Should return status success for quality team", func() {
@@ -253,7 +253,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res2, err2 := new(services.SellerService).SendActivationMail(ctx, &param2)
 			Expect(err2).To(BeNil())
 			Expect(res2.Status).To(Equal("success"))
-			Expect(res2.Message).To(Equal("Seller account activated successfully You don't have access to activate this Seller(s) - 1"))
+			Expect(res2.Message).To(Equal("Seller account activated successfully. You don't have access to activate this Seller(s) - 1"))
 		})
 	})
 
@@ -286,7 +286,7 @@ var _ = Describe("Send Activation Mail", func() {
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("success"))
-			Expect(res.Message).To(Equal("Seller account activated successfully"))
+			Expect(res.Message).To(Equal("Seller account activated successfully."))
 		})
 	})
 })
