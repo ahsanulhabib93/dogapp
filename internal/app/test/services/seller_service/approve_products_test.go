@@ -45,24 +45,20 @@ var _ = Describe("Approve Products", func() {
 			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{})
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal(utils.Failure))
-			Expect(res.Message).To(Equal("Failed to approve the products - atleast one id should be present"))
+			Expect(res.Message).To(Equal("UserID & Product IDs Should Not Empty to Approve Products"))
 		})
 
 		It("Should return seller not found msg", func() {
-			test_helper.SetContextUser(&ctx, 11, []string{})
-
-			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{Ids: "1312"})
+			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{Id: 1, Ids: "1312"})
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal(utils.Failure))
 			Expect(res.Message).To(Equal("Seller Not Found"))
 		})
 
 		It("Should return pickup address or pan number missing msg", func() {
-			test_helper.SetContextUser(&ctx, 10, []string{})
-
 			seller := models.Seller{UserID: 10}
 			database.DBAPM(ctx).Create(&seller)
-			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{Ids: "1312"})
+			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{Id: 10, Ids: "1312"})
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal(utils.Failure))
 			Expect(res.Message).To(Equal("Pick Up Address or Pan number is missing"))
@@ -83,7 +79,7 @@ var _ = Describe("Approve Products", func() {
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			apiHelperInstance.On("CmtApproveItems", ctx, &cmtPb.ApproveItemParams{ProductIds: "13, 31", UserId: seller.UserID, State: 3}).Return(nil)
 
-			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{Ids: "13, 31"})
+			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{Id: 10, Ids: "13, 31"})
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal(utils.Success))
 			Expect(res.Message).To(Equal("The total number of products approved are 0"))
@@ -106,7 +102,7 @@ var _ = Describe("Approve Products", func() {
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			apiHelperInstance.On("CmtApproveItems", ctx, &cmtPb.ApproveItemParams{ProductIds: "12, 31", UserId: seller.UserID, State: 3}).Return(&cmtPb.ItemCountResponse{Count: 1})
 
-			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{Ids: "12, 31"})
+			res, err := new(services.SellerService).ApproveProducts(ctx, &spb.ApproveProductsParams{Id: 10, Ids: "12, 31"})
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal(utils.Success))
 			Expect(res.Message).To(Equal("The total number of products approved are 1"))
