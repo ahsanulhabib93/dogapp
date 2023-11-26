@@ -244,10 +244,15 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.SendActivationMailParams) (*spb.BasicApiResponse, error) {
 	logger.Log().Infof("Send Activation Mail API Params: %+v", params)
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
-	if len(params.GetIds()) > utils.Zero { // TODO: validate params.GetAction()
-		resp = helpers.PerformSendActivationMail(ctx, params)
-	} else {
+	if params.GetId() == utils.EmptyString {
 		resp.Message = "Seller UserIds Should be Present"
+	} else {
+		msg, sellerIDs := helpers.GetArrayIdsFromString(params.GetId())
+		if msg == utils.EmptyString && len(sellerIDs) > utils.Zero { // TODO: validate params.GetAction()
+			resp = helpers.PerformSendActivationMail(ctx, sellerIDs, params)
+		} else {
+			resp.Message = msg
+		}
 	}
 	return resp, nil
 }

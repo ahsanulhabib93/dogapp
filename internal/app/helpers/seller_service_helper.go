@@ -16,9 +16,9 @@ import (
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
-func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMailParams) *spb.BasicApiResponse {
+func PerformSendActivationMail(ctx context.Context, sellerIDs []uint64, params *spb.SendActivationMailParams) *spb.BasicApiResponse {
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
-	sellerDetails := GetSellerByIds(ctx, params.GetIds())
+	sellerDetails := GetSellerByIds(ctx, sellerIDs)
 	var noAccess []uint64
 	if len(sellerDetails) == utils.Zero {
 		resp.Message = "Seller not found"
@@ -188,4 +188,20 @@ func GetSellerByUserId(ctx context.Context, userID uint64) *models.Seller {
 	sellerData := models.Seller{}
 	database.DBAPM(ctx).Preload("VendorAddresses").Model(&models.Seller{}).Where("user_id = ?", userID).Find(&sellerData)
 	return &sellerData
+}
+
+func GetArrayIdsFromString(id string) (string, []uint64) {
+	params := map[string]string{"id": id}
+	stringIDs := strings.Split(params["id"], ",")
+
+	sellerIDs := make([]uint64, len(stringIDs))
+	for i, strID := range stringIDs {
+		trimmedStrID := strings.TrimSpace(strID)
+		id, err := strconv.ParseUint(trimmedStrID, utils.Ten, utils.SixtyFour)
+		if err != nil {
+			return fmt.Sprintf("Error converting string to uint64: %+v", err), []uint64{}
+		}
+		sellerIDs[i] = id
+	}
+	return "", sellerIDs
 }
