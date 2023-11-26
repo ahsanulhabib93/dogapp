@@ -152,7 +152,14 @@ func (ss *SellerService) SellerPhoneRelation(ctx context.Context, params *spb.Se
 }
 
 func (ss *SellerService) ApproveProducts(ctx context.Context, params *spb.ApproveProductsParams) (*spb.BasicApiResponse, error) {
-	return nil, nil
+	logger.Log().Info("Approve Products API Params: %+v", params)
+	resp := &spb.BasicApiResponse{Status: utils.Failure}
+	if params.GetId() == utils.Zero || len(params.GetIds()) == utils.Zero {
+		resp.Message = "UserID & Product IDs Should Not Empty to Approve Products"
+	} else {
+		resp = helpers.PerformApproveProductFunc(ctx, params)
+	}
+	return resp, nil
 }
 
 func (ss *SellerService) ConfirmEmailFromAdminPanel(ctx context.Context, params *spb.GetByUserIDParams) (*spb.BasicApiResponse, error) {
@@ -237,10 +244,15 @@ func (ss *SellerService) Update(ctx context.Context, params *spb.UpdateParams) (
 func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.SendActivationMailParams) (*spb.BasicApiResponse, error) {
 	logger.Log().Infof("Send Activation Mail API Params: %+v", params)
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
-	if len(params.GetIds()) > utils.Zero { // TODO: validate params.GetAction()
-		resp = helpers.PerformSendActivationMail(ctx, params)
-	} else {
+	if params.GetId() == utils.EmptyString {
 		resp.Message = "Seller UserIds Should be Present"
+	} else {
+		msg, sellerIDs := helpers.GetArrayIdsFromString(params.GetId())
+		if msg == utils.EmptyString && len(sellerIDs) > utils.Zero { // TODO: validate params.GetAction()
+			resp = helpers.PerformSendActivationMail(ctx, sellerIDs, params)
+		} else {
+			resp.Message = msg
+		}
 	}
 	return resp, nil
 }

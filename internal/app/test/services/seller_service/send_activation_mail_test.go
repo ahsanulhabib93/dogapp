@@ -48,8 +48,16 @@ var _ = Describe("Send Activation Mail", func() {
 			Expect(res.Message).To(Equal("Seller UserIds Should be Present"))
 		})
 
+		It("Should return status failure for invalid data type of ID", func() {
+			param := spb.SendActivationMailParams{Id: "abcdad"}
+			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Status).To(Equal("failure"))
+			Expect(res.Message).To(Equal("Error converting string to uint64: strconv.ParseUint: parsing \"abcdad\": invalid syntax"))
+		})
+
 		It("Should return status failure for seller not found", func() {
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			param := spb.SendActivationMailParams{Id: "1, 2, 3", Action: "activate"}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
@@ -60,7 +68,7 @@ var _ = Describe("Send Activation Mail", func() {
 			seller = models.Seller{UserID: 1}
 			database.DBAPM(ctx).Create(&seller)
 
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			param := spb.SendActivationMailParams{Id: "1, 2, 3", Action: "activate"}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
@@ -79,7 +87,7 @@ var _ = Describe("Send Activation Mail", func() {
 			sellerBankDetail := models.SellerBankDetail{SellerID: int(seller.ID)}
 			database.DBAPM(ctx).Create(&sellerBankDetail)
 
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			param := spb.SendActivationMailParams{Id: "1, 2, 3", Action: "activate"}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
@@ -106,7 +114,7 @@ var _ = Describe("Send Activation Mail", func() {
 			vendorAddress2 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "Status1"}
 			database.DBAPM(ctx).Create(&vendorAddress2)
 
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			param := spb.SendActivationMailParams{Id: "1, 2, 3", Action: "activate"}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
@@ -133,7 +141,7 @@ var _ = Describe("Send Activation Mail", func() {
 			vendorAddress2 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "Status2", DefaultAddress: true}
 			database.DBAPM(ctx).Create(&vendorAddress2)
 
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			param := spb.SendActivationMailParams{Id: "1, 2, 3", Action: "activate"}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
@@ -163,7 +171,7 @@ var _ = Describe("Send Activation Mail", func() {
 			vendorAddress3 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", DefaultAddress: true}
 			database.DBAPM(ctx).Create(&vendorAddress3)
 
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			param := spb.SendActivationMailParams{Id: "1, 2, 3", Action: "activate"}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
@@ -195,7 +203,7 @@ var _ = Describe("Send Activation Mail", func() {
 			vendorAddress3 := models.VendorAddress{SellerID: int(seller.ID), GSTStatus: "VERIFIED", DefaultAddress: true}
 			database.DBAPM(ctx).Create(&vendorAddress3)
 
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate"}
+			param := spb.SendActivationMailParams{Id: "1, 2, 3", Action: "activate"}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("failure"))
@@ -235,7 +243,7 @@ var _ = Describe("Send Activation Mail", func() {
 
 		It("Should return status success for seller onboarding team", func() {
 
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate", IsSellerOnboardingTeam: true}
+			param := spb.SendActivationMailParams{Id: "1, 2, 3", Action: "activate", IsSellerOnboardingTeam: true}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("success"))
@@ -249,7 +257,7 @@ var _ = Describe("Send Activation Mail", func() {
 			database.DBAPM(ctx).Save(&seller)
 
 			//for coverage to handle IsQualityTeam
-			param2 := spb.SendActivationMailParams{Ids: []uint64{2}, Action: "activate", IsQualityTeam: true}
+			param2 := spb.SendActivationMailParams{Id: "2", Action: "activate", IsQualityTeam: true}
 			res2, err2 := new(services.SellerService).SendActivationMail(ctx, &param2)
 			Expect(err2).To(BeNil())
 			Expect(res2.Status).To(Equal("success"))
@@ -282,7 +290,7 @@ var _ = Describe("Send Activation Mail", func() {
 		})
 
 		It("Should return status success and update vendor address verification status", func() {
-			param := spb.SendActivationMailParams{Ids: []uint64{1, 2, 3}, Action: "activate", IsSellerOnboardingTeam: true}
+			param := spb.SendActivationMailParams{Id: "1, 2, 3", Action: "activate", IsSellerOnboardingTeam: true}
 			res, err := new(services.SellerService).SendActivationMail(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Status).To(Equal("success"))

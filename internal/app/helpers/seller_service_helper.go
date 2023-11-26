@@ -3,8 +3,11 @@ package helpers
 import (
 	"context"
 	"fmt"
+
 	"strconv"
 	"strings"
+
+	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
 
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
@@ -13,9 +16,9 @@ import (
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
-func PerformSendActivationMail(ctx context.Context, params *spb.SendActivationMailParams) *spb.BasicApiResponse {
+func PerformSendActivationMail(ctx context.Context, sellerIDs []uint64, params *spb.SendActivationMailParams) *spb.BasicApiResponse {
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
-	sellerDetails := GetSellerByIds(ctx, params.GetIds())
+	sellerDetails := GetSellerByIds(ctx, sellerIDs)
 	var noAccess []uint64
 	if len(sellerDetails) == utils.Zero {
 		resp.Message = "Seller not found"
@@ -163,4 +166,42 @@ func CreateSellerActivityLog(ctx context.Context, sellerID uint64, action string
 		Notes:    `"reason": "Activation without mail"`,
 	}
 	database.DBAPM(ctx).Create(&activityLog)
+}
+
+func PerformApproveProductFunc(ctx context.Context, param *spb.ApproveProductsParams) *spb.BasicApiResponse {
+	resp := &spb.BasicApiResponse{Status: utils.Failure}
+	seller := GetSellerByUserId(ctx, param.GetId())
+	if seller.ID == utils.Zero {
+		resp.Message = "Seller Not Found"
+	} else {
+		if len(seller.VendorAddresses) > utils.Zero && seller.PanNumber != utils.EmptyString && seller.ActivationState != 5 {
+			itemCountResp := getAPIHelperInstance().CmtApproveItems(ctx, &cmtPb.ApproveItemParams{ProductIds: param.GetIds(), State: uint64(seller.ActivationState), UserId: seller.UserID})
+			resp.Status, resp.Message = utils.Success, fmt.Sprintf("The total number of products approved are %d", itemCountResp.GetCount())
+		} else {
+			resp.Message = "Pick Up Address or Pan number is missing"
+		}
+	}
+	return resp
+}
+
+func GetSellerByUserId(ctx context.Context, userID uint64) *models.Seller {
+	sellerData := models.Seller{}
+	database.DBAPM(ctx).Preload("VendorAddresses").Model(&models.Seller{}).Where("user_id = ?", userID).Find(&sellerData)
+	return &sellerData
+}
+
+func GetArrayIdsFromString(id string) (string, []uint64) {
+	params := map[string]string{"id": id}
+	stringIDs := strings.Split(params["id"], ",")
+
+	sellerIDs := make([]uint64, len(stringIDs))
+	for i, strID := range stringIDs {
+		trimmedStrID := strings.TrimSpace(strID)
+		id, err := strconv.ParseUint(trimmedStrID, utils.Ten, utils.SixtyFour)
+		if err != nil {
+			return fmt.Sprintf("Error converting string to uint64: %+v", err), []uint64{}
+		}
+		sellerIDs[i] = id
+	}
+	return "", sellerIDs
 }

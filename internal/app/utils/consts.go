@@ -161,6 +161,7 @@ const (
 	Zero        = 0
 	One         = 1
 	Ten         = 10
+	SixtyFour   = 64
 )
 
 const ChangePendingSupplierStatus = "change_pending_supplier_status"
