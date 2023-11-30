@@ -40,7 +40,7 @@ var _ = Describe("Verify Detail", func() {
 			param := spdpb.VerifyDetailParams{}
 
 			res, err := new(services.SellerPricingDetailService).VerifyDetail(ctx, &param)
-			Expect(res).To(BeNil())
+			Expect(res).To(Equal(&spdpb.BasicApiResponse{}))
 			Expect(err).To(BeNil())
 		})
 	})

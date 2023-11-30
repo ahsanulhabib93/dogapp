@@ -100,7 +100,7 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 }
 
 func (ss *SellerService) SmallReport(ctx context.Context, params *spb.SmallReportParams) (*spb.GetSellersResponse, error) {
-	return nil, nil
+	return &spb.GetSellersResponse{}, nil
 }
 
 func (ss *SellerService) ValidateField(ctx context.Context, params *spb.ValidateFieldParams) (*spb.StatusResponse, error) {

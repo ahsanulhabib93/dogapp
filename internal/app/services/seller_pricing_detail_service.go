@@ -9,5 +9,5 @@ import (
 type SellerPricingDetailService struct{}
 
 func (spdpb *SellerPricingDetailService) VerifyDetail(ctx context.Context, params *spdpb.VerifyDetailParams) (*spdpb.BasicApiResponse, error) {
-	return nil, nil
+	return &spdpb.BasicApiResponse{}, nil
 }

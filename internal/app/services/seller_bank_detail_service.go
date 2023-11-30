@@ -9,5 +9,5 @@ import (
 type SellerBankDetailService struct{}
 
 func (sbds *SellerBankDetailService) VerifyBankDetail(ctx context.Context, params *sbdpb.VerifyBankDetailParams) (*sbdpb.BasicApiResponse, error) {
-	return nil, nil
+	return &sbdpb.BasicApiResponse{}, nil
 }
