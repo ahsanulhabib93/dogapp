@@ -40,7 +40,7 @@ var _ = Describe("Small Report", func() {
 			param := spb.SmallReportParams{}
 
 			res, err := new(services.SellerService).SmallReport(ctx, &param)
-			Expect(res).To(Equal(&spb.SmallReportResponse{}))
+			Expect(res).To(Equal(&spb.GetSellersResponse{}))
 			Expect(err).To(BeNil())
 		})
 	})
