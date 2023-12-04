@@ -40,7 +40,7 @@ var _ = Describe("Verify Bank Detail", func() {
 			param := sbdpb.VerifyBankDetailParams{}
 
 			res, err := new(services.SellerBankDetailService).VerifyBankDetail(ctx, &param)
-			Expect(res).To(BeNil())
+			Expect(res).To(Equal(&sbdpb.BasicApiResponse{}))
 			Expect(err).To(BeNil())
 		})
 	})
