@@ -31,9 +31,10 @@ var _ = Describe("SellerAccountManager", func() {
 		})
 
 		Context("With Data", func() {
-			var Sam1 *models.SellerAccountManager
+			var Sam1, Sam2 *models.SellerAccountManager
 			BeforeEach(func() {
 				Sam1 = test_helper.CreateSellerAccountManager(ctx, 1, "SAM 1", 98765, "example@example.com", 1, "sourcing-associate")
+				Sam2 = test_helper.CreateSellerAccountManager(ctx, 1, "SAM 2", 98766, "example2@example.com", 2, "sourcing-associate")
 			})
 			It("Should return data with success message for proper params", func() {
 
@@ -41,12 +42,20 @@ var _ = Describe("SellerAccountManager", func() {
 
 				Expect(err).To(BeNil())
 				Expect(resp.Status).To(Equal("Success"))
-				Expect(resp.AccountManager.Id).To(Equal(Sam1.ID))
-				Expect(resp.AccountManager.Email).To(Equal(Sam1.Email))
-				Expect(resp.AccountManager.Phone).To(Equal(uint64(Sam1.Phone)))
-				Expect(resp.AccountManager.Name).To(Equal(Sam1.Name))
-				Expect(resp.AccountManager.Priority).To(Equal(uint64(Sam1.Priority)))
-				Expect(resp.AccountManager.Role).To(Equal(Sam1.Role))
+
+				Expect(resp.AccountManager[0].Id).To(Equal(Sam1.ID))
+				Expect(resp.AccountManager[0].Email).To(Equal(Sam1.Email))
+				Expect(resp.AccountManager[0].Phone).To(Equal(uint64(Sam1.Phone)))
+				Expect(resp.AccountManager[0].Name).To(Equal(Sam1.Name))
+				Expect(resp.AccountManager[0].Priority).To(Equal(uint64(Sam1.Priority)))
+				Expect(resp.AccountManager[0].Role).To(Equal(Sam1.Role))
+
+				Expect(resp.AccountManager[1].Id).To(Equal(Sam2.ID))
+				Expect(resp.AccountManager[1].Email).To(Equal(Sam2.Email))
+				Expect(resp.AccountManager[1].Phone).To(Equal(uint64(Sam2.Phone)))
+				Expect(resp.AccountManager[1].Name).To(Equal(Sam2.Name))
+				Expect(resp.AccountManager[1].Priority).To(Equal(uint64(Sam2.Priority)))
+				Expect(resp.AccountManager[1].Role).To(Equal(Sam2.Role))
 			})
 		})
 	})

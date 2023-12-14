@@ -8,17 +8,20 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 )
 
-func GetAndFormatSellerAccountManager(ctx context.Context, sellerID uint64) *sampb.AccountManagerObject {
-	var Sam models.SellerAccountManager
-	database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where(`seller_id =?`, sellerID).First(&Sam)
+func GetAndFormatSellerAccountManager(ctx context.Context, sellerID uint64) []*sampb.AccountManagerObject {
+	var samList []models.SellerAccountManager
+	var accountManagers []*sampb.AccountManagerObject
+	database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where(`seller_id =?`, sellerID).Scan(&samList)
 
-	accountManager := &sampb.AccountManagerObject{
-		Id:       Sam.ID,
-		Email:    Sam.Email,
-		Phone:    uint64(Sam.Phone),
-		Name:     Sam.Name,
-		Priority: uint64(Sam.Priority),
-		Role:     Sam.Role,
+	for _, sam := range samList {
+		accountManagers = append(accountManagers, &sampb.AccountManagerObject{
+			Id:       sam.ID,
+			Email:    sam.Email,
+			Phone:    uint64(sam.Phone),
+			Name:     sam.Name,
+			Priority: uint64(sam.Priority),
+			Role:     sam.Role,
+		})
 	}
-	return accountManager
+	return accountManagers
 }
