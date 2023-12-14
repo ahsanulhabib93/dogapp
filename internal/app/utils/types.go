@@ -40,4 +40,5 @@ var PartnerServiceTypeLevelMapping = map[ServiceType][]SupplierType{
 	MwsOwner:          {Mws},
 	DoBuyer:           {Buyer},
 	ProcurementVendor: {Procurement},
+	Employee:          {InternalEmployee},
 }
