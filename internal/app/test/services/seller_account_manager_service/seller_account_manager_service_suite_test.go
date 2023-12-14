@@ -8,9 +8,9 @@ import (
 	"github.com/voonik/ss2/internal/app/test"
 )
 
-func TestKeyAccountManagerService(t *testing.T) {
+func TestSellerAccountManagerService(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "KeyAccountManagerService Suite")
+	RunSpecs(t, "SellerAccountManagerService Suite")
 }
 
 var _ = AfterEach(func() {

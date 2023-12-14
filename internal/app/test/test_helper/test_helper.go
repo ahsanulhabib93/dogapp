@@ -183,3 +183,17 @@ func SetContextUser(ctx *context.Context, userId uint64, permissions []string) *
 	*ctx = misc.SetInContextThreadObject(*ctx, threadObject)
 	return ctx
 }
+
+func CreateSellerAccountManager(ctx context.Context, sellerID uint64, name string, phone uint64, email string, priority uint64, role string) *models.SellerAccountManager {
+	sam := &models.SellerAccountManager{
+		SellerID: int(sellerID),
+		Name:     name,
+		Phone:    int64(phone),
+		Email:    email,
+		Priority: int(priority),
+		Role:     role,
+	}
+
+	database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Save(sam)
+	return sam
+}
