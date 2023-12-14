@@ -11,7 +11,7 @@ import (
 func GetAndFormatSellerAccountManager(ctx context.Context, sellerID uint64) []*sampb.AccountManagerObject {
 	var samList []models.SellerAccountManager
 	var accountManagers []*sampb.AccountManagerObject
-	database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where(`seller_id =?`, sellerID).Scan(&samList)
+	database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where(`seller_id =?`, sellerID).Order("role, priority").Scan(&samList)
 
 	for _, sam := range samList {
 		accountManagers = append(accountManagers, &sampb.AccountManagerObject{
