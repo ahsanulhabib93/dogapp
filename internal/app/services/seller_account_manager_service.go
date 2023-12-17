@@ -17,7 +17,7 @@ func (sams *SellerAccountManagerService) List(ctx context.Context, params *sampb
 		return resp, nil
 	}
 
-	resp.Status = "Success"
+	resp.Status = "success"
 	resp.AccountManager = helpers.GetAndFormatSellerAccountManager(ctx, params.SellerId)
 
 	return resp, nil

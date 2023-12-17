@@ -42,7 +42,7 @@ var _ = Describe("SellerAccountManager", func() {
 				resp, err := new(services.SellerAccountManagerService).List(ctx, &sampb.ListParams{SellerId: 1})
 
 				Expect(err).To(BeNil())
-				Expect(resp.Status).To(Equal("Success"))
+				Expect(resp.Status).To(Equal("success"))
 
 				Expect(resp.AccountManager[2].Id).To(Equal(Sam1.ID))
 				Expect(resp.AccountManager[2].Email).To(Equal(Sam1.Email))
