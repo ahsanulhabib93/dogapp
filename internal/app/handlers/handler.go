@@ -23,3 +23,24 @@ func GetPaymentAccountDetailInstance() *services.PaymentAccountDetailService {
 func GetKeyAccountManagerInstance() *services.KeyAccountManagerService {
 	return new(services.KeyAccountManagerService)
 }
+
+// GetPartnerServiceMapping ...
+func GetPartnerServiceMappingInstance() *services.PartnerServiceMappingService {
+	return new(services.PartnerServiceMappingService)
+}
+
+func GetSellerInstance() *services.SellerService {
+	return new(services.SellerService)
+}
+
+func GetSellerBankDetailInstance() *services.SellerBankDetailService {
+	return new(services.SellerBankDetailService)
+}
+
+func GetSellerPricingDetailInstance() *services.SellerPricingDetailService {
+	return new(services.SellerPricingDetailService)
+}
+
+func GetVendorAddressInstance() *services.VendorAddressService {
+	return new(services.VendorAddressService)
+}

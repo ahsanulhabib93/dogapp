@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
@@ -28,6 +29,18 @@ func GetVaccount(ctx context.Context) int64 {
 	return misc.ExtractThreadObject(ctx).VaccountId
 }
 
+func GetPortalId(ctx context.Context) int64 {
+	return misc.ExtractThreadObject(ctx).PortalId
+}
+
+func GetCurrentActId(ctx context.Context) int64 {
+	return misc.ExtractThreadObject(ctx).CurrentActId
+}
+
+func GetXRequestId(ctx context.Context) string {
+	return misc.ExtractThreadObject(ctx).XRequestId
+}
+
 func GetCurrentUserPermissions(ctx context.Context) []string {
 	threadUser := misc.ExtractThreadObject(ctx).UserData
 	if threadUser != nil {
@@ -35,6 +48,16 @@ func GetCurrentUserPermissions(ctx context.Context) []string {
 	}
 
 	return []string{}
+}
+
+func ParamCount(params ...[]uint64) int {
+	count := 0
+	for _, param := range params {
+		if len(param) > 0 {
+			count += 1
+		}
+	}
+	return count
 }
 
 func Int64Min(a, b uint64) uint64 {
@@ -153,4 +176,29 @@ func Includes(array interface{}, item interface{}) bool {
 		}
 	}
 	return false
+}
+
+func GetCommonElements(arr1 []string, arr2 []string) []string {
+	elementMap := make(map[string]bool)
+	commonElements := []string{}
+
+	for _, element := range arr1 {
+		elementMap[element] = true
+	}
+
+	for _, element := range arr2 {
+		if elementMap[element] {
+			commonElements = append(commonElements, element)
+		}
+	}
+
+	return commonElements
+}
+
+func GetArrIntToArrStr(arrInt []uint64) []string {
+	arrStr := make([]string, len(arrInt))
+	for i, access := range arrInt {
+		arrStr[i] = strconv.Itoa(int(access))
+	}
+	return arrStr
 }

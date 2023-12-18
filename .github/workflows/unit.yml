@@ -5,6 +5,7 @@ on: ["push"]
 env:
   SOURCE_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
   GONOSUMDB: github.com/voonik/*,github.com/shopuptech/*
+  GOPRIVATE: github.com/voonik/*,github.com/shopuptech/*
 
 jobs:
   tests:
@@ -29,18 +30,20 @@ jobs:
     steps:  
       - name: Setup Env Vars and work dir
         run: |
-          test -d "GoLang/src/github.com/voonik/sr_service" || mkdir -p "GoLang/src/github.com/voonik/sr_service"
+          test -d "GoLang/src/github.com/voonik/ss2" || mkdir -p "GoLang/src/github.com/voonik/ss2"
 
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           path: GoLang/src/github.com/voonik/ss2
+          fetch-depth: 0
 
-      - name: Install SSH keys
+      - name: ssh key setup
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: "Add known public keys of github here"
+          if_key_exists: replace
 
       - name: Verify MySQL
         run: |

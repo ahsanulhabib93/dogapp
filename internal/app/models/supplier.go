@@ -40,21 +40,18 @@ type Supplier struct {
 	NidNumber                 string                 `json:"nid_number"`
 	NidFrontImageUrl          string                 `gorm:"type:varchar(512)" json:"nid_front_image_url"`
 	NidBackImageUrl           string                 `gorm:"type:varchar(512)" json:"nid_back_image_url"`
-	TradeLicenseUrl           string                 `gorm:"type:varchar(512)" json:"trade_license_url"`
-	AgreementUrl              string                 `gorm:"type:varchar(512)" json:"agreement_url"`
 	ShopOwnerImageUrl         string                 `gorm:"type:varchar(512)" json:"shop_owner_image_url"`
 	GuarantorImageUrl         string                 `gorm:"type:varchar(512)" json:"guarantor_image_url"`
 	GuarantorNidNumber        string                 `json:"guarantor_nid_number"`
 	GuarantorNidFrontImageUrl string                 `gorm:"type:varchar(512)" json:"guarantor_nid_front_image_url"`
 	GuarantorNidBackImageUrl  string                 `gorm:"type:varchar(512)" json:"guarantor_nid_back_image_url"`
 	ChequeImageUrl            string                 `gorm:"type:varchar(512)" json:"cheque_image_url"`
-	SupplierType              utils.SupplierType     `json:"supplier_type"`
 	SupplierAddresses         []SupplierAddress      `json:"supplier_addresses"`
 	PaymentAccountDetails     []PaymentAccountDetail `json:"payment_account_details"`
 	KeyAccountManagers        []KeyAccountManager
 	SupplierCategoryMappings  []SupplierCategoryMapping
 	SupplierOpcMappings       []SupplierOpcMapping
-	PartnerServiceMappings    []PartnerServiceMapping
+	PartnerServiceMappings    []PartnerServiceMapping `json:"partner_service_mappings"`
 }
 
 // Validate ...
@@ -128,8 +125,7 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 }
 
 func (supplier *Supplier) IsAnyDocumentPresent() bool {
-	return !(supplier.NidNumber == "" && supplier.NidFrontImageUrl == "" && supplier.NidBackImageUrl == "" &&
-		supplier.TradeLicenseUrl == "" && supplier.AgreementUrl == "")
+	return !(supplier.NidNumber == "" && supplier.NidFrontImageUrl == "" && supplier.NidBackImageUrl == "")
 }
 
 func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {

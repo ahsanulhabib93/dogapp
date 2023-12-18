@@ -4,9 +4,12 @@ import (
 	"context"
 	"log"
 
+	"github.com/shopuptech/go-libs/logger"
+	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
 	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
 	employeePb "github.com/voonik/goConnect/api/go/sr_service/attendance"
 	otpPb "github.com/voonik/goConnect/api/go/vigeon2/otp"
+	cmt "github.com/voonik/goConnect/cmt/product"
 	userSrv "github.com/voonik/goConnect/cre_admin/users_detail"
 	employeeSrv "github.com/voonik/goConnect/sr_service/attendance"
 	Vigeon2Service "github.com/voonik/goConnect/vigeon2/otp"
@@ -22,6 +25,7 @@ type APIHelperInterface interface {
 	VerifyOtpAPI(context.Context, otpPb.VerifyOtpParam) *otpPb.OtpResponse
 	FindUserByPhone(context.Context, string) *userPb.UserInfo
 	FindTalentXUserByPhone(context.Context, string) []*employeePb.EmployeeRecord
+	CmtApproveItems(context.Context, *cmtPb.ApproveItemParams) *cmtPb.ItemCountResponse
 }
 
 var apiHelper APIHelperInterface
@@ -106,4 +110,14 @@ func (apiHelper *APIHelper) FindTalentXUserByPhone(ctx context.Context, phone st
 	resp, _ := employeeSrv.Attendance().ListEmployee(ctx, &employeePb.ListEmployeeParams{Phone: phone, IgnoreWarehouseFilter: true})
 	log.Printf("FindTalentXUserByPhone: phone = %s response = %v\n", phone, resp)
 	return resp.Data
+}
+
+func (apiHelper *APIHelper) CmtApproveItems(ctx context.Context, param *cmtPb.ApproveItemParams) *cmtPb.ItemCountResponse {
+	apiResp, err := cmt.Product().ApproveItems(ctx, param)
+	logger.Log().Infof("Cmt Approve Item Api Response: %+v", apiResp)
+	if err != nil {
+		logger.Log().Errorf("Cmt Approve Item Api error : %+v", err)
+		return &cmtPb.ItemCountResponse{}
+	}
+	return apiResp
 }

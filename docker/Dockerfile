@@ -35,5 +35,11 @@ RUN go build -o ./ ./cmd/server ./cmd/worker ./cmd/script
 FROM base
 WORKDIR /ss2
 COPY --from=builder /ss2 .
+
+RUN addgroup -g 10000 ss2
+RUN adduser --uid 10000 --ingroup ss2 -S ss2
+RUN chown -R ss2:ss2 /ss2
+USER ss2
+
 EXPOSE 5006
 CMD ["./server"]
