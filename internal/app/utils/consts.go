@@ -172,6 +172,7 @@ const (
 
 const ChangePendingSupplierStatus = "change_pending_supplier_status"
 const ScheduleEveryDay = "0 0 * * *"
+const SS2UinquePrefixKey = "SS2-PAD-"
 
 var PartnerServiceTypeMapping = map[string]ServiceType{
 	"Supplier":          Supplier,
@@ -180,6 +181,7 @@ var PartnerServiceTypeMapping = map[string]ServiceType{
 	"MwsOwner":          MwsOwner,
 	"DoBuyer":           DoBuyer,
 	"ProcurementVendor": ProcurementVendor,
+	"Employee":          Employee,
 }
 
 var PartnerServiceLevelMapping = map[string]SupplierType{

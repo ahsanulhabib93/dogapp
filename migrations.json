@@ -51,6 +51,11 @@
             "name": "Procurement Vendor",
             "description": "Role for Procurement Vendor",
             "vaccount_id": 2
+        },
+        {
+            "name": "Employee",
+            "description": "Role for Employee",
+            "vaccount_id": 2
         }
     ],
     "role_scopes": [
@@ -76,6 +81,11 @@
         },
         {
             "role_name": "Procurement Vendor",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Employee",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -241,6 +251,12 @@
             "id": "supplierpanel:procurementvendorservice:view",
             "description": "Access to view procurement vendors",
             "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:employeeservice:view",
+            "description": "",
+            "scope_id": "",
             "vaccount_id": 2
         }
     ],
@@ -919,6 +935,11 @@
         {
             "role_name": "Procurement Vendor",
             "permission_id": "supplierpanel:procurementvendorservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Employee",
+            "permission_id": "supplierpanel:employeeservice:view",
             "vaccount_id": 2
         }
     ]
