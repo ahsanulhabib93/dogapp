@@ -255,8 +255,8 @@
         },
         {
             "id": "supplierpanel:employeeservice:view",
-            "description": "",
-            "scope_id": "",
+            "description": "Access to view employees",
+            "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
     ],
