@@ -7,10 +7,12 @@ import (
 	"github.com/shopuptech/go-libs/logger"
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
 	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
+	paywellPb "github.com/voonik/goConnect/api/go/paywell_token/payment_gateway"
 	employeePb "github.com/voonik/goConnect/api/go/sr_service/attendance"
 	otpPb "github.com/voonik/goConnect/api/go/vigeon2/otp"
 	cmt "github.com/voonik/goConnect/cmt/product"
 	userSrv "github.com/voonik/goConnect/cre_admin/users_detail"
+	paywell "github.com/voonik/goConnect/paywell_token/payment_gateway"
 	employeeSrv "github.com/voonik/goConnect/sr_service/attendance"
 	Vigeon2Service "github.com/voonik/goConnect/vigeon2/otp"
 	"github.com/voonik/ss2/internal/app/utils"
@@ -26,6 +28,7 @@ type APIHelperInterface interface {
 	FindUserByPhone(context.Context, string) *userPb.UserInfo
 	FindTalentXUserByPhone(context.Context, string) []*employeePb.EmployeeRecord
 	CmtApproveItems(context.Context, *cmtPb.ApproveItemParams) *cmtPb.ItemCountResponse
+	CreatePaywellCard(ctx context.Context, params *paywellPb.CreateCardRequest) *paywellPb.CreateCardResponse
 }
 
 var apiHelper APIHelperInterface
@@ -43,7 +46,7 @@ func getAPIHelperInstance() APIHelperInterface {
 	return apiHelper
 }
 
-//SendOtpAPI ...
+// SendOtpAPI ...
 func SendOtpAPI(ctx context.Context, supplierID uint64, phone string, content string, resend bool) *otpPb.OtpResponse {
 	otpParam := otpPb.OtpParam{
 		Service:    "ss2",
@@ -56,13 +59,13 @@ func SendOtpAPI(ctx context.Context, supplierID uint64, phone string, content st
 	return getAPIHelperInstance().SendOtpAPI(ctx, otpParam)
 }
 
-//SendOtpAPI ...
+// SendOtpAPI ...
 func (apiHelper *APIHelper) SendOtpAPI(ctx context.Context, otpParam otpPb.OtpParam) *otpPb.OtpResponse {
 	resp, _ := Vigeon2Service.Otp().CreateOtp(ctx, &otpParam)
 	return resp
 }
 
-//VerifyOtpAPI ...
+// VerifyOtpAPI ...
 func VerifyOtpAPI(ctx context.Context, supplierID uint64, otpCode string) *otpPb.OtpResponse {
 	verifyOtpParam := otpPb.VerifyOtpParam{
 		Service:    "ss2",
@@ -73,13 +76,13 @@ func VerifyOtpAPI(ctx context.Context, supplierID uint64, otpCode string) *otpPb
 	return getAPIHelperInstance().VerifyOtpAPI(ctx, verifyOtpParam)
 }
 
-//VerifyOtpAPI ...
+// VerifyOtpAPI ...
 func (apiHelper *APIHelper) VerifyOtpAPI(ctx context.Context, verifyOtpParam otpPb.VerifyOtpParam) *otpPb.OtpResponse {
 	resp, _ := Vigeon2Service.Otp().VerifyOtp(ctx, &verifyOtpParam)
 	return resp
 }
 
-//FindCreUserByPhone ...
+// FindCreUserByPhone ...
 func FindCreUserByPhone(ctx context.Context, phone string) *userPb.UserInfo {
 	log.Printf("FindCreUserByPhone: phone = %s\n", phone)
 	if utils.IsEmptyStr(phone) {
@@ -98,14 +101,14 @@ func GetTalentXUser(ctx context.Context, phone string) []*employeePb.EmployeeRec
 	return getAPIHelperInstance().FindTalentXUserByPhone(ctx, phone)
 }
 
-//FindUserByPhone ...
+// FindUserByPhone ...
 func (apiHelper *APIHelper) FindUserByPhone(ctx context.Context, phone string) *userPb.UserInfo {
 	resp, _ := userSrv.UsersDetail().FindByPhone(ctx, &userPb.UserParams{Phone: phone})
 	log.Printf("FindUserByPhone: phone = %s response = %v\n", phone, resp)
 	return resp.Data
 }
 
-//FindTalentXUserByPhone ...
+// FindTalentXUserByPhone ...
 func (apiHelper *APIHelper) FindTalentXUserByPhone(ctx context.Context, phone string) []*employeePb.EmployeeRecord {
 	resp, _ := employeeSrv.Attendance().ListEmployee(ctx, &employeePb.ListEmployeeParams{Phone: phone, IgnoreWarehouseFilter: true})
 	log.Printf("FindTalentXUserByPhone: phone = %s response = %v\n", phone, resp)
@@ -120,4 +123,14 @@ func (apiHelper *APIHelper) CmtApproveItems(ctx context.Context, param *cmtPb.Ap
 		return &cmtPb.ItemCountResponse{}
 	}
 	return apiResp
+}
+
+// CreatePaywellCard is used to create payment card and return encrypted card info
+func (apiHelper *APIHelper) CreatePaywellCard(ctx context.Context, params *paywellPb.CreateCardRequest) *paywellPb.CreateCardResponse {
+	resp, err := paywell.PaymentGateway().CreateCard(ctx, params)
+	if err != nil {
+		logger.FromContext(ctx).Info("Error while creating Paywell Card: ", err.Error())
+		return &paywellPb.CreateCardResponse{}
+	}
+	return resp
 }

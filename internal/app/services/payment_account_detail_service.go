@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/shopuptech/go-libs/logger"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/helpers"
@@ -49,15 +50,27 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			RoutingNumber:  params.GetRoutingNumber(),
 			IsDefault:      params.GetIsDefault(),
 		}
+		if params.GetExtraDetails() != nil {
+			if helpers.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
+				resp.Message = "Cannot set older date as expiry date"
+				return &resp, nil
+			}
+			paymentAccountDetail.SetExtraDetails(*params.GetExtraDetails())
+		}
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while creating Payment Account Detail: %s", err.Error)
-		} else {
-			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
-			resp.Message = "Payment Account Detail Added Successfully"
-			resp.Success = true
+			return &resp, nil
 		}
+		if params.GetAccountType() == uint64(utils.PrepaidCard) {
+			logger.FromContext(ctx).Info("Logger here extra details ", params.GetExtraDetails())
+			helpers.SaveExtraDetails(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
+		}
+		helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
+		resp.Message = "Payment Account Detail Added Successfully"
+		resp.Success = true
+
 	}
 	log.Printf("AddPaymentAccountResponse: %+v", resp)
 	return &resp, nil

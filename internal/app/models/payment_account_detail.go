@@ -2,10 +2,14 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/shopuptech/go-libs/logger"
+	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
@@ -85,9 +89,69 @@ func (paymentAccount PaymentAccountDetail) validAccountSubType() bool {
 
 func (paymentAccount PaymentAccountDetail) accountTypeMapping() map[utils.AccountType][]utils.AccountSubType {
 	return map[utils.AccountType][]utils.AccountSubType{
-		utils.Bank: {utils.Current, utils.Savings},
-		utils.Mfs:  {utils.Bkash, utils.Nagada},
+		utils.Bank:        {utils.Current, utils.Savings},
+		utils.Mfs:         {utils.Bkash, utils.Nagada},
+		utils.PrepaidCard: {utils.UCBL, utils.EBL},
 	}
+}
+
+func (paymentAccount *PaymentAccountDetail) GetExtraDetails() *paymentpb.ExtraDetails {
+	if paymentAccount.ExtraDetails == nil {
+		return &paymentpb.ExtraDetails{}
+	}
+
+	ExtraDetails := &paymentpb.ExtraDetails{}
+	err := json.Unmarshal(paymentAccount.ExtraDetails, ExtraDetails)
+	if err != nil {
+		logger.Log().Errorf("GetExtraDetails error = ", err.Error())
+	}
+	return ExtraDetails
+}
+
+func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails paymentpb.ExtraDetails) *PaymentAccountDetail {
+	var existingExtraDetails paymentpb.ExtraDetails
+	fmt.Println("logger here existingExtraDetails 0 ", paymentAccount.ExtraDetails)
+	if paymentAccount.ExtraDetails != nil {
+		if err := json.Unmarshal(paymentAccount.ExtraDetails, &existingExtraDetails); err != nil {
+			fmt.Printf("Error decoding existing ExtraDetails: %v\n", err)
+			return paymentAccount
+		}
+	}
+
+	fmt.Println("logger here existingExtraDetails ", existingExtraDetails)
+	fmt.Println("logger here updatedExtraDetails ", updatedExtraDetails)
+	mergeExtraDetails(&existingExtraDetails, updatedExtraDetails)
+	fmt.Println("logger here existingExtraDetails 2 ", existingExtraDetails)
+
+	// Encode the merged struct back to JSON
+	updatedJSON, err := json.Marshal(existingExtraDetails)
+	if err != nil {
+		fmt.Printf("Error marshaling updated ExtraDetails: %v\n", err)
+		return paymentAccount
+	}
+
+	paymentAccount.ExtraDetails = updatedJSON
+	return paymentAccount
+}
+
+// Function to merge two ExtraDetails structs
+func mergeExtraDetails(existing *paymentpb.ExtraDetails, updated paymentpb.ExtraDetails) {
+	if updated.EmployeeId != 0 {
+		existing.EmployeeId = updated.EmployeeId
+	}
+	if updated.ClientId != 0 {
+		existing.ClientId = updated.ClientId
+	}
+	if updated.ExpiryDate != "" {
+		existing.ExpiryDate = updated.ExpiryDate
+	}
+	if updated.UniqueId != "" {
+		existing.UniqueId = updated.UniqueId
+	}
+	if updated.Token != "" {
+		existing.Token = updated.Token
+	}
+	// Add more fields as needed
 }
 
 func JoinPaymentAccountDetailWarehouseMappings() string {

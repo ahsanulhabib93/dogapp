@@ -3,8 +3,12 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
+	"unicode"
 
+	paywellPb "github.com/voonik/goConnect/api/go/paywell_token/payment_gateway"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
@@ -134,4 +138,59 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	}
 
 	return nil
+}
+
+func SaveExtraDetails(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail) *models.PaymentAccountDetail {
+	uniqueId := CreateUniqueKey(paymentAccountDetail.ID)
+	expiryMonth, expiryYear := FetchMonthAndYear(extraDetails.ExpiryDate)
+	paywellResponse := getAPIHelperInstance().CreatePaywellCard(ctx, &paywellPb.CreateCardRequest{
+		UniqueId:    uniqueId,
+		CardInfo:    paymentAccountDetail.AccountNumber,
+		ExpiryMonth: expiryMonth,
+		ExpiryYear:  expiryYear,
+	})
+	paymentAccountDetail.AccountNumber = paywellResponse.MaskedNumber
+	paymentAccountDetail.SetExtraDetails(paymentpb.ExtraDetails{
+		UniqueId: uniqueId,
+		Token:    paywellResponse.GetToken(),
+	})
+	database.DBAPM(ctx).Save(&paymentAccountDetail)
+	return paymentAccountDetail
+}
+
+func CheckForOlderDate(dateStr string) bool {
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		fmt.Println("Error parsing date:", err)
+		return false
+	}
+
+	currentDate := time.Now()
+	return date.Before(currentDate)
+}
+
+func FetchMonthAndYear(dateStr string) (string, string) {
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return "", ""
+	}
+
+	month := fmt.Sprintf("%02d", int(date.Month()))
+	year := fmt.Sprintf("%04d", date.Year())
+
+	return month, year
+}
+
+func CreateUniqueKey(id uint64) string {
+	uniqueId := utils.SS2UinquePrefixKey + strconv.FormatUint(uint64(id), 10)
+	return uniqueId
+}
+
+func IsNumeric(input string) bool {
+	for _, char := range input {
+		if !unicode.IsDigit(char) {
+			return false
+		}
+	}
+	return true
 }
