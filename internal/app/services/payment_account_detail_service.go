@@ -67,7 +67,7 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			return &resp, nil
 		}
 		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			helpers.SaveExtraDetails(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
+			helpers.EncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
 		}
 		helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
 		resp.Message = "Payment Account Detail Added Successfully"
@@ -93,6 +93,17 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 		if !supplier.IsChangeAllowed(ctx) {
 			resp.Message = "Change Not Allowed"
 		} else {
+			if params.GetExtraDetails() != nil {
+				if !helpers.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
+					resp.Message = "Invalid Date"
+					return &resp, nil
+				}
+				if helpers.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
+					resp.Message = "Cannot set older date as expiry date"
+					return &resp, nil
+				}
+				paymentAccountDetail.SetExtraDetails(*params.GetExtraDetails())
+			}
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 				AccountType:    utils.AccountType(params.GetAccountType()),
 				AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
