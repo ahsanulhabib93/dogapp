@@ -140,8 +140,11 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 }
 
 func SaveExtraDetails(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail) *models.PaymentAccountDetail {
+	fmt.Println("logger here extradetails: ", extraDetails)
+	fmt.Println("logger here paymentAccountDetail: ", paymentAccountDetail)
 	uniqueId := CreateUniqueKey(paymentAccountDetail.ID)
 	expiryMonth, expiryYear := FetchMonthAndYear(extraDetails.ExpiryDate)
+	fmt.Printf("Logger here payload for paywell: unique id %v, card info %v, expiry month %v, expiry year %v", uniqueId, paymentAccountDetail.AccountNumber, expiryMonth, expiryYear)
 	paywellResponse := getAPIHelperInstance().CreatePaywellCard(ctx, &paywellPb.CreateCardRequest{
 		UniqueId:    uniqueId,
 		CardInfo:    paymentAccountDetail.AccountNumber,
@@ -153,6 +156,7 @@ func SaveExtraDetails(ctx context.Context, extraDetails paymentpb.ExtraDetails, 
 		UniqueId: uniqueId,
 		Token:    paywellResponse.GetToken(),
 	})
+	fmt.Println("logger here paymentAccountDetail after extra details save: ", paymentAccountDetail)
 	database.DBAPM(ctx).Save(&paymentAccountDetail)
 	return paymentAccountDetail
 }

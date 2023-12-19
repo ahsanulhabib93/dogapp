@@ -109,6 +109,7 @@ func (paymentAccount *PaymentAccountDetail) GetExtraDetails() *paymentpb.ExtraDe
 }
 
 func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails paymentpb.ExtraDetails) *PaymentAccountDetail {
+	fmt.Println("logger here inside SetExtraDetails")
 	var existingExtraDetails paymentpb.ExtraDetails
 	if paymentAccount.ExtraDetails != nil {
 		if err := json.Unmarshal(paymentAccount.ExtraDetails, &existingExtraDetails); err != nil {
@@ -116,13 +117,16 @@ func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails 
 			return paymentAccount
 		}
 	}
+	fmt.Println("logger here inside SetExtraDetails - initial extra details: ", existingExtraDetails)
+	fmt.Println("logger here inside SetExtraDetails - updated extra details: ", updatedExtraDetails)
 	mergeExtraDetails(&existingExtraDetails, updatedExtraDetails)
-
+	fmt.Println("logger here inside SetExtraDetails - final extra details: ", existingExtraDetails)
 	updatedJSON, err := json.Marshal(existingExtraDetails)
 	if err != nil {
 		fmt.Printf("Error marshaling updated ExtraDetails: %v\n", err)
 		return paymentAccount
 	}
+	fmt.Println("logger here inside SetExtraDetails - updatedJSON: ", updatedJSON)
 
 	paymentAccount.ExtraDetails = updatedJSON
 	return paymentAccount

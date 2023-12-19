@@ -66,6 +66,7 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			resp.Message = fmt.Sprintf("Error while creating Payment Account Detail: %s", err.Error)
 			return &resp, nil
 		}
+		fmt.Println("Logger here is prepaid card: ", params.GetAccountType() == uint64(utils.PrepaidCard))
 		if params.GetAccountType() == uint64(utils.PrepaidCard) {
 			helpers.SaveExtraDetails(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
 		}

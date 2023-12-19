@@ -128,6 +128,7 @@ func (apiHelper *APIHelper) CmtApproveItems(ctx context.Context, param *cmtPb.Ap
 // CreatePaywellCard is used to create payment card and return encrypted card info
 func (apiHelper *APIHelper) CreatePaywellCard(ctx context.Context, params *paywellPb.CreateCardRequest) *paywellPb.CreateCardResponse {
 	resp, err := paywell.PaymentGateway().CreateCard(ctx, params)
+	logger.FromContext(ctx).Info("CreatePaywellCard response: ", resp)
 	if err != nil {
 		logger.FromContext(ctx).Info("Error while creating Paywell Card: ", err.Error())
 		return &paywellPb.CreateCardResponse{}
