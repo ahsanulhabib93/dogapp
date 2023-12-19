@@ -110,20 +110,14 @@ func (paymentAccount *PaymentAccountDetail) GetExtraDetails() *paymentpb.ExtraDe
 
 func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails paymentpb.ExtraDetails) *PaymentAccountDetail {
 	var existingExtraDetails paymentpb.ExtraDetails
-	fmt.Println("logger here existingExtraDetails 0 ", paymentAccount.ExtraDetails)
 	if paymentAccount.ExtraDetails != nil {
 		if err := json.Unmarshal(paymentAccount.ExtraDetails, &existingExtraDetails); err != nil {
 			fmt.Printf("Error decoding existing ExtraDetails: %v\n", err)
 			return paymentAccount
 		}
 	}
-
-	fmt.Println("logger here existingExtraDetails ", existingExtraDetails)
-	fmt.Println("logger here updatedExtraDetails ", updatedExtraDetails)
 	mergeExtraDetails(&existingExtraDetails, updatedExtraDetails)
-	fmt.Println("logger here existingExtraDetails 2 ", existingExtraDetails)
 
-	// Encode the merged struct back to JSON
 	updatedJSON, err := json.Marshal(existingExtraDetails)
 	if err != nil {
 		fmt.Printf("Error marshaling updated ExtraDetails: %v\n", err)

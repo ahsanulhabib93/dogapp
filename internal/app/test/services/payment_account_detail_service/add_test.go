@@ -2,7 +2,6 @@ package payment_account_detail_service_test
 
 import (
 	"context"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -89,7 +88,6 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 					ExpiryDate: "2025-01-01",
 				},
 			}
-			fmt.Println("logger here test params: ", param)
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
@@ -99,7 +97,6 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
 			Expect(len(paymentAccounts)).To(Equal(1))
 			paymentAccount := paymentAccounts[0]
-			fmt.Println("logger here test result paymentAccount", paymentAccount)
 
 			Expect(paymentAccount.AccountType).To(Equal(utils.PrepaidCard))
 			Expect(paymentAccount.AccountSubType).To(Equal(utils.UCBL))
@@ -412,11 +409,42 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 					ExpiryDate: "2022-01-01",
 				},
 			}
-			fmt.Println("logger here test params: ", param)
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Cannot set older date as expiry date"))
+
+			paymentAccounts := []*models.PaymentAccountDetail{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
+			Expect(len(paymentAccounts)).To(Equal(0))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+
+		It("Returns error on invalid expiry date", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:     supplier.ID,
+				AccountType:    uint64(utils.PrepaidCard),
+				AccountSubType: uint64(utils.UCBL),
+				AccountName:    "AccountName",
+				AccountNumber:  "11003388",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+				ExtraDetails: &paymentpb.ExtraDetails{
+					EmployeeId: uint64(1234),
+					ClientId:   uint64(123),
+					ExpiryDate: "ABCD",
+				},
+			}
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Invalid Date"))
 
 			paymentAccounts := []*models.PaymentAccountDetail{{}}
 			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)

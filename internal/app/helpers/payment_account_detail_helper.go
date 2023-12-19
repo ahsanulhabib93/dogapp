@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	paywellPb "github.com/voonik/goConnect/api/go/paywell_token/payment_gateway"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
@@ -159,25 +158,15 @@ func SaveExtraDetails(ctx context.Context, extraDetails paymentpb.ExtraDetails, 
 }
 
 func CheckForOlderDate(dateStr string) bool {
-	date, err := time.Parse("2006-01-02", dateStr)
-	if err != nil {
-		fmt.Println("Error parsing date:", err)
-		return false
-	}
-
+	date, _ := time.Parse("2006-01-02", dateStr)
 	currentDate := time.Now()
 	return date.Before(currentDate)
 }
 
 func FetchMonthAndYear(dateStr string) (string, string) {
-	date, err := time.Parse("2006-01-02", dateStr)
-	if err != nil {
-		return "", ""
-	}
-
+	date, _ := time.Parse("2006-01-02", dateStr)
 	month := fmt.Sprintf("%02d", int(date.Month()))
 	year := fmt.Sprintf("%04d", date.Year())
-
 	return month, year
 }
 
@@ -186,11 +175,7 @@ func CreateUniqueKey(id uint64) string {
 	return uniqueId
 }
 
-func IsNumeric(input string) bool {
-	for _, char := range input {
-		if !unicode.IsDigit(char) {
-			return false
-		}
-	}
-	return true
+func ValidDate(dateStr string) bool {
+	_, err := time.Parse("2006-01-02", dateStr)
+	return err == nil
 }

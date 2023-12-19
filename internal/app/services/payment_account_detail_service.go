@@ -6,7 +6,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/shopuptech/go-libs/logger"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/helpers"
@@ -51,6 +50,10 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			IsDefault:      params.GetIsDefault(),
 		}
 		if params.GetExtraDetails() != nil {
+			if !helpers.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
+				resp.Message = "Invalid Date"
+				return &resp, nil
+			}
 			if helpers.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
 				resp.Message = "Cannot set older date as expiry date"
 				return &resp, nil
@@ -64,7 +67,6 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			return &resp, nil
 		}
 		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			logger.FromContext(ctx).Info("Logger here extra details ", params.GetExtraDetails())
 			helpers.SaveExtraDetails(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
 		}
 		helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
