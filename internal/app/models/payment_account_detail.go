@@ -139,6 +139,12 @@ func mergeExtraDetails(existing *paymentpb.ExtraDetails, updated paymentpb.Extra
 	if updated.ExpiryDate != "" {
 		existing.ExpiryDate = updated.ExpiryDate
 	}
+	if updated.UniqueId != "" {
+		existing.UniqueId = updated.UniqueId
+	}
+	if updated.Token != "" {
+		existing.Token = updated.Token
+	}
 }
 
 func JoinPaymentAccountDetailWarehouseMappings() string {
