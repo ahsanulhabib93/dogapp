@@ -2,14 +2,17 @@ package payment_account_detail_service_test
 
 import (
 	"context"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	paywellPb "github.com/voonik/goConnect/api/go/paywell_token/payment_gateway"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
@@ -19,11 +22,16 @@ import (
 
 var _ = Describe("EditPaymentAccountDetail", func() {
 	var ctx context.Context
+	var apiHelperInstance *mocks.APIHelperInterface
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
 		test_utils.SetPermission(&ctx, []string{"supplierpanel:editverifiedblockedsupplieronly:admin"})
 		aaaModels.CreateAppPreferenceServiceInterface()
+	})
+
+	AfterEach(func() {
+		helpers.InjectMockAPIHelperInstance(nil)
 	})
 
 	Context("Editing all attributes of existing PaymentAccount", func() {
@@ -264,6 +272,118 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("PaymentAccountDetail Edited Successfully"))
+		})
+	})
+
+	Context("Editing all attributes of existing PaymentAccount for PrePaid Card", func() {
+		It("Should update and return success response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, IsDefault: true})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:             paymentAccount.ID,
+				AccountType:    uint64(utils.PrepaidCard),
+				AccountSubType: uint64(utils.EBL),
+				AccountName:    "AccountName",
+				AccountNumber:  "11003388",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+				ExtraDetails: &paymentpb.ExtraDetails{
+					EmployeeId: uint64(12345),
+					ClientId:   uint64(123),
+					ExpiryDate: "2025-01-02",
+				},
+			}
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("CreatePaywellCard", ctx, &paywellPb.CreateCardRequest{UniqueId: fmt.Sprintf("SS2-PAD-%v", paymentAccount.ID), CardInfo: "11003388", ExpiryMonth: "01", ExpiryYear: "2025"}).Return(&paywellPb.CreateCardResponse{IsError: false, Message: "Successfully created", Token: "sample_token_1", MaskedNumber: "masked_number_11003388"}, nil)
+			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("PaymentAccountDetail Edited Successfully"))
+
+			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccount, paymentAccount.ID)
+			Expect(paymentAccount.AccountType).To(Equal(utils.PrepaidCard))
+			Expect(paymentAccount.AccountSubType).To(Equal(utils.EBL))
+			Expect(paymentAccount.AccountName).To(Equal(param.AccountName))
+			Expect(paymentAccount.AccountNumber).To(Equal("masked_number_11003388"))
+			Expect(paymentAccount.BankID).To(Equal(param.BankId))
+			Expect(paymentAccount.BranchName).To(Equal(param.BranchName))
+			Expect(paymentAccount.RoutingNumber).To(Equal(param.RoutingNumber))
+			Expect(paymentAccount.IsDefault).To(Equal(true))
+
+			extraDetails := paymentAccount.GetExtraDetails()
+			Expect(extraDetails.ExpiryDate).To(Equal("2025-01-02"))
+			Expect(extraDetails.Token).To(Equal("sample_token_1"))
+			Expect(extraDetails.ClientId).To(Equal(uint64(123)))
+			Expect(extraDetails.EmployeeId).To(Equal(uint64(12345)))
+			Expect(extraDetails.UniqueId).To(Equal("SS2-PAD-1"))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+
+		It("Should not update for invalid date", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, IsDefault: true})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:             paymentAccount.ID,
+				AccountType:    uint64(utils.PrepaidCard),
+				AccountSubType: uint64(utils.EBL),
+				AccountName:    "AccountName",
+				AccountNumber:  "11003388",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+				ExtraDetails: &paymentpb.ExtraDetails{
+					EmployeeId: uint64(12345),
+					ClientId:   uint64(123),
+					ExpiryDate: "ABCD",
+				},
+			}
+			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Invalid Date"))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+
+		It("Should not update for older date", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, IsDefault: true})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:             paymentAccount.ID,
+				AccountType:    uint64(utils.PrepaidCard),
+				AccountSubType: uint64(utils.EBL),
+				AccountName:    "AccountName",
+				AccountNumber:  "11003388",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+				ExtraDetails: &paymentpb.ExtraDetails{
+					EmployeeId: uint64(12345),
+					ClientId:   uint64(123),
+					ExpiryDate: "2000-01-02",
+				},
+			}
+			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Cannot set older date as expiry date"))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
 })
