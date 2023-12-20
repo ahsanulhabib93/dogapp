@@ -14,6 +14,7 @@ import (
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
 	"gorm.io/datatypes"
+	gormIO "gorm.io/gorm"
 )
 
 type PaymentAccountDetail struct {
@@ -28,8 +29,17 @@ type PaymentAccountDetail struct {
 	RoutingNumber  string               `json:"routing_number,omitempty"`
 	IsDefault      bool                 `json:"is_default,omitempty"`
 	ExtraDetails   datatypes.JSON       `gorm:"type:json"`
+	DeletedAt      gormIO.DeletedAt     `json:"deleted_at,omitempty"`
 
 	PaymentAccountDetailWarehouseMappings []*PaymentAccountDetailWarehouseMapping
+}
+
+type PaymentAccountDetailExtraDetails struct {
+	EmployeeId uint64 `json:"employee_id,omitempty"`
+	ClientId   uint64 `json:"client_id,omitempty"`
+	ExpiryDate string `json:"expiry_date,omitempty"`
+	Token      string `json:"token,omitempty"`
+	UniqueId   string `json:"unique_id,omitempty"`
 }
 
 // Validate ...
@@ -108,8 +118,7 @@ func (paymentAccount *PaymentAccountDetail) GetExtraDetails() *paymentpb.ExtraDe
 	return ExtraDetails
 }
 
-func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails paymentpb.ExtraDetails) *PaymentAccountDetail {
-	fmt.Println("logger here inside SetExtraDetails")
+func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails PaymentAccountDetailExtraDetails) *PaymentAccountDetail {
 	var existingExtraDetails paymentpb.ExtraDetails
 	if paymentAccount.ExtraDetails != nil {
 		if err := json.Unmarshal(paymentAccount.ExtraDetails, &existingExtraDetails); err != nil {
@@ -117,23 +126,19 @@ func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails 
 			return paymentAccount
 		}
 	}
-	fmt.Println("logger here inside SetExtraDetails - initial extra details: ", existingExtraDetails)
-	fmt.Println("logger here inside SetExtraDetails - updated extra details: ", updatedExtraDetails)
 	mergeExtraDetails(&existingExtraDetails, updatedExtraDetails)
-	fmt.Println("logger here inside SetExtraDetails - final extra details: ", existingExtraDetails)
 	updatedJSON, err := json.Marshal(existingExtraDetails)
 	if err != nil {
 		fmt.Printf("Error marshaling updated ExtraDetails: %v\n", err)
 		return paymentAccount
 	}
-	fmt.Println("logger here inside SetExtraDetails - updatedJSON: ", updatedJSON)
 
 	paymentAccount.ExtraDetails = updatedJSON
 	return paymentAccount
 }
 
 // Function to merge two ExtraDetails structs
-func mergeExtraDetails(existing *paymentpb.ExtraDetails, updated paymentpb.ExtraDetails) {
+func mergeExtraDetails(existing *paymentpb.ExtraDetails, updated PaymentAccountDetailExtraDetails) {
 	if updated.EmployeeId != 0 {
 		existing.EmployeeId = updated.EmployeeId
 	}

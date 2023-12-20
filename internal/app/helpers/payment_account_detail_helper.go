@@ -3,10 +3,9 @@ package helpers
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
-	"time"
 
+	"github.com/shopuptech/go-libs/logger"
 	paywellPb "github.com/voonik/goConnect/api/go/paywell_token/payment_gateway"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 
@@ -140,11 +139,9 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 }
 
 func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail) *models.PaymentAccountDetail {
-	fmt.Println("logger here extradetails: ", extraDetails)
-	fmt.Println("logger here paymentAccountDetail: ", paymentAccountDetail)
-	uniqueId := CreateUniqueKey(paymentAccountDetail.ID)
-	expiryMonth, expiryYear := FetchMonthAndYear(extraDetails.ExpiryDate)
-	fmt.Printf("Logger here payload for paywell: unique id %v, card info %v, expiry month %v, expiry year %v", uniqueId, paymentAccountDetail.AccountNumber, expiryMonth, expiryYear)
+	uniqueId := utils.CreateUniqueKey(paymentAccountDetail.ID)
+	expiryMonth, expiryYear := utils.FetchMonthAndYear(extraDetails.ExpiryDate)
+	logger.FromContext(ctx).Info("Payload for CreatePaywellCard : unique id %v, card info %v, expiry month %v, expiry year %v", uniqueId, paymentAccountDetail.AccountNumber, expiryMonth, expiryYear)
 	paywellResponse := getAPIHelperInstance().CreatePaywellCard(ctx, &paywellPb.CreateCardRequest{
 		UniqueId:    uniqueId,
 		CardInfo:    paymentAccountDetail.AccountNumber,
@@ -152,34 +149,10 @@ func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetai
 		ExpiryYear:  expiryYear,
 	})
 	paymentAccountDetail.AccountNumber = paywellResponse.MaskedNumber
-	paymentAccountDetail.SetExtraDetails(paymentpb.ExtraDetails{
+	paymentAccountDetail.SetExtraDetails(models.PaymentAccountDetailExtraDetails{
 		UniqueId: uniqueId,
 		Token:    paywellResponse.GetToken(),
 	})
-	fmt.Println("logger here paymentAccountDetail after extra details save: ", paymentAccountDetail)
 	database.DBAPM(ctx).Save(&paymentAccountDetail)
 	return paymentAccountDetail
-}
-
-func CheckForOlderDate(dateStr string) bool {
-	date, _ := time.Parse("2006-01-02", dateStr)
-	currentDate := time.Now()
-	return date.Before(currentDate)
-}
-
-func FetchMonthAndYear(dateStr string) (string, string) {
-	date, _ := time.Parse("2006-01-02", dateStr)
-	month := fmt.Sprintf("%02d", int(date.Month()))
-	year := fmt.Sprintf("%04d", date.Year())
-	return month, year
-}
-
-func CreateUniqueKey(id uint64) string {
-	uniqueId := utils.SS2UinquePrefixKey + strconv.FormatUint(uint64(id), 10)
-	return uniqueId
-}
-
-func ValidDate(dateStr string) bool {
-	_, err := time.Parse("2006-01-02", dateStr)
-	return err == nil
 }
