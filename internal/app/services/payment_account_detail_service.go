@@ -67,7 +67,7 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			return &resp, nil
 		}
 		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			helpers.EncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
+			helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
 		}
 		helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
 		resp.Message = "Payment Account Detail Added Successfully"
