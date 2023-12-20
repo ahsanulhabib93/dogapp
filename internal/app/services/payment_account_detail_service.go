@@ -68,7 +68,7 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 		}
 		fmt.Println("Logger here is prepaid card: ", params.GetAccountType() == uint64(utils.PrepaidCard))
 		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			helpers.SaveExtraDetails(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
+			helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
 		}
 		helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
 		resp.Message = "Payment Account Detail Added Successfully"

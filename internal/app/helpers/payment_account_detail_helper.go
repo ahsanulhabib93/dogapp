@@ -139,7 +139,7 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	return nil
 }
 
-func SaveExtraDetails(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail) *models.PaymentAccountDetail {
+func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail) *models.PaymentAccountDetail {
 	fmt.Println("logger here extradetails: ", extraDetails)
 	fmt.Println("logger here paymentAccountDetail: ", paymentAccountDetail)
 	uniqueId := CreateUniqueKey(paymentAccountDetail.ID)
