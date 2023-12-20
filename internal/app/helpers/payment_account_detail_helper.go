@@ -138,7 +138,7 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	return nil
 }
 
-func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail) *models.PaymentAccountDetail {
+func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail) (bool, *models.PaymentAccountDetail) {
 	uniqueId := utils.CreateUniqueKey(paymentAccountDetail.ID)
 	expiryMonth, expiryYear := utils.FetchMonthAndYear(extraDetails.ExpiryDate)
 	logger.FromContext(ctx).Info("Payload for CreatePaywellCard : unique id %v, card info %v, expiry month %v, expiry year %v", uniqueId, paymentAccountDetail.AccountNumber, expiryMonth, expiryYear)
@@ -148,11 +148,16 @@ func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetai
 		ExpiryMonth: expiryMonth,
 		ExpiryYear:  expiryYear,
 	})
+
+	if paywellResponse.IsError {
+		database.DBAPM(ctx).Delete(paymentAccountDetail)
+		return false, nil
+	}
 	paymentAccountDetail.AccountNumber = paywellResponse.MaskedNumber
 	paymentAccountDetail.SetExtraDetails(models.PaymentAccountDetailExtraDetails{
 		UniqueId: uniqueId,
 		Token:    paywellResponse.GetToken(),
 	})
 	database.DBAPM(ctx).Save(&paymentAccountDetail)
-	return paymentAccountDetail
+	return true, paymentAccountDetail
 }

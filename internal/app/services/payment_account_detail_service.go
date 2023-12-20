@@ -69,7 +69,11 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			return &resp, nil
 		}
 		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
+			success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
+			if !success {
+				resp.Message = "Cannot Create Payment Account, Failed to create Paywell Card"
+				return &resp, nil
+			}
 		}
 		helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
 		resp.Message = "Payment Account Detail Added Successfully"

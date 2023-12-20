@@ -27,6 +27,9 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 		test_utils.GetContext(&ctx)
 		aaaModels.CreateAppPreferenceServiceInterface()
 	})
+	AfterEach(func() {
+		helpers.InjectMockAPIHelperInstance(nil)
+	})
 
 	Context("Add", func() {
 		It("Should create payment account detail and return success", func() {
@@ -445,6 +448,41 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Invalid Date"))
+
+			paymentAccounts := []*models.PaymentAccountDetail{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
+			Expect(len(paymentAccounts)).To(Equal(0))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+
+		It("Should not payment account detail, prepaid card for paywell api failure and return failure response", func() {
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("CreatePaywellCard", ctx, &paywellPb.CreateCardRequest{UniqueId: "SS2-PAD-1", CardInfo: "11003388", ExpiryMonth: "01", ExpiryYear: "2025"}).Return(&paywellPb.CreateCardResponse{IsError: true, Message: "Mocked Error Message", Token: "", MaskedNumber: ""}, nil)
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:     supplier.ID,
+				AccountType:    uint64(utils.PrepaidCard),
+				AccountSubType: uint64(utils.UCBL),
+				AccountName:    "AccountName",
+				AccountNumber:  "11003388",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+				ExtraDetails: &paymentpb.ExtraDetails{
+					EmployeeId: uint64(1234),
+					ClientId:   uint64(123),
+					ExpiryDate: "2025-01-01",
+				},
+			}
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Cannot Create Payment Account, Failed to create Paywell Card"))
 
 			paymentAccounts := []*models.PaymentAccountDetail{{}}
 			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
