@@ -315,7 +315,8 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount.RoutingNumber).To(Equal(param.RoutingNumber))
 			Expect(paymentAccount.IsDefault).To(Equal(true))
 
-			extraDetails := paymentAccount.GetExtraDetails()
+			extraDetails := models.PaymentAccountDetailExtraDetails{}
+			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &extraDetails)
 			Expect(extraDetails.ExpiryDate).To(Equal("2025-01-02"))
 			Expect(extraDetails.Token).To(Equal("sample_token_1"))
 			Expect(extraDetails.ClientId).To(Equal(uint64(123)))
@@ -381,6 +382,46 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Cannot set older date as expiry date"))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+
+		It("Should not edit payment account detail, prepaid card for paywell api failure and return failure response", func() {
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("CreatePaywellCard", ctx, &paywellPb.CreateCardRequest{UniqueId: "SS2-PAD-1", CardInfo: "11003388", ExpiryMonth: "01", ExpiryYear: "2025"}).Return(&paywellPb.CreateCardResponse{IsError: true, Message: "Mocked Error Message", Token: "", MaskedNumber: ""}, nil)
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, IsDefault: true})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:             paymentAccount.ID,
+				AccountType:    uint64(utils.PrepaidCard),
+				AccountSubType: uint64(utils.EBL),
+				AccountName:    "AccountName",
+				AccountNumber:  "11003388",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+				ExtraDetails: &paymentpb.ExtraDetails{
+					EmployeeId: uint64(12345),
+					ClientId:   uint64(123),
+					ExpiryDate: "2025-01-02",
+				},
+			}
+			res, _ := new(services.PaymentAccountDetailService).Edit(ctx, param)
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Cannot Edit Payment Account, Failed to create Paywell Card"))
+
+			paymentAccounts := []*models.PaymentAccountDetail{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
+			Expect(len(paymentAccounts)).To(Equal(0))
+
+			paymentAccount2 := models.PaymentAccountDetail{}
+			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Unscoped().Where("supplier_id = ?", supplier.ID).First(&paymentAccount2)
+			Expect(paymentAccount2.DeletedAt.Valid).To(Equal(true))
+			Expect(paymentAccount2.DeletedAt.Time).NotTo(BeNil())
 
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))

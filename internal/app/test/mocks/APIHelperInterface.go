@@ -87,22 +87,6 @@ func (_m *APIHelperInterface) FindUserByPhone(_a0 context.Context, _a1 string) *
 	return r0
 }
 
-// GetDecryptedCardInfo provides a mock function with given fields: ctx, params
-func (_m *APIHelperInterface) GetDecryptedCardInfo(ctx context.Context, params *payment_gateway.GetCardInfoRequest) *payment_gateway.GetCarInfoResponse {
-	ret := _m.Called(ctx, params)
-
-	var r0 *payment_gateway.GetCarInfoResponse
-	if rf, ok := ret.Get(0).(func(context.Context, *payment_gateway.GetCardInfoRequest) *payment_gateway.GetCarInfoResponse); ok {
-		r0 = rf(ctx, params)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*payment_gateway.GetCarInfoResponse)
-		}
-	}
-
-	return r0
-}
-
 // SendOtpAPI provides a mock function with given fields: _a0, _a1
 func (_m *APIHelperInterface) SendOtpAPI(_a0 context.Context, _a1 otp.OtpParam) *otp.OtpResponse {
 	ret := _m.Called(_a0, _a1)

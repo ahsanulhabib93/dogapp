@@ -128,7 +128,11 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 				return &resp, nil
 			}
 			if params.GetAccountType() == uint64(utils.PrepaidCard) {
-				helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+				success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+				if !success {
+					resp.Message = "Cannot Edit Payment Account, Failed to create Paywell Card"
+					return &resp, nil
+				}
 			}
 			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
 			resp.Message = "PaymentAccountDetail Edited Successfully"

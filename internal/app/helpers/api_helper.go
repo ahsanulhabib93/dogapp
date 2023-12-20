@@ -29,7 +29,6 @@ type APIHelperInterface interface {
 	FindTalentXUserByPhone(context.Context, string) []*employeePb.EmployeeRecord
 	CmtApproveItems(context.Context, *cmtPb.ApproveItemParams) *cmtPb.ItemCountResponse
 	CreatePaywellCard(ctx context.Context, params *paywellPb.CreateCardRequest) *paywellPb.CreateCardResponse
-	GetDecryptedCardInfo(ctx context.Context, params *paywellPb.GetCardInfoRequest) *paywellPb.GetCarInfoResponse
 }
 
 var apiHelper APIHelperInterface
@@ -133,16 +132,6 @@ func (apiHelper *APIHelper) CreatePaywellCard(ctx context.Context, params *paywe
 	if err != nil {
 		logger.FromContext(ctx).Info("Error while creating Paywell Card: ", err.Error())
 		return &paywellPb.CreateCardResponse{}
-	}
-	return resp
-}
-
-func (apiHelper *APIHelper) GetDecryptedCardInfo(ctx context.Context, params *paywellPb.GetCardInfoRequest) *paywellPb.GetCarInfoResponse {
-	resp, err := paywell.PaymentGateway().GetCardInfo(ctx, params)
-	logger.FromContext(ctx).Info("GetCardInfo response: ", resp)
-	if err != nil {
-		logger.FromContext(ctx).Info("Error while decrypting Paywell Card: ", err.Error())
-		return &paywellPb.GetCarInfoResponse{}
 	}
 	return resp
 }
