@@ -50,15 +50,17 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			IsDefault:      params.GetIsDefault(),
 		}
 		if params.GetExtraDetails() != nil {
-			if !helpers.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
+			if !utils.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
 				resp.Message = "Invalid Date"
 				return &resp, nil
 			}
-			if helpers.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
+			if utils.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
 				resp.Message = "Cannot set older date as expiry date"
 				return &resp, nil
 			}
-			paymentAccountDetail.SetExtraDetails(*params.GetExtraDetails())
+			extraDetails := models.PaymentAccountDetailExtraDetails{}
+			utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
+			paymentAccountDetail.SetExtraDetails(extraDetails)
 		}
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
