@@ -97,20 +97,18 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 		} else {
 			// extra details validation
 			if params.GetExtraDetails() != nil {
-				if !helpers.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
+				if !utils.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
 					resp.Message = "Invalid Date"
 					return &resp, nil
 				}
-				if helpers.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
+				if utils.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
 					resp.Message = "Cannot set older date as expiry date"
 					return &resp, nil
 				}
-				paymentAccountDetail.SetExtraDetails(*params.GetExtraDetails())
+				extraDetails := models.PaymentAccountDetailExtraDetails{}
+				utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
+				paymentAccountDetail.SetExtraDetails(extraDetails)
 			}
-			// check if account number is changed?
-			// get decrypted number, check against params
-			// if its changed encrypt and store
-			// even if its not changed, we have to set old account number
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 				AccountType:    utils.AccountType(params.GetAccountType()),
 				AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
@@ -123,11 +121,14 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			})
 			if err != nil && err.Error != nil {
 				resp.Message = fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
-			} else {
-				helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
-				resp.Message = "PaymentAccountDetail Edited Successfully"
-				resp.Success = true
+				return &resp, nil
 			}
+			if params.GetAccountType() == uint64(utils.PrepaidCard) {
+				helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
+			}
+			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
+			resp.Message = "PaymentAccountDetail Edited Successfully"
+			resp.Success = true
 		}
 	}
 	log.Printf("EditPaymentAccountResponse: %+v", resp)
