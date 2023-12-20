@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	"github.com/shopuptech/go-libs/logger"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
@@ -103,19 +102,6 @@ func (paymentAccount PaymentAccountDetail) accountTypeMapping() map[utils.Accoun
 		utils.Mfs:         {utils.Bkash, utils.Nagada},
 		utils.PrepaidCard: {utils.UCBL, utils.EBL},
 	}
-}
-
-func (paymentAccount *PaymentAccountDetail) GetExtraDetails() *paymentpb.ExtraDetails {
-	if paymentAccount.ExtraDetails == nil {
-		return &paymentpb.ExtraDetails{}
-	}
-
-	ExtraDetails := &paymentpb.ExtraDetails{}
-	err := json.Unmarshal(paymentAccount.ExtraDetails, ExtraDetails)
-	if err != nil {
-		logger.Log().Errorf("GetExtraDetails error = ", err.Error())
-	}
-	return ExtraDetails
 }
 
 func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails PaymentAccountDetailExtraDetails) *PaymentAccountDetail {
