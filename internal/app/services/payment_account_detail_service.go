@@ -93,6 +93,7 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 		if !supplier.IsChangeAllowed(ctx) {
 			resp.Message = "Change Not Allowed"
 		} else {
+			// extra details validation
 			if params.GetExtraDetails() != nil {
 				if !helpers.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
 					resp.Message = "Invalid Date"
@@ -104,6 +105,10 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 				}
 				paymentAccountDetail.SetExtraDetails(*params.GetExtraDetails())
 			}
+			// check if account number is changed?
+			// get decrypted number, check against params
+			// if its changed encrypt and store
+			// even if its not changed, we have to set old account number
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 				AccountType:    utils.AccountType(params.GetAccountType()),
 				AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
