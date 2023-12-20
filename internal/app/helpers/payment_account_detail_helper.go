@@ -138,8 +138,8 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	return nil
 }
 
-func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail, accountNumber string) (bool, *models.PaymentAccountDetail) {
-	uniqueId := utils.CreateUniqueKey(paymentAccountDetail.ID)
+func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail) (bool, *models.PaymentAccountDetail) {
+	uniqueId := utils.CreatePaywellUniqueKey(paymentAccountDetail.ID)
 	expiryMonth, expiryYear := utils.FetchMonthAndYear(extraDetails.ExpiryDate)
 	logger.FromContext(ctx).Info("Payload for CreatePaywellCard : unique id %v, card info %v, expiry month %v, expiry year %v", uniqueId, paymentAccountDetail.AccountNumber, expiryMonth, expiryYear)
 	paywellResponse := getAPIHelperInstance().CreatePaywellCard(ctx, &paywellPb.CreateCardRequest{

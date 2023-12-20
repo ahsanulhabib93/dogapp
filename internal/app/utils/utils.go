@@ -218,24 +218,24 @@ func CopyStructAtoB(a, b interface{}) (err error) {
 }
 
 func CheckForOlderDate(dateStr string) bool {
-	date, _ := time.Parse("2006-01-02", dateStr)
+	date, _ := time.Parse(DefaultDateFormat, dateStr)
 	currentDate := time.Now()
 	return date.Before(currentDate)
 }
 
 func FetchMonthAndYear(dateStr string) (string, string) {
-	date, _ := time.Parse("2006-01-02", dateStr)
+	date, _ := time.Parse(DefaultDateFormat, dateStr)
 	month := fmt.Sprintf("%02d", int(date.Month()))
 	year := fmt.Sprintf("%04d", date.Year())
 	return month, year
 }
 
-func CreateUniqueKey(id uint64) string {
+func CreatePaywellUniqueKey(id uint64) string {
 	uniqueId := SS2UinquePrefixKey + strconv.FormatUint(uint64(id), 10)
 	return uniqueId
 }
 
 func ValidDate(dateStr string) bool {
-	_, err := time.Parse("2006-01-02", dateStr)
+	_, err := time.Parse(DefaultDateFormat, dateStr)
 	return err == nil
 }
