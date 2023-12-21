@@ -2,6 +2,7 @@ package payment_account_detail_service_test
 
 import (
 	"context"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -27,10 +28,20 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			accountDetail1 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Mfs, IsDefault: true})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
 			accountDetail2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, BankID: bank.ID})
+			accountDetail3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, BankID: bank.ID})
+			extraDetails := models.PaymentAccountDetailExtraDetails{
+				EmployeeId: uint64(12344),
+				ClientId:   uint64(123),
+				ExpiryDate: "2025-01-02",
+				Token:      "sample_token_1",
+				UniqueId:   "SS2-PAD-3",
+			}
+			accountDetail3.SetExtraDetails(extraDetails)
 
 			res, err := new(services.PaymentAccountDetailService).List(ctx, &paymentpb.ListParams{SupplierId: supplier1.ID})
 			Expect(err).To(BeNil())
-			Expect(len(res.Data)).To(Equal(2))
+			fmt.Println("logger here response ", res)
+			Expect(len(res.Data)).To(Equal(3))
 
 			accountData1 := res.Data[0]
 			Expect(accountData1.AccountType).To(Equal(uint64(utils.Mfs)))
@@ -49,6 +60,25 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			Expect(accountData2.BranchName).To(Equal(accountDetail2.BranchName))
 			Expect(accountData2.RoutingNumber).To(Equal(accountDetail2.RoutingNumber))
 			Expect(accountData2.IsDefault).To(Equal(false))
+
+			accountData3 := res.Data[2]
+			Expect(accountData3.AccountType).To(Equal(uint64(utils.PrepaidCard)))
+			Expect(accountData3.AccountSubType).To(Equal(uint64(utils.EBL)))
+			Expect(accountData3.AccountName).To(Equal(accountDetail3.AccountName))
+			Expect(accountData3.AccountNumber).To(Equal(accountDetail3.AccountNumber))
+			Expect(accountData3.BankId).To(Equal(bank.ID))
+			Expect(accountData3.BankName).To(Equal(bank.Name))
+			Expect(accountData3.BranchName).To(Equal(accountDetail3.BranchName))
+			Expect(accountData3.RoutingNumber).To(Equal(accountDetail3.RoutingNumber))
+			Expect(accountData3.IsDefault).To(Equal(false))
+
+			testExtraDetails := models.PaymentAccountDetailExtraDetails{}
+			utils.CopyStructAtoB(accountData3.ExtraDetails, &testExtraDetails)
+			Expect(testExtraDetails.ClientId).To(Equal(uint64(123)))
+			Expect(testExtraDetails.EmployeeId).To(Equal(uint64(12344)))
+			Expect(testExtraDetails.ExpiryDate).To(Equal("2025-01-02"))
+			Expect(testExtraDetails.Token).To(Equal("sample_token_1"))
+			Expect(testExtraDetails.UniqueId).To(Equal("SS2-PAD-3"))
 		})
 	})
 })

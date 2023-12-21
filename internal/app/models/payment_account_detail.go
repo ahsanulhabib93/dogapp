@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -39,6 +40,25 @@ type PaymentAccountDetailExtraDetails struct {
 	ExpiryDate string `json:"expiry_date,omitempty"`
 	Token      string `json:"token,omitempty"`
 	UniqueId   string `json:"unique_id,omitempty"`
+}
+
+func (extraDetails PaymentAccountDetailExtraDetails) Value() (driver.Value, error) {
+	jsonBytes, err := json.Marshal(extraDetails)
+	if err != nil {
+		return nil, err
+	}
+	return jsonBytes, nil
+}
+
+func (extraDetails *PaymentAccountDetailExtraDetails) Scan(value interface{}) error {
+	jsonBytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+	if err := json.Unmarshal(jsonBytes, extraDetails); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Validate ...
