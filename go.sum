@@ -1253,6 +1253,8 @@ github.com/shopuptech/go-jobs/v3 v3.1.1 h1:1ybtm65F6myv4CiroH1eb77PXEIzuyJ5lWH4n
 github.com/shopuptech/go-jobs/v3 v3.1.1/go.mod h1:nfAHAJDAdg21g2+8EeOMTzx/QDWXprtCuLpNAfUUiNo=
 github.com/shopuptech/go-libs v0.0.12 h1:0T8JbR+qunRfN/JUqWHn3Qitd1dKvhGXuo0YKqB/Wr8=
 github.com/shopuptech/go-libs v0.0.12/go.mod h1:5Y58FhygNzRG2UDfV9aNOaR52bTZlzwgbiUyqROe1qg=
+github.com/shopuptech/work v0.5.4 h1:wWmN9jaAyBn/Alvv1RTyaZBXP8oajMv6J0L3beC8M80=
+github.com/shopuptech/work v0.5.4/go.mod h1:opqJZHvV9affmhJwiqM1tkee9eg4eHMx+n9Oe/NR848=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.1/go.mod h1:ni0Sbl8bgC9z8RoU9G6nDWqqs/fq4eDPysMBDgk/93Q=
