@@ -20,6 +20,7 @@ const (
 	MwsOwner
 	DoBuyer
 	ProcurementVendor
+	Employee
 )
 
 const (
@@ -117,31 +118,34 @@ const (
 	Mws
 	Buyer
 	Procurement
+	InternalEmployee
 )
 
 var SupplierTypeValue = map[SupplierType]string{
-	L0:            "L0",
-	L1:            "L1",
-	L2:            "L2",
-	L3:            "L3",
-	Hlc:           "Hlc",
-	Captive:       "Captive",
-	Driver:        "Driver",
-	CashVendor:    "Cash Vendor",
-	RedxHubVendor: "Redx Hub Vendor",
-	CreditVendor:  "Credit Vendor",
-	HubRent:       "Hub Rent",
-	WarehouseRent: "Warehouse Rent",
-	DBHouseRent:   "DBHouse Rent",
-	OfficeRent:    "Office Rent",
-	Mws:           "Mws",
-	Buyer:         "Buyer",
-	Procurement:   "Procurement",
+	L0:               "L0",
+	L1:               "L1",
+	L2:               "L2",
+	L3:               "L3",
+	Hlc:              "Hlc",
+	Captive:          "Captive",
+	Driver:           "Driver",
+	CashVendor:       "Cash Vendor",
+	RedxHubVendor:    "Redx Hub Vendor",
+	CreditVendor:     "Credit Vendor",
+	HubRent:          "Hub Rent",
+	WarehouseRent:    "Warehouse Rent",
+	DBHouseRent:      "DBHouse Rent",
+	OfficeRent:       "Office Rent",
+	Mws:              "Mws",
+	Buyer:            "Buyer",
+	Procurement:      "Procurement",
+	InternalEmployee: "Internal Employee",
 }
 
 const (
 	Bank AccountType = 1 + iota
 	Mfs
+	PrepaidCard
 )
 
 const (
@@ -149,6 +153,8 @@ const (
 	Savings
 	Bkash
 	Nagada
+	EBL
+	UCBL
 )
 
 const (
@@ -166,6 +172,7 @@ const (
 
 const ChangePendingSupplierStatus = "change_pending_supplier_status"
 const ScheduleEveryDay = "0 0 * * *"
+const SS2UinquePrefixKey = "SS2-PAD-"
 
 var PartnerServiceTypeMapping = map[string]ServiceType{
 	"Supplier":          Supplier,
@@ -174,24 +181,26 @@ var PartnerServiceTypeMapping = map[string]ServiceType{
 	"MwsOwner":          MwsOwner,
 	"DoBuyer":           DoBuyer,
 	"ProcurementVendor": ProcurementVendor,
+	"Employee":          Employee,
 }
 
 var PartnerServiceLevelMapping = map[string]SupplierType{
-	"L0":            L0,
-	"L1":            L1,
-	"L2":            L2,
-	"L3":            L3,
-	"Hlc":           Hlc,
-	"Captive":       Captive,
-	"Driver":        Driver,
-	"CashVendor":    CashVendor,
-	"RedxHubVendor": RedxHubVendor,
-	"CreditVendor":  CreditVendor,
-	"HubRent":       HubRent,
-	"WarehouseRent": WarehouseRent,
-	"DBHouseRent":   DBHouseRent,
-	"OfficeRent":    OfficeRent,
-	"Mws":           Mws,
-	"Buyer":         Buyer,
-	"Procurement":   Procurement,
+	"L0":               L0,
+	"L1":               L1,
+	"L2":               L2,
+	"L3":               L3,
+	"Hlc":              Hlc,
+	"Captive":          Captive,
+	"Driver":           Driver,
+	"CashVendor":       CashVendor,
+	"RedxHubVendor":    RedxHubVendor,
+	"CreditVendor":     CreditVendor,
+	"HubRent":          HubRent,
+	"WarehouseRent":    WarehouseRent,
+	"DBHouseRent":      DBHouseRent,
+	"OfficeRent":       OfficeRent,
+	"Mws":              Mws,
+	"Buyer":            Buyer,
+	"Procurement":      Procurement,
+	"InternalEmployee": InternalEmployee,
 }

@@ -9,6 +9,7 @@ import (
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
+	"gorm.io/datatypes"
 )
 
 type PaymentAccountDetail struct {
@@ -22,6 +23,7 @@ type PaymentAccountDetail struct {
 	BranchName     string               `json:"branch_name,omitempty"`
 	RoutingNumber  string               `json:"routing_number,omitempty"`
 	IsDefault      bool                 `json:"is_default,omitempty"`
+	ExtraDetails   datatypes.JSON       `gorm:"type:json"`
 
 	PaymentAccountDetailWarehouseMappings []*PaymentAccountDetailWarehouseMapping
 }
@@ -61,7 +63,7 @@ func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 	}
 }
 
-//AfterSave ...
+// AfterSave ...
 func (paymentAccount *PaymentAccountDetail) AfterSave(db *gorm.DB) error {
 	supplier := Supplier{}
 	db.Model(&supplier).First(&supplier, "id = ? ", paymentAccount.SupplierID)
