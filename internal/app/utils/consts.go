@@ -163,11 +163,12 @@ const (
 )
 
 const (
-	EmptyString = ""
-	Zero        = 0
-	One         = 1
-	Ten         = 10
-	SixtyFour   = 64
+	EmptyString       = ""
+	Zero              = 0
+	One               = 1
+	Ten               = 10
+	SixtyFour         = 64
+	DefaultDateFormat = "2006-01-02"
 )
 
 const ChangePendingSupplierStatus = "change_pending_supplier_status"

@@ -22,7 +22,7 @@ require (
 	github.com/shopuptech/work v0.5.4
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
-	github.com/voonik/goConnect v0.0.0-20231213085546-24dc30080085
+	github.com/voonik/goConnect v0.0.0-20231218115201-028aecf2eb33
 	github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e
 	golang.org/x/net v0.10.0 // indirect
 	google.golang.org/grpc v1.55.0
@@ -30,6 +30,7 @@ require (
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
 	gorm.io/datatypes v1.0.4
+	gorm.io/gorm v1.22.4
 )
 
 replace golang.org/x/sys => golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab

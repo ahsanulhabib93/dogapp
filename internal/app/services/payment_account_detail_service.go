@@ -49,15 +49,36 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			RoutingNumber:  params.GetRoutingNumber(),
 			IsDefault:      params.GetIsDefault(),
 		}
+		if params.GetExtraDetails() != nil {
+			if !utils.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
+				resp.Message = "Invalid Date"
+				return &resp, nil
+			}
+			if utils.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
+				resp.Message = "Cannot set older date as expiry date"
+				return &resp, nil
+			}
+			extraDetails := models.PaymentAccountDetailExtraDetails{}
+			utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
+			paymentAccountDetail.SetExtraDetails(extraDetails)
+		}
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while creating Payment Account Detail: %s", err.Error)
-		} else {
-			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
-			resp.Message = "Payment Account Detail Added Successfully"
-			resp.Success = true
+			return &resp, nil
 		}
+		if params.GetAccountType() == uint64(utils.PrepaidCard) {
+			success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail)
+			if !success {
+				resp.Message = "Cannot Create Payment Account, Failed to create Paywell Card"
+				return &resp, nil
+			}
+		}
+		helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
+		resp.Message = "Payment Account Detail Added Successfully"
+		resp.Success = true
+
 	}
 	log.Printf("AddPaymentAccountResponse: %+v", resp)
 	return &resp, nil
