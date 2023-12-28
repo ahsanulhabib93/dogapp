@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
+	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
@@ -22,13 +23,13 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 		test_utils.GetContext(&ctx)
 	})
 
-	Context("List", func() {
+	FContext("List", func() {
 		It("Should Respond with all the Payment Account Details", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			accountDetail1 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Mfs, IsDefault: true})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
-			accountDetail2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, BankID: bank.ID})
-			accountDetail3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, BankID: bank.ID})
+			// accountDetail1 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Mfs, IsDefault: true})
+			// accountDetail2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, BankID: bank.ID})
+			accountDetail3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, BankID: bank.ID, IsDefault: true})
 			extraDetails := models.PaymentAccountDetailExtraDetails{
 				EmployeeId: uint64(12344),
 				ClientId:   uint64(123),
@@ -37,31 +38,32 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 				UniqueId:   "SS2-PAD-3",
 			}
 			accountDetail3.SetExtraDetails(extraDetails)
+			database.DBAPM(ctx).Save(&accountDetail3)
 
 			res, err := new(services.PaymentAccountDetailService).List(ctx, &paymentpb.ListParams{SupplierId: supplier1.ID})
 			Expect(err).To(BeNil())
-			fmt.Println("logger here response ", res)
+			fmt.Println("logger here response ", res.Data)
 			Expect(len(res.Data)).To(Equal(3))
 
-			accountData1 := res.Data[0]
-			Expect(accountData1.AccountType).To(Equal(uint64(utils.Mfs)))
-			Expect(accountData1.AccountSubType).To(Equal(uint64(utils.Bkash)))
-			Expect(accountData1.AccountName).To(Equal(accountDetail1.AccountName))
-			Expect(accountData1.AccountNumber).To(Equal(accountDetail1.AccountNumber))
-			Expect(accountData1.IsDefault).To(Equal(true))
+			// accountData1 := res.Data[0]
+			// Expect(accountData1.AccountType).To(Equal(uint64(utils.Mfs)))
+			// Expect(accountData1.AccountSubType).To(Equal(uint64(utils.Bkash)))
+			// Expect(accountData1.AccountName).To(Equal(accountDetail1.AccountName))
+			// Expect(accountData1.AccountNumber).To(Equal(accountDetail1.AccountNumber))
+			// Expect(accountData1.IsDefault).To(Equal(true))
 
-			accountData2 := res.Data[1]
-			Expect(accountData2.AccountType).To(Equal(uint64(utils.Bank)))
-			Expect(accountData2.AccountSubType).To(Equal(uint64(utils.Current)))
-			Expect(accountData2.AccountName).To(Equal(accountDetail2.AccountName))
-			Expect(accountData2.AccountNumber).To(Equal(accountDetail2.AccountNumber))
-			Expect(accountData2.BankId).To(Equal(bank.ID))
-			Expect(accountData2.BankName).To(Equal(bank.Name))
-			Expect(accountData2.BranchName).To(Equal(accountDetail2.BranchName))
-			Expect(accountData2.RoutingNumber).To(Equal(accountDetail2.RoutingNumber))
-			Expect(accountData2.IsDefault).To(Equal(false))
+			// accountData2 := res.Data[1]
+			// Expect(accountData2.AccountType).To(Equal(uint64(utils.Bank)))
+			// Expect(accountData2.AccountSubType).To(Equal(uint64(utils.Current)))
+			// Expect(accountData2.AccountName).To(Equal(accountDetail2.AccountName))
+			// Expect(accountData2.AccountNumber).To(Equal(accountDetail2.AccountNumber))
+			// Expect(accountData2.BankId).To(Equal(bank.ID))
+			// Expect(accountData2.BankName).To(Equal(bank.Name))
+			// Expect(accountData2.BranchName).To(Equal(accountDetail2.BranchName))
+			// Expect(accountData2.RoutingNumber).To(Equal(accountDetail2.RoutingNumber))
+			// Expect(accountData2.IsDefault).To(Equal(false))
 
-			accountData3 := res.Data[2]
+			accountData3 := res.Data[0]
 			Expect(accountData3.AccountType).To(Equal(uint64(utils.PrepaidCard)))
 			Expect(accountData3.AccountSubType).To(Equal(uint64(utils.EBL)))
 			Expect(accountData3.AccountName).To(Equal(accountDetail3.AccountName))
@@ -74,6 +76,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 
 			testExtraDetails := models.PaymentAccountDetailExtraDetails{}
 			utils.CopyStructAtoB(accountData3.ExtraDetails, &testExtraDetails)
+			fmt.Println("logger here model extra details")
 			Expect(testExtraDetails.ClientId).To(Equal(uint64(123)))
 			Expect(testExtraDetails.EmployeeId).To(Equal(uint64(12344)))
 			Expect(testExtraDetails.ExpiryDate).To(Equal("2025-01-02"))

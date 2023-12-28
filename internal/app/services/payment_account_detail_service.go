@@ -20,9 +20,11 @@ type PaymentAccountDetailService struct{}
 func (ps *PaymentAccountDetailService) List(ctx context.Context, params *paymentpb.ListParams) (*paymentpb.ListResponse, error) {
 	log.Printf("ListPaymentAccountParams: %+v", params)
 	resp := paymentpb.ListResponse{}
+	details := models.PaymentAccountDetail{}
 	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
 		models.GetBankJoinStr()).Select("payment_account_details.*, banks.name bank_name").Where(
-		"supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
+		"supplier_id = ?", params.GetSupplierId()).First(&details)
+	fmt.Printf("logger here details %+v", details)
 	return &resp, nil
 }
 
