@@ -20,9 +20,30 @@ type PaymentAccountDetailService struct{}
 func (ps *PaymentAccountDetailService) List(ctx context.Context, params *paymentpb.ListParams) (*paymentpb.ListResponse, error) {
 	log.Printf("ListPaymentAccountParams: %+v", params)
 	resp := paymentpb.ListResponse{}
-	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
-		models.GetBankJoinStr()).Select("payment_account_details.*, banks.name bank_name").Where(
-		"supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
+	paymentAccountDetails := []*models.PaymentAccountDetail{}
+	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Preload("Bank").Where("supplier_id = ?", params.GetSupplierId()).Scan(&paymentAccountDetails)
+	for _, paymentAccountDetail := range paymentAccountDetails {
+		extraDetails := &paymentpb.ExtraDetails{}
+		bankName := ""
+		if paymentAccountDetail.Bank != nil {
+			bankName = paymentAccountDetail.Bank.Name
+		}
+		utils.CopyStructAtoB(paymentAccountDetail.ExtraDetails, extraDetails)
+		resp.Data = append(resp.Data, &paymentpb.PaymentAccountDetailObject{
+			Id:             paymentAccountDetail.ID,
+			SupplierId:     paymentAccountDetail.SupplierID,
+			AccountType:    uint64(paymentAccountDetail.AccountType),
+			AccountName:    paymentAccountDetail.AccountName,
+			AccountNumber:  paymentAccountDetail.AccountNumber,
+			BranchName:     paymentAccountDetail.BranchName,
+			BankName:       bankName,
+			RoutingNumber:  paymentAccountDetail.RoutingNumber,
+			BankId:         paymentAccountDetail.BankID,
+			IsDefault:      paymentAccountDetail.IsDefault,
+			ExtraDetails:   extraDetails,
+			AccountSubType: uint64(paymentAccountDetail.AccountSubType),
+		})
+	}
 	fmt.Printf("logger here details %+v", resp.Data)
 	return &resp, nil
 }

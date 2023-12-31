@@ -38,7 +38,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 				UniqueId:   "SS2-PAD-3",
 			}
 			accountDetail3.SetExtraDetails(extraDetails)
-			database.DBAPM(ctx).Save(&accountDetail3)
+			database.DBAPM(ctx).Save(accountDetail3)
 
 			res, err := new(services.PaymentAccountDetailService).List(ctx, &paymentpb.ListParams{SupplierId: supplier1.ID})
 			Expect(err).To(BeNil())

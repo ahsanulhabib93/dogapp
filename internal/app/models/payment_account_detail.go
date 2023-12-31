@@ -17,18 +17,18 @@ import (
 
 type PaymentAccountDetail struct {
 	database.VaccountGorm
-	SupplierID     uint64                           `gorm:"index:idx_supplier_id" valid:"required"`
-	AccountType    utils.AccountType                `valid:"required" json:"account_type,omitempty"`
-	AccountSubType utils.AccountSubType             `valid:"required" json:"account_sub_type,omitempty"`
-	AccountName    string                           `gorm:"not null" valid:"required" json:"account_name,omitempty"`
-	AccountNumber  string                           `gorm:"not null" valid:"required" json:"account_number,omitempty"`
-	BankID         uint64                           `json:"bank_id,omitempty"`
-	BranchName     string                           `json:"branch_name,omitempty"`
-	RoutingNumber  string                           `json:"routing_number,omitempty"`
-	IsDefault      bool                             `json:"is_default,omitempty"`
-	ExtraDetails   PaymentAccountDetailExtraDetails `gorm:"type:json"`
-	DeletedAt      gormIO.DeletedAt                 `json:"deleted_at,omitempty"`
-
+	SupplierID                            uint64                           `gorm:"index:idx_supplier_id" valid:"required"`
+	AccountType                           utils.AccountType                `valid:"required" json:"account_type,omitempty"`
+	AccountSubType                        utils.AccountSubType             `valid:"required" json:"account_sub_type,omitempty"`
+	AccountName                           string                           `gorm:"not null" valid:"required" json:"account_name,omitempty"`
+	AccountNumber                         string                           `gorm:"not null" valid:"required" json:"account_number,omitempty"`
+	BankID                                uint64                           `json:"bank_id,omitempty"`
+	BranchName                            string                           `json:"branch_name,omitempty"`
+	RoutingNumber                         string                           `json:"routing_number,omitempty"`
+	IsDefault                             bool                             `json:"is_default,omitempty"`
+	ExtraDetails                          PaymentAccountDetailExtraDetails `gorm:"type:json"`
+	DeletedAt                             gormIO.DeletedAt                 `json:"deleted_at,omitempty"`
+	Bank                                  *Bank
 	PaymentAccountDetailWarehouseMappings []*PaymentAccountDetailWarehouseMapping
 }
 
@@ -127,31 +127,22 @@ func (paymentAccount PaymentAccountDetail) accountTypeMapping() map[utils.Accoun
 }
 
 func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails PaymentAccountDetailExtraDetails) *PaymentAccountDetail {
-	existingExtraDetails := paymentAccount.ExtraDetails
-	finalExtraDetails := PaymentAccountDetailExtraDetails{}
-	utils.CopyStructAtoB(existingExtraDetails, finalExtraDetails)
-	mergeExtraDetails(finalExtraDetails, updatedExtraDetails)
-	paymentAccount.ExtraDetails = finalExtraDetails
+	if updatedExtraDetails.EmployeeId != 0 {
+		paymentAccount.ExtraDetails.EmployeeId = updatedExtraDetails.EmployeeId
+	}
+	if updatedExtraDetails.ClientId != 0 {
+		paymentAccount.ExtraDetails.ClientId = updatedExtraDetails.ClientId
+	}
+	if updatedExtraDetails.ExpiryDate != "" {
+		paymentAccount.ExtraDetails.ExpiryDate = updatedExtraDetails.ExpiryDate
+	}
+	if updatedExtraDetails.UniqueId != "" {
+		paymentAccount.ExtraDetails.UniqueId = updatedExtraDetails.UniqueId
+	}
+	if updatedExtraDetails.Token != "" {
+		paymentAccount.ExtraDetails.Token = updatedExtraDetails.Token
+	}
 	return paymentAccount
-}
-
-// Function to merge two ExtraDetails structs
-func mergeExtraDetails(existing PaymentAccountDetailExtraDetails, updated PaymentAccountDetailExtraDetails) {
-	if updated.EmployeeId != 0 {
-		existing.EmployeeId = updated.EmployeeId
-	}
-	if updated.ClientId != 0 {
-		existing.ClientId = updated.ClientId
-	}
-	if updated.ExpiryDate != "" {
-		existing.ExpiryDate = updated.ExpiryDate
-	}
-	if updated.UniqueId != "" {
-		existing.UniqueId = updated.UniqueId
-	}
-	if updated.Token != "" {
-		existing.Token = updated.Token
-	}
 }
 
 func JoinPaymentAccountDetailWarehouseMappings() string {
