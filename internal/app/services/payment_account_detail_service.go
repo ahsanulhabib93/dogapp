@@ -112,6 +112,7 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 				extraDetails := models.PaymentAccountDetailExtraDetails{}
 				utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
 				paymentAccountDetail.SetExtraDetails(extraDetails)
+				database.DBAPM(ctx).Save(&paymentAccountDetail)
 			}
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 				AccountType:    utils.AccountType(params.GetAccountType()),
