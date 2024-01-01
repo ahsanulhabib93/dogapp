@@ -18,11 +18,11 @@ import (
 	"github.com/shopuptech/go-jobs/v3/jobs"
 	"github.com/shopuptech/go-jobs/v3/opts"
 	"github.com/shopuptech/go-libs/logger"
+	"github.com/shopuptech/work"
 	"github.com/voonik/goFramework/pkg/config"
 	"github.com/voonik/goFramework/pkg/misc"
 	worker2 "github.com/voonik/goFramework/pkg/worker"
 	"github.com/voonik/ss2/internal/app/utils"
-	"github.com/voonik/work"
 )
 
 var wrk *worker.Worker

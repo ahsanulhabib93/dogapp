@@ -6,10 +6,10 @@ import (
 
 	"github.com/voonik/ss2/internal/app/models"
 
+	"github.com/shopuptech/work"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	goWorker "github.com/voonik/goFramework/pkg/worker"
-	"github.com/voonik/work"
 )
 
 func ChangePendingState(c *goWorker.VaccountContext, job *work.Job) error {

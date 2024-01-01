@@ -71,19 +71,18 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			RoutingNumber:  params.GetRoutingNumber(),
 			IsDefault:      params.GetIsDefault(),
 		}
-		if params.GetExtraDetails() != nil {
-			if !utils.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
-				resp.Message = "Invalid Date"
-				return &resp, nil
-			}
-			if utils.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
-				resp.Message = "Cannot set older date as expiry date"
-				return &resp, nil
-			}
-			extraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
-			paymentAccountDetail.SetExtraDetails(extraDetails)
+		extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
+		if er != nil {
+			return nil, er
 		}
+		if !extraDetailsResp.Success {
+			resp = *extraDetailsResp
+			return &resp, nil
+		}
+
+		extraDetails := models.PaymentAccountDetailExtraDetails{}
+		utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
+		paymentAccountDetail.SetExtraDetails(extraDetails)
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 		if err != nil && err.Error != nil {
@@ -122,20 +121,15 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			resp.Message = "Change Not Allowed"
 		} else {
 			// extra details validation
-			if params.GetExtraDetails() != nil {
-				if !utils.ValidDate(params.GetExtraDetails().GetExpiryDate()) {
-					resp.Message = "Invalid Date"
-					return &resp, nil
-				}
-				if utils.CheckForOlderDate(params.GetExtraDetails().GetExpiryDate()) {
-					resp.Message = "Cannot set older date as expiry date"
-					return &resp, nil
-				}
-				extraDetails := models.PaymentAccountDetailExtraDetails{}
-				utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
-				paymentAccountDetail.SetExtraDetails(extraDetails)
-				database.DBAPM(ctx).Save(&paymentAccountDetail)
+			extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
+			if er != nil {
+				return nil, er
 			}
+			if !extraDetailsResp.Success {
+				resp = *extraDetailsResp
+				return &resp, nil
+			}
+
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 				AccountType:    utils.AccountType(params.GetAccountType()),
 				AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
@@ -150,6 +144,12 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 				resp.Message = fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
 				return &resp, nil
 			}
+
+			extraDetails := models.PaymentAccountDetailExtraDetails{}
+			utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
+			paymentAccountDetail.SetExtraDetails(extraDetails)
+			database.DBAPM(ctx).Save(&paymentAccountDetail)
+
 			if params.GetAccountType() == uint64(utils.PrepaidCard) {
 				success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
 				if !success {

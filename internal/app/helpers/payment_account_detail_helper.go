@@ -161,3 +161,21 @@ func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetai
 	database.DBAPM(ctx).Save(&paymentAccountDetail)
 	return true, paymentAccountDetail
 }
+
+func HandleExtraDetailsValidation(ctx context.Context, extraDetails *paymentpb.ExtraDetails) (*paymentpb.BasicApiResponse, error) {
+	resp := &paymentpb.BasicApiResponse{Success: true}
+
+	if extraDetails != nil {
+		if !utils.ValidDate(extraDetails.GetExpiryDate()) {
+			resp.Message = "Invalid Date"
+			resp.Success = false
+			return resp, nil
+		}
+		if utils.CheckForOlderDate(extraDetails.GetExpiryDate()) {
+			resp.Message = "Cannot set older date as expiry date"
+			resp.Success = false
+			return resp, nil
+		}
+	}
+	return resp, nil
+}
