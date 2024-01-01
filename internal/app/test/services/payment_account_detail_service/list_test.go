@@ -23,7 +23,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 		test_utils.GetContext(&ctx)
 	})
 
-	FContext("List", func() {
+	Context("List", func() {
 		It("Should Respond with all the Payment Account Details", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
