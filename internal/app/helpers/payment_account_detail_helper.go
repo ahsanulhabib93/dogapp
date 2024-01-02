@@ -29,6 +29,7 @@ func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, war
 		selectQuery = "payment_account_details.*, banks.name bank_name, payment_account_detail_warehouse_mappings.dh_code dh_code_str"
 	}
 	query.Select(selectQuery).Scan(&paymentDetails)
+	fmt.Println("logger here paymentDetails ", paymentDetails)
 
 	var paymentDetailIds []uint64
 	for _, paymentDetail := range paymentDetails {
@@ -44,6 +45,7 @@ func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, war
 		for whId := range warehouseDhCodeMap[paymentDetail.Id] {
 			warehouses = append(warehouses, whId)
 		}
+		fmt.Println("logger here paymentDetail.DhCodeStr ", paymentDetail.DhCodeStr)
 		resp.Warehouses = warehouses
 		resp.DhCode = []string{}
 		if strings.TrimSpace(paymentDetail.DhCodeStr) != utils.EmptyString {
