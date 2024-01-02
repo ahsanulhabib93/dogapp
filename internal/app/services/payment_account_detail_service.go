@@ -26,7 +26,7 @@ func (ps *PaymentAccountDetailService) List(ctx context.Context, params *payment
 		extraDetails := &paymentpb.ExtraDetails{}
 		bankName := ""
 		bank := models.Bank{}
-		database.DBAPM(ctx).Model(&models.Bank{}).Where("banks.id = ?", paymentAccountDetail.ID).Scan(&bank)
+		database.DBAPM(ctx).Model(&models.Bank{}).Where("banks.id = ?", paymentAccountDetail.BankID).Scan(&bank)
 		if bank.ID != utils.Zero {
 			bankName = bank.Name
 		}
@@ -72,18 +72,20 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			RoutingNumber:  params.GetRoutingNumber(),
 			IsDefault:      params.GetIsDefault(),
 		}
-		extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
-		if er != nil {
-			return nil, er
-		}
-		if !extraDetailsResp.Success {
-			resp = *extraDetailsResp
-			return &resp, nil
-		}
+		if params.GetAccountType() == uint64(utils.PrepaidCard) {
+			extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
+			if er != nil {
+				return nil, er
+			}
+			if !extraDetailsResp.Success {
+				resp = *extraDetailsResp
+				return &resp, nil
+			}
 
-		extraDetails := models.PaymentAccountDetailExtraDetails{}
-		utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
-		paymentAccountDetail.SetExtraDetails(extraDetails)
+			extraDetails := models.PaymentAccountDetailExtraDetails{}
+			utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
+			paymentAccountDetail.SetExtraDetails(extraDetails)
+		}
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 		if err != nil && err.Error != nil {
@@ -122,13 +124,18 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			resp.Message = "Change Not Allowed"
 		} else {
 			// extra details validation
-			extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
-			if er != nil {
-				return nil, er
-			}
-			if !extraDetailsResp.Success {
-				resp = *extraDetailsResp
-				return &resp, nil
+			if params.GetAccountType() == uint64(utils.PrepaidCard) {
+				extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
+				if er != nil {
+					return nil, er
+				}
+				if !extraDetailsResp.Success {
+					resp = *extraDetailsResp
+					return &resp, nil
+				}
+				extraDetails := models.PaymentAccountDetailExtraDetails{}
+				utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
+				paymentAccountDetail.SetExtraDetails(extraDetails)
 			}
 
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
@@ -146,9 +153,6 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 				return &resp, nil
 			}
 
-			extraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
-			paymentAccountDetail.SetExtraDetails(extraDetails)
 			database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 			if params.GetAccountType() == uint64(utils.PrepaidCard) {
