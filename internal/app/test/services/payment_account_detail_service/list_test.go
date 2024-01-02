@@ -50,6 +50,8 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			Expect(accountData1.AccountSubType).To(Equal(uint64(utils.Bkash)))
 			Expect(accountData1.AccountName).To(Equal(accountDetail1.AccountName))
 			Expect(accountData1.AccountNumber).To(Equal(accountDetail1.AccountNumber))
+			Expect(accountData1.BankId).To(Equal(bank.ID))
+			Expect(accountData1.BankName).To(Equal(bank.Name))
 			Expect(accountData1.IsDefault).To(Equal(true))
 
 			accountData2 := res.Data[1]
@@ -58,7 +60,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			Expect(accountData2.AccountName).To(Equal(accountDetail2.AccountName))
 			Expect(accountData2.AccountNumber).To(Equal(accountDetail2.AccountNumber))
 			Expect(accountData2.BankId).To(Equal(bank.ID))
-			// Expect(accountData2.BankName).To(Equal(bank.Name))
+			Expect(accountData2.BankName).To(Equal(bank.Name))
 			Expect(accountData2.BranchName).To(Equal(accountDetail2.BranchName))
 			Expect(accountData2.RoutingNumber).To(Equal(accountDetail2.RoutingNumber))
 			Expect(accountData2.IsDefault).To(Equal(false))
@@ -69,7 +71,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			Expect(accountData3.AccountName).To(Equal(accountDetail3.AccountName))
 			Expect(accountData3.AccountNumber).To(Equal(accountDetail3.AccountNumber))
 			Expect(accountData3.BankId).To(Equal(bank.ID))
-			// Expect(accountData3.BankName).To(Equal(bank.Name))
+			Expect(accountData3.BankName).To(Equal(bank.Name))
 			Expect(accountData3.BranchName).To(Equal(accountDetail3.BranchName))
 			Expect(accountData3.RoutingNumber).To(Equal(accountDetail3.RoutingNumber))
 			Expect(accountData3.IsDefault).To(Equal(false))

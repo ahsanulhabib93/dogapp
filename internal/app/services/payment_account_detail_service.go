@@ -21,12 +21,14 @@ func (ps *PaymentAccountDetailService) List(ctx context.Context, params *payment
 	log.Printf("ListPaymentAccountParams: %+v", params)
 	resp := paymentpb.ListResponse{}
 	paymentAccountDetails := []*models.PaymentAccountDetail{}
-	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Preload("Bank").Where("supplier_id = ?", params.GetSupplierId()).Scan(&paymentAccountDetails)
+	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&paymentAccountDetails)
 	for _, paymentAccountDetail := range paymentAccountDetails {
 		extraDetails := &paymentpb.ExtraDetails{}
 		bankName := ""
-		if paymentAccountDetail.Bank != nil {
-			bankName = paymentAccountDetail.Bank.Name
+		bank := models.Bank{}
+		database.DBAPM(ctx).Model(&models.Bank{}).Scan(&bank)
+		if bank.ID != utils.Zero {
+			bankName = bank.Name
 		}
 		utils.CopyStructAtoB(paymentAccountDetail.ExtraDetails, extraDetails)
 		resp.Data = append(resp.Data, &paymentpb.PaymentAccountDetailObject{

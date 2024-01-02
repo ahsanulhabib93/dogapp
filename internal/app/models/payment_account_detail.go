@@ -28,7 +28,6 @@ type PaymentAccountDetail struct {
 	IsDefault                             bool                             `json:"is_default,omitempty"`
 	ExtraDetails                          PaymentAccountDetailExtraDetails `gorm:"type:json"`
 	DeletedAt                             gormIO.DeletedAt                 `json:"deleted_at,omitempty"`
-	Bank                                  *Bank
 	PaymentAccountDetailWarehouseMappings []*PaymentAccountDetailWarehouseMapping
 }
 
