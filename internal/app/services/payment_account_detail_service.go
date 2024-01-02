@@ -26,7 +26,7 @@ func (ps *PaymentAccountDetailService) List(ctx context.Context, params *payment
 		extraDetails := &paymentpb.ExtraDetails{}
 		bankName := ""
 		bank := models.Bank{}
-		database.DBAPM(ctx).Model(&models.Bank{}).Scan(&bank)
+		database.DBAPM(ctx).Model(&models.Bank{}).Where("banks.id = ?", paymentAccountDetail.ID).Scan(&bank)
 		if bank.ID != utils.Zero {
 			bankName = bank.Name
 		}
@@ -46,7 +46,6 @@ func (ps *PaymentAccountDetailService) List(ctx context.Context, params *payment
 			AccountSubType: uint64(paymentAccountDetail.AccountSubType),
 		})
 	}
-	fmt.Printf("logger here details %+v", resp.Data)
 	return &resp, nil
 }
 

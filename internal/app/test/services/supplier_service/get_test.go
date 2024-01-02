@@ -2,8 +2,6 @@ package supplier_service_test
 
 import (
 	"context"
-	"fmt"
-	"reflect"
 	"sort"
 	"time"
 
@@ -155,7 +153,6 @@ var _ = Describe("GetSupplier", func() {
 					WarehouseId: 10,
 				})
 
-				fmt.Println("logger here response ", resp.Data)
 				Expect(err).To(BeNil())
 				Expect(resp.Success).To(Equal(true))
 				Expect(resp.Data.Email).To(Equal(supplier.Email))
@@ -199,11 +196,7 @@ var _ = Describe("GetSupplier", func() {
 					return resp.Data.PaymentAccountDetails[0].Warehouses[i] < resp.Data.PaymentAccountDetails[0].Warehouses[j]
 				})
 				Expect(resp.Data.PaymentAccountDetails[0].Warehouses).To(Equal([]uint64{10, 11}))
-				dhData := resp.Data.PaymentAccountDetails[0].DhCode
-				fmt.Println("logger here payment details dh code ", resp.Data.PaymentAccountDetails[0])
-				valueType := reflect.TypeOf(dhData)
-				fmt.Println("logger here valueType ", valueType)
-				// Expect(resp.Data.PaymentAccountDetails[0].DhCode).To(Equal([]string{"1", "2"}))
+				Expect(resp.Data.PaymentAccountDetails[0].DhCode).To(Equal([]string{"1", "2"}))
 				Expect(resp.Data.PaymentAccountDetails[0].WarehouseDhCodeMap[10].GetDhCode()).To(Equal([]string{"1", "2"}))
 				Expect(resp.Data.PaymentAccountDetails[0].WarehouseDhCodeMap[11].GetDhCode()).To(Equal([]string{"3"}))
 

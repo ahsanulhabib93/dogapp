@@ -2,7 +2,6 @@ package payment_account_detail_service_test
 
 import (
 	"context"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -42,7 +41,6 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 
 			res, err := new(services.PaymentAccountDetailService).List(ctx, &paymentpb.ListParams{SupplierId: supplier1.ID})
 			Expect(err).To(BeNil())
-			fmt.Println("logger here response ", res.Data)
 			Expect(len(res.Data)).To(Equal(3))
 
 			accountData1 := res.Data[0]
