@@ -123,7 +123,7 @@ var _ = Describe("GetSupplier", func() {
 			})
 		})
 
-		FContext("PaymentAccountDetails Have Warehouses Mapped", func() {
+		Context("PaymentAccountDetails Have Warehouses Mapped", func() {
 			It("Should Return only Given Warehouse Mapped PaymentAccountDetails", func() {
 				isPhoneVerified := true
 				supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
