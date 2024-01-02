@@ -53,12 +53,6 @@ func (extraDetails *PaymentAccountDetailExtraDetails) Scan(value interface{}) er
 	if !ok {
 		return errors.New("type assertion to []byte failed")
 	}
-	// if err := json.Unmarshal(jsonBytes, &extraDetails); err != nil {
-	// 	fmt.Println("err", err)
-	// 	return err
-	// }
-	// fmt.Println("extraDetails", extraDetails)
-	// return nil
 	return json.Unmarshal(jsonBytes, &extraDetails)
 }
 
