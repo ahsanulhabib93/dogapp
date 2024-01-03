@@ -210,7 +210,7 @@ func CopyStructAtoB(a, b interface{}) (err error) {
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(temp, &b)
+	err = json.Unmarshal(temp, b)
 	if err != nil {
 		panic(err)
 	}

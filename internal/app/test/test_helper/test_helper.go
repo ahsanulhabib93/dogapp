@@ -122,17 +122,24 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 	}
 
 	if paymentAccount.AccountType == utils.Mfs {
-		paymentAccount.AccountSubType = utils.Bkash
+		if paymentAccount.AccountSubType == 0 {
+			paymentAccount.AccountSubType = utils.Bkash
+		}
+	} else if paymentAccount.AccountType == utils.PrepaidCard {
+		if paymentAccount.AccountSubType == 0 {
+			paymentAccount.AccountSubType = utils.EBL
+		}
 	} else {
 		paymentAccount.AccountType = utils.Bank
 		paymentAccount.AccountSubType = utils.Current
-		if paymentAccount.BankID == 0 {
-			bank := CreateBank(ctx, &models.Bank{})
-			paymentAccount.BankID = bank.ID
-		}
-		paymentAccount.BranchName = fmt.Sprintf("BranchName-%v", id)
-		paymentAccount.RoutingNumber = fmt.Sprintf("RoutingNumber-%v", id)
 	}
+	if paymentAccount.BankID == 0 {
+		bank := CreateBank(ctx, &models.Bank{})
+		paymentAccount.BankID = bank.ID
+	}
+
+	paymentAccount.BranchName = fmt.Sprintf("BranchName-%v", id)
+	paymentAccount.RoutingNumber = fmt.Sprintf("RoutingNumber-%v", id)
 
 	database.DBAPM(ctx).Save(paymentAccount)
 	return paymentAccount

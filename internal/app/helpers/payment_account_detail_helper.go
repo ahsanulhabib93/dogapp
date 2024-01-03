@@ -16,41 +16,50 @@ import (
 )
 
 func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, warehouseID uint64) []*supplierpb.PaymentAccountDetailObject {
-	type dbResponse struct {
-		*supplierpb.PaymentAccountDetailObject
-		DhCodeStr string `json:"dh_code_str,omitempty"`
-	}
-	paymentDetails := []*dbResponse{}
-	query := database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).
-		Joins(models.GetBankJoinStr()).Where("supplier_id = ?", supplier.ID)
-	selectQuery := "payment_account_details.*, banks.name bank_name"
+	paymentAccountDetails := []*models.PaymentAccountDetail{}
 	if warehouseID != 0 {
-		query = query.Joins(models.JoinPaymentAccountDetailWarehouseMappings()).Where("warehouse_id = ?", warehouseID)
-		selectQuery = "payment_account_details.*, banks.name bank_name, payment_account_detail_warehouse_mappings.dh_code dh_code_str"
+		database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Preload("PaymentAccountDetailWarehouseMappings").Joins(models.JoinPaymentAccountDetailWarehouseMappings()).Where("warehouse_id = ?", warehouseID).Where("supplier_id = ?", supplier.ID).Scan(&paymentAccountDetails)
+	} else {
+		database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Where("supplier_id = ?", supplier.ID).Scan(&paymentAccountDetails)
 	}
-	query.Select(selectQuery).Scan(&paymentDetails)
 
 	var paymentDetailIds []uint64
-	for _, paymentDetail := range paymentDetails {
-		paymentDetailIds = append(paymentDetailIds, paymentDetail.Id)
+	for _, paymentDetail := range paymentAccountDetails {
+		paymentDetailIds = append(paymentDetailIds, paymentDetail.ID)
 	}
 
 	paymentResponse := []*supplierpb.PaymentAccountDetailObject{}
 
 	warehouseDhCodeMap := GetWarehouseDhCodeForPaymentAccountDetails(ctx, paymentDetailIds)
-	for _, paymentDetail := range paymentDetails {
-		resp := paymentDetail.PaymentAccountDetailObject
+	for _, paymentDetail := range paymentAccountDetails {
+
 		warehouses := []uint64{}
-		for whId := range warehouseDhCodeMap[paymentDetail.Id] {
+		for whId := range warehouseDhCodeMap[paymentDetail.ID] {
 			warehouses = append(warehouses, whId)
 		}
-		resp.Warehouses = warehouses
-		resp.DhCode = []string{}
-		if strings.TrimSpace(paymentDetail.DhCodeStr) != utils.EmptyString {
-			resp.DhCode = strings.Split(paymentDetail.DhCodeStr, ",")
-		}
-		resp.WarehouseDhCodeMap = warehouseDhCodeMap[paymentDetail.Id]
-		paymentResponse = append(paymentResponse, resp)
+
+		bank := models.Bank{}
+		database.DBAPM(ctx).Model(&models.Bank{}).Where("banks.id = ?", paymentDetail.BankID).Scan(&bank)
+
+		extraDetails := &supplierpb.ExtraDetails{}
+		utils.CopyStructAtoB(paymentDetail.ExtraDetails, extraDetails)
+		paymentResponse = append(paymentResponse, &supplierpb.PaymentAccountDetailObject{
+			Id:                 paymentDetail.ID,
+			SupplierId:         paymentDetail.SupplierID,
+			AccountType:        uint64(paymentDetail.AccountType),
+			AccountSubType:     uint64(paymentDetail.AccountSubType),
+			AccountNumber:      paymentDetail.AccountNumber,
+			AccountName:        paymentDetail.AccountName,
+			BankName:           bank.Name,
+			BranchName:         paymentDetail.BranchName,
+			RoutingNumber:      paymentDetail.RoutingNumber,
+			IsDefault:          paymentDetail.IsDefault,
+			BankId:             bank.ID,
+			Warehouses:         warehouses,
+			ExtraDetails:       extraDetails,
+			WarehouseDhCodeMap: warehouseDhCodeMap[paymentDetail.ID],
+			DhCode:             warehouseDhCodeMap[paymentDetail.ID][warehouseID].GetDhCode(),
+		})
 	}
 
 	return paymentResponse

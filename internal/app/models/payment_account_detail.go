@@ -2,34 +2,32 @@ package models
 
 import (
 	"context"
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/jinzhu/gorm"
-	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
-	"gorm.io/datatypes"
 	gormIO "gorm.io/gorm"
 )
 
 type PaymentAccountDetail struct {
 	database.VaccountGorm
-	SupplierID     uint64               `gorm:"index:idx_supplier_id" valid:"required"`
-	AccountType    utils.AccountType    `valid:"required" json:"account_type,omitempty"`
-	AccountSubType utils.AccountSubType `valid:"required" json:"account_sub_type,omitempty"`
-	AccountName    string               `gorm:"not null" valid:"required" json:"account_name,omitempty"`
-	AccountNumber  string               `gorm:"not null" valid:"required" json:"account_number,omitempty"`
-	BankID         uint64               `json:"bank_id,omitempty"`
-	BranchName     string               `json:"branch_name,omitempty"`
-	RoutingNumber  string               `json:"routing_number,omitempty"`
-	IsDefault      bool                 `json:"is_default,omitempty"`
-	ExtraDetails   datatypes.JSON       `gorm:"type:json"`
-	DeletedAt      gormIO.DeletedAt     `json:"deleted_at,omitempty"`
-
+	SupplierID                            uint64                           `gorm:"index:idx_supplier_id" valid:"required"`
+	AccountType                           utils.AccountType                `valid:"required" json:"account_type,omitempty"`
+	AccountSubType                        utils.AccountSubType             `valid:"required" json:"account_sub_type,omitempty"`
+	AccountName                           string                           `gorm:"not null" valid:"required" json:"account_name,omitempty"`
+	AccountNumber                         string                           `gorm:"not null" valid:"required" json:"account_number,omitempty"`
+	BankID                                uint64                           `json:"bank_id,omitempty"`
+	BranchName                            string                           `json:"branch_name,omitempty"`
+	RoutingNumber                         string                           `json:"routing_number,omitempty"`
+	IsDefault                             bool                             `json:"is_default,omitempty"`
+	ExtraDetails                          PaymentAccountDetailExtraDetails `gorm:"type:json"`
+	DeletedAt                             gormIO.DeletedAt                 `json:"deleted_at,omitempty"`
 	PaymentAccountDetailWarehouseMappings []*PaymentAccountDetailWarehouseMapping
 }
 
@@ -39,6 +37,23 @@ type PaymentAccountDetailExtraDetails struct {
 	ExpiryDate string `json:"expiry_date,omitempty"`
 	Token      string `json:"token,omitempty"`
 	UniqueId   string `json:"unique_id,omitempty"`
+}
+
+func (extraDetails PaymentAccountDetailExtraDetails) Value() (driver.Value, error) {
+	jsonBytes, err := json.Marshal(extraDetails)
+	if err != nil {
+		return nil, err
+	}
+	return jsonBytes, nil
+}
+
+func (extraDetails *PaymentAccountDetailExtraDetails) Scan(value interface{}) error {
+	jsonBytes, ok := value.([]byte)
+	fmt.Println("jsonBytessss", jsonBytes, ok)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+	return json.Unmarshal(jsonBytes, &extraDetails)
 }
 
 // Validate ...
@@ -105,41 +120,22 @@ func (paymentAccount PaymentAccountDetail) accountTypeMapping() map[utils.Accoun
 }
 
 func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails PaymentAccountDetailExtraDetails) *PaymentAccountDetail {
-	var existingExtraDetails paymentpb.ExtraDetails
-	if paymentAccount.ExtraDetails != nil {
-		if err := json.Unmarshal(paymentAccount.ExtraDetails, &existingExtraDetails); err != nil {
-			fmt.Printf("Error decoding existing ExtraDetails: %v\n", err)
-			return paymentAccount
-		}
+	if updatedExtraDetails.EmployeeId != 0 {
+		paymentAccount.ExtraDetails.EmployeeId = updatedExtraDetails.EmployeeId
 	}
-	mergeExtraDetails(&existingExtraDetails, updatedExtraDetails)
-	updatedJSON, err := json.Marshal(existingExtraDetails)
-	if err != nil {
-		fmt.Printf("Error marshaling updated ExtraDetails: %v\n", err)
-		return paymentAccount
+	if updatedExtraDetails.ClientId != 0 {
+		paymentAccount.ExtraDetails.ClientId = updatedExtraDetails.ClientId
 	}
-
-	paymentAccount.ExtraDetails = updatedJSON
+	if updatedExtraDetails.ExpiryDate != "" {
+		paymentAccount.ExtraDetails.ExpiryDate = updatedExtraDetails.ExpiryDate
+	}
+	if updatedExtraDetails.UniqueId != "" {
+		paymentAccount.ExtraDetails.UniqueId = updatedExtraDetails.UniqueId
+	}
+	if updatedExtraDetails.Token != "" {
+		paymentAccount.ExtraDetails.Token = updatedExtraDetails.Token
+	}
 	return paymentAccount
-}
-
-// Function to merge two ExtraDetails structs
-func mergeExtraDetails(existing *paymentpb.ExtraDetails, updated PaymentAccountDetailExtraDetails) {
-	if updated.EmployeeId != 0 {
-		existing.EmployeeId = updated.EmployeeId
-	}
-	if updated.ClientId != 0 {
-		existing.ClientId = updated.ClientId
-	}
-	if updated.ExpiryDate != "" {
-		existing.ExpiryDate = updated.ExpiryDate
-	}
-	if updated.UniqueId != "" {
-		existing.UniqueId = updated.UniqueId
-	}
-	if updated.Token != "" {
-		existing.Token = updated.Token
-	}
 }
 
 func JoinPaymentAccountDetailWarehouseMappings() string {
