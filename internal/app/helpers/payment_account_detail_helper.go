@@ -38,8 +38,8 @@ func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, war
 			warehouses = append(warehouses, whId)
 		}
 
-		bank := *&models.Bank{}
-		database.DBAPM(ctx).Model(&models.Bank{}).Where("banks.id = ?", paymentDetail.ID).Scan(&bank)
+		bank := models.Bank{}
+		database.DBAPM(ctx).Model(&models.Bank{}).Where("banks.id = ?", paymentDetail.BankID).Scan(&bank)
 
 		extraDetails := &supplierpb.ExtraDetails{}
 		utils.CopyStructAtoB(paymentDetail.ExtraDetails, extraDetails)
