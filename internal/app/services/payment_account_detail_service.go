@@ -25,7 +25,7 @@ func (ps *PaymentAccountDetailService) List(ctx context.Context, params *payment
 	for _, paymentAccountDetail := range paymentAccountDetails {
 		extraDetails := &paymentpb.ExtraDetails{}
 		bankName := ""
-		bank := models.Bank{}
+		bank := &models.Bank{}
 		database.DBAPM(ctx).Model(&models.Bank{}).Where("banks.id = ?", paymentAccountDetail.BankID).Scan(&bank)
 		if bank.ID != utils.Zero {
 			bankName = bank.Name
