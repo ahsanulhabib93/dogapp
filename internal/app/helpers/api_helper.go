@@ -15,6 +15,7 @@ import (
 	paywell "github.com/voonik/goConnect/paywell_token/payment_gateway"
 	employeeSrv "github.com/voonik/goConnect/sr_service/attendance"
 	Vigeon2Service "github.com/voonik/goConnect/vigeon2/otp"
+	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
@@ -127,7 +128,8 @@ func (apiHelper *APIHelper) CmtApproveItems(ctx context.Context, param *cmtPb.Ap
 
 // CreatePaywellCard is used to create payment card and return encrypted card info
 func (apiHelper *APIHelper) CreatePaywellCard(ctx context.Context, params *paywellPb.CreateCardRequest) *paywellPb.CreateCardResponse {
-	resp, err := paywell.PaymentGateway().CreateCard(ctx, params)
+	lokictx := misc.SetInContextThreadObject(context.Background(), &misc.ThreadObject{VaccountId: 40, PortalId: 40}) //loki consumes with vaccount 40
+	resp, err := paywell.PaymentGateway().CreateCard(lokictx, params)
 	logger.FromContext(ctx).Info("CreatePaywellCard response: ", resp)
 	if err != nil {
 		logger.FromContext(ctx).Info("Error while creating Paywell Card: ", err.Error())
