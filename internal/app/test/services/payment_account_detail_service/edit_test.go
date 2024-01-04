@@ -437,7 +437,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 				Token:      "sample_token_1",
 				UniqueId:   "SS2-PAD-1",
 			}
-			paymentAccount.SetExtraDetails(extraDetails)
+			paymentAccount.ExtraDetails = extraDetails
 			database.DBAPM(ctx).Save(paymentAccount)
 
 			bank := test_helper.CreateBank(ctx, &models.Bank{})
@@ -478,7 +478,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 				Token:      "sample_token_1",
 				UniqueId:   "SS2-PAD-1",
 			}
-			paymentAccount.SetExtraDetails(extraDetails)
+			paymentAccount.ExtraDetails = extraDetails
 			database.DBAPM(ctx).Save(paymentAccount)
 
 			bank := test_helper.CreateBank(ctx, &models.Bank{})

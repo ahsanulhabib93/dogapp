@@ -164,7 +164,7 @@ func PrepaidCardValidations(ctx context.Context, extraDetails paymentpb.ExtraDet
 	if !success {
 		return true, "Failed to create Paywell Card"
 	}
-	paymentAccountDetails.SetExtraDetails(extraDetailStruct)
+	paymentAccountDetails.ExtraDetails = extraDetailStruct
 	database.DBAPM(ctx).Save(&paymentAccountDetails)
 
 	return false, utils.EmptyString
