@@ -72,20 +72,6 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			RoutingNumber:  params.GetRoutingNumber(),
 			IsDefault:      params.GetIsDefault(),
 		}
-		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
-			if er != nil {
-				return nil, er
-			}
-			if !extraDetailsResp.Success {
-				resp = *extraDetailsResp
-				return &resp, nil
-			}
-
-			extraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
-			paymentAccountDetail.SetExtraDetails(extraDetails)
-		}
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 		if err != nil && err.Error != nil {
@@ -93,11 +79,26 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			return &resp, nil
 		}
 		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+			extraDetails := models.PaymentAccountDetailExtraDetails{}
+			isError, errMsg := helpers.HandleExtraDetailsValidation(params.GetExtraDetails())
+
+			if isError {
+				database.DBAPM(ctx).Delete(paymentAccountDetail)
+				resp.Message = errMsg
+				return &resp, nil
+			}
+
+			extraDetails.EmployeeId = params.GetExtraDetails().EmployeeId
+			extraDetails.ExpiryDate = params.GetExtraDetails().ExpiryDate
+			extraDetails.ClientId = params.GetExtraDetails().ClientId
+
+			success, _ := helpers.StoreEncryptCardInfo(ctx, &extraDetails, &paymentAccountDetail, params.GetAccountNumber())
 			if !success {
 				resp.Message = "Cannot Create Payment Account, Failed to create Paywell Card"
 				return &resp, nil
 			}
+			paymentAccountDetail.SetExtraDetails(extraDetails)
+			database.DBAPM(ctx).Save(&paymentAccountDetail)
 		}
 		helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
 		resp.Message = "Payment Account Detail Added Successfully"
@@ -123,20 +124,6 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 		if !supplier.IsChangeAllowed(ctx) {
 			resp.Message = "Change Not Allowed"
 		} else {
-			// extra details validation
-			if params.GetAccountType() == uint64(utils.PrepaidCard) {
-				extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
-				if er != nil {
-					return nil, er
-				}
-				if !extraDetailsResp.Success {
-					resp = *extraDetailsResp
-					return &resp, nil
-				}
-				extraDetails := models.PaymentAccountDetailExtraDetails{}
-				utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
-				paymentAccountDetail.SetExtraDetails(extraDetails)
-			}
 
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 				AccountType:    utils.AccountType(params.GetAccountType()),
@@ -156,11 +143,26 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 			if params.GetAccountType() == uint64(utils.PrepaidCard) {
-				success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+				extraDetails := models.PaymentAccountDetailExtraDetails{}
+				isError, errMsg := helpers.HandleExtraDetailsValidation(params.GetExtraDetails())
+
+				if isError {
+					database.DBAPM(ctx).Delete(paymentAccountDetail)
+					resp.Message = errMsg
+					return &resp, nil
+				}
+
+				extraDetails.EmployeeId = params.GetExtraDetails().EmployeeId
+				extraDetails.ExpiryDate = params.GetExtraDetails().ExpiryDate
+				extraDetails.ClientId = params.GetExtraDetails().ClientId
+
+				success, _ := helpers.StoreEncryptCardInfo(ctx, &extraDetails, &paymentAccountDetail, params.GetAccountNumber())
 				if !success {
 					resp.Message = "Cannot Edit Payment Account, Failed to create Paywell Card"
 					return &resp, nil
 				}
+				paymentAccountDetail.SetExtraDetails(extraDetails)
+				database.DBAPM(ctx).Save(&paymentAccountDetail)
 			}
 			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
 			resp.Message = "PaymentAccountDetail Edited Successfully"

@@ -120,21 +120,7 @@ func (paymentAccount PaymentAccountDetail) accountTypeMapping() map[utils.Accoun
 }
 
 func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails PaymentAccountDetailExtraDetails) *PaymentAccountDetail {
-	if updatedExtraDetails.EmployeeId != 0 {
-		paymentAccount.ExtraDetails.EmployeeId = updatedExtraDetails.EmployeeId
-	}
-	if updatedExtraDetails.ClientId != 0 {
-		paymentAccount.ExtraDetails.ClientId = updatedExtraDetails.ClientId
-	}
-	if updatedExtraDetails.ExpiryDate != "" {
-		paymentAccount.ExtraDetails.ExpiryDate = updatedExtraDetails.ExpiryDate
-	}
-	if updatedExtraDetails.UniqueId != "" {
-		paymentAccount.ExtraDetails.UniqueId = updatedExtraDetails.UniqueId
-	}
-	if updatedExtraDetails.Token != "" {
-		paymentAccount.ExtraDetails.Token = updatedExtraDetails.Token
-	}
+	paymentAccount.ExtraDetails = updatedExtraDetails
 	return paymentAccount
 }
 
