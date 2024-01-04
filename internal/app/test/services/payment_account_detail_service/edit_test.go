@@ -427,6 +427,47 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 
+		It("Should not edit payment details for missing employee id", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, IsDefault: true})
+			extraDetails := models.PaymentAccountDetailExtraDetails{
+				EmployeeId: uint64(12344),
+				ClientId:   uint64(123),
+				ExpiryDate: "2025-01-02",
+				Token:      "sample_token_1",
+				UniqueId:   "SS2-PAD-1",
+			}
+			paymentAccount.SetExtraDetails(extraDetails)
+			database.DBAPM(ctx).Save(paymentAccount)
+
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:             paymentAccount.ID,
+				AccountType:    uint64(utils.PrepaidCard),
+				AccountSubType: uint64(utils.EBL),
+				AccountName:    "AccountName",
+				AccountNumber:  "11003388",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+				ExtraDetails: &paymentpb.ExtraDetails{
+					ExpiryDate: "2025-01-02",
+				},
+			}
+			apiHelperInstance = new(mocks.APIHelperInterface)
+			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
+			apiHelperInstance.On("CreatePaywellCard", ctx, &paywellPb.CreateCardRequest{UniqueId: fmt.Sprintf("SS2-PAD-%v", paymentAccount.ID), CardInfo: "11003388", ExpiryMonth: "01", ExpiryYear: "2025"}).Return(&paywellPb.CreateCardResponse{IsError: false, Message: "Successfully created", Token: "sample_token_1", MaskedNumber: "masked_number_11003388"}, nil)
+			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Cannot Edit Payment Account: Employee ID is mandatory"))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+
 		It("Should update and return success response for removing client id", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, IsDefault: true})

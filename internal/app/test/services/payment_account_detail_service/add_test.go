@@ -458,6 +458,37 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 
+		It("Returns error on invalid expiry date", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			bank := test_helper.CreateBank(ctx, &models.Bank{})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:     supplier.ID,
+				AccountType:    uint64(utils.PrepaidCard),
+				AccountSubType: uint64(utils.UCBL),
+				AccountName:    "AccountName",
+				AccountNumber:  "11003388",
+				BankId:         bank.ID,
+				BranchName:     "BranchName",
+				RoutingNumber:  "RoutingNumber",
+				IsDefault:      true,
+				ExtraDetails: &paymentpb.ExtraDetails{
+					ClientId:   uint64(123),
+					ExpiryDate: "2025-01-01",
+				},
+			}
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Cannot Create Payment Account: Employee ID is mandatory"))
+
+			paymentAccounts := []*models.PaymentAccountDetail{{}}
+			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
+			Expect(len(paymentAccounts)).To(Equal(0))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+
 		It("Should not add payment account detail, prepaid card for paywell api failure and return failure response", func() {
 			apiHelperInstance = new(mocks.APIHelperInterface)
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
