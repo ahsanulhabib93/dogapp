@@ -20,9 +20,32 @@ type PaymentAccountDetailService struct{}
 func (ps *PaymentAccountDetailService) List(ctx context.Context, params *paymentpb.ListParams) (*paymentpb.ListResponse, error) {
 	log.Printf("ListPaymentAccountParams: %+v", params)
 	resp := paymentpb.ListResponse{}
-	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Joins(
-		models.GetBankJoinStr()).Select("payment_account_details.*, banks.name bank_name").Where(
-		"supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
+	paymentAccountDetails := []*models.PaymentAccountDetail{}
+	database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&paymentAccountDetails)
+	for _, paymentAccountDetail := range paymentAccountDetails {
+		extraDetails := &paymentpb.ExtraDetails{}
+		bankName := ""
+		bank := models.Bank{}
+		database.DBAPM(ctx).Model(&models.Bank{}).Where("banks.id = ?", paymentAccountDetail.BankID).Scan(&bank)
+		if bank.ID != utils.Zero {
+			bankName = bank.Name
+		}
+		utils.CopyStructAtoB(paymentAccountDetail.ExtraDetails, extraDetails)
+		resp.Data = append(resp.Data, &paymentpb.PaymentAccountDetailObject{
+			Id:             paymentAccountDetail.ID,
+			SupplierId:     paymentAccountDetail.SupplierID,
+			AccountType:    uint64(paymentAccountDetail.AccountType),
+			AccountName:    paymentAccountDetail.AccountName,
+			AccountNumber:  paymentAccountDetail.AccountNumber,
+			BranchName:     paymentAccountDetail.BranchName,
+			BankName:       bankName,
+			RoutingNumber:  paymentAccountDetail.RoutingNumber,
+			BankId:         paymentAccountDetail.BankID,
+			IsDefault:      paymentAccountDetail.IsDefault,
+			ExtraDetails:   extraDetails,
+			AccountSubType: uint64(paymentAccountDetail.AccountSubType),
+		})
+	}
 	return &resp, nil
 }
 
@@ -49,15 +72,37 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			RoutingNumber:  params.GetRoutingNumber(),
 			IsDefault:      params.GetIsDefault(),
 		}
+		if params.GetAccountType() == uint64(utils.PrepaidCard) {
+			extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
+			if er != nil {
+				return nil, er
+			}
+			if !extraDetailsResp.Success {
+				resp = *extraDetailsResp
+				return &resp, nil
+			}
+
+			extraDetails := models.PaymentAccountDetailExtraDetails{}
+			utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
+			paymentAccountDetail.SetExtraDetails(extraDetails)
+		}
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while creating Payment Account Detail: %s", err.Error)
-		} else {
-			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
-			resp.Message = "Payment Account Detail Added Successfully"
-			resp.Success = true
+			return &resp, nil
 		}
+		if params.GetAccountType() == uint64(utils.PrepaidCard) {
+			success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+			if !success {
+				resp.Message = "Cannot Create Payment Account, Failed to create Paywell Card"
+				return &resp, nil
+			}
+		}
+		helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
+		resp.Message = "Payment Account Detail Added Successfully"
+		resp.Success = true
+
 	}
 	log.Printf("AddPaymentAccountResponse: %+v", resp)
 	return &resp, nil
@@ -78,6 +123,21 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 		if !supplier.IsChangeAllowed(ctx) {
 			resp.Message = "Change Not Allowed"
 		} else {
+			// extra details validation
+			if params.GetAccountType() == uint64(utils.PrepaidCard) {
+				extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
+				if er != nil {
+					return nil, er
+				}
+				if !extraDetailsResp.Success {
+					resp = *extraDetailsResp
+					return &resp, nil
+				}
+				extraDetails := models.PaymentAccountDetailExtraDetails{}
+				utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
+				paymentAccountDetail.SetExtraDetails(extraDetails)
+			}
+
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 				AccountType:    utils.AccountType(params.GetAccountType()),
 				AccountSubType: utils.AccountSubType(params.GetAccountSubType()),
@@ -90,11 +150,21 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			})
 			if err != nil && err.Error != nil {
 				resp.Message = fmt.Sprintf("Error while updating PaymentAccountDetail: %s", err.Error)
-			} else {
-				helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
-				resp.Message = "PaymentAccountDetail Edited Successfully"
-				resp.Success = true
+				return &resp, nil
 			}
+
+			database.DBAPM(ctx).Save(&paymentAccountDetail)
+
+			if params.GetAccountType() == uint64(utils.PrepaidCard) {
+				success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+				if !success {
+					resp.Message = "Cannot Edit Payment Account, Failed to create Paywell Card"
+					return &resp, nil
+				}
+			}
+			helpers.UpdateDefaultPaymentAccount(ctx, &paymentAccountDetail)
+			resp.Message = "PaymentAccountDetail Edited Successfully"
+			resp.Success = true
 		}
 	}
 	log.Printf("EditPaymentAccountResponse: %+v", resp)

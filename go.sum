@@ -1253,6 +1253,8 @@ github.com/shopuptech/go-jobs/v3 v3.1.1 h1:1ybtm65F6myv4CiroH1eb77PXEIzuyJ5lWH4n
 github.com/shopuptech/go-jobs/v3 v3.1.1/go.mod h1:nfAHAJDAdg21g2+8EeOMTzx/QDWXprtCuLpNAfUUiNo=
 github.com/shopuptech/go-libs v0.0.12 h1:0T8JbR+qunRfN/JUqWHn3Qitd1dKvhGXuo0YKqB/Wr8=
 github.com/shopuptech/go-libs v0.0.12/go.mod h1:5Y58FhygNzRG2UDfV9aNOaR52bTZlzwgbiUyqROe1qg=
+github.com/shopuptech/work v0.5.4 h1:wWmN9jaAyBn/Alvv1RTyaZBXP8oajMv6J0L3beC8M80=
+github.com/shopuptech/work v0.5.4/go.mod h1:opqJZHvV9affmhJwiqM1tkee9eg4eHMx+n9Oe/NR848=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.1/go.mod h1:ni0Sbl8bgC9z8RoU9G6nDWqqs/fq4eDPysMBDgk/93Q=
@@ -1317,8 +1319,8 @@ github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGr
 github.com/urfave/cli v1.22.10 h1:p8Fspmz3iTctJstry1PYS3HVdllxnEzTEsgIgtxTrCk=
 github.com/urfave/cli v1.22.10/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli/v2 v2.16.3/go.mod h1:1CNUng3PtjQMtRzJO4FMXBQvkGtuYRxxiR9xMa7jMwI=
-github.com/voonik/goConnect v0.0.0-20231226045814-cce886b55c14 h1:3WKyOTIsz17i8w9JfidnZ8RqUM4d7wdJTwibcTutQ34=
-github.com/voonik/goConnect v0.0.0-20231226045814-cce886b55c14/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
+github.com/voonik/goConnect v0.0.0-20231218115201-028aecf2eb33 h1:xZIOxQxjABYy4jeZCxhD1JyvOFJZ14nMoYvzcKESEFs=
+github.com/voonik/goConnect v0.0.0-20231218115201-028aecf2eb33/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
 github.com/voonik/goFramework v0.0.0-20221006080900-34f22876386b/go.mod h1:IOtcJERqfsdL3ckoUICj4DSkY6LWEBUDWG3lTlz8JmY=
 github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e h1:Uj9sbjjKW5kMBOABMcm00UK5qOoxFBxm8BrAjYvr1lQ=
 github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e/go.mod h1:SiqmEebR79/yDgZVl45UJIm8odmpbaN8W9sR0kpNO7Y=

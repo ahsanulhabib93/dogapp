@@ -2,10 +2,12 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/misc"
@@ -201,4 +203,39 @@ func GetArrIntToArrStr(arrInt []uint64) []string {
 		arrStr[i] = strconv.Itoa(int(access))
 	}
 	return arrStr
+}
+
+func CopyStructAtoB(a, b interface{}) (err error) {
+	temp, err := json.Marshal(a)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(temp, b)
+	if err != nil {
+		panic(err)
+	}
+	return err
+}
+
+func CheckForOlderDate(dateStr string) bool {
+	date, _ := time.Parse(DefaultDateFormat, dateStr)
+	currentDate := time.Now()
+	return date.Before(currentDate)
+}
+
+func FetchMonthAndYear(dateStr string) (string, string) {
+	date, _ := time.Parse(DefaultDateFormat, dateStr)
+	month := fmt.Sprintf("%02d", int(date.Month()))
+	year := fmt.Sprintf("%04d", date.Year())
+	return month, year
+}
+
+func CreatePaywellUniqueKey(id uint64) string {
+	uniqueId := SS2UinquePrefixKey + strconv.FormatUint(uint64(id), 10)
+	return uniqueId
+}
+
+func ValidDate(dateStr string) bool {
+	_, err := time.Parse(DefaultDateFormat, dateStr)
+	return err == nil
 }
