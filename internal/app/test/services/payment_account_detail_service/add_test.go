@@ -416,7 +416,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Cannot set older date as expiry date"))
+			Expect(res.Message).To(Equal("Cannot Create Payment Account: Cannot set older date as expiry date"))
 
 			paymentAccounts := []*models.PaymentAccountDetail{{}}
 			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
@@ -448,7 +448,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Invalid Date"))
+			Expect(res.Message).To(Equal("Cannot Create Payment Account: Invalid Date"))
 
 			paymentAccounts := []*models.PaymentAccountDetail{{}}
 			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
@@ -483,7 +483,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Cannot Create Payment Account, Failed to create Paywell Card"))
+			Expect(res.Message).To(Equal("Cannot Create Payment Account: Failed to create Paywell Card"))
 
 			paymentAccounts := []*models.PaymentAccountDetail{{}}
 			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)

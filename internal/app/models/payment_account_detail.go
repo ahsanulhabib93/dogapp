@@ -5,7 +5,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -49,7 +48,6 @@ func (extraDetails PaymentAccountDetailExtraDetails) Value() (driver.Value, erro
 
 func (extraDetails *PaymentAccountDetailExtraDetails) Scan(value interface{}) error {
 	jsonBytes, ok := value.([]byte)
-	fmt.Println("jsonBytessss", jsonBytes, ok)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
 	}

@@ -147,7 +147,30 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	return nil
 }
 
-func StoreEncryptCardInfo(ctx context.Context, extraDetails *models.PaymentAccountDetailExtraDetails, paymentAccountDetail *models.PaymentAccountDetail, accountNumber string) (bool, *models.PaymentAccountDetail) {
+func PrepaidCardValidations(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetails *models.PaymentAccountDetail, accountNumber string) (bool, string) {
+	extraDetailStruct := models.PaymentAccountDetailExtraDetails{}
+	isError, errMsg := HandleExtraDetailsValidation(&extraDetails)
+
+	if isError {
+		database.DBAPM(ctx).Delete(paymentAccountDetails)
+		return true, errMsg
+	}
+
+	extraDetailStruct.EmployeeId = extraDetails.EmployeeId
+	extraDetailStruct.ExpiryDate = extraDetails.ExpiryDate
+	extraDetailStruct.ClientId = extraDetails.ClientId
+
+	success := StoreEncryptCardInfo(ctx, &extraDetailStruct, paymentAccountDetails, accountNumber)
+	if !success {
+		return true, "Failed to create Paywell Card"
+	}
+	paymentAccountDetails.SetExtraDetails(extraDetailStruct)
+	database.DBAPM(ctx).Save(&paymentAccountDetails)
+
+	return false, utils.EmptyString
+}
+
+func StoreEncryptCardInfo(ctx context.Context, extraDetails *models.PaymentAccountDetailExtraDetails, paymentAccountDetail *models.PaymentAccountDetail, accountNumber string) bool {
 	uniqueId := utils.CreatePaywellUniqueKey(paymentAccountDetail.ID)
 	expiryMonth, expiryYear := utils.FetchMonthAndYear(extraDetails.ExpiryDate)
 	logger.FromContext(ctx).Infof("Payload for CreatePaywellCard : unique id %v, card info %v, expiry month %v, expiry year %v", uniqueId, paymentAccountDetail.AccountNumber, expiryMonth, expiryYear)
@@ -160,12 +183,12 @@ func StoreEncryptCardInfo(ctx context.Context, extraDetails *models.PaymentAccou
 
 	if paywellResponse.IsError {
 		database.DBAPM(ctx).Delete(paymentAccountDetail)
-		return false, nil
+		return false
 	}
 	paymentAccountDetail.AccountNumber = paywellResponse.MaskedNumber
 	extraDetails.UniqueId = uniqueId
 	extraDetails.Token = paywellResponse.GetToken()
-	return true, paymentAccountDetail
+	return true
 }
 
 func HandleExtraDetailsValidation(extraDetails *paymentpb.ExtraDetails) (bool, string) {

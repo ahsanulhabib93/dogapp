@@ -351,7 +351,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Invalid Date"))
+			Expect(res.Message).To(Equal("Cannot Edit Payment Account: Invalid Date"))
 
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
@@ -381,7 +381,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Cannot set older date as expiry date"))
+			Expect(res.Message).To(Equal("Cannot Edit Payment Account: Cannot set older date as expiry date"))
 
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
@@ -412,7 +412,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			}
 			res, _ := new(services.PaymentAccountDetailService).Edit(ctx, param)
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Cannot Edit Payment Account, Failed to create Paywell Card"))
+			Expect(res.Message).To(Equal("Cannot Edit Payment Account: Failed to create Paywell Card"))
 
 			paymentAccounts := []*models.PaymentAccountDetail{{}}
 			database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Find(&paymentAccounts)
