@@ -4,7 +4,8 @@ import (
 	"context"
 
 	sampb "github.com/voonik/goConnect/api/go/ss2/seller_account_manager"
-	"github.com/voonik/ss2/internal/app/helpers"
+	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
@@ -19,7 +20,7 @@ func (sams *SellerAccountManagerService) List(ctx context.Context, params *sampb
 
 	var samList []models.SellerAccountManager
 	var accountManagers []*sampb.AccountManagerObject
-	database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where(`seller_id =?`, sellerID).Order("role, priority").Scan(&samList)
+	database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where(`seller_id =?`, params.SellerId).Order("role, priority").Scan(&samList)
 
 	for _, sam := range samList {
 		accountManagers = append(accountManagers, &sampb.AccountManagerObject{
