@@ -9,6 +9,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/uuid v1.3.0
+	github.com/jinzhu/copier v0.4.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/khaiql/dbcleaner v2.3.0+incompatible
 	github.com/onsi/ginkgo v1.15.0
@@ -22,14 +23,13 @@ require (
 	github.com/shopuptech/work v0.5.4
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
-	github.com/voonik/goConnect v0.0.0-20231218115201-028aecf2eb33
+	github.com/voonik/goConnect v0.0.0-20240107073313-0b960e29f07c
 	github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e
 	golang.org/x/net v0.10.0 // indirect
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
-	gorm.io/datatypes v1.0.4
 	gorm.io/gorm v1.22.4
 )
 
