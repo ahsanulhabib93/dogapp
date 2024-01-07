@@ -17,8 +17,22 @@ func (sams *SellerAccountManagerService) List(ctx context.Context, params *sampb
 		return resp, nil
 	}
 
-	resp.Status = "success"
-	resp.AccountManager = helpers.GetAndFormatSellerAccountManager(ctx, params.SellerId)
+	var samList []models.SellerAccountManager
+	var accountManagers []*sampb.AccountManagerObject
+	database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where(`seller_id =?`, sellerID).Order("role, priority").Scan(&samList)
 
+	for _, sam := range samList {
+		accountManagers = append(accountManagers, &sampb.AccountManagerObject{
+			Id:       sam.ID,
+			Email:    sam.Email,
+			Phone:    uint64(sam.Phone),
+			Name:     sam.Name,
+			Priority: uint64(sam.Priority),
+			Role:     sam.Role,
+		})
+	}
+
+	resp.Status = "success"
+	resp.AccountManager = accountManagers
 	return resp, nil
 }
