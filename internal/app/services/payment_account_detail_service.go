@@ -72,20 +72,6 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			RoutingNumber:  params.GetRoutingNumber(),
 			IsDefault:      params.GetIsDefault(),
 		}
-		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
-			if er != nil {
-				return nil, er
-			}
-			if !extraDetailsResp.Success {
-				resp = *extraDetailsResp
-				return &resp, nil
-			}
-
-			extraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
-			paymentAccountDetail.SetExtraDetails(extraDetails)
-		}
 		err := database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 		if err != nil && err.Error != nil {
@@ -93,9 +79,9 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			return &resp, nil
 		}
 		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
-			if !success {
-				resp.Message = "Cannot Create Payment Account, Failed to create Paywell Card"
+			isError, errMsg := helpers.PrepaidCardValidations(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+			if isError {
+				resp.Message = fmt.Sprintf("Cannot Create Payment Account: %v", errMsg)
 				return &resp, nil
 			}
 		}
@@ -123,20 +109,6 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 		if !supplier.IsChangeAllowed(ctx) {
 			resp.Message = "Change Not Allowed"
 		} else {
-			// extra details validation
-			if params.GetAccountType() == uint64(utils.PrepaidCard) {
-				extraDetailsResp, er := helpers.HandleExtraDetailsValidation(ctx, params.GetExtraDetails())
-				if er != nil {
-					return nil, er
-				}
-				if !extraDetailsResp.Success {
-					resp = *extraDetailsResp
-					return &resp, nil
-				}
-				extraDetails := models.PaymentAccountDetailExtraDetails{}
-				utils.CopyStructAtoB(params.ExtraDetails, &extraDetails)
-				paymentAccountDetail.SetExtraDetails(extraDetails)
-			}
 
 			err := database.DBAPM(ctx).Model(&paymentAccountDetail).Updates(models.PaymentAccountDetail{
 				AccountType:    utils.AccountType(params.GetAccountType()),
@@ -156,9 +128,10 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 			if params.GetAccountType() == uint64(utils.PrepaidCard) {
-				success, _ := helpers.StoreEncryptCardInfo(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
-				if !success {
-					resp.Message = "Cannot Edit Payment Account, Failed to create Paywell Card"
+				isError, errMsg := helpers.PrepaidCardValidations(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+				if isError {
+					fmt.Printf("\n\n\nlogger here isError %v , errMsg %v\n", isError, errMsg)
+					resp.Message = fmt.Sprintf("Cannot Edit Payment Account: %v", errMsg)
 					return &resp, nil
 				}
 			}
