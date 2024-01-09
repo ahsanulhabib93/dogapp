@@ -36,7 +36,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 				Token:      "sample_token_1",
 				UniqueId:   "SS2-PAD-3",
 			}
-			accountDetail3.SetExtraDetails(extraDetails)
+			accountDetail3.ExtraDetails = extraDetails
 			database.DBAPM(ctx).Save(accountDetail3)
 
 			res, err := new(services.PaymentAccountDetailService).List(ctx, &paymentpb.ListParams{SupplierId: supplier1.ID})

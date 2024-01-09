@@ -147,10 +147,33 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	return nil
 }
 
-func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetail *models.PaymentAccountDetail, accountNumber string) (bool, *models.PaymentAccountDetail) {
+func PrepaidCardValidations(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetails *models.PaymentAccountDetail, accountNumber string) (bool, string) {
+	extraDetailStruct := models.PaymentAccountDetailExtraDetails{}
+	isError, errMsg := HandleExtraDetailsValidation(&extraDetails)
+
+	if isError {
+		database.DBAPM(ctx).Delete(paymentAccountDetails)
+		return true, errMsg
+	}
+
+	extraDetailStruct.EmployeeId = extraDetails.EmployeeId
+	extraDetailStruct.ExpiryDate = extraDetails.ExpiryDate
+	extraDetailStruct.ClientId = extraDetails.ClientId
+
+	success := StoreEncryptCardInfo(ctx, &extraDetailStruct, paymentAccountDetails, accountNumber)
+	if !success {
+		return true, "Failed to create Paywell Card"
+	}
+	paymentAccountDetails.ExtraDetails = extraDetailStruct
+	database.DBAPM(ctx).Save(&paymentAccountDetails)
+
+	return false, utils.EmptyString
+}
+
+func StoreEncryptCardInfo(ctx context.Context, extraDetails *models.PaymentAccountDetailExtraDetails, paymentAccountDetail *models.PaymentAccountDetail, accountNumber string) bool {
 	uniqueId := utils.CreatePaywellUniqueKey(paymentAccountDetail.ID)
 	expiryMonth, expiryYear := utils.FetchMonthAndYear(extraDetails.ExpiryDate)
-	logger.FromContext(ctx).Info("Payload for CreatePaywellCard : unique id %v, card info %v, expiry month %v, expiry year %v", uniqueId, paymentAccountDetail.AccountNumber, expiryMonth, expiryYear)
+	logger.FromContext(ctx).Infof("Payload for CreatePaywellCard : unique id %v, card info %v, expiry month %v, expiry year %v", uniqueId, paymentAccountDetail.AccountNumber, expiryMonth, expiryYear)
 	paywellResponse := getAPIHelperInstance().CreatePaywellCard(ctx, &paywellPb.CreateCardRequest{
 		UniqueId:    uniqueId,
 		CardInfo:    accountNumber,
@@ -160,31 +183,25 @@ func StoreEncryptCardInfo(ctx context.Context, extraDetails paymentpb.ExtraDetai
 
 	if paywellResponse.IsError {
 		database.DBAPM(ctx).Delete(paymentAccountDetail)
-		return false, nil
+		return false
 	}
 	paymentAccountDetail.AccountNumber = paywellResponse.MaskedNumber
-	paymentAccountDetail.SetExtraDetails(models.PaymentAccountDetailExtraDetails{
-		UniqueId: uniqueId,
-		Token:    paywellResponse.GetToken(),
-	})
-	database.DBAPM(ctx).Save(&paymentAccountDetail)
-	return true, paymentAccountDetail
+	extraDetails.UniqueId = uniqueId
+	extraDetails.Token = paywellResponse.GetToken()
+	return true
 }
 
-func HandleExtraDetailsValidation(ctx context.Context, extraDetails *paymentpb.ExtraDetails) (*paymentpb.BasicApiResponse, error) {
-	resp := &paymentpb.BasicApiResponse{Success: true}
-
+func HandleExtraDetailsValidation(extraDetails *paymentpb.ExtraDetails) (bool, string) {
 	if extraDetails != nil {
+		if extraDetails.EmployeeId == utils.Zero {
+			return true, "Employee ID is mandatory"
+		}
 		if !utils.ValidDate(extraDetails.GetExpiryDate()) {
-			resp.Message = "Invalid Date"
-			resp.Success = false
-			return resp, nil
+			return true, "Invalid Date"
 		}
 		if utils.CheckForOlderDate(extraDetails.GetExpiryDate()) {
-			resp.Message = "Cannot set older date as expiry date"
-			resp.Success = false
-			return resp, nil
+			return true, "Cannot set older date as expiry date"
 		}
 	}
-	return resp, nil
+	return false, utils.EmptyString
 }
