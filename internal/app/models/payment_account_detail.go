@@ -5,7 +5,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -49,7 +48,6 @@ func (extraDetails PaymentAccountDetailExtraDetails) Value() (driver.Value, erro
 
 func (extraDetails *PaymentAccountDetailExtraDetails) Scan(value interface{}) error {
 	jsonBytes, ok := value.([]byte)
-	fmt.Println("jsonBytessss", jsonBytes, ok)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
 	}
@@ -117,25 +115,6 @@ func (paymentAccount PaymentAccountDetail) accountTypeMapping() map[utils.Accoun
 		utils.Mfs:         {utils.Bkash, utils.Nagada},
 		utils.PrepaidCard: {utils.UCBL, utils.EBL},
 	}
-}
-
-func (paymentAccount *PaymentAccountDetail) SetExtraDetails(updatedExtraDetails PaymentAccountDetailExtraDetails) *PaymentAccountDetail {
-	if updatedExtraDetails.EmployeeId != 0 {
-		paymentAccount.ExtraDetails.EmployeeId = updatedExtraDetails.EmployeeId
-	}
-	if updatedExtraDetails.ClientId != 0 {
-		paymentAccount.ExtraDetails.ClientId = updatedExtraDetails.ClientId
-	}
-	if updatedExtraDetails.ExpiryDate != "" {
-		paymentAccount.ExtraDetails.ExpiryDate = updatedExtraDetails.ExpiryDate
-	}
-	if updatedExtraDetails.UniqueId != "" {
-		paymentAccount.ExtraDetails.UniqueId = updatedExtraDetails.UniqueId
-	}
-	if updatedExtraDetails.Token != "" {
-		paymentAccount.ExtraDetails.Token = updatedExtraDetails.Token
-	}
-	return paymentAccount
 }
 
 func JoinPaymentAccountDetailWarehouseMappings() string {
