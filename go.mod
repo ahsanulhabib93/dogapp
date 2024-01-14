@@ -29,7 +29,6 @@ require (
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
-	gorm.io/datatypes v1.0.4
 	gorm.io/gorm v1.22.4
 )
 

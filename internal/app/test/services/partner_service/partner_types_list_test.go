@@ -28,7 +28,7 @@ var _ = Describe("PartnerTypesList", func() {
 		It("Should return all service types data", func() {
 			res, _ := new(services.PartnerServiceMappingService).PartnerTypesList(ctx, &psmpb.PartnerServiceObject{})
 
-			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(7))
+			Expect(len(res.PartnerServiceTypeMappings)).To(Equal(8))
 			sort.Slice(res.PartnerServiceTypeMappings, func(i, j int) bool {
 				return res.PartnerServiceTypeMappings[i].PartnerType < res.PartnerServiceTypeMappings[j].PartnerType
 			})
@@ -67,6 +67,11 @@ var _ = Describe("PartnerTypesList", func() {
 			Expect(transport.PartnerType).To(Equal("Transporter"))
 			Expect(len(transport.ServiceTypes)).To(Equal(5))
 			Expect(transport.ServiceTypes).To(Equal([]string{"Captive", "Driver", "CashVendor", "RedxHubVendor", "CreditVendor"}))
+
+			vendor := res.PartnerServiceTypeMappings[7]
+			Expect(vendor.PartnerType).To(Equal("Vendor"))
+			Expect(len(vendor.ServiceTypes)).To(Equal(1))
+			Expect(vendor.ServiceTypes).To(Equal([]string{"ExternalVendor"}))
 		})
 	})
 
