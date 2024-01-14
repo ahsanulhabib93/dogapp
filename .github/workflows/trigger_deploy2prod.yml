@@ -4,16 +4,5 @@ on:
 
 jobs:
   create-release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
-        run: npx semantic-release
+    uses: shopuptech/shopup-cicd-git-actions/.github/workflows/manual.yml@master
+    secrets: inherit
