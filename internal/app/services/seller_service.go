@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
+	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
@@ -21,18 +21,15 @@ type SellerService struct{}
 
 func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserIDParams) (*spb.GetByUserIDResponse, error) {
 	userId := params.GetUserId()
-	seller := &spb.SellerObject{}
-	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id = ?", userId)
-	err := query.Scan(seller).Error
-	if err != nil {
-		log.Println("Error in seller service:", err.Error())
+	seller := helpers.GetSellerByUserId(ctx, userId)
+	if seller.ID == utils.Zero {
 		return &spb.GetByUserIDResponse{}, nil
 	}
-	response := spb.GetByUserIDResponse{
-		Seller: seller,
-	}
-
-	return &response, nil
+	// convert model data into proto object
+	sellerData := &spb.SellerObject{}
+	copier.Copy(&sellerData, &seller) //nolint:errcheck
+	resp := &spb.GetByUserIDResponse{Seller: sellerData}
+	return resp, nil
 }
 
 func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSellerByConditionParams) (*spb.GetSellersResponse, error) {
