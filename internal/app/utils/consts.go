@@ -21,6 +21,7 @@ const (
 	DoBuyer
 	ProcurementVendor
 	Employee
+	Vendor
 )
 
 const (
@@ -119,6 +120,7 @@ const (
 	Buyer
 	Procurement
 	InternalEmployee
+	ExternalVendor
 )
 
 var SupplierTypeValue = map[SupplierType]string{
@@ -140,6 +142,7 @@ var SupplierTypeValue = map[SupplierType]string{
 	Buyer:            "Buyer",
 	Procurement:      "Procurement",
 	InternalEmployee: "Internal Employee",
+	ExternalVendor:   "External Vendor",
 }
 
 const (
@@ -183,6 +186,7 @@ var PartnerServiceTypeMapping = map[string]ServiceType{
 	"DoBuyer":           DoBuyer,
 	"ProcurementVendor": ProcurementVendor,
 	"Employee":          Employee,
+	"Vendor":            Vendor,
 }
 
 var PartnerServiceLevelMapping = map[string]SupplierType{
@@ -204,4 +208,5 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 	"Buyer":            Buyer,
 	"Procurement":      Procurement,
 	"InternalEmployee": InternalEmployee,
+	"ExternalVendor":   ExternalVendor,
 }
