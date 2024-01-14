@@ -56,6 +56,11 @@
             "name": "Employee",
             "description": "Role for Employee",
             "vaccount_id": 2
+        },
+        {
+            "name": "Vendor",
+            "description": "Role for Vendor",
+            "vaccount_id": 2
         }
     ],
     "role_scopes": [
@@ -86,6 +91,11 @@
         },
         {
             "role_name": "Employee",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -256,6 +266,12 @@
         {
             "id": "supplierpanel:employeeservice:view",
             "description": "Access to view employees",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:vendorservice:view",
+            "description": "Access to view vendors",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
         }
@@ -940,6 +956,11 @@
         {
             "role_name": "Employee",
             "permission_id": "supplierpanel:employeeservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:vendorservice:view",
             "vaccount_id": 2
         }
     ]
