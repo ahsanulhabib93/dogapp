@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	sampb "github.com/voonik/goConnect/api/go/ss2/seller_account_manager"
-	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
+	testUtils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
@@ -18,7 +18,7 @@ var _ = Describe("SellerAccountManager", func() {
 	var ctx context.Context
 
 	BeforeEach(func() {
-		test_utils.GetContext(&ctx)
+		testUtils.GetContext(&ctx)
 	})
 
 	Context("List", func() {
