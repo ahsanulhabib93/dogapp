@@ -10,11 +10,13 @@ func _() {
 	var x [1]struct{}
 	_ = x[SecurityCheque-1]
 	_ = x[GuarantorNID-2]
+	_ = x[TIN-3]
+	_ = x[BIN-4]
 }
 
-const _FileType_name = "SecurityChequeGuarantorNID"
+const _FileType_name = "SecurityChequeGuarantorNIDTINBIN"
 
-var _FileType_index = [...]uint8{0, 14, 26}
+var _FileType_index = [...]uint8{0, 14, 26, 29, 32}
 
 func (i FileType) String() string {
 	i -= 1

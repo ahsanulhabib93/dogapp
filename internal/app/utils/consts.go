@@ -215,10 +215,11 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 
 const (
 	AttachableTypeSupplier AttachableType = iota + 1
-	AttachableTypePartnerServiceMapping
 )
 
 const (
 	SecurityCheque FileType = iota + 1
 	GuarantorNID
+	TIN
+	BIN
 )
