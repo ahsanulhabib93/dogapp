@@ -12,6 +12,8 @@ type ColorCode string
 type SellerPriceVerified string
 type StateReason int
 type ActivationState int
+type AttachableType uint64
+type FileType uint64
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -210,3 +212,14 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 	"InternalEmployee": InternalEmployee,
 	"ExternalVendor":   ExternalVendor,
 }
+
+const (
+	AttachableTypeSupplier AttachableType = iota + 1
+)
+
+const (
+	SecurityCheque FileType = iota + 1
+	GuarantorNID
+	TIN
+	BIN
+)
