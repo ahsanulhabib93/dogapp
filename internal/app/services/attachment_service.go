@@ -1,0 +1,72 @@
+package services
+
+import (
+	"context"
+	"fmt"
+	attachmentpb "github.com/voonik/goConnect/api/go/ss2/attachment"
+	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/ss2/internal/app/helpers"
+	"github.com/voonik/ss2/internal/app/models"
+	"github.com/voonik/ss2/internal/app/utils"
+)
+
+type AttachmentService struct{}
+
+type AttachmentServiceInterface interface {
+	AddAttachment(ctx context.Context, params *attachmentpb.AddAttachmentParams) (*attachmentpb.BasicApiResponse, error)
+}
+
+func GetAttachmentServiceInstance() AttachmentServiceInterface {
+	return new(AttachmentService)
+}
+func (service *AttachmentService) AddAttachment(
+	ctx context.Context,
+	params *attachmentpb.AddAttachmentParams,
+) (*attachmentpb.BasicApiResponse, error) {
+	resp := &attachmentpb.BasicApiResponse{Success: false}
+
+	attachableType := utils.AttachableType(params.GetAttachableType())
+	fileTypeStr := params.GetFileType()
+
+	fileType, ok := utils.FileTypeMapping[fileTypeStr]
+	if !ok {
+		resp.Message = "Invalid file type"
+		return resp, nil
+	}
+
+	validFileTypes, ok := utils.AttachableFileTypeMapping[attachableType]
+	if !ok {
+		resp.Message = "Invalid attachable type"
+		return resp, nil
+	}
+
+	if !utils.Includes(validFileTypes, fileType) {
+		resp.Message = "Incompatible attachable type and file type"
+		return resp, nil
+	}
+	attachableModel := helpers.GetModelByAttachableType(attachableType)
+
+	err := database.DBAPM(ctx).Model(attachableModel).Where("id = ?", params.GetAttachableId()).First(attachableModel).Error
+	if err != nil {
+		resp.Message = "Attachable not found"
+		return resp, nil
+	}
+
+	attachment := models.Attachment{
+		AttachableID:    params.GetAttachableId(),
+		FileURL:         params.GetFileUrl(),
+		AttachableType:  attachableType,
+		ReferenceNumber: params.GetReferenceNumber(),
+		FileType:        fileType,
+	}
+
+	err = database.DBAPM(ctx).Save(&attachment).Error
+	if err != nil {
+		resp.Message = fmt.Sprintf("Error while creating attachment: %s", err.Error)
+		return resp, nil
+	}
+
+	resp.Success = true
+	resp.Message = "Attachment added successfully"
+	return resp, nil
+}
