@@ -72,7 +72,7 @@ jobs:
             git clone https://github.com/googleapis/googleapis
             GOOGLEAPIS_DIR=./googleapis
             cp goConnect/api/proto/health/health_v1.proto .
-            cp goConnect/api/proto/ss2/{supplier*,payment*,key*} .
+            cp goConnect/api/proto/ss2/{supplier*,payment*,key*,attachment*} .
             sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto attachment.proto
             sudo apt-get install -y protobuf-compiler
             protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto attachment.proto
