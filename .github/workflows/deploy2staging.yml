@@ -88,10 +88,10 @@ jobs:
             GOOGLEAPIS_DIR=./googleapis
             cp goConnect/api/proto/health/health_v1.proto .
             cp goConnect/api/proto/app_preference_service/app_preference_service.proto .
-            cp goConnect/api/proto/ss2/{supplier*,payment*,key*,partner_service_mapping*,seller*,seller_bank_detail*,seller_pricing_detail*,vendor_address*} .
-            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto
+            cp goConnect/api/proto/ss2/{supplier*,payment*,key*,partner_service_mapping*,seller*,seller_bank_detail*,seller_pricing_detail*,vendor_address*,attachment*} .
+            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto attachment.proto
             sudo apt-get install -y protobuf-compiler
-            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto
+            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto attachment.proto
             kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
           ################################################################################
 
@@ -117,6 +117,7 @@ jobs:
             "ss2.seller_bank_detail.SellerBankDetail"
             "ss2.seller_pricing_detail.SellerPricingDetail"
             "ss2.supplier_address.SupplierAddress"
+            "ss2.attachment.Attachment"
           )
           i=0
           for value in "${custom[@]}"; do
