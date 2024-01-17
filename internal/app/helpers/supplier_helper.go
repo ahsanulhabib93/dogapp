@@ -165,6 +165,7 @@ func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supp
 	json.Unmarshal(temp, supplierObject)
 
 	supplierObject.CategoryIds = []uint64{}
+	var partnerServiceIds []uint64
 	for _, cId := range strings.Split(supplierData.CategoryIds, ",") {
 		if cId := strings.TrimSpace(cId); cId != "" {
 			v, _ := strconv.Atoi(cId)
@@ -180,12 +181,14 @@ func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supp
 		}
 	}
 
-	supplierObject.PartnerServices = GetPartnerServiceMappings(ctx, supplier)
+	supplierObject.PartnerServices, partnerServiceIds = GetPartnerServiceMappings(ctx, supplier)
+	supplierObject.Attachments = GetAttachments(ctx, supplier.ID, partnerServiceIds)
 	return supplierObject
 }
 
-func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []*supplierPb.PartnerServiceObject {
+func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) ([]*supplierPb.PartnerServiceObject, []uint64) {
 	partnerServiceData := []*supplierPb.PartnerServiceObject{}
+	var partnerServiceIds []uint64
 
 	partnerServices := supplier.PartnerServiceMappings // preloaded
 	for _, partnerService := range partnerServices {
@@ -197,9 +200,36 @@ func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []
 			ServiceType:     partnerService.ServiceType.String(),
 			ServiceLevel:    partnerService.ServiceLevel.String(),
 		})
+		partnerServiceIds = append(partnerServiceIds, partnerService.ID)
 	}
 
-	return partnerServiceData
+	return partnerServiceData, partnerServiceIds
+}
+
+func GetAttachments(ctx context.Context, supplierId uint64, partnerServiceIds []uint64) []*supplierPb.AttachmentObject {
+	var attachmentData []*supplierPb.AttachmentObject
+	var attachments []models.Attachment
+
+	err := database.DBAPM(ctx).Model(&models.Attachment{}).
+		Where("(attachable_id = ? AND attachable_type = ?) OR (attachable_id IN (?) AND attachable_type = ?)",
+			supplierId, utils.AttachableTypeSupplier, partnerServiceIds, utils.AttachableTypePartnerServiceMappings).
+		Find(&attachments).Error
+	if err != nil {
+		return attachmentData
+	}
+
+	for _, attachment := range attachments {
+		attachmentData = append(attachmentData, &supplierPb.AttachmentObject{
+			Id:              attachment.ID,
+			AttachableType:  uint64(attachment.AttachableType),
+			AttachableId:    attachment.AttachableID,
+			FileType:        attachment.FileType.String(),
+			FileUrl:         attachment.FileURL,
+			ReferenceNumber: attachment.ReferenceNumber,
+		})
+	}
+
+	return attachmentData
 }
 
 func PrepareSupplierAddress(params *supplierPb.SupplierParam) []models.SupplierAddress {

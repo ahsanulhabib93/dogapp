@@ -29,22 +29,48 @@ var _ = Describe("ListSupplier", func() {
 	})
 
 	Context("Supplier List", func() {
-		It("Should Respond with all the suppliers", func() {
+		It("Should Respond with all the suppliers and attachments", func() {
+
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 				PartnerServiceMappings:   []models.PartnerServiceMapping{{ServiceLevel: utils.Hlc}},
 			})
-			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+			psMapping := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
 				SupplierId:   supplier1.ID,
 				ServiceType:  utils.Transporter,
 				ServiceLevel: utils.Driver,
+			})
+			attachment1 := test_helper.CreateAttachment(ctx, &models.Attachment{
+				AttachableType: utils.AttachableTypeSupplier,
+				AttachableID:   supplier1.ID,
+				FileType:       utils.TIN,
+			})
+			attachment2 := test_helper.CreateAttachment(ctx, &models.Attachment{
+				AttachableType: utils.AttachableTypeSupplier,
+				AttachableID:   supplier1.ID,
+				FileType:       utils.BIN,
+			})
+			attachment3 := test_helper.CreateAttachment(ctx, &models.Attachment{
+				AttachableType: utils.AttachableTypePartnerServiceMappings,
+				AttachableID:   psMapping.ID,
+				FileType:       utils.SecurityCheque,
+			})
+			attachment4 := test_helper.CreateAttachment(ctx, &models.Attachment{
+				AttachableType: utils.AttachableTypePartnerServiceMappings,
+				AttachableID:   psMapping.ID,
+				FileType:       utils.GuarantorNID,
 			})
 
 			isPhoneVerified := true
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified:        &isPhoneVerified,
 				PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L1}},
+			})
+			attachment5 := test_helper.CreateAttachment(ctx, &models.Attachment{
+				AttachableType: utils.AttachableTypeSupplier,
+				AttachableID:   supplier2.ID,
+				FileType:       utils.GuarantorNID,
 			})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
@@ -71,6 +97,35 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.PartnerServices[1].ServiceType).To(Equal("Transporter"))
 			Expect(supplierData1.PartnerServices[1].ServiceLevel).To(Equal("Driver"))
 
+			Expect(len(supplierData1.Attachments)).To(Equal(4))
+			Expect(supplierData1.Attachments[0].Id).To(Equal(attachment1.ID))
+			Expect(supplierData1.Attachments[0].FileType).To(Equal("TIN"))
+			Expect(supplierData1.Attachments[0].AttachableType).To(Equal(uint64(1)))
+			Expect(supplierData1.Attachments[0].AttachableId).To(Equal(supplier1.ID))
+			Expect(supplierData1.Attachments[0].FileUrl).To(Equal(attachment1.FileURL))
+			Expect(supplierData1.Attachments[0].ReferenceNumber).To(Equal(attachment1.ReferenceNumber))
+
+			Expect(supplierData1.Attachments[1].Id).To(Equal(attachment2.ID))
+			Expect(supplierData1.Attachments[1].FileType).To(Equal("BIN"))
+			Expect(supplierData1.Attachments[1].AttachableType).To(Equal(uint64(1)))
+			Expect(supplierData1.Attachments[1].AttachableId).To(Equal(supplier1.ID))
+			Expect(supplierData1.Attachments[1].FileUrl).To(Equal(attachment2.FileURL))
+			Expect(supplierData1.Attachments[1].ReferenceNumber).To(Equal(attachment2.ReferenceNumber))
+
+			Expect(supplierData1.Attachments[2].Id).To(Equal(attachment3.ID))
+			Expect(supplierData1.Attachments[2].FileType).To(Equal("SecurityCheque"))
+			Expect(supplierData1.Attachments[2].AttachableType).To(Equal(uint64(2)))
+			Expect(supplierData1.Attachments[2].AttachableId).To(Equal(psMapping.ID))
+			Expect(supplierData1.Attachments[2].FileUrl).To(Equal(attachment3.FileURL))
+			Expect(supplierData1.Attachments[2].ReferenceNumber).To(Equal(attachment3.ReferenceNumber))
+
+			Expect(supplierData1.Attachments[3].Id).To(Equal(attachment4.ID))
+			Expect(supplierData1.Attachments[3].FileType).To(Equal("GuarantorNID"))
+			Expect(supplierData1.Attachments[3].AttachableType).To(Equal(uint64(2)))
+			Expect(supplierData1.Attachments[3].AttachableId).To(Equal(psMapping.ID))
+			Expect(supplierData1.Attachments[3].FileUrl).To(Equal(attachment4.FileURL))
+			Expect(supplierData1.Attachments[3].ReferenceNumber).To(Equal(attachment4.ReferenceNumber))
+
 			supplierData2 := res.Data[1]
 			Expect(supplierData2.Email).To(Equal(supplier2.Email))
 			Expect(supplierData2.Name).To(Equal(supplier2.Name))
@@ -87,6 +142,12 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData2.PartnerServices).To(HaveLen(1))
 			Expect(supplierData2.PartnerServices[0].ServiceType).To(Equal("Supplier"))
 			Expect(supplierData2.PartnerServices[0].ServiceLevel).To(Equal("L1"))
+
+			Expect(supplierData2.Attachments[0].AttachableType).To(Equal(uint64(1)))
+			Expect(supplierData2.Attachments[0].AttachableId).To(Equal(supplier2.ID))
+			Expect(supplierData2.Attachments[0].FileUrl).To(Equal(attachment5.FileURL))
+			Expect(supplierData2.Attachments[0].FileType).To(Equal("GuarantorNID"))
+			Expect(supplierData2.Attachments[0].ReferenceNumber).To(Equal(attachment5.ReferenceNumber))
 		})
 	})
 
