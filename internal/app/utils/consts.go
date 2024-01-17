@@ -215,6 +215,7 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 
 const (
 	AttachableTypeSupplier AttachableType = iota + 1
+	AttachableTypePartnerServiceMapping
 )
 
 const (
@@ -222,4 +223,25 @@ const (
 	GuarantorNID
 	TIN
 	BIN
+	IncorporationCertificate
+	TradeLicense
+	PartnershipDeed
+	NID
+	EngagementLetter
+	ConfirmationLetter
+	AcknowledgementLetter
 )
+
+var FileTypeMapping = map[string]FileType{
+	"SecurityCheque":           SecurityCheque,
+	"GuarantorNID":             GuarantorNID,
+	"TIN":                      TIN,
+	"BIN":                      BIN,
+	"IncorporationCertificate": IncorporationCertificate,
+	"TradeLicense":             TradeLicense,
+	"PartnershipDeed":          PartnershipDeed,
+	"NID":                      NID,
+	"EngagementLetter":         EngagementLetter,
+	"ConfirmationLetter":       ConfirmationLetter,
+	"AcknowledgementLetter":    AcknowledgementLetter,
+}
