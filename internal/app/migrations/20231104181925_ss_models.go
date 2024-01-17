@@ -45,18 +45,13 @@ func init() {
 			return nil
 		},
 	})
-	migrator.Register(&gormigrate.Migration{
-		ID: "20231214175442",
-		Migrate: func(tx *gorm.DB) error {
-			models := []interface{}{
-				models.SellerAccountManager{},
-			}
 
-			for _, model := range models {
-				if !tx.HasTable(model) {
-					if err := tx.AutoMigrate(model).Error; err != nil {
-						return err
-					}
+	migrator.Register(&gormigrate.Migration{
+		ID: "20240117104215",
+		Migrate: func(tx *gorm.DB) error {
+			if !tx.HasTable(models.SellerAccountManager{}) {
+				if err := tx.AutoMigrate(models.SellerAccountManager{}).Error; err != nil {
+					return err
 				}
 			}
 			return nil
