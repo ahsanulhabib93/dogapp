@@ -17,6 +17,11 @@ type PublisherClient struct {
 	mock.Mock
 }
 
+func (_m *PublisherClient) BulkPublish(ctx context.Context, in *publisher.BulkPublishRequest, opts ...grpc.CallOption) (*publisher.PublishResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 // Publish provides a mock function with given fields: ctx, in, opts
 func (_m *PublisherClient) Publish(ctx context.Context, in *publisher.PublishRequest, opts ...grpc.CallOption) (*publisher.PublishResponse, error) {
 	_va := make([]interface{}, len(opts))
