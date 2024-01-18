@@ -25,7 +25,10 @@ func (service *AttachmentService) AddAttachment(
 	params *attachmentpb.AddAttachmentParams,
 ) (*attachmentpb.BasicApiResponse, error) {
 	resp := &attachmentpb.BasicApiResponse{Success: false}
-
+	if params.AttachableId == utils.Zero || params.FileUrl == utils.EmptyString || params.ReferenceNumber == utils.EmptyString {
+		resp.Message = "Required params missing"
+		return resp, nil
+	}
 	attachableType := utils.AttachableType(params.GetAttachableType())
 	fileTypeStr := params.GetFileType()
 
