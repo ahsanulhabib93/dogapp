@@ -35,10 +35,10 @@ var _ = Describe("Add attachment", func() {
 		})
 		It("Invalid attachable type", func() {
 			param := attachmentpb.AddAttachmentParams{
-				AttachableId:    0,
+				AttachableId:    2,
 				FileType:        "TIN",
-				FileUrl:         "",
-				ReferenceNumber: "0",
+				FileUrl:         "sddsf",
+				ReferenceNumber: "ddsas",
 				AttachableType:  3,
 			}
 			res, err := services.GetAttachmentServiceInstance().AddAttachment(ctx, &param)
@@ -50,9 +50,9 @@ var _ = Describe("Add attachment", func() {
 
 		It("Invalid file type", func() {
 			param := attachmentpb.AddAttachmentParams{
-				AttachableId:    0,
+				AttachableId:    10,
 				FileType:        "INVALID",
-				FileUrl:         "",
+				FileUrl:         "d",
 				ReferenceNumber: "0",
 				AttachableType:  1,
 			}
@@ -65,9 +65,9 @@ var _ = Describe("Add attachment", func() {
 
 		It("Incompatible attachable type and file type", func() {
 			param := attachmentpb.AddAttachmentParams{
-				AttachableId:    0,
+				AttachableId:    10,
 				FileType:        "TIN",
-				FileUrl:         "",
+				FileUrl:         "ds",
 				ReferenceNumber: "0",
 				AttachableType:  2,
 			}
@@ -82,7 +82,7 @@ var _ = Describe("Add attachment", func() {
 			param := attachmentpb.AddAttachmentParams{
 				AttachableId:    100,
 				FileType:        "TIN",
-				FileUrl:         "",
+				FileUrl:         "cd",
 				ReferenceNumber: "0",
 				AttachableType:  1,
 			}
