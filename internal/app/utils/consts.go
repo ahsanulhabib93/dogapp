@@ -12,6 +12,8 @@ type ColorCode string
 type SellerPriceVerified string
 type StateReason int
 type ActivationState int
+type AttachableType uint64
+type FileType uint64
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -21,6 +23,7 @@ const (
 	DoBuyer
 	ProcurementVendor
 	Employee
+	Vendor
 )
 
 const (
@@ -119,6 +122,7 @@ const (
 	Buyer
 	Procurement
 	InternalEmployee
+	ExternalVendor
 )
 
 var SupplierTypeValue = map[SupplierType]string{
@@ -140,6 +144,7 @@ var SupplierTypeValue = map[SupplierType]string{
 	Buyer:            "Buyer",
 	Procurement:      "Procurement",
 	InternalEmployee: "Internal Employee",
+	ExternalVendor:   "External Vendor",
 }
 
 const (
@@ -183,6 +188,7 @@ var PartnerServiceTypeMapping = map[string]ServiceType{
 	"DoBuyer":           DoBuyer,
 	"ProcurementVendor": ProcurementVendor,
 	"Employee":          Employee,
+	"Vendor":            Vendor,
 }
 
 var PartnerServiceLevelMapping = map[string]SupplierType{
@@ -204,4 +210,16 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 	"Buyer":            Buyer,
 	"Procurement":      Procurement,
 	"InternalEmployee": InternalEmployee,
+	"ExternalVendor":   ExternalVendor,
 }
+
+const (
+	AttachableTypeSupplier AttachableType = iota + 1
+)
+
+const (
+	SecurityCheque FileType = iota + 1
+	GuarantorNID
+	TIN
+	BIN
+)
