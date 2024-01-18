@@ -81,6 +81,10 @@ func (service *AttachmentService) AddAttachment(
 
 func (service *AttachmentService) RemoveAttachment(ctx context.Context, params *attachmentpb.RemoveAttachmentParams) (*attachmentpb.BasicApiResponse, error) {
 	resp := &attachmentpb.BasicApiResponse{Success: false}
+	if params.GetAttachmentId() == utils.Zero || params.GetAttachableId() == utils.Zero || params.GetAttachableType() == utils.Zero {
+		resp.Message = "Required params missing"
+		return resp, nil
+	}
 	var attachment models.Attachment
 	query := database.DBAPM(ctx).Model(&models.Attachment{}).Where(&models.Attachment{
 		AttachableID:   params.GetAttachableId(),

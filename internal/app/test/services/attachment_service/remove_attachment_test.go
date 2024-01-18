@@ -41,6 +41,14 @@ var _ = Describe("Remove attachment", func() {
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Attachment not found"))
 		})
+		It("should raise failed response if params missing", func() {
+			param := attachmentpb.RemoveAttachmentParams{}
+			res, err := services.GetAttachmentServiceInstance().RemoveAttachment(ctx, &param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Required params missing"))
+		})
 		It("should raise failed response if wrong attachment id", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			attachment1 := test_helper.CreateAttachment(ctx, &models.Attachment{
