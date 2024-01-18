@@ -638,6 +638,13 @@
             "service": "ss2",
             "required_permission_id": "supplierpanel:attachment:admin",
             "vaccount_id": 2
+        },
+        {
+            "route": "/attachment/remove_attachment",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 2
         }
     ],
     "role_permissions": [
