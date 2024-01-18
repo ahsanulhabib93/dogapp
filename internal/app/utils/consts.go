@@ -226,7 +226,6 @@ const (
 	IncorporationCertificate
 	TradeLicense
 	PartnershipDeed
-	NID
 	EngagementLetter
 	ConfirmationLetter
 	AcknowledgementLetter
@@ -240,7 +239,6 @@ var FileTypeMapping = map[string]FileType{
 	"IncorporationCertificate": IncorporationCertificate,
 	"TradeLicense":             TradeLicense,
 	"PartnershipDeed":          PartnershipDeed,
-	"NID":                      NID,
 	"EngagementLetter":         EngagementLetter,
 	"ConfirmationLetter":       ConfirmationLetter,
 	"AcknowledgementLetter":    AcknowledgementLetter,

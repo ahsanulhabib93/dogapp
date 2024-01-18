@@ -45,6 +45,6 @@ var PartnerServiceTypeLevelMapping = map[ServiceType][]SupplierType{
 }
 
 var AttachableFileTypeMapping = map[AttachableType][]FileType{
-	AttachableTypeSupplier:              {SecurityCheque, GuarantorNID, TIN, BIN},
-	AttachableTypePartnerServiceMapping: {TradeLicense},
+	AttachableTypeSupplier:              {SecurityCheque, GuarantorNID, TIN, BIN, IncorporationCertificate, TradeLicense, PartnershipDeed, EngagementLetter, ConfirmationLetter, AcknowledgementLetter},
+	AttachableTypePartnerServiceMapping: {},
 }
