@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/qor/validations"
+	attachmentpb "github.com/voonik/goConnect/api/go/ss2/attachment"
 	kampb "github.com/voonik/goConnect/api/go/ss2/key_account_manager"
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
@@ -36,6 +37,7 @@ func main() {
 	sbdpb.RegisterSellerBankDetailServer(server.GrpcServer, handlers.GetSellerBankDetailInstance())
 	spdpb.RegisterSellerPricingDetailServer(server.GrpcServer, handlers.GetSellerPricingDetailInstance())
 	vapb.RegisterVendorAddressServer(server.GrpcServer, handlers.GetVendorAddressInstance())
+	attachmentpb.RegisterAttachmentServer(server.GrpcServer, handlers.GetAttachmentInstance())
 
 	if config.GRPCServerConfigReflection() {
 		reflection.Register(server.GrpcServer)

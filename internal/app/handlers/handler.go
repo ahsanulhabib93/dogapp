@@ -44,3 +44,7 @@ func GetSellerPricingDetailInstance() *services.SellerPricingDetailService {
 func GetVendorAddressInstance() *services.VendorAddressService {
 	return new(services.VendorAddressService)
 }
+
+func GetAttachmentInstance() *services.AttachmentService {
+	return new(services.AttachmentService)
+}
