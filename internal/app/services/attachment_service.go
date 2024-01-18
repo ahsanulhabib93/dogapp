@@ -86,7 +86,6 @@ func (service *AttachmentService) RemoveAttachment(ctx context.Context, params *
 		AttachableID:   params.GetAttachableId(),
 		AttachableType: utils.AttachableType(params.GetAttachableType()),
 	})
-	query.Where("id = ?", params.GetAttachmentId())
 	err := query.First(&attachment, params.AttachmentId).Error
 	if err != nil {
 		resp.Message = "Attachment not found"
