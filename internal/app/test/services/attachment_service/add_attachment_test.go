@@ -22,6 +22,17 @@ var _ = Describe("Add attachment", func() {
 	})
 
 	Context("Failure case", func() {
+		It("Missing params", func() {
+			param := attachmentpb.AddAttachmentParams{
+				FileType:       "TIN",
+				AttachableType: 1,
+			}
+			res, err := services.GetAttachmentServiceInstance().AddAttachment(ctx, &param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Required params missing"))
+		})
 		It("Invalid attachable type", func() {
 			param := attachmentpb.AddAttachmentParams{
 				AttachableId:    0,
