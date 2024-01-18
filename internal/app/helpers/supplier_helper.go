@@ -165,7 +165,6 @@ func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supp
 	json.Unmarshal(temp, supplierObject)
 
 	supplierObject.CategoryIds = []uint64{}
-	var partnerServiceIds []uint64
 	for _, cId := range strings.Split(supplierData.CategoryIds, ",") {
 		if cId := strings.TrimSpace(cId); cId != "" {
 			v, _ := strconv.Atoi(cId)
@@ -181,14 +180,12 @@ func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supp
 		}
 	}
 
-	supplierObject.PartnerServices, partnerServiceIds = GetPartnerServiceMappings(ctx, supplier)
-	supplierObject.Attachments = GetAttachments(ctx, supplier.ID, partnerServiceIds)
+	supplierObject.PartnerServices = GetPartnerServiceMappings(ctx, supplier)
 	return supplierObject
 }
 
-func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) ([]*supplierPb.PartnerServiceObject, []uint64) {
+func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []*supplierPb.PartnerServiceObject {
 	partnerServiceData := []*supplierPb.PartnerServiceObject{}
-	var partnerServiceIds []uint64
 
 	partnerServices := supplier.PartnerServiceMappings // preloaded
 	for _, partnerService := range partnerServices {
@@ -200,15 +197,19 @@ func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) ([
 			ServiceType:     partnerService.ServiceType.String(),
 			ServiceLevel:    partnerService.ServiceLevel.String(),
 		})
-		partnerServiceIds = append(partnerServiceIds, partnerService.ID)
 	}
 
-	return partnerServiceData, partnerServiceIds
+	return partnerServiceData
 }
 
-func GetAttachments(ctx context.Context, supplierId uint64, partnerServiceIds []uint64) []*supplierPb.AttachmentObject {
+func GetAttachments(ctx context.Context, supplierId uint64, partnerServices []*supplierPb.PartnerServiceObject) []*supplierPb.AttachmentObject {
 	var attachmentData []*supplierPb.AttachmentObject
 	var attachments []models.Attachment
+	var partnerServiceIds []uint64
+
+	for _, partnerService := range partnerServices {
+		partnerServiceIds = append(partnerServiceIds, partnerService.Id)
+	}
 
 	err := database.DBAPM(ctx).Model(&models.Attachment{}).
 		Where("(attachable_id = ? AND attachable_type = ?) OR (attachable_id IN (?) AND attachable_type = ?)",
