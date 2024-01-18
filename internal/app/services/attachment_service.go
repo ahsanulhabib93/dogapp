@@ -46,6 +46,13 @@ func (service *AttachmentService) AddAttachment(
 	}
 	attachableModel := helpers.GetModelByAttachableType(attachableType)
 
+	existingAttachment := &models.Attachment{}
+	database.DBAPM(ctx).Model(&models.Attachment{}).Where(&models.Attachment{AttachableType: attachableType, AttachableID: params.AttachableId, FileType: fileType}).First(existingAttachment)
+	if existingAttachment.ID != utils.Zero {
+		resp.Message = "Attachable already uploaded for this filetype"
+		return resp, nil
+	}
+
 	err := database.DBAPM(ctx).Model(attachableModel).Where("id = ?", params.GetAttachableId()).First(attachableModel).Error
 	if err != nil {
 		resp.Message = "Attachable not found"
