@@ -213,7 +213,7 @@ func GetAttachments(ctx context.Context, supplierId uint64, partnerServices []*s
 
 	err := database.DBAPM(ctx).Model(&models.Attachment{}).
 		Where("(attachable_id = ? AND attachable_type = ?) OR (attachable_id IN (?) AND attachable_type = ?)",
-			supplierId, utils.AttachableTypeSupplier, partnerServiceIds, utils.AttachableTypePartnerServiceMappings).
+			supplierId, utils.AttachableTypeSupplier, partnerServiceIds, utils.AttachableTypePartnerServiceMapping).
 		Find(&attachments).Error
 	if err != nil {
 		return attachmentData

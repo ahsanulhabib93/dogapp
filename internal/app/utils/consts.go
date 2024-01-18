@@ -215,7 +215,7 @@ var PartnerServiceLevelMapping = map[string]SupplierType{
 
 const (
 	AttachableTypeSupplier AttachableType = iota + 1
-	AttachableTypePartnerServiceMappings
+	AttachableTypePartnerServiceMapping
 )
 
 const (

@@ -57,7 +57,7 @@ var _ = Describe("GetSupplier", func() {
 					FileType:       utils.BIN,
 				})
 				attachment3 := test_helper.CreateAttachment(ctx, &models.Attachment{
-					AttachableType: utils.AttachableTypePartnerServiceMappings,
+					AttachableType: utils.AttachableTypePartnerServiceMapping,
 					AttachableID:   psMapping.ID,
 					FileType:       utils.SecurityCheque,
 				})
