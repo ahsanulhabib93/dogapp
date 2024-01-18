@@ -14,6 +14,7 @@ type AttachmentService struct{}
 
 type AttachmentServiceInterface interface {
 	AddAttachment(ctx context.Context, params *attachmentpb.AddAttachmentParams) (*attachmentpb.BasicApiResponse, error)
+	RemoveAttachment(ctx context.Context, params *attachmentpb.RemoveAttachmentParams) (*attachmentpb.BasicApiResponse, error)
 }
 
 func GetAttachmentServiceInstance() AttachmentServiceInterface {
@@ -75,5 +76,29 @@ func (service *AttachmentService) AddAttachment(
 
 	resp.Success = true
 	resp.Message = "Attachment added successfully"
+	return resp, nil
+}
+
+func (service *AttachmentService) RemoveAttachment(ctx context.Context, params *attachmentpb.RemoveAttachmentParams) (*attachmentpb.BasicApiResponse, error) {
+	resp := &attachmentpb.BasicApiResponse{Success: false}
+	var attachment models.Attachment
+	query := database.DBAPM(ctx).Model(&models.Attachment{}).Where(&models.Attachment{
+		AttachableID:   params.GetAttachableId(),
+		AttachableType: utils.AttachableType(params.GetAttachableType()),
+	})
+	query.Where("id = ?", params.GetAttachmentId())
+	err := query.First(&attachment, params.AttachmentId).Error
+	if err != nil {
+		resp.Message = "Attachment not found"
+		return resp, nil
+	}
+
+	if err := database.DBAPM(ctx).Delete(&attachment).Error; err != nil {
+		resp.Message = "Error deleting attachment"
+		return resp, nil
+	}
+
+	resp.Success = true
+	resp.Message = "Attachment removed successfully"
 	return resp, nil
 }
