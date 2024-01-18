@@ -1011,7 +1011,7 @@
         {
             "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:attachment:admin",
-            "vaccount_id": 2
+            "vaccount_id": 12
         }
     ]
 }
