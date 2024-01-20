@@ -6,10 +6,5 @@ on:
     types: [labeled]
 jobs:
   pr-lint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: seferov/pr-lint-action@master
-      with:
-        title-regex: '\[(BAKI|MP|RC|CRT|DT|DESMOKAM|DESOTHERS|DESPAYWELL|DESREDX|DESTEAM|MA|MC|MOKSS|PAYW|PE|PD|PAA|SBR|RA|R3PL|SRE)-.*\]'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        auto-close-message: 'Closing this pull request since the title does not contain Business Id. Please fix the title and re-open the pull request.'
+    uses: shopuptech/shopup-cicd-git-actions/.github/workflows/prlint.yml@master
+    secrets: inherit

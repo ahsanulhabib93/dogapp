@@ -223,4 +223,23 @@ const (
 	GuarantorNID
 	TIN
 	BIN
+	IncorporationCertificate
+	TradeLicense
+	PartnershipDeed
+	EngagementLetter
+	ConfirmationLetter
+	AcknowledgementLetter
 )
+
+var FileTypeMapping = map[string]FileType{
+	"SecurityCheque":           SecurityCheque,
+	"GuarantorNID":             GuarantorNID,
+	"TIN":                      TIN,
+	"BIN":                      BIN,
+	"IncorporationCertificate": IncorporationCertificate,
+	"TradeLicense":             TradeLicense,
+	"PartnershipDeed":          PartnershipDeed,
+	"EngagementLetter":         EngagementLetter,
+	"ConfirmationLetter":       ConfirmationLetter,
+	"AcknowledgementLetter":    AcknowledgementLetter,
+}
