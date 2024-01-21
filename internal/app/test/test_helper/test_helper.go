@@ -165,6 +165,14 @@ func CreateKeyAccountManager(ctx context.Context, accountManager *models.KeyAcco
 	return accountManager
 }
 
+func CreateAttachment(ctx context.Context, attachment *models.Attachment) *models.Attachment {
+	id := getUniqueID()
+	attachment.ReferenceNumber = id
+	attachment.FileURL = "/some_url"
+	database.DBAPM(ctx).Save(attachment)
+	return attachment
+}
+
 func CreateBank(ctx context.Context, bank *models.Bank) *models.Bank {
 	id := getUniqueID()
 	bank.Name = fmt.Sprintf("TestBank-%v", id)

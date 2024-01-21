@@ -40,11 +40,26 @@ var _ = Describe("GetSupplier", func() {
 						AgreementUrl: "abc.com",
 					}},
 				})
-				test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+				psMapping := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
 					SupplierId:   supplier.ID,
 					ServiceType:  utils.Transporter,
 					ServiceLevel: utils.Driver,
 					Active:       false,
+				})
+				attachment1 := test_helper.CreateAttachment(ctx, &models.Attachment{
+					AttachableType: utils.AttachableTypeSupplier,
+					AttachableID:   supplier.ID,
+					FileType:       utils.TIN,
+				})
+				attachment2 := test_helper.CreateAttachment(ctx, &models.Attachment{
+					AttachableType: utils.AttachableTypeSupplier,
+					AttachableID:   supplier.ID,
+					FileType:       utils.BIN,
+				})
+				attachment3 := test_helper.CreateAttachment(ctx, &models.Attachment{
+					AttachableType: utils.AttachableTypePartnerServiceMapping,
+					AttachableID:   psMapping.ID,
+					FileType:       utils.SecurityCheque,
 				})
 
 				supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
@@ -76,6 +91,28 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.PartnerServices[1].ServiceType).To(Equal("Transporter"))
 				Expect(resp.Data.PartnerServices[1].ServiceLevel).To(Equal("Driver"))
 				Expect(resp.Data.PartnerServices[1].Active).To(Equal(false))
+
+				Expect(len(resp.Data.Attachments)).To(Equal(3))
+				Expect(resp.Data.Attachments[0].Id).To(Equal(attachment1.ID))
+				Expect(resp.Data.Attachments[0].FileType).To(Equal("TIN"))
+				Expect(resp.Data.Attachments[0].AttachableType).To(Equal(uint64(1)))
+				Expect(resp.Data.Attachments[0].AttachableId).To(Equal(supplier.ID))
+				Expect(resp.Data.Attachments[0].FileUrl).To(Equal(attachment1.FileURL))
+				Expect(resp.Data.Attachments[0].ReferenceNumber).To(Equal(attachment1.ReferenceNumber))
+
+				Expect(resp.Data.Attachments[1].Id).To(Equal(attachment2.ID))
+				Expect(resp.Data.Attachments[1].FileType).To(Equal("BIN"))
+				Expect(resp.Data.Attachments[1].AttachableType).To(Equal(uint64(1)))
+				Expect(resp.Data.Attachments[1].AttachableId).To(Equal(supplier.ID))
+				Expect(resp.Data.Attachments[1].FileUrl).To(Equal(attachment2.FileURL))
+				Expect(resp.Data.Attachments[1].ReferenceNumber).To(Equal(attachment2.ReferenceNumber))
+
+				Expect(resp.Data.Attachments[2].Id).To(Equal(attachment3.ID))
+				Expect(resp.Data.Attachments[2].FileType).To(Equal("SecurityCheque"))
+				Expect(resp.Data.Attachments[2].AttachableType).To(Equal(uint64(2)))
+				Expect(resp.Data.Attachments[2].AttachableId).To(Equal(psMapping.ID))
+				Expect(resp.Data.Attachments[2].FileUrl).To(Equal(attachment3.FileURL))
+				Expect(resp.Data.Attachments[2].ReferenceNumber).To(Equal(attachment3.ReferenceNumber))
 
 				Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))
 				Expect(resp.Data.SupplierAddresses[0].Firstname).To(Equal(supplierAddress.Firstname))

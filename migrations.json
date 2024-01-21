@@ -274,6 +274,18 @@
             "description": "Access to view vendors",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:attachment:admin",
+            "description": "Access to add attachments",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:attachment:admin",
+            "description": "Access to add attachments",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
         }
     ],
     "route_permissions": [
@@ -625,6 +637,34 @@
             "service": "ss2",
             "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
             "vaccount_id": 12
+        },
+        {
+            "route": "/attachment/add_attachment",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/attachment/remove_attachment",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/attachment/add_attachment",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/attachment/remove_attachment",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 12
         }
     ],
     "role_permissions": [
@@ -962,6 +1002,16 @@
             "role_name": "Vendor",
             "permission_id": "supplierpanel:vendorservice:view",
             "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 12
         }
     ]
 }

@@ -48,6 +48,8 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 
 	resp.Data = helpers.PrepareSupplierResponse(ctx, supplier, supplierData)
 	resp.Data.PaymentAccountDetails = helpers.GetPaymentAccountDetails(ctx, supplier, params.GetWarehouseId())
+	resp.Data.Attachments = helpers.GetAttachments(ctx, supplier.ID, resp.Data.PartnerServices)
+
 	resp.Success = true
 
 	log.Printf("GetSupplierResponse: %+v", resp)

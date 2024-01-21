@@ -88,10 +88,10 @@ jobs:
             GOOGLEAPIS_DIR=./googleapis
             cp goConnect/api/proto/health/health_v1.proto .
             cp goConnect/api/proto/app_preference_service/app_preference_service.proto .
-            cp goConnect/api/proto/ss2/{supplier*,payment*,key*,partner_service_mapping*,seller*,seller_bank_detail*,seller_pricing_detail*,vendor_address*} .
-            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto
+            cp goConnect/api/proto/ss2/{supplier*,payment*,key*,partner_service_mapping*,seller*,seller_bank_detail*,seller_pricing_detail*,vendor_address*,attachment*} .
+            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto attachment.proto
             sudo apt-get install -y protobuf-compiler
-            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto
+            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto attachment.proto
             kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
           ################################################################################
 
@@ -104,7 +104,7 @@ jobs:
 
       - name: Update protoservices
         run: |
-          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-staging.yaml
+          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-autopilot-stage.yaml
           custom=(
             "app_preference_service.app_preference_service.AppPreferenceService"
             "health.health_v1.Health"
@@ -117,17 +117,18 @@ jobs:
             "ss2.seller_bank_detail.SellerBankDetail"
             "ss2.seller_pricing_detail.SellerPricingDetail"
             "ss2.supplier_address.SupplierAddress"
+            "ss2.attachment.Attachment"
           )
           i=0
           for value in "${custom[@]}"; do
-            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-staging.yaml
+            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-autopilot-stage.yaml
             i=$((i+1))
           done
           if git status | grep -q modified
           then
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
-            git add charts/shopup/ss2/values-staging.yaml
+            git add charts/shopup/ss2/values-autopilot-stage.yaml
             git commit -m "feat(helm): Update Proto to latest image"
             git push origin master
           fi
