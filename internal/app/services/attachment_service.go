@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	attachmentpb "github.com/voonik/goConnect/api/go/ss2/attachment"
+	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
@@ -15,6 +16,7 @@ type AttachmentService struct{}
 type AttachmentServiceInterface interface {
 	AddAttachment(ctx context.Context, params *attachmentpb.AddAttachmentParams) (*attachmentpb.BasicApiResponse, error)
 	RemoveAttachment(ctx context.Context, params *attachmentpb.RemoveAttachmentParams) (*attachmentpb.BasicApiResponse, error)
+	GetAttachmentFileTypes(ctx context.Context, params *attachmentpb.GetAttachmentFileTypesParams) (*attachmentpb.AttachmentFileTypesResponse, error)
 }
 
 func GetAttachmentServiceInstance() AttachmentServiceInterface {
@@ -106,5 +108,21 @@ func (service *AttachmentService) RemoveAttachment(ctx context.Context, params *
 
 	resp.Success = true
 	resp.Message = "Attachment removed successfully"
+	return resp, nil
+}
+
+func (service *AttachmentService) GetAttachmentFileTypes(ctx context.Context, params *attachmentpb.GetAttachmentFileTypesParams) (*attachmentpb.AttachmentFileTypesResponse, error) {
+	resp := &attachmentpb.AttachmentFileTypesResponse{
+		FileTypes: []string{},
+	}
+	activeFileTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "active_file_types", []string{}).([]string)
+	fileTypes, _ := utils.AttachableFileTypeMapping[utils.AttachableType(params.GetAttachableType())]
+
+	for _, fileType := range fileTypes {
+		if utils.Includes(activeFileTypes, fileType.String()) {
+			resp.FileTypes = append(resp.FileTypes, fileType.String())
+		}
+	}
+
 	return resp, nil
 }
