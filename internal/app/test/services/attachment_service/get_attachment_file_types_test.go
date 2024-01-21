@@ -33,7 +33,7 @@ var _ = Describe("Get attachment file types", func() {
 				res, err := services.GetAttachmentServiceInstance().GetAttachmentFileTypes(ctx, &param)
 
 				Expect(err).To(BeNil())
-				Expect(res.FileTypes).To(Equal([]string{}))
+				Expect(res.Data.FileTypes).To(Equal([]string{}))
 			})
 		})
 
@@ -48,7 +48,7 @@ var _ = Describe("Get attachment file types", func() {
 				res, err := services.GetAttachmentServiceInstance().GetAttachmentFileTypes(ctx, &param)
 
 				Expect(err).To(BeNil())
-				Expect(res.FileTypes).To(Equal([]string{"TIN", "BIN"}))
+				Expect(res.Data.FileTypes).To(Equal([]string{"TIN", "BIN"}))
 			})
 		})
 
@@ -63,8 +63,8 @@ var _ = Describe("Get attachment file types", func() {
 				res, err := services.GetAttachmentServiceInstance().GetAttachmentFileTypes(ctx, &param)
 
 				Expect(err).To(BeNil())
-				Expect(res.FileTypes).To(Equal([]string{"TIN", "BIN"}))
-				Expect(res.FileTypes).NotTo(ContainElement("AADHAR"))
+				Expect(res.Data.FileTypes).To(Equal([]string{"TIN", "BIN"}))
+				Expect(res.Data.FileTypes).NotTo(ContainElement("AADHAR"))
 			})
 		})
 	})

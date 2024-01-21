@@ -113,14 +113,16 @@ func (service *AttachmentService) RemoveAttachment(ctx context.Context, params *
 
 func (service *AttachmentService) GetAttachmentFileTypes(ctx context.Context, params *attachmentpb.GetAttachmentFileTypesParams) (*attachmentpb.AttachmentFileTypesResponse, error) {
 	resp := &attachmentpb.AttachmentFileTypesResponse{
-		FileTypes: []string{},
+		Data: &attachmentpb.AttachmentFileTypes{
+			FileTypes: []string{},
+		},
 	}
 	activeFileTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "active_file_types", []string{}).([]string)
 	fileTypes, _ := utils.AttachableFileTypeMapping[utils.AttachableType(params.GetAttachableType())]
 
 	for _, fileType := range fileTypes {
 		if utils.Includes(activeFileTypes, fileType.String()) {
-			resp.FileTypes = append(resp.FileTypes, fileType.String())
+			resp.Data.FileTypes = append(resp.Data.FileTypes, fileType.String())
 		}
 	}
 
