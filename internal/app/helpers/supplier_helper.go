@@ -202,6 +202,37 @@ func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []
 	return partnerServiceData
 }
 
+func GetAttachments(ctx context.Context, supplierId uint64, partnerServices []*supplierPb.PartnerServiceObject) []*supplierPb.AttachmentObject {
+	var attachmentData []*supplierPb.AttachmentObject
+	var attachments []models.Attachment
+	var partnerServiceIds []uint64
+
+	for _, partnerService := range partnerServices {
+		partnerServiceIds = append(partnerServiceIds, partnerService.Id)
+	}
+
+	err := database.DBAPM(ctx).Model(&models.Attachment{}).
+		Where("(attachable_id = ? AND attachable_type = ?) OR (attachable_id IN (?) AND attachable_type = ?)",
+			supplierId, utils.AttachableTypeSupplier, partnerServiceIds, utils.AttachableTypePartnerServiceMapping).
+		Find(&attachments).Error
+	if err != nil {
+		return attachmentData
+	}
+
+	for _, attachment := range attachments {
+		attachmentData = append(attachmentData, &supplierPb.AttachmentObject{
+			Id:              attachment.ID,
+			AttachableType:  uint64(attachment.AttachableType),
+			AttachableId:    attachment.AttachableID,
+			FileType:        attachment.FileType.String(),
+			FileUrl:         attachment.FileURL,
+			ReferenceNumber: attachment.ReferenceNumber,
+		})
+	}
+
+	return attachmentData
+}
+
 func PrepareSupplierAddress(params *supplierPb.SupplierParam) []models.SupplierAddress {
 	if params.GetFirstname() == "" && params.GetLastname() == "" && params.GetAddress1() == "" && params.GetAddress2() == "" &&
 		params.GetLandmark() == "" && params.GetCity() == "" && params.GetState() == "" && params.GetCountry() == "" &&

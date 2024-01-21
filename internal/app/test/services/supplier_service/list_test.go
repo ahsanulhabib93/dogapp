@@ -29,7 +29,8 @@ var _ = Describe("ListSupplier", func() {
 	})
 
 	Context("Supplier List", func() {
-		It("Should Respond with all the suppliers", func() {
+		It("Should Respond with all the suppliers and attachments", func() {
+
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},

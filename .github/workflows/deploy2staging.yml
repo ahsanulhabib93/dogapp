@@ -104,7 +104,7 @@ jobs:
 
       - name: Update protoservices
         run: |
-          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-staging.yaml
+          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-autopilot-stage.yaml
           custom=(
             "app_preference_service.app_preference_service.AppPreferenceService"
             "health.health_v1.Health"
@@ -121,14 +121,14 @@ jobs:
           )
           i=0
           for value in "${custom[@]}"; do
-            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-staging.yaml
+            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-autopilot-stage.yaml
             i=$((i+1))
           done
           if git status | grep -q modified
           then
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
-            git add charts/shopup/ss2/values-staging.yaml
+            git add charts/shopup/ss2/values-autopilot-stage.yaml
             git commit -m "feat(helm): Update Proto to latest image"
             git push origin master
           fi
