@@ -1,6 +1,6 @@
 name: Golang Unit Testing
 
-on: ["push"]
+on: ["pull_request_target"]
 
 env:
   SOURCE_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
