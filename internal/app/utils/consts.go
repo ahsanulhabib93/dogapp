@@ -62,8 +62,11 @@ const (
 )
 
 const (
-	Success = "success"
-	Failure = "failure"
+	Success                      = "success"
+	Failure                      = "failure"
+	DefaultSellerMaxQuantity     = uint64(1000)
+	DefaultSellerItemsPerPackage = uint64(1)
+	DefaultSellerPickupType      = uint64(1)
 )
 
 const (

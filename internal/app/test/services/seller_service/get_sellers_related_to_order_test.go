@@ -123,6 +123,8 @@ var _ = Describe("Get Sellers Related To Order", func() {
 			Expect(len(res.Seller)).To(Equal(1))
 			Expect(res.Seller[0].UserId).To(Equal(seller1.UserID))
 			Expect(res.Seller[0].BrandName).To(Equal(seller1.BrandName))
+			Expect(res.Seller[0].ReturnExchangePolicy.Return.GetReturnDaysStartsFrom()).To(Equal("delivery"))
+			Expect(res.Seller[0].SellerConfig.MaxQuantity).To(Equal(uint64(1000)))
 			Expect(res.Status).To(Equal("success"))
 			Expect(res.Message).To(Equal("fetched seller details successfully"))
 			Expect(err).To(BeNil())

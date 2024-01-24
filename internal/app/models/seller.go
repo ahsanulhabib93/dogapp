@@ -24,7 +24,7 @@ type Seller struct {
 	SupportPhone                 string
 	ActivationState              utils.ActivationState `gorm:"default:1" json:"activation_state"`
 	Slug                         string                `json:"slug"`
-	ReturnExchangePolicy         string
+	ReturnExchangePolicy         string                `gorm:"-"`
 	TinNumber                    string
 	PanNumber                    string `gorm:"default:'AAAAA0000A'"`
 	MouAgreed                    bool   `gorm:"default:true"`
