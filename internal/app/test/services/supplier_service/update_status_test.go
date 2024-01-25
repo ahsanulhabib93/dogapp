@@ -467,5 +467,40 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(res.Message).To(Equal("OTP verification required for supplier type: L0"))
 			mockedEventBus.AssertExpectations(t)
 		})
+
+		Context("When otp verification required for given supplier type and attachment is present", func() {
+			It("should update the status successfully", func() {
+				supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
+					Status: models.SupplierStatusBlocked,
+					PartnerServiceMappings: []models.PartnerServiceMapping{
+						{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
+					},
+				})
+				test_helper.CreateAttachment(ctx, &models.Attachment{
+					AttachableType: utils.AttachableTypeSupplier,
+					AttachableID:   supplier.ID,
+					FileType:       utils.TIN,
+				})
+				test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
+				param := &supplierpb.UpdateStatusParam{
+					Id:     supplier.ID,
+					Status: string(models.SupplierStatusVerified),
+				}
+
+				t := &testing.T{}
+
+				mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
+				defer resetEventBus()
+
+				mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
+
+				res, err := new(services.SupplierService).UpdateStatus(ctx, param)
+
+				Expect(err).To(BeNil())
+				Expect(res.Success).To(Equal(false))
+				Expect(res.Message).To(Equal("OTP verification required for supplier type: L0"))
+				mockedEventBus.AssertExpectations(t)
+			})
+		})
 	})
 })

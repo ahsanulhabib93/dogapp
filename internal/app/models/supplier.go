@@ -100,7 +100,7 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 		return errors.New("At least one supplier address should be present")
 	}
 
-	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent()) {
+	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent() || supplier.IsAnyAttachedDocumentPresent(ctx)) {
 		return errors.New("At least one primary document or OTP verification needed")
 	}
 
@@ -116,7 +116,7 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 	}
 
 	docTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_primary_doc_verification", []string{}).([]string)
-	if utils.IsInclude(docTypeVerificationList, typeValue) && !supplier.IsAnyDocumentPresent() {
+	if utils.IsInclude(docTypeVerificationList, typeValue) && !(supplier.IsAnyDocumentPresent() || supplier.IsAnyAttachedDocumentPresent(ctx)) {
 		msg := fmt.Sprint("At least one primary document required for supplier type: ", typeValue)
 		return errors.New(msg)
 	}
@@ -126,6 +126,12 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 
 func (supplier *Supplier) IsAnyDocumentPresent() bool {
 	return !(supplier.NidNumber == "" && supplier.NidFrontImageUrl == "" && supplier.NidBackImageUrl == "")
+}
+
+func (supplier *Supplier) IsAnyAttachedDocumentPresent(ctx context.Context) bool {
+	attachedDocuments := []Attachment{}
+	database.DBAPM(ctx).Model(&Attachment{}).Where("attachable_id = ?", supplier.ID).Scan(&attachedDocuments)
+	return len(attachedDocuments) > utils.Zero
 }
 
 func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {
