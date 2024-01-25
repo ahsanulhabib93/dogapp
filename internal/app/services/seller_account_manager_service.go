@@ -64,8 +64,12 @@ func (sams *SellerAccountManagerService) Update(ctx context.Context, params *sam
 	}
 	err = database.DBAPM(ctx).Model(sam).Updates(updateParams).Error
 	if err != nil {
-
+		return &sampb.BasicApiResponse{
+			Success: false,
+			Message: "unable to update seller account manager" + err.Error(),
+		}, nil
 	}
+	response.SellerUserId = sam.Seller.UserID
 	return response, nil
 }
 
@@ -87,6 +91,7 @@ func (sams *SellerAccountManagerService) Delete(ctx context.Context, params *sam
 			Message: "unable to delete seller account manager" + err.Error(),
 		}, nil
 	}
+	response.SellerUserId = sam.Seller.UserID
 	return response, nil
 }
 
@@ -95,7 +100,7 @@ func getSamFromParams(ctx context.Context, params *sampb.AccountManagerObject) (
 	if params.GetId() == utils.Zero {
 		return nil, errors.New("id cannot be empty")
 	}
-	err := database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where("id = ? ", params.GetId()).Find(sam).Error
+	err := database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Preload("Seller").Where("id = ? ", params.GetId()).Find(sam).Error
 	if err != nil {
 		return nil, err
 	}
