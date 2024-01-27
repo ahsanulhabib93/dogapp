@@ -23,7 +23,7 @@ require (
 	github.com/shopuptech/work v0.5.4
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
-	github.com/voonik/goConnect v0.0.0-20240124182406-27c7adcfe30e
+	github.com/voonik/goConnect v0.0.0-20240127052208-ec5f0dea2205
 	github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e
 	golang.org/x/net v0.10.0 // indirect
 	google.golang.org/grpc v1.55.0

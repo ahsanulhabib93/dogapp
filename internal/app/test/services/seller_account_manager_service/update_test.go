@@ -53,6 +53,7 @@ var _ = Describe("SellerAccountManager Update", func() {
 			})
 			Expect(err).To(BeNil())
 			Expect(resp.Success).To(BeTrue())
+			Expect(resp.SellerUserId).To(Equal(seller.UserID))
 			Expect(resp.Message).To(Equal("update successfull"))
 			updatedSam := &models.SellerAccountManager{}
 			database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where("id = ? ", sam.ID).Find(updatedSam)
