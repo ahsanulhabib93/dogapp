@@ -48,3 +48,7 @@ func GetVendorAddressInstance() *services.VendorAddressService {
 func GetAttachmentInstance() *services.AttachmentService {
 	return new(services.AttachmentService)
 }
+
+func GetSellerAccountManagerInstance() *services.SellerAccountManagerService {
+	return new(services.SellerAccountManagerService)
+}
