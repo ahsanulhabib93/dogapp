@@ -7,6 +7,7 @@ import (
 	psmpb "github.com/voonik/goConnect/api/go/ss2/partner_service_mapping"
 	paymentpb "github.com/voonik/goConnect/api/go/ss2/payment_account_detail"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
+	sampb "github.com/voonik/goConnect/api/go/ss2/seller_account_manager"
 	sbdpb "github.com/voonik/goConnect/api/go/ss2/seller_bank_detail"
 	spdpb "github.com/voonik/goConnect/api/go/ss2/seller_pricing_detail"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
@@ -38,6 +39,7 @@ func main() {
 	spdpb.RegisterSellerPricingDetailServer(server.GrpcServer, handlers.GetSellerPricingDetailInstance())
 	vapb.RegisterVendorAddressServer(server.GrpcServer, handlers.GetVendorAddressInstance())
 	attachmentpb.RegisterAttachmentServer(server.GrpcServer, handlers.GetAttachmentInstance())
+	sampb.RegisterSellerAccountManagerServer(server.GrpcServer, handlers.GetSellerAccountManagerInstance())
 
 	if config.GRPCServerConfigReflection() {
 		reflection.Register(server.GrpcServer)
