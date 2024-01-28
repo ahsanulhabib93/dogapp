@@ -118,7 +118,6 @@ var _ = Describe("Get Sellers Related To Order", func() {
 			param := spb.GetSellersRelatedToOrderParams{
 				SellerIds: []uint64{100, 103},
 			}
-
 			res, err := new(services.SellerService).GetSellersRelatedToOrder(ctx, &param)
 			Expect(len(res.Seller)).To(Equal(1))
 			Expect(res.Seller[0].UserId).To(Equal(seller1.UserID))

@@ -79,7 +79,8 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 		response.Message = "no valid param"
 		return &response, nil
 	}
-	sellers := []*spb.SellerObject{}
+	sellers := []*models.Seller{}
+	sellerData := []*spb.SellerObject{}
 	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id in (?)", userIds)
 	err := query.Scan(&sellers).Error
 	if err != nil {
@@ -87,16 +88,17 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 		logger.FromContext(ctx).Error(response.Message)
 		return &response, nil
 	}
-	if len(sellers) == 0 {
+	copier.Copy(&sellerData, &sellers) //nolint:errcheck
+	if len(sellerData) == 0 {
 		response.Status = utils.Success
 		response.Message = "seller not found"
 		return &response, nil
 	}
-	for _, seller := range sellers {
+	for _, seller := range sellerData {
 		seller.SellerConfig = getDefaultSellerConfig()
 		seller.ReturnExchangePolicy = defaultsellerReturnExchangePolicy()
 	}
-	response.Seller = sellers
+	response.Seller = sellerData
 	response.Status = utils.Success
 	response.Message = "fetched seller details successfully"
 	return &response, nil
