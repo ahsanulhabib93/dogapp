@@ -27,7 +27,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-var _ = FDescribe("UpdateStatus", func() {
+var _ = Describe("UpdateStatus", func() {
 	var ctx context.Context
 	var userId uint64 = uint64(101)
 	var mock1 *mocks.ApiCallHelperInterface
@@ -351,7 +351,7 @@ var _ = FDescribe("UpdateStatus", func() {
 		})
 	})
 
-	FContext("When attachment is present", func() {
+	Context("When attachment is present", func() {
 		It("should update the status successfully", func() {
 			isPhoneVerified := true
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
