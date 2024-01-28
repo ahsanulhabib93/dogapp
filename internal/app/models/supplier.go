@@ -100,7 +100,7 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 		return errors.New("At least one supplier address should be present")
 	}
 
-	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent() || supplier.IsAnyAttachedDocumentPresent(ctx)) {
+	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent(ctx)) {
 		return errors.New("At least one primary document or OTP verification needed")
 	}
 
@@ -116,7 +116,7 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 	}
 
 	docTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_primary_doc_verification", []string{}).([]string)
-	if utils.IsInclude(docTypeVerificationList, typeValue) && !(supplier.IsAnyDocumentPresent() || supplier.IsAnyAttachedDocumentPresent(ctx)) {
+	if utils.IsInclude(docTypeVerificationList, typeValue) && !(supplier.IsAnyDocumentPresent(ctx)) {
 		msg := fmt.Sprint("At least one primary document required for supplier type: ", typeValue)
 		return errors.New(msg)
 	}
@@ -124,13 +124,19 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 	return nil
 }
 
-func (supplier *Supplier) IsAnyDocumentPresent() bool {
-	return !(supplier.NidNumber == "" && supplier.NidFrontImageUrl == "" && supplier.NidBackImageUrl == "")
+func (supplier *Supplier) IsAnyDocumentPresent(ctx context.Context) bool {
+	return supplier.IsNidDocumentPresent() || supplier.IsAnyAttachedDocumentPresent(ctx)
+}
+
+func (supplier *Supplier) IsNidDocumentPresent() bool {
+	return (supplier.NidNumber != "" || supplier.NidFrontImageUrl != "" || supplier.NidBackImageUrl != "")
 }
 
 func (supplier *Supplier) IsAnyAttachedDocumentPresent(ctx context.Context) bool {
 	attachedDocuments := []Attachment{}
-	database.DBAPM(ctx).Model(&Attachment{}).Where("attachable_id = ?", supplier.ID).Scan(&attachedDocuments)
+	database.DBAPM(ctx).Model(&Attachment{}).
+		Where("attachable_type = ? AND attachable_id = ?", utils.AttachableTypeSupplier, supplier.ID).
+		Find(&attachedDocuments)
 	return len(attachedDocuments) > utils.Zero
 }
 

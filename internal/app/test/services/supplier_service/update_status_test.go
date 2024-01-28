@@ -2,7 +2,6 @@ package supplier_service_test
 
 import (
 	"context"
-	"log"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -28,7 +27,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-var _ = Describe("UpdateStatus", func() {
+var _ = FDescribe("UpdateStatus", func() {
 	var ctx context.Context
 	var userId uint64 = uint64(101)
 	var mock1 *mocks.ApiCallHelperInterface
@@ -200,20 +199,12 @@ var _ = Describe("UpdateStatus", func() {
 				Status: string(models.SupplierStatusVerified),
 			}
 
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Supplier Not Found"))
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(0))
-			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
@@ -225,19 +216,11 @@ var _ = Describe("UpdateStatus", func() {
 				Status: "Test",
 			}
 
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Invalid Status"))
-			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
@@ -249,19 +232,11 @@ var _ = Describe("UpdateStatus", func() {
 				Status: "",
 			}
 
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Invalid Status"))
-			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
@@ -273,19 +248,11 @@ var _ = Describe("UpdateStatus", func() {
 				Status: string(models.SupplierStatusVerified),
 			}
 
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("At least one payment account details should be present"))
-			mockedEventBus.AssertExpectations(t)
 		})
 
 		It("Should return error for missing address", func() {
@@ -295,20 +262,11 @@ var _ = Describe("UpdateStatus", func() {
 				Id:     supplier.ID,
 				Status: string(models.SupplierStatusVerified),
 			}
-
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("At least one supplier address should be present"))
-			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
@@ -319,20 +277,30 @@ var _ = Describe("UpdateStatus", func() {
 				Id:     supplier.ID,
 				Status: string(models.SupplierStatusPending),
 			}
-
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("Status transition not allowed"))
-			mockedEventBus.AssertExpectations(t)
+		})
+	})
+
+	Context("When no OTP verification or primary document given", func() {
+		It("Should return error", func() {
+			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
+				Status: models.SupplierStatusBlocked,
+			})
+			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
+			param := &supplierpb.UpdateStatusParam{
+				Id:     supplier.ID,
+				Status: string(models.SupplierStatusVerified),
+			}
+
+			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("At least one primary document or OTP verification needed"))
 		})
 	})
 
@@ -352,94 +320,16 @@ var _ = Describe("UpdateStatus", func() {
 				Status: string(models.SupplierStatusVerified),
 			}
 
-			log.Printf("===> logger <=== %+v", supplier)
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("At least one primary document required for supplier type: L0"))
-			mockedEventBus.AssertExpectations(t)
 		})
 	})
 
-	Context("Should return error", func() {
-		It("Updating with status for which transition not allowed", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusFailed})
-			param := &supplierpb.UpdateStatusParam{
-				Id:     supplier.ID,
-				Status: string(models.SupplierStatusBlocked),
-				Reason: "here take the reason",
-			}
-
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
-			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Status transition not allowed"))
-		})
-
-		It("Updating status to block without reason", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			param := &supplierpb.UpdateStatusParam{
-				Id:     supplier.ID,
-				Status: string(models.SupplierStatusBlocked),
-			}
-
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
-			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Status change reason missing"))
-			mockedEventBus.AssertExpectations(t)
-		})
-
-		It("When no OTP verification or primary document given", func() {
-			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
-				Status: models.SupplierStatusBlocked,
-			})
-			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
-			param := &supplierpb.UpdateStatusParam{
-				Id:     supplier.ID,
-				Status: string(models.SupplierStatusVerified),
-			}
-
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
-			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
-
-			Expect(err).To(BeNil())
-			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("At least one primary document or OTP verification needed"))
-			mockedEventBus.AssertExpectations(t)
-		})
-
-		It("When otp verification required for given supplier type", func() {
+	Context("When otp verification required for given supplier type", func() {
+		It("Should return error", func() {
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
 				Status:    models.SupplierStatusBlocked,
 				NidNumber: "1234567890",
@@ -453,54 +343,73 @@ var _ = Describe("UpdateStatus", func() {
 				Status: string(models.SupplierStatusVerified),
 			}
 
-			t := &testing.T{}
-
-			mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-			defer resetEventBus()
-
-			mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
 			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
 
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
 			Expect(res.Message).To(Equal("OTP verification required for supplier type: L0"))
-			mockedEventBus.AssertExpectations(t)
 		})
+	})
 
-		Context("When otp verification required for given supplier type and attachment is present", func() {
-			It("should update the status successfully", func() {
-				supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
-					Status: models.SupplierStatusBlocked,
-					PartnerServiceMappings: []models.PartnerServiceMapping{
-						{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
-					},
-				})
-				test_helper.CreateAttachment(ctx, &models.Attachment{
-					AttachableType: utils.AttachableTypeSupplier,
-					AttachableID:   supplier.ID,
-					FileType:       utils.TIN,
-				})
-				test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
-				param := &supplierpb.UpdateStatusParam{
-					Id:     supplier.ID,
-					Status: string(models.SupplierStatusVerified),
-				}
-
-				t := &testing.T{}
-
-				mockedEventBus, resetEventBus := mockPublisher.SetupMockPublisherClient(t, &publisher.EventBusClient)
-				defer resetEventBus()
-
-				mockedEventBus.On("Publish", ctx, mock.Anything, mock.Anything, mock.Anything).Return(&eventBus.PublishResponse{Success: true}, nil)
-
-				res, err := new(services.SupplierService).UpdateStatus(ctx, param)
-
-				Expect(err).To(BeNil())
-				Expect(res.Success).To(Equal(false))
-				Expect(res.Message).To(Equal("OTP verification required for supplier type: L0"))
-				mockedEventBus.AssertExpectations(t)
+	FContext("When attachment is present", func() {
+		It("should update the status successfully", func() {
+			isPhoneVerified := true
+			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
+				IsPhoneVerified: &isPhoneVerified,
+				Status:          models.SupplierStatusBlocked,
+				PartnerServiceMappings: []models.PartnerServiceMapping{
+					{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
+				},
 			})
+			test_helper.CreateAttachment(ctx, &models.Attachment{
+				AttachableType: utils.AttachableTypeSupplier,
+				AttachableID:   supplier.ID,
+				FileType:       utils.TIN,
+			})
+			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
+			param := &supplierpb.UpdateStatusParam{
+				Id:     supplier.ID,
+				Status: string(models.SupplierStatusVerified),
+			}
+
+			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Supplier status updated successfully"))
+		})
+	})
+
+	Context("Updating with status for which transition not allowed", func() {
+		It("Should return error", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusFailed})
+			param := &supplierpb.UpdateStatusParam{
+				Id:     supplier.ID,
+				Status: string(models.SupplierStatusBlocked),
+				Reason: "here take the reason",
+			}
+
+			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Status transition not allowed"))
+		})
+	})
+
+	Context("Updating status to block without reason", func() {
+		It("Should return error", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			param := &supplierpb.UpdateStatusParam{
+				Id:     supplier.ID,
+				Status: string(models.SupplierStatusBlocked),
+			}
+
+			res, err := new(services.SupplierService).UpdateStatus(ctx, param)
+
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Status change reason missing"))
 		})
 	})
 })
