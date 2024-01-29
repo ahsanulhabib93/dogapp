@@ -28,6 +28,8 @@ func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserI
 	// convert model data into proto object
 	sellerData := &spb.SellerObject{}
 	copier.Copy(&sellerData, &seller) //nolint:errcheck
+	sellerData.SellerConfig = getDefaultSellerConfig()
+	sellerData.ReturnExchangePolicy = defaultsellerReturnExchangePolicy()
 	resp := &spb.GetByUserIDResponse{Seller: sellerData}
 	return resp, nil
 }
@@ -77,7 +79,8 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 		response.Message = "no valid param"
 		return &response, nil
 	}
-	sellers := []*spb.SellerObject{}
+	sellers := []*models.Seller{}
+	sellerData := []*spb.SellerObject{}
 	query := database.DBAPM(ctx).Model(&models.Seller{}).Where("user_id in (?)", userIds)
 	err := query.Scan(&sellers).Error
 	if err != nil {
@@ -85,12 +88,17 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 		logger.FromContext(ctx).Error(response.Message)
 		return &response, nil
 	}
-	if len(sellers) == 0 {
+	copier.Copy(&sellerData, &sellers) //nolint:errcheck
+	if len(sellerData) == 0 {
 		response.Status = utils.Success
 		response.Message = "seller not found"
 		return &response, nil
 	}
-	response.Seller = sellers
+	for _, seller := range sellerData {
+		seller.SellerConfig = getDefaultSellerConfig()
+		seller.ReturnExchangePolicy = defaultsellerReturnExchangePolicy()
+	}
+	response.Seller = sellerData
 	response.Status = utils.Success
 	response.Message = "fetched seller details successfully"
 	return &response, nil
@@ -252,4 +260,31 @@ func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.Sen
 		}
 	}
 	return resp, nil
+}
+
+func getDefaultSellerConfig() *spb.SellerConfig {
+	return &spb.SellerConfig{
+		ItemsPerPackage:       utils.DefaultSellerItemsPerPackage,
+		MaxQuantity:           utils.DefaultSellerMaxQuantity,
+		SellerStockEnabled:    true,
+		CODConfirmationNeeded: true,
+		AllowPriceUpdate:      true,
+		PickupType:            utils.DefaultSellerPickupType,
+		AllowVendorCoupons:    true,
+	}
+}
+
+func defaultsellerReturnExchangePolicyConfig() *spb.SellerReturnExchangePolicyConfig {
+	return &spb.SellerReturnExchangePolicyConfig{
+		ReturnDaysStartsFrom: "delivery",
+		DefaultDuration:      uint64(15),
+	}
+}
+
+func defaultsellerReturnExchangePolicy() *spb.ReturnExchangePolicy {
+	exchangeConfig := defaultsellerReturnExchangePolicyConfig()
+	return &spb.ReturnExchangePolicy{
+		Return:   exchangeConfig,
+		Exchange: exchangeConfig,
+	}
 }

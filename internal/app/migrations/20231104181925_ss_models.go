@@ -45,4 +45,19 @@ func init() {
 			return nil
 		},
 	})
+
+	migrator.Register(&gormigrate.Migration{
+		ID: "20240117104215",
+		Migrate: func(tx *gorm.DB) error {
+			if !tx.HasTable(models.SellerAccountManager{}) {
+				if err := tx.AutoMigrate(models.SellerAccountManager{}).Error; err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	})
 }
