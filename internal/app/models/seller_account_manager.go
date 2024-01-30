@@ -32,9 +32,7 @@ func (sam *SellerAccountManager) Validate(db *gorm.DB) {
 	if sam.Name == "" {
 		db.AddError(errors.New("Name can't be blank"))
 	}
-	if phoneNumber := fmt.Sprint(sam.Phone); len(phoneNumber) == 0 {
-		db.AddError(errors.New("Phone Number can't be blank"))
-	} else if !(strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) {
+	if phoneNumber := fmt.Sprint(sam.Phone); !(strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) {
 		db.AddError(errors.New("Phone Number should have 13 digits"))
 	}
 }

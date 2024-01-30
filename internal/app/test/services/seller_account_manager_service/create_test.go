@@ -33,23 +33,30 @@ var _ = Describe("SellerAccountManager Create", func() {
 			createParams = &sampb.AccountManagerObject{
 				Phone:    8801548654343,
 				Role:     "KAM",
-				SellerId: uint64(999888),
+				SellerId: seller.ID,
 				Name:     "TEST_SAM",
 			}
+		})
+		It("Should return error on invalid name", func() {
+			createParams.Name = ""
+			resp, err := new(services.SellerAccountManagerService).Create(ctx, createParams)
+			Expect(err).To(BeNil())
+			Expect(resp.Success).To(BeFalse())
+			Expect(resp.Message).To(ContainSubstring("Name can't be blank"))
 		})
 		It("Should return error on invalid phone", func() {
 			createParams.Phone = uint64(8801435)
 			resp, err := new(services.SellerAccountManagerService).Create(ctx, createParams)
 			Expect(err).To(BeNil())
 			Expect(resp.Success).To(BeFalse())
-			Expect(resp.Message).To(ContainSubstring("Invalid Seller:"))
+			Expect(resp.Message).To(ContainSubstring("Phone Number should have 13 digits"))
 		})
 		It("Should return error on empty role", func() {
 			createParams.Role = ""
 			resp, err := new(services.SellerAccountManagerService).Create(ctx, createParams)
 			Expect(err).To(BeNil())
 			Expect(resp.Success).To(BeFalse())
-			Expect(resp.Message).To(ContainSubstring("Invalid Seller:"))
+			Expect(resp.Message).To(ContainSubstring("Role can't be blank"))
 		})
 		It("Should return error on invalid seller", func() {
 			createParams.SellerId = uint64(999888)
