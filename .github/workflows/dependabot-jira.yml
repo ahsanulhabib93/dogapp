@@ -1,0 +1,45 @@
+name: Create Jira Issue For Dependabot
+
+on: 
+  pull_request_target:
+    types: [opened]
+
+env:
+  JIRA_BASE_URL: https://shopup.atlassian.net
+  JIRA_USER_EMAIL: tech-automation@shopf.co
+
+jobs:
+  jira-create:
+    name: Create JIRA Ticket
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT_GITHUB }}
+          fetch-depth: 0
+      - name: Login into JIRA
+        uses: atlassian/gajira-login@master
+        env:
+          JIRA_BASE_URL: ${{ env.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ env.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      - name: Create a JIRA Issue
+        id: create
+        uses: atlassian/gajira-create@master
+        with:
+          project: UDH
+          issuetype: Task
+          summary: |
+            Dependabot:${{ github.repository }}
+          description: |
+            {panel}
+            *Created By:* ${{ github.event.pull_request.user.login }}
+            [Github permalink| ${{ github.event.pull_request.html_url }} ]
+            {panel}
+          fields: |
+            { "customfield_10030": "${{ github.event.pull_request.html_url }}" }
+            
+      - name: Log created issue
+        run: echo "Issue ${{ steps.create.outputs.issue }} was created"
