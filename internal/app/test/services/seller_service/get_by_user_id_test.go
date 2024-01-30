@@ -69,7 +69,7 @@ var _ = Describe("Get seller by user ID", func() {
 			Expect(res.Seller.UserId).To(Equal(seller.UserID))
 			Expect(res.Seller.VendorAddresses[0].Zipcode).To(Equal("456789"))
 			Expect(res.Seller.VendorAddresses[0].Address1).To(Equal("Addr-456789"))
-			Expect(res.Seller.VendorAddresses[0].UUID).To(Equal("randomuuid"))
+			Expect(res.Seller.VendorAddresses[0].Uuid).To(Equal("randomuuid"))
 			Expect(res.Seller.ReturnExchangePolicy.Return.GetReturnDaysStartsFrom()).To(Equal("delivery"))
 			Expect(res.Seller.SellerConfig.MaxQuantity).To(Equal(uint64(1000)))
 			Expect(err).To(BeNil())
