@@ -267,7 +267,7 @@ func getDefaultSellerConfig() *spb.SellerConfig {
 		ItemsPerPackage:       utils.DefaultSellerItemsPerPackage,
 		MaxQuantity:           utils.DefaultSellerMaxQuantity,
 		SellerStockEnabled:    true,
-		CODConfirmationNeeded: true,
+		CodConfirmationNeeded: true,
 		AllowPriceUpdate:      true,
 		PickupType:            utils.DefaultSellerPickupType,
 		AllowVendorCoupons:    true,
