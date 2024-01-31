@@ -6,7 +6,7 @@ on:
 
 env:
   JIRA_BASE_URL: https://shopup.atlassian.net
-  JIRA_USER_EMAIL: tech-automation@shopf.co
+  JIRA_USER_EMAIL: tech-automation@shopup.org
 
 jobs:
   jira-create:
