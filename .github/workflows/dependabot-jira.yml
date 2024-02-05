@@ -39,7 +39,7 @@ jobs:
             [Github permalink| ${{ github.event.pull_request.html_url }} ]
             {panel}
           fields: |
-            { "customfield_10030": "${{ github.event.pull_request.html_url }}" }
+            { "customfield_10030": "${{ github.event.pull_request.html_url }}", "customfield_10107": {"value": "Mokam UDH"} }
             
       - name: Log created issue
         run: echo "Issue ${{ steps.create.outputs.issue }} was created"
