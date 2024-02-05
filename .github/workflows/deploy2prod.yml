@@ -44,7 +44,7 @@ jobs:
       - id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v1'
         with:
-          cluster_name: 'mokam-prod'
+          cluster_name: 'mokam-production-autopilot'
           location: 'asia-southeast1'
 
       # Deploy to production GKE cluster
@@ -76,7 +76,7 @@ jobs:
 
       - name: Update protoservices
         run: |
-          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-production.yaml
+          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-production-autopilot.yaml
           custom=( 
             "app_preference_service.app_preference_service.AppPreferenceService"
             "health.health_v1.Health"
@@ -93,21 +93,21 @@ jobs:
           )  
           i=0
           for value in "${custom[@]}"; do
-            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-production.yaml
+            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-production-autopilot.yaml
             i=$((i+1))
           done
           if git status | grep -q modified
           then
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
-            git add charts/shopup/ss2/values-production.yaml
+            git add charts/shopup/ss2/values-production-autopilot.yaml
             git commit -m "feat(helm): Update Proto to latest image"
             git push origin master
           fi  
       - name: Deploying to GCP Cluster
         uses: fjogeleit/yaml-update-action@master
         with:
-          valueFile: 'charts/shopup/ss2/values-production.yaml'
+          valueFile: 'charts/shopup/ss2/values-production-autopilot.yaml'
           propertyPath: 'image.tag'
           value: ${{ steps.build.outputs.version }}
           repository: shopuptech/cicd-automation
