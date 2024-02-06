@@ -10,7 +10,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.PAT_GITHUB }}
 
 jobs:
-  deploy-prod:
+  docker-build:
     name: Setup, Build, Publish, and Deploy to Production
     runs-on: ubuntu-20.04
     permissions:
@@ -67,51 +67,13 @@ jobs:
             kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
           ################################################################################
 
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          repository: shopuptech/cicd-automation
-          token: ${{ secrets.GIHUB_PAT }}
-          ref: 'master'
-
-      - name: Update protoservices
-        run: |
-          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-production-autopilot.yaml
-          custom=( 
-            "app_preference_service.app_preference_service.AppPreferenceService"
-            "health.health_v1.Health"
-            "ss2.supplier.Supplier"
-            "ss2.payment_account_detail.PaymentAccountDetail"
-            "ss2.key_account_manager.KeyAccountManager"
-            "ss2.supplier_address.SupplierAddress"
-            "ss2.partner_service_mapping.PartnerServiceMapping"
-            "ss2.seller.Seller"
-            "ss2.seller_bank_detail.SellerBankDetail"
-            "ss2.seller_pricing_detail.SellerPricingDetail"
-            "ss2.vendor_address.VendorAddress"
-            "ss2.attachment.Attachment"
-          )  
-          i=0
-          for value in "${custom[@]}"; do
-            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-production-autopilot.yaml
-            i=$((i+1))
-          done
-          if git status | grep -q modified
-          then
-            git config user.name "GitHub Actions"
-            git config user.email "actions@github.com"
-            git add charts/shopup/ss2/values-production-autopilot.yaml
-            git commit -m "feat(helm): Update Proto to latest image"
-            git push origin master
-          fi  
-      - name: Deploying to GCP Cluster
-        uses: fjogeleit/yaml-update-action@master
-        with:
-          valueFile: 'charts/shopup/ss2/values-production-autopilot.yaml'
-          propertyPath: 'image.tag'
-          value: ${{ steps.build.outputs.version }}
-          repository: shopuptech/cicd-automation
-          branch: master
-          updateFile: true
-          message: 'feat(helm): Update Image Version to ${{ steps.build.outputs.version }}'
-          token: ${{ secrets.GIHUB_PAT }}
+  deploy-prod:
+    needs: docker-build
+    uses: shopuptech/shopup-cicd-git-actions/.github/workflows/go-deployment.yml@go-deploy
+    with:
+      APP_NAME: 'ss2'
+      IMAGE_TAG: ${{ github.ref_name }}
+      valueFile: 'charts/shopup/ss2/values-production-autopilot.yaml'
+      customValues: 'ss2.attachment.Attachment,ss2.vendor_address.VendorAddress,ss2.seller_pricing_detail.SellerPricingDetail,ss2.seller_bank_detail.SellerBankDetail,ss2.seller.Seller,ss2.partner_service_mapping.PartnerServiceMapping,ss2.supplier_address.SupplierAddress,ss2.key_account_manager.KeyAccountManager,ss2.payment_account_detail.PaymentAccountDetail,app_preference_service.app_preference_service.AppPreferenceService,health.health_v1.Health,ss2.supplier.Supplier'
+    secrets:
+      GIHUB_PAT: ${{ secrets.GIHUB_PAT }}
