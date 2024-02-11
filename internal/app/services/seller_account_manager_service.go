@@ -12,6 +12,35 @@ import (
 
 type SellerAccountManagerService struct{}
 
+func (sams *SellerAccountManagerService) Create(ctx context.Context, params *sampb.AccountManagerObject) (*sampb.BasicApiResponse, error) {
+	seller := &models.Seller{}
+	resp := &sampb.BasicApiResponse{}
+	err := database.DBAPM(ctx).Model(&models.Seller{}).
+		Where("id = ?", params.GetSellerId()).
+		Find(seller).Error
+	if err != nil {
+		resp.Message = "Invalid Seller:" + err.Error()
+		return resp, nil
+	}
+	resp.SellerUserId = seller.UserID
+	sam := &models.SellerAccountManager{
+		SellerID: params.GetSellerId(),
+		Phone:    int64(params.GetPhone()),
+		Role:     params.GetRole(),
+		Name:     params.GetName(),
+		Email:    params.GetEmail(),
+		Priority: int(utils.One),
+	}
+	err = database.DBAPM(ctx).Create(sam).Error
+	if err != nil {
+		resp.Message = err.Error()
+	} else {
+		resp.Message = "SellerAccountManager added successfully"
+		resp.Success = true
+	}
+	return resp, nil
+}
+
 func (sams *SellerAccountManagerService) List(ctx context.Context, params *sampb.ListParams) (*sampb.ListResponse, error) {
 	resp := &sampb.ListResponse{}
 
@@ -37,6 +66,7 @@ func (sams *SellerAccountManagerService) List(ctx context.Context, params *sampb
 			Name:     sam.Name,
 			Priority: uint64(sam.Priority),
 			Role:     sam.Role,
+			SellerId: sam.SellerID,
 		})
 	}
 
@@ -55,7 +85,7 @@ func (sams *SellerAccountManagerService) Update(ctx context.Context, params *sam
 			Message: err.Error(),
 		}, nil
 	}
-
+	response.SellerUserId = sam.Seller.UserID
 	updateParams := &models.SellerAccountManager{
 		Phone: int64(params.GetPhone()),
 		Role:  params.GetRole(),
@@ -64,7 +94,10 @@ func (sams *SellerAccountManagerService) Update(ctx context.Context, params *sam
 	}
 	err = database.DBAPM(ctx).Model(sam).Updates(updateParams).Error
 	if err != nil {
-
+		return &sampb.BasicApiResponse{
+			Success: false,
+			Message: "unable to update seller account manager" + err.Error(),
+		}, nil
 	}
 	return response, nil
 }
@@ -79,7 +112,7 @@ func (sams *SellerAccountManagerService) Delete(ctx context.Context, params *sam
 			Message: err.Error(),
 		}, nil
 	}
-
+	response.SellerUserId = sam.Seller.UserID
 	err = database.DBAPM(ctx).Delete(sam).Error
 	if err != nil {
 		return &sampb.BasicApiResponse{
@@ -95,7 +128,7 @@ func getSamFromParams(ctx context.Context, params *sampb.AccountManagerObject) (
 	if params.GetId() == utils.Zero {
 		return nil, errors.New("id cannot be empty")
 	}
-	err := database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where("id = ? ", params.GetId()).Find(sam).Error
+	err := database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Preload("Seller").Where("id = ? ", params.GetId()).Find(sam).Error
 	if err != nil {
 		return nil, err
 	}
