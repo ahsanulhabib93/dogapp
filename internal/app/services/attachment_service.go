@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+
 	attachmentpb "github.com/voonik/goConnect/api/go/ss2/attachment"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
@@ -75,7 +76,7 @@ func (service *AttachmentService) AddAttachment(
 
 	err = database.DBAPM(ctx).Save(&attachment).Error
 	if err != nil {
-		resp.Message = fmt.Sprintf("Error while creating attachment: %s", err.Error)
+		resp.Message = fmt.Sprintf("Error while creating attachment: %s", err.Error())
 		return resp, nil
 	}
 

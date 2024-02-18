@@ -33,9 +33,9 @@ var _ = Describe("SellerAccountManager", func() {
 		Context("With Data", func() {
 			var Sam1, Sam2, Sam3 *models.SellerAccountManager
 			BeforeEach(func() {
-				Sam1 = test_helper.CreateSellerAccountManager(ctx, 1, "SAM 1", 98765, "example@example.com", 1, "sourcing-associate")
-				Sam2 = test_helper.CreateSellerAccountManager(ctx, 1, "SAM 2", 98766, "example2@example.com", 1, "non-sourcing-associate")
-				Sam3 = test_helper.CreateSellerAccountManager(ctx, 1, "SAM 3", 98766, "example2@example.com", 2, "non-sourcing-associate")
+				Sam1 = test_helper.CreateSellerAccountManager(ctx, 1, "SAM 1", 8801123212324, "example@example.com", 1, "sourcing-associate")
+				Sam2 = test_helper.CreateSellerAccountManager(ctx, 1, "SAM 2", 8801123212323, "example2@example.com", 1, "non-sourcing-associate")
+				Sam3 = test_helper.CreateSellerAccountManager(ctx, 1, "SAM 3", 8801123212326, "example2@example.com", 2, "non-sourcing-associate")
 			})
 			It("Should return data ordered by role and priority with success message for proper params", func() {
 
@@ -50,6 +50,7 @@ var _ = Describe("SellerAccountManager", func() {
 				Expect(resp.AccountManager[2].Name).To(Equal(Sam1.Name))
 				Expect(resp.AccountManager[2].Priority).To(Equal(uint64(Sam1.Priority)))
 				Expect(resp.AccountManager[2].Role).To(Equal(Sam1.Role))
+				Expect(resp.AccountManager[2].SellerId).To(Equal(Sam1.SellerID))
 
 				Expect(resp.AccountManager[1].Id).To(Equal(Sam3.ID))
 				Expect(resp.AccountManager[1].Email).To(Equal(Sam3.Email))
@@ -57,6 +58,7 @@ var _ = Describe("SellerAccountManager", func() {
 				Expect(resp.AccountManager[1].Name).To(Equal(Sam3.Name))
 				Expect(resp.AccountManager[1].Priority).To(Equal(uint64(Sam3.Priority)))
 				Expect(resp.AccountManager[1].Role).To(Equal(Sam3.Role))
+				Expect(resp.AccountManager[1].SellerId).To(Equal(Sam1.SellerID))
 
 				Expect(resp.AccountManager[0].Id).To(Equal(Sam2.ID))
 				Expect(resp.AccountManager[0].Email).To(Equal(Sam2.Email))
@@ -64,6 +66,7 @@ var _ = Describe("SellerAccountManager", func() {
 				Expect(resp.AccountManager[0].Name).To(Equal(Sam2.Name))
 				Expect(resp.AccountManager[0].Priority).To(Equal(uint64(Sam2.Priority)))
 				Expect(resp.AccountManager[0].Role).To(Equal(Sam2.Role))
+				Expect(resp.AccountManager[0].SellerId).To(Equal(Sam1.SellerID))
 			})
 		})
 	})
