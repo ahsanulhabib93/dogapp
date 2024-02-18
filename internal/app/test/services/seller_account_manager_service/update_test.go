@@ -17,9 +17,14 @@ import (
 
 var _ = Describe("SellerAccountManager Update", func() {
 	var ctx context.Context
+	var seller *models.Seller
 
 	BeforeEach(func() {
 		testUtils.GetContext(&ctx)
+		seller = test_helper.CreateSeller(ctx, &models.Seller{
+			UserID:    123456,
+			BrandName: "test_brand",
+		})
 	})
 
 	Context("Failure Cases", func() {
@@ -40,7 +45,7 @@ var _ = Describe("SellerAccountManager Update", func() {
 
 	Context("Succes Cases", func() {
 		It("Should return success on update", func() {
-			sam := test_helper.CreateSellerAccountManager(ctx, 1, "SAM 1", 8801548654342, "example@example.com", 1, "sourcing-associate")
+			sam := test_helper.CreateSellerAccountManager(ctx, seller.ID, "SAM 1", 8801548654342, "example@example.com", 1, "sourcing-associate")
 			resp, err := new(services.SellerAccountManagerService).Update(ctx, &sampb.AccountManagerObject{
 				Id:    sam.ID,
 				Phone: 8801548654343,
@@ -48,6 +53,7 @@ var _ = Describe("SellerAccountManager Update", func() {
 			})
 			Expect(err).To(BeNil())
 			Expect(resp.Success).To(BeTrue())
+			Expect(resp.SellerUserId).To(Equal(seller.UserID))
 			Expect(resp.Message).To(Equal("update successfull"))
 			updatedSam := &models.SellerAccountManager{}
 			database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where("id = ? ", sam.ID).Find(updatedSam)

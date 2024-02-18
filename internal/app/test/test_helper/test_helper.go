@@ -201,7 +201,7 @@ func SetContextUser(ctx *context.Context, userId uint64, permissions []string) *
 
 func CreateSellerAccountManager(ctx context.Context, sellerID uint64, name string, phone uint64, email string, priority uint64, role string) *models.SellerAccountManager {
 	sam := &models.SellerAccountManager{
-		SellerID: int(sellerID),
+		SellerID: sellerID,
 		Name:     name,
 		Phone:    int64(phone),
 		Email:    email,
