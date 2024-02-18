@@ -1,10 +1,6 @@
-name: Golang Unit Testing
+name: Golang Unit Testing Dependabot
 
-on: 
-  pull_request:
-  push:
-    branches:
-      - master
+on: pull_request_target
 
 env:
   SOURCE_BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
@@ -13,7 +9,7 @@ env:
 
 jobs:
   tests:
-    if: github.actor != 'dependabot[bot]'
+    if: github.actor == 'dependabot[bot]'
     name: Unit Testing
     runs-on: ubuntu-latest
     services:
