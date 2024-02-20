@@ -262,6 +262,11 @@ func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.Sen
 	return resp, nil
 }
 
+func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (*spb.BasicApiResponseV2, error) {
+	resp := &spb.BasicApiResponseV2{Status: false, Message: "Failed to register the seller. Please try again."}
+	return resp, nil
+}
+
 func getDefaultSellerConfig() *spb.SellerConfig {
 	return &spb.SellerConfig{
 		ItemsPerPackage:       utils.DefaultSellerItemsPerPackage,
