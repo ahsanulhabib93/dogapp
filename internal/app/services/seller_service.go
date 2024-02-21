@@ -262,8 +262,15 @@ func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.Sen
 	return resp, nil
 }
 
-func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (*spb.BasicApiResponseV2, error) {
-	resp := &spb.BasicApiResponseV2{Status: false, Message: "Failed to register the seller. Please try again."}
+func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (*spb.CreateResponse, error) {
+	resp := &spb.CreateResponse{Status: false, Message: "Failed to register the seller. Please try again."}
+	existingSeller := helpers.GetSellerByUserId(ctx, params.Seller.UserId)
+	if existingSeller != nil {
+		resp.Status = true
+		resp.Message = "Seller already registered."
+		resp.UserId = existingSeller.UserID
+		return resp, nil
+	}
 	return resp, nil
 }
 
