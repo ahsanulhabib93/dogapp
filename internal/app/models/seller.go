@@ -5,6 +5,7 @@ import (
 
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
+	"gorm.io/datatypes"
 )
 
 type Seller struct {
@@ -13,7 +14,7 @@ type Seller struct {
 	AffiliateURL                 string
 	IsDirect                     bool `gorm:"default:false"`
 	Configuration                string
-	DataMapping                  string
+	DataMapping                  datatypes.JSON `gorm:"type:json"`
 	FullfillmentType             int
 	DeletedAt                    *time.Time
 	BrandName                    string `json:"brand_name"`
@@ -53,9 +54,10 @@ type Seller struct {
 	Slot                         string `json:"slot"`
 	SellerCloseDay               string
 	AcceptedPaymentMethods       string
-	DeliveryType                 int `gorm:"default:1" json:"delivery_type"`
-	ProcessingType               int `gorm:"default:1" json:"processing_type"`
-	BusinessUnit                 int `json:"business_unit"`
+	DeliveryType                 int            `gorm:"default:1" json:"delivery_type"`
+	ProcessingType               int            `gorm:"default:1" json:"processing_type"`
+	BusinessUnit                 int            `json:"business_unit"`
+	ReturnExchangePolicy         datatypes.JSON `gorm:"type:json"`
 	SellerConfig                 *SellerConfig
 	VendorAddresses              []*VendorAddress
 	SellerBankDetail             *SellerBankDetail
