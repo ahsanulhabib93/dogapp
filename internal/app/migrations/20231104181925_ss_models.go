@@ -60,4 +60,25 @@ func init() {
 			return nil
 		},
 	})
+
+	migrator.Register(&gormigrate.Migration{
+		ID: "20240227152449",
+		Migrate: func(tx *gorm.DB) error {
+			tx.Exec("ALTER TABLE sellers MODIFY COLUMN data_mapping JSON, MODIFY COLUMN return_exchange_policy JSON")
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	})
+	migrator.Register(&gormigrate.Migration{
+		ID: "20240227152450",
+		Migrate: func(tx *gorm.DB) error {
+			tx.Exec("ALTER TABLE seller_configs MODIFY COLUMN refund_policy JSON")
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	})
 }
