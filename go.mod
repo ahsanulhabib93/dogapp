@@ -23,13 +23,14 @@ require (
 	github.com/shopuptech/work v0.5.4
 	github.com/stretchr/testify v1.8.1
 	github.com/urfave/cli v1.22.10
-	github.com/voonik/goConnect v0.0.0-20240221065329-666b18d9facd
+	github.com/voonik/goConnect v0.0.0-20240227070215-ae5fd4f11e56
 	github.com/voonik/goFramework v0.0.0-20231012055654-6c79c73f194e
 	golang.org/x/net v0.10.0 // indirect
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
+	gorm.io/datatypes v1.0.4
 	gorm.io/gorm v1.22.4
 )
 

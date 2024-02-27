@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"strconv"
@@ -204,4 +205,85 @@ func GetArrayIdsFromString(id string) (string, []uint64) {
 		sellerIDs[i] = id
 	}
 	return "", sellerIDs
+}
+
+func FormatAndAssignData(params *spb.CreateParams) *models.Seller {
+	returnExchangePolicy, _ := json.Marshal(DefaultsellerReturnExchangePolicy())
+	jsonDataMapping, _ := json.Marshal(utils.SellerDataMapping)
+	sellerPricingDetails := &models.SellerPricingDetail{}
+
+	seller := &models.Seller{
+		UserID:                 params.Seller.UserId,
+		BrandName:              params.Seller.BrandName,
+		CompanyName:            params.Seller.CompanyName,
+		PrimaryEmail:           params.Seller.PrimaryEmail,
+		PrimaryPhone:           params.Seller.PrimaryPhone,
+		ActivationState:        utils.ActivationState(params.Seller.ActivationState),
+		Slug:                   params.Seller.Slug,
+		Hub:                    params.Seller.Hub,
+		Slot:                   params.Seller.Slot,
+		DeliveryType:           int(params.Seller.DeliveryType),
+		ProcessingType:         int(params.Seller.ProcessingType),
+		BusinessUnit:           int(params.Seller.BusinessUnit),
+		FullfillmentType:       int(params.Seller.FullfillmentType),
+		ColorCode:              utils.ColorCode(params.Seller.ColorCode),
+		TinNumber:              params.Seller.TinNumber,
+		SellerCloseDay:         params.Seller.SellerCloseDay,
+		AcceptedPaymentMethods: params.Seller.AcceptedPaymentMethods,
+		AffiliateURL:           utils.DefaultAffiliateURL,
+		IsDirect:               true,
+		ReturnExchangePolicy:   returnExchangePolicy,
+		DataMapping:            jsonDataMapping,
+		AggregatorID:           int(params.Seller.UserId),
+		SellerPricingDetails:   []*models.SellerPricingDetail{sellerPricingDetails}, // Taking values from DB defaults
+		AgentID:                int(params.AgentId),
+		SellerConfig:           createSellerDefaultSellerConfig(),
+	}
+
+	return seller
+}
+
+func createSellerDefaultSellerConfig() *models.SellerConfig {
+	refundPolicy, _ := json.Marshal(map[string]int{
+		"cod":           1,
+		"payu_redirect": 1,
+	})
+	sellerConfig := &models.SellerConfig{
+		ItemsPerPackage:       int(utils.DefaultSellerItemsPerPackage),
+		MaxQuantity:           int(utils.DefaultSellerMaxQuantity),
+		SellerStockEnabled:    true,
+		CODConfirmationNeeded: true,
+		AllowPriceUpdate:      true,
+		PickupType:            int(utils.DefaultSellerPickupType),
+		AllowVendorCoupons:    true,
+		RefundPolicy:          refundPolicy,
+	}
+	return sellerConfig
+}
+
+func GetDefaultSellerConfig() *spb.SellerConfig {
+	return &spb.SellerConfig{
+		ItemsPerPackage:       utils.DefaultSellerItemsPerPackage,
+		MaxQuantity:           utils.DefaultSellerMaxQuantity,
+		SellerStockEnabled:    true,
+		CodConfirmationNeeded: true,
+		AllowPriceUpdate:      true,
+		PickupType:            utils.DefaultSellerPickupType,
+		AllowVendorCoupons:    true,
+	}
+}
+
+func defaultsellerReturnExchangePolicyConfig() *spb.SellerReturnExchangePolicyConfig {
+	return &spb.SellerReturnExchangePolicyConfig{
+		ReturnDaysStartsFrom: "delivery",
+		DefaultDuration:      uint64(15),
+	}
+}
+
+func DefaultsellerReturnExchangePolicy() *spb.ReturnExchangePolicy {
+	exchangeConfig := defaultsellerReturnExchangePolicyConfig()
+	return &spb.ReturnExchangePolicy{
+		Return:   exchangeConfig,
+		Exchange: exchangeConfig,
+	}
 }
