@@ -271,7 +271,7 @@ func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (
 	}
 
 	existingSeller := helpers.GetSellerByUserId(ctx, params.Seller.UserId)
-	if existingSeller != nil {
+	if existingSeller.ID != utils.Zero {
 		resp.Status = true
 		resp.Message = "Seller already registered."
 		resp.UserId = existingSeller.UserID
