@@ -207,7 +207,7 @@ func GetArrayIdsFromString(id string) (string, []uint64) {
 	return "", sellerIDs
 }
 
-func FormatAndAssignData(params *spb.CreateParams) *models.Seller {
+func CreateSeller(ctx context.Context, params *spb.CreateParams) error {
 	returnExchangePolicy, _ := json.Marshal(DefaultsellerReturnExchangePolicy())
 	jsonDataMapping, _ := json.Marshal(utils.SellerDataMapping)
 	sellerPricingDetails := &models.SellerPricingDetail{}
@@ -240,7 +240,41 @@ func FormatAndAssignData(params *spb.CreateParams) *models.Seller {
 		SellerConfig:           createSellerDefaultSellerConfig(),
 	}
 
-	return seller
+	if len(params.Seller.VendorAddresses) != utils.Zero {
+		seller.VendorAddresses = assignVendorAddressData(params.Seller.VendorAddresses)
+	}
+
+	err := database.DBAPM(ctx).Model(&models.Seller{}).Create(seller).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func assignVendorAddressData(vendorAddressesObjects []*spb.VendorAddressObject) []*models.VendorAddress {
+	vendorAddresses := []*models.VendorAddress{}
+	for _, vendorAddress := range vendorAddressesObjects {
+		vendorAddresses = append(vendorAddresses, &models.VendorAddress{
+			Firstname:            vendorAddress.Firstname,
+			Lastname:             vendorAddress.Lastname,
+			Address1:             vendorAddress.Address1,
+			Address2:             vendorAddress.Address2,
+			City:                 vendorAddress.City,
+			Zipcode:              vendorAddress.Zipcode,
+			AlternativePhone:     vendorAddress.AlternativePhone,
+			Company:              vendorAddress.Company,
+			State:                vendorAddress.State,
+			Country:              vendorAddress.Country,
+			AddressType:          int(vendorAddress.AddressType),
+			DefaultAddress:       vendorAddress.DefaultAddress,
+			AddressProofFileName: vendorAddress.AddressProofFileName,
+			VerificationStatus:   utils.VerificationStatus(vendorAddress.VerificationStatus),
+			UUID:                 vendorAddress.Uuid,
+			ExtraData:            vendorAddress.ExtraData,
+		})
+	}
+	return vendorAddresses
 }
 
 func createSellerDefaultSellerConfig() *models.SellerConfig {

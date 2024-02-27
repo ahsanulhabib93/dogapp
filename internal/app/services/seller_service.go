@@ -278,13 +278,12 @@ func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (
 		return resp, nil
 	}
 
-	seller := helpers.FormatAndAssignData(params)
-	err := database.DBAPM(ctx).Model(&models.Seller{}).Create(seller).Error
+	err := helpers.CreateSeller(ctx, params)
 
 	if err == nil {
 		resp.Message = "Seller registered successfully."
 		resp.Status = true
-		resp.UserId = seller.UserID
+		resp.UserId = params.Seller.UserId
 	}
 	return resp, nil
 }

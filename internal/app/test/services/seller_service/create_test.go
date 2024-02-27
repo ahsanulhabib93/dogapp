@@ -61,11 +61,32 @@ var _ = Describe("Create", func() {
 				TinNumber:              "123456789",
 				SellerCloseDay:         "Friday",
 				AcceptedPaymentMethods: "Cash",
+				VendorAddresses: []*spb.VendorAddressObject{
+					{
+						Firstname:            "John",
+						Lastname:             "Doe",
+						Address1:             "123 Main St",
+						Address2:             "Apt 101",
+						City:                 "Anytown",
+						Zipcode:              "12345",
+						AlternativePhone:     "555-1234",
+						Company:              "Acme Inc.",
+						State:                "AnyState",
+						Country:              "AnyCountry",
+						AddressType:          1,
+						SellerId:             1,
+						DefaultAddress:       true,
+						AddressProofFileName: "proof.jpg",
+						VerificationStatus:   "Verified",
+						ExtraData:            "{\"key\":\"value\"}",
+						Uuid:                 "123e4567-e89b-12d3-a456-426614174000",
+					},
+				},
 			}, AgentId: 7}
 			res, err := new(services.SellerService).Create(ctx, &params)
 
 			seller := &models.Seller{UserID: params.Seller.UserId}
-			database.DBAPM(ctx).Model(&models.Seller{}).Preload("SellerConfig").Preload("SellerPricingDetails").Find(seller)
+			database.DBAPM(ctx).Model(&models.Seller{}).Preload("SellerConfig").Preload("SellerPricingDetails").Preload("VendorAddresses").Find(seller)
 			sellerConfig := &models.SellerConfig{SellerID: int(seller.ID)}
 			database.DBAPM(ctx).Model(&models.SellerConfig{}).Find(sellerConfig)
 
@@ -127,6 +148,23 @@ var _ = Describe("Create", func() {
 			Expect(seller.SellerConfig.AllowVendorCoupons).To(Equal(true))
 
 			Expect(seller.SellerPricingDetails[0].SellerID).To(Equal(int(seller.ID)))
+
+			Expect(seller.VendorAddresses[0].Firstname).To(Equal(params.Seller.VendorAddresses[0].Firstname))
+			Expect(seller.VendorAddresses[0].Lastname).To(Equal(params.Seller.VendorAddresses[0].Lastname))
+			Expect(seller.VendorAddresses[0].Address1).To(Equal(params.Seller.VendorAddresses[0].Address1))
+			Expect(seller.VendorAddresses[0].Address2).To(Equal(params.Seller.VendorAddresses[0].Address2))
+			Expect(seller.VendorAddresses[0].City).To(Equal(params.Seller.VendorAddresses[0].City))
+			Expect(seller.VendorAddresses[0].Zipcode).To(Equal(params.Seller.VendorAddresses[0].Zipcode))
+			Expect(seller.VendorAddresses[0].AlternativePhone).To(Equal(params.Seller.VendorAddresses[0].AlternativePhone))
+			Expect(seller.VendorAddresses[0].Company).To(Equal(params.Seller.VendorAddresses[0].Company))
+			Expect(seller.VendorAddresses[0].State).To(Equal(params.Seller.VendorAddresses[0].State))
+			Expect(seller.VendorAddresses[0].Country).To(Equal(params.Seller.VendorAddresses[0].Country))
+			Expect(seller.VendorAddresses[0].AddressType).To(Equal(int(params.Seller.VendorAddresses[0].AddressType)))
+			Expect(seller.VendorAddresses[0].DefaultAddress).To(Equal(params.Seller.VendorAddresses[0].DefaultAddress))
+			Expect(seller.VendorAddresses[0].AddressProofFileName).To(Equal(params.Seller.VendorAddresses[0].AddressProofFileName))
+			Expect(seller.VendorAddresses[0].VerificationStatus).To(Equal(utils.VerificationStatus(params.Seller.VendorAddresses[0].VerificationStatus)))
+			Expect(seller.VendorAddresses[0].ExtraData).To(Equal(params.Seller.VendorAddresses[0].ExtraData))
+			Expect(seller.VendorAddresses[0].UUID).To(Equal(params.Seller.VendorAddresses[0].Uuid))
 
 			Expect(err).To(BeNil())
 		})
