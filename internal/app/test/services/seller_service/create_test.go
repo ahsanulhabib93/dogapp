@@ -23,11 +23,12 @@ var _ = Describe("Create", func() {
 	})
 
 	Context("Failure Cases", func() {
-		It("Should return error", func() {
+		It("Should return error without UserId", func() {
 			params := spb.CreateParams{}
 			res, err := new(services.SellerService).Create(ctx, &params)
+
 			Expect(res.Status).To(Equal(false))
-			Expect(res.Message).To(Equal("Failed to register the seller. Please try again."))
+			Expect(res.Message).To(Equal("UserId Should be Present."))
 			Expect(err).To(BeNil())
 		})
 	})
