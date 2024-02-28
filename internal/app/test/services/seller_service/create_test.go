@@ -6,20 +6,30 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
+	"github.com/voonik/goConnect/api/go/vigeon/notify"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
+	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("Create", func() {
 	var ctx context.Context
+	var mockEmail *mocks.VigeonAPIHelperInterface
 
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
+		mockEmail = mocks.SetVigeonAPIHelperMock()
+		mockEmail.On("SendEmailAPI", ctx, mock.Anything).Return(&notify.EmailResp{}, nil)
+	})
+
+	AfterEach(func() {
+		mocks.UnsetVigeonHelperMock()
 	})
 
 	Context("Failure Cases", func() {
@@ -28,8 +38,10 @@ var _ = Describe("Create", func() {
 			res, err := new(services.SellerService).Create(ctx, &params)
 
 			Expect(res.Status).To(Equal(false))
-			Expect(res.Message).To(Equal("Missing Seller Params"))
+			Expect(res.Message).To(Equal("Error in seller creation: Missing Seller Params"))
 			Expect(err).To(BeNil())
+
+			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 	})
 	Context("Success Cases", func() {
@@ -41,6 +53,8 @@ var _ = Describe("Create", func() {
 			Expect(res.Message).To(Equal("Seller already registered."))
 			Expect(res.UserId).To(Equal(seller.UserID))
 			Expect(err).To(BeNil())
+
+			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 		It("Should create seller", func() {
 			params := spb.CreateParams{Seller: &spb.SellerObject{
@@ -82,7 +96,10 @@ var _ = Describe("Create", func() {
 						Uuid:                 "123e4567-e89b-12d3-a456-426614174000",
 					},
 				},
-			}, AgentId: 7}
+			},
+				AgentId:    7,
+				AgentEmail: "someEmail@email.com",
+			}
 			res, err := new(services.SellerService).Create(ctx, &params)
 
 			seller := &models.Seller{UserID: params.Seller.UserId}
@@ -167,6 +184,8 @@ var _ = Describe("Create", func() {
 			Expect(seller.VendorAddresses[0].UUID).To(Equal(params.Seller.VendorAddresses[0].Uuid))
 
 			Expect(err).To(BeNil())
+
+			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 	})
 })

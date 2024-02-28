@@ -263,27 +263,40 @@ func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.Sen
 }
 
 func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (*spb.CreateResponse, error) {
-	resp := &spb.CreateResponse{Status: false, Message: "Failed to register the seller. Please try again."}
-
-	if params.Seller == nil {
-		resp.Message = "Missing Seller Params"
-		return resp, nil
+	resp := &spb.CreateResponse{
+		Status:  false,
+		Message: "Failed to register the seller. Please try again.",
 	}
 
-	existingSeller := helpers.GetSellerByUserId(ctx, params.Seller.UserId)
-	if existingSeller.ID != utils.Zero {
+	var (
+		err        error
+		seller     *models.Seller
+		agentEmail string = utils.EmptyString
+		message    string
+	)
+
+	if err = helpers.ValidateSellerParams(params); err != nil {
+		resp.Message = fmt.Sprint("Error in seller creation: ", err.Error())
+		goto SEND_EMAIL
+	}
+
+	seller, message, err = helpers.ProcessSellerRegistration(ctx, params)
+	if seller != nil {
+		resp.UserId = seller.UserID
+	}
+
+	if err != nil {
+		resp.Message = fmt.Sprint("Error in seller creation: ", err.Error())
+	} else {
 		resp.Status = true
-		resp.Message = "Seller already registered."
-		resp.UserId = existingSeller.UserID
-		return resp, nil
+		resp.Message = message
 	}
 
-	err := helpers.CreateSeller(ctx, params)
-
-	if err == nil {
-		resp.Message = "Seller registered successfully."
-		resp.Status = true
-		resp.UserId = params.Seller.UserId
+SEND_EMAIL:
+	if params.AgentEmail != "" {
+		agentEmail = params.AgentEmail
 	}
+	helpers.SendEmailNotification(ctx, seller, agentEmail, err, resp)
+
 	return resp, nil
 }

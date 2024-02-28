@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
+	"github.com/voonik/goConnect/api/go/vigeon/notify"
 
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
@@ -207,7 +208,7 @@ func GetArrayIdsFromString(id string) (string, []uint64) {
 	return "", sellerIDs
 }
 
-func CreateSeller(ctx context.Context, params *spb.CreateParams) error {
+func createSeller(ctx context.Context, params *spb.CreateParams) (*models.Seller, error) {
 	returnExchangePolicy, _ := json.Marshal(DefaultsellerReturnExchangePolicy())
 	jsonDataMapping, _ := json.Marshal(utils.SellerDataMapping)
 	sellerPricingDetails := &models.SellerPricingDetail{}
@@ -246,10 +247,10 @@ func CreateSeller(ctx context.Context, params *spb.CreateParams) error {
 
 	err := database.DBAPM(ctx).Model(&models.Seller{}).Create(seller).Error
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return seller, nil
 }
 
 func assignVendorAddressData(vendorAddressesObjects []*spb.VendorAddressObject) []*models.VendorAddress {
@@ -320,4 +321,45 @@ func DefaultsellerReturnExchangePolicy() *spb.ReturnExchangePolicy {
 		Return:   exchangeConfig,
 		Exchange: exchangeConfig,
 	}
+}
+
+func SendEmailNotification(ctx context.Context, seller *models.Seller, agentEmail string, err error, response *spb.CreateResponse) *notify.EmailResp {
+	var subject, content string
+	toEmail := "Mokam<noreply@shopf.co>"
+	fromEmail := "smk@shopf.co"
+
+	if err != nil {
+		subject = "New Seller Registration Failed"
+		content = fmt.Sprintf("Seller Registration failed because of the error <br><br> %s <br><br> %s <br><br> with the response <br><br> %s", err.Error(), strings.Join(strings.Split(fmt.Sprintf("%+v", err), "\n"), "<br>"), response)
+	} else {
+		subject = "New Seller Registered successfully"
+		content = fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b> %s ) with the response <br><br> %s", seller.PrimaryEmail, agentEmail, response)
+	}
+
+	emailParam := notify.EmailParam{
+		ToEmail:   toEmail,
+		FromEmail: fromEmail,
+		Subject:   subject,
+		Content:   content,
+	}
+
+	return getVigeonAPIHelperInstance().SendEmailAPI(ctx, emailParam)
+}
+
+func ValidateSellerParams(params *spb.CreateParams) error {
+	if params.Seller == nil {
+		return fmt.Errorf("Missing Seller Params")
+	}
+	return nil
+}
+
+func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*models.Seller, string, error) {
+	registrationMessage := "Seller registered successfully."
+	existingSeller := GetSellerByUserId(ctx, params.Seller.UserId)
+	if existingSeller.ID != utils.Zero {
+		registrationMessage = "Seller already registered."
+		return existingSeller, registrationMessage, nil
+	}
+	newSeller, err := createSeller(ctx, params)
+	return newSeller, registrationMessage, err
 }
