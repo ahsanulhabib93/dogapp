@@ -3,10 +3,10 @@ package seller_service_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/mock"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goConnect/api/go/vigeon/notify"
 	"github.com/voonik/goFramework/pkg/database"
@@ -25,7 +25,6 @@ var _ = Describe("Create", func() {
 	BeforeEach(func() {
 		test_utils.GetContext(&ctx)
 		mockEmail = mocks.SetVigeonAPIHelperMock()
-		mockEmail.On("SendEmailAPI", ctx, mock.Anything).Return(&notify.EmailResp{}, nil)
 	})
 
 	AfterEach(func() {
@@ -34,6 +33,13 @@ var _ = Describe("Create", func() {
 
 	Context("Failure Cases", func() {
 		It("Should return error without Seller Params", func() {
+			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
+				ToEmail:   "Mokam<noreply@shopf.co>",
+				FromEmail: "smk@shopf.co",
+				Subject:   "New Seller Registration Failed",
+				Content:   `Seller Registration failed because of the error <br><br> Missing Seller Params <br><br> Missing Seller Params <br><br> with the response <br><br> message:"Error in seller creation: Missing Seller Params"`,
+			}).Return(&notify.EmailResp{}, nil)
+
 			params := spb.CreateParams{}
 			res, err := new(services.SellerService).Create(ctx, &params)
 
@@ -47,6 +53,12 @@ var _ = Describe("Create", func() {
 	Context("Success Cases", func() {
 		It("Should return success if seller is already registered", func() {
 			seller := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101})
+			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
+				ToEmail:   "Mokam<noreply@shopf.co>",
+				FromEmail: "smk@shopf.co",
+				Subject:   "New Seller Registered successfully",
+				Content:   fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b>  ) with the response <br><br> status:true message:\"Seller already registered.\" user_id:101", seller.PrimaryEmail),
+			}).Return(&notify.EmailResp{}, nil)
 			params := spb.CreateParams{Seller: &spb.SellerObject{UserId: 101}}
 			res, err := new(services.SellerService).Create(ctx, &params)
 			Expect(res.Status).To(Equal(true))
@@ -57,6 +69,12 @@ var _ = Describe("Create", func() {
 			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 		It("Should create seller", func() {
+			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
+				ToEmail:   "Mokam<noreply@shopf.co>",
+				FromEmail: "smk@shopf.co",
+				Subject:   "New Seller Registered successfully",
+				Content:   "Seller Registered (<b>email:</b> test@example.com, <b>agent_email:</b> someEmail@email.com ) with the response <br><br> status:true message:\"Seller registered successfully.\" user_id:101",
+			}).Return(&notify.EmailResp{}, nil)
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:                 101,
 				BrandName:              "Test Brand",
