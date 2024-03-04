@@ -29,7 +29,7 @@ jobs:
     - name: Sonar Cloud Quality Check
       id: sonar
       run: |-
-        STATUS=`curl -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status\?projectKey\=shopuptech_ss2\&branch\=$SOURCE_BRANCH_NAME | jq -r '.projectStatus.status'`
+        STATUS=`curl -u $SONAR_TOKEN: https://sonarcloud.io/api/qualitygates/project_status\?projectKey\=shopuptech_ss2\&pullRequest\=$PR_NUMBER | jq -r '.projectStatus.status'`
         echo $STATUS
         echo "SONAR_STATUS=$STATUS" >> $GITHUB_OUTPUT
         if [[ ! $STATUS == 'OK' ]] ;then
