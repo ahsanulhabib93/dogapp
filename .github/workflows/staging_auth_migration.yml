@@ -30,3 +30,19 @@ jobs:
       - name: curl
         run: |
           curl -X POST '${{ env.AUTH_MIGRATION_API }}' --header 'Authorization: bearer ${{ env.AUTH_TOKEN }}' --form 'json_file=@${{ env.FILE_NAME }}'
+
+  route-mapping-check:
+    needs: adding-auth-data-in-identity-service
+    uses: shopuptech/shopup-cicd-git-actions/.github/workflows/route-check.yml@master
+    with:
+      VACCOUNT_ID_LIST: "2"
+      POSTGRES_USERNAME: ${{ vars.IS_POSTGRES_USERNAME }}
+      POSTGRES_HOST: ${{ vars.IS_MOKAM_POSTGRES_HOST }}
+      POSTGRES_DB: "auth_stage_vacc"
+      IS_SERVICE_NAME: "ss2"
+      GOCONNECT_DIRECTORIES: "ss2"
+      EXCLUDE_ROUTES: '/cargo_ftl/client_billing/get_pending_trips'
+    secrets:
+      POSTGRES_PASSWORD: ${{ secrets.IS_MOKAM_POSTGRES_PASSWORD }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      ACCESS_TOKEN: ${{ secrets.GIHUB_PAT}}
