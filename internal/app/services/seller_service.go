@@ -28,8 +28,8 @@ func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserI
 	// convert model data into proto object
 	sellerData := &spb.SellerObject{}
 	copier.Copy(&sellerData, &seller) //nolint:errcheck
-	sellerData.SellerConfig = getDefaultSellerConfig()
-	sellerData.ReturnExchangePolicy = defaultsellerReturnExchangePolicy()
+	sellerData.SellerConfig = helpers.GetDefaultSellerConfig()
+	sellerData.ReturnExchangePolicy = helpers.DefaultsellerReturnExchangePolicy()
 	resp := &spb.GetByUserIDResponse{Seller: sellerData}
 	return resp, nil
 }
@@ -95,8 +95,8 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 		return &response, nil
 	}
 	for _, seller := range sellerData {
-		seller.SellerConfig = getDefaultSellerConfig()
-		seller.ReturnExchangePolicy = defaultsellerReturnExchangePolicy()
+		seller.SellerConfig = helpers.GetDefaultSellerConfig()
+		seller.ReturnExchangePolicy = helpers.DefaultsellerReturnExchangePolicy()
 	}
 	response.Seller = sellerData
 	response.Status = utils.Success
@@ -262,29 +262,41 @@ func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.Sen
 	return resp, nil
 }
 
-func getDefaultSellerConfig() *spb.SellerConfig {
-	return &spb.SellerConfig{
-		ItemsPerPackage:       utils.DefaultSellerItemsPerPackage,
-		MaxQuantity:           utils.DefaultSellerMaxQuantity,
-		SellerStockEnabled:    true,
-		CodConfirmationNeeded: true,
-		AllowPriceUpdate:      true,
-		PickupType:            utils.DefaultSellerPickupType,
-		AllowVendorCoupons:    true,
+func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (*spb.CreateResponse, error) {
+	resp := &spb.CreateResponse{
+		Status:  false,
+		Message: "Failed to register the seller. Please try again.",
 	}
-}
 
-func defaultsellerReturnExchangePolicyConfig() *spb.SellerReturnExchangePolicyConfig {
-	return &spb.SellerReturnExchangePolicyConfig{
-		ReturnDaysStartsFrom: "delivery",
-		DefaultDuration:      uint64(15),
-	}
-}
+	var (
+		err        error
+		seller     *models.Seller
+		agentEmail string = utils.EmptyString
+		message    string
+	)
 
-func defaultsellerReturnExchangePolicy() *spb.ReturnExchangePolicy {
-	exchangeConfig := defaultsellerReturnExchangePolicyConfig()
-	return &spb.ReturnExchangePolicy{
-		Return:   exchangeConfig,
-		Exchange: exchangeConfig,
+	if err = helpers.ValidateSellerParams(params); err != nil {
+		resp.Message = fmt.Sprint("Error in seller creation: ", err.Error())
+		goto SEND_EMAIL
 	}
+
+	seller, message, err = helpers.ProcessSellerRegistration(ctx, params)
+	if seller != nil {
+		resp.UserId = seller.UserID
+	}
+
+	if err != nil {
+		resp.Message = fmt.Sprint("Error in seller creation: ", err.Error())
+	} else {
+		resp.Status = true
+		resp.Message = message
+	}
+
+SEND_EMAIL:
+	if params.AgentEmail != "" {
+		agentEmail = params.AgentEmail
+	}
+	helpers.SendEmailNotification(ctx, seller, agentEmail, err, resp)
+
+	return resp, nil
 }

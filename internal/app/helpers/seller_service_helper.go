@@ -2,12 +2,14 @@ package helpers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"strconv"
 	"strings"
 
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
+	"github.com/voonik/goConnect/api/go/vigeon/notify"
 
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
@@ -204,4 +206,160 @@ func GetArrayIdsFromString(id string) (string, []uint64) {
 		sellerIDs[i] = id
 	}
 	return "", sellerIDs
+}
+
+func createSeller(ctx context.Context, params *spb.CreateParams) (*models.Seller, error) {
+	returnExchangePolicy, _ := json.Marshal(DefaultsellerReturnExchangePolicy())
+	jsonDataMapping, _ := json.Marshal(utils.SellerDataMapping)
+	sellerPricingDetails := &models.SellerPricingDetail{}
+
+	seller := &models.Seller{
+		UserID:                 params.Seller.UserId,
+		BrandName:              params.Seller.BrandName,
+		CompanyName:            params.Seller.CompanyName,
+		PrimaryEmail:           params.Seller.PrimaryEmail,
+		PrimaryPhone:           params.Seller.PrimaryPhone,
+		ActivationState:        utils.ActivationState(params.Seller.ActivationState),
+		Slug:                   params.Seller.Slug,
+		Hub:                    params.Seller.Hub,
+		Slot:                   params.Seller.Slot,
+		DeliveryType:           int(params.Seller.DeliveryType),
+		ProcessingType:         int(params.Seller.ProcessingType),
+		BusinessUnit:           int(params.Seller.BusinessUnit),
+		FullfillmentType:       int(params.Seller.FullfillmentType),
+		ColorCode:              utils.ColorCode(params.Seller.ColorCode),
+		TinNumber:              params.Seller.TinNumber,
+		SellerCloseDay:         params.Seller.SellerCloseDay,
+		AcceptedPaymentMethods: params.Seller.AcceptedPaymentMethods,
+		AffiliateURL:           utils.DefaultAffiliateURL,
+		IsDirect:               true,
+		ReturnExchangePolicy:   returnExchangePolicy,
+		DataMapping:            jsonDataMapping,
+		AggregatorID:           int(params.Seller.UserId),
+		SellerPricingDetails:   []*models.SellerPricingDetail{sellerPricingDetails}, // Taking values from DB defaults
+		AgentID:                int(params.AgentId),
+		SellerConfig:           createSellerDefaultSellerConfig(),
+	}
+
+	if len(params.Seller.VendorAddresses) != utils.Zero {
+		seller.VendorAddresses = assignVendorAddressData(params.Seller.VendorAddresses)
+	}
+
+	err := database.DBAPM(ctx).Model(&models.Seller{}).Create(seller).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return seller, nil
+}
+
+func assignVendorAddressData(vendorAddressesObjects []*spb.VendorAddressObject) []*models.VendorAddress {
+	vendorAddresses := []*models.VendorAddress{}
+	for _, vendorAddress := range vendorAddressesObjects {
+		vendorAddresses = append(vendorAddresses, &models.VendorAddress{
+			Firstname:            vendorAddress.Firstname,
+			Lastname:             vendorAddress.Lastname,
+			Address1:             vendorAddress.Address1,
+			Address2:             vendorAddress.Address2,
+			City:                 vendorAddress.City,
+			Zipcode:              vendorAddress.Zipcode,
+			AlternativePhone:     vendorAddress.AlternativePhone,
+			Company:              vendorAddress.Company,
+			State:                vendorAddress.State,
+			Country:              vendorAddress.Country,
+			AddressType:          int(vendorAddress.AddressType),
+			DefaultAddress:       vendorAddress.DefaultAddress,
+			AddressProofFileName: vendorAddress.AddressProofFileName,
+			VerificationStatus:   utils.VerificationStatus(vendorAddress.VerificationStatus),
+			UUID:                 vendorAddress.Uuid,
+			ExtraData:            vendorAddress.ExtraData,
+		})
+	}
+	return vendorAddresses
+}
+
+func createSellerDefaultSellerConfig() *models.SellerConfig {
+	refundPolicy, _ := json.Marshal(map[string]int{
+		"cod":           1,
+		"payu_redirect": 1,
+	})
+	sellerConfig := &models.SellerConfig{
+		ItemsPerPackage:       int(utils.DefaultSellerItemsPerPackage),
+		MaxQuantity:           int(utils.DefaultSellerMaxQuantity),
+		SellerStockEnabled:    true,
+		CODConfirmationNeeded: true,
+		AllowPriceUpdate:      true,
+		PickupType:            int(utils.DefaultSellerPickupType),
+		AllowVendorCoupons:    true,
+		RefundPolicy:          refundPolicy,
+	}
+	return sellerConfig
+}
+
+func GetDefaultSellerConfig() *spb.SellerConfig {
+	return &spb.SellerConfig{
+		ItemsPerPackage:       utils.DefaultSellerItemsPerPackage,
+		MaxQuantity:           utils.DefaultSellerMaxQuantity,
+		SellerStockEnabled:    true,
+		CodConfirmationNeeded: true,
+		AllowPriceUpdate:      true,
+		PickupType:            utils.DefaultSellerPickupType,
+		AllowVendorCoupons:    true,
+	}
+}
+
+func defaultsellerReturnExchangePolicyConfig() *spb.SellerReturnExchangePolicyConfig {
+	return &spb.SellerReturnExchangePolicyConfig{
+		ReturnDaysStartsFrom: "delivery",
+		DefaultDuration:      uint64(15),
+	}
+}
+
+func DefaultsellerReturnExchangePolicy() *spb.ReturnExchangePolicy {
+	exchangeConfig := defaultsellerReturnExchangePolicyConfig()
+	return &spb.ReturnExchangePolicy{
+		Return:   exchangeConfig,
+		Exchange: exchangeConfig,
+	}
+}
+
+func SendEmailNotification(ctx context.Context, seller *models.Seller, agentEmail string, err error, response *spb.CreateResponse) *notify.EmailResp {
+	var subject, content string
+	toEmail := "Mokam<noreply@shopf.co>"
+	fromEmail := "smk@shopf.co"
+
+	if err != nil {
+		subject = "New Seller Registration Failed"
+		content = fmt.Sprintf("Seller Registration failed because of the error <br><br> %s <br><br> %s <br><br> with the response <br><br> %s", err.Error(), strings.Join(strings.Split(fmt.Sprintf("%+v", err), "\n"), "<br>"), response)
+	} else {
+		subject = "New Seller Registered successfully"
+		content = fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b> %s ) with the response <br><br> %s", seller.PrimaryEmail, agentEmail, response)
+	}
+
+	emailParam := notify.EmailParam{
+		ToEmail:   toEmail,
+		FromEmail: fromEmail,
+		Subject:   subject,
+		Content:   content,
+	}
+
+	return getVigeonAPIHelperInstance().SendEmailAPI(ctx, emailParam)
+}
+
+func ValidateSellerParams(params *spb.CreateParams) error {
+	if params.Seller == nil {
+		return fmt.Errorf("Missing Seller Params")
+	}
+	return nil
+}
+
+func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*models.Seller, string, error) {
+	registrationMessage := "Seller registered successfully."
+	existingSeller := GetSellerByUserId(ctx, params.Seller.UserId)
+	if existingSeller.ID != utils.Zero {
+		registrationMessage = "Seller already registered."
+		return existingSeller, registrationMessage, nil
+	}
+	newSeller, err := createSeller(ctx, params)
+	return newSeller, registrationMessage, err
 }

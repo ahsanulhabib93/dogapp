@@ -143,3 +143,10 @@ jobs:
           updateFile: true
           message: 'feat(helm): Update Image Version to ${{ steps.build.outputs.version }}'
           token: ${{ secrets.GIHUB_PAT }}
+
+  integration-tests:
+    needs: setup-build-publish-deploy-staging
+    uses: shopuptech/integration-tests/.github/workflows/integration-tests.yml@master
+    secrets: inherit
+    with:
+      TEST_SUITE: ss2.smoke
