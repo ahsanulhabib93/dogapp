@@ -330,7 +330,7 @@ func SendEmailNotification(ctx context.Context, seller *models.Seller, agentEmai
 
 	if err != nil {
 		subject = "New Seller Registration Failed"
-		content = fmt.Sprintf("Seller Registration failed because of the error <br><br> %s <br><br> %s <br><br> with the response <br><br> %s", err.Error(), strings.Join(strings.Split(fmt.Sprintf("%+v", err), "\n"), "<br>"), response)
+		content = fmt.Sprintf("Seller Registration failed because of the error <br><br> %s  <br><br> with the response <br><br> %s", err.Error(), response)
 	} else {
 		subject = "New Seller Registered successfully"
 		content = fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b> %s ) with the response <br><br> %s", seller.PrimaryEmail, agentEmail, response)
@@ -348,9 +348,44 @@ func SendEmailNotification(ctx context.Context, seller *models.Seller, agentEmai
 
 func ValidateSellerParams(params *spb.CreateParams) error {
 	if params.Seller == nil {
-		return fmt.Errorf("Missing Seller Params")
+		return fmt.Errorf("Missing All Seller Params")
+	}
+
+	missingSellerParams := findMissingSellerParams(params.Seller)
+	if missingSellerParams != utils.EmptyString {
+		missingSellerParams = strings.TrimSuffix(missingSellerParams, ",")
+		return fmt.Errorf("Missing Seller Params: %s", missingSellerParams)
+	}
 	}
 	return nil
+}
+
+func findMissingSellerParams(seller *spb.SellerObject) string {
+	var missingParams string
+
+	if seller.UserId == utils.Zero {
+		missingParams += "user_id,"
+	}
+	if seller.PrimaryEmail == utils.EmptyString {
+		missingParams += "primary_email,"
+	}
+	if seller.BusinessUnit == utils.Zero {
+		missingParams += "business_unit,"
+	}
+	if seller.BrandName == utils.EmptyString {
+		missingParams += "brand_name,"
+	}
+	if seller.Hub == utils.EmptyString {
+		missingParams += "hub,"
+	}
+	if seller.ColorCode == utils.EmptyString {
+		missingParams += "color_code,"
+	}
+	if seller.ActivationState == utils.Zero {
+		missingParams += "activation_state,"
+	}
+
+	return missingParams
 }
 
 func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*models.Seller, string, error) {
