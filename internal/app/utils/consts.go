@@ -14,6 +14,7 @@ type StateReason int
 type ActivationState int
 type AttachableType uint64
 type FileType uint64
+type BusinessUnit uint64
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -289,3 +290,25 @@ var SellerDataMapping = map[string]interface{}{
 }
 
 const DefaultAffiliateURL = "{{product_url}}?utm_source=voonik&utm_medium=affiliate&utm_campaign=voonik"
+
+const (
+	UNICORN BusinessUnit = iota + 1
+	UNBRANDED
+	BRANDED
+	LIFESTYLE
+	BLITZ
+	AGRO
+	WHOLESALE
+	MWS
+	FRESH
+	POULTRY
+	APPAREL
+	INFRA
+	ENERGY
+	ELECTRONICS
+	MOKAM_X
+	AGRO_FISH_PROJECT
+	POP_BOISHAKHI
+	REDX_FULFILLMENT_SERVICE
+	REDX_FULFILLMENT_SERVICE2
+)
