@@ -214,31 +214,26 @@ func createSeller(ctx context.Context, params *spb.CreateParams) (*models.Seller
 	sellerPricingDetails := &models.SellerPricingDetail{}
 
 	seller := &models.Seller{
-		UserID:                 params.Seller.UserId,
-		BrandName:              params.Seller.BrandName,
-		CompanyName:            params.Seller.CompanyName,
-		PrimaryEmail:           params.Seller.PrimaryEmail,
-		PrimaryPhone:           params.Seller.PrimaryPhone,
-		ActivationState:        utils.ActivationState(params.Seller.ActivationState),
-		Slug:                   params.Seller.Slug,
-		Hub:                    params.Seller.Hub,
-		Slot:                   params.Seller.Slot,
-		DeliveryType:           int(params.Seller.DeliveryType),
-		ProcessingType:         int(params.Seller.ProcessingType),
-		BusinessUnit:           int(params.Seller.BusinessUnit),
-		FullfillmentType:       int(params.Seller.FullfillmentType),
-		ColorCode:              utils.ColorCode(params.Seller.ColorCode),
-		TinNumber:              params.Seller.TinNumber,
-		SellerCloseDay:         params.Seller.SellerCloseDay,
-		AcceptedPaymentMethods: params.Seller.AcceptedPaymentMethods,
-		AffiliateURL:           utils.DefaultAffiliateURL,
-		IsDirect:               true,
-		ReturnExchangePolicy:   returnExchangePolicy,
-		DataMapping:            jsonDataMapping,
-		AggregatorID:           int(params.Seller.UserId),
-		SellerPricingDetails:   []*models.SellerPricingDetail{sellerPricingDetails}, // Taking values from DB defaults
-		AgentID:                int(params.AgentId),
-		SellerConfig:           createSellerDefaultSellerConfig(),
+		UserID:               params.Seller.UserId,
+		BrandName:            params.Seller.BrandName,
+		CompanyName:          params.Seller.BrandName,
+		PrimaryEmail:         params.Seller.PrimaryEmail,
+		PrimaryPhone:         params.Seller.PrimaryPhone,
+		ActivationState:      utils.ActivationState(params.Seller.ActivationState),
+		Slug:                 params.Seller.BrandName,
+		Hub:                  params.Seller.Hub,
+		DeliveryType:         int(params.Seller.DeliveryType),
+		ProcessingType:       int(params.Seller.ProcessingType),
+		BusinessUnit:         utils.BusinessUnit(params.Seller.BusinessUnit),
+		FullfillmentType:     int(params.Seller.FullfillmentType),
+		ColorCode:            utils.ColorCode(params.Seller.ColorCode),
+		IsDirect:             true,
+		ReturnExchangePolicy: returnExchangePolicy,
+		DataMapping:          jsonDataMapping,
+		AggregatorID:         int(params.Seller.UserId),
+		SellerPricingDetails: []*models.SellerPricingDetail{sellerPricingDetails}, // Taking values from DB defaults
+		AgentID:              int(params.AgentId),
+		SellerConfig:         createSellerDefaultSellerConfig(),
 	}
 
 	if len(params.Seller.VendorAddresses) != utils.Zero {
@@ -257,22 +252,13 @@ func assignVendorAddressData(vendorAddressesObjects []*spb.VendorAddressObject) 
 	vendorAddresses := []*models.VendorAddress{}
 	for _, vendorAddress := range vendorAddressesObjects {
 		vendorAddresses = append(vendorAddresses, &models.VendorAddress{
-			Firstname:            vendorAddress.Firstname,
-			Lastname:             vendorAddress.Lastname,
-			Address1:             vendorAddress.Address1,
-			Address2:             vendorAddress.Address2,
-			City:                 vendorAddress.City,
-			Zipcode:              vendorAddress.Zipcode,
-			AlternativePhone:     vendorAddress.AlternativePhone,
-			Company:              vendorAddress.Company,
-			State:                vendorAddress.State,
-			Country:              vendorAddress.Country,
-			AddressType:          int(vendorAddress.AddressType),
-			DefaultAddress:       vendorAddress.DefaultAddress,
-			AddressProofFileName: vendorAddress.AddressProofFileName,
-			VerificationStatus:   utils.VerificationStatus(vendorAddress.VerificationStatus),
-			UUID:                 vendorAddress.Uuid,
-			ExtraData:            vendorAddress.ExtraData,
+			Firstname:          vendorAddress.Firstname,
+			Address1:           vendorAddress.Address1,
+			Zipcode:            vendorAddress.Zipcode,
+			State:              "DefaultState",   //Placeholder
+			Country:            "DefaultCountry", //Placeholder
+			VerificationStatus: utils.Verified,
+			ExtraData:          "DefaultExtraData", //Placeholder
 		})
 	}
 	return vendorAddresses

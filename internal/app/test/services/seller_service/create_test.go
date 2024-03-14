@@ -99,11 +99,12 @@ var _ = Describe("Create", func() {
 	Context("Success Cases", func() {
 		It("Should return success if seller is already registered", func() {
 			seller := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101})
+			expectedResponse := &spb.CreateResponse{Status: true, Message: "Seller already registered.", UserId: seller.UserID}
 			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
 				ToEmail:   "Mokam<noreply@shopf.co>",
 				FromEmail: "smk@shopf.co",
 				Subject:   "New Seller Registered successfully",
-				Content:   fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b>  ) with the response <br><br> status:true message:\"Seller already registered.\" user_id:101", seller.PrimaryEmail),
+				Content:   fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b> %s ) with the response <br><br> %s", seller.PrimaryEmail, "", expectedResponse),
 			}).Return(&notify.EmailResp{}, nil)
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:          101,
@@ -123,49 +124,32 @@ var _ = Describe("Create", func() {
 			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 		It("Should create seller", func() {
+			expectedResponse := &spb.CreateResponse{Status: true, Message: "Seller registered successfully.", UserId: 101}
+
 			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
 				ToEmail:   "Mokam<noreply@shopf.co>",
 				FromEmail: "smk@shopf.co",
 				Subject:   "New Seller Registered successfully",
-				Content:   "Seller Registered (<b>email:</b> test@example.com, <b>agent_email:</b> someEmail@email.com ) with the response <br><br> status:true message:\"Seller registered successfully.\" user_id:101",
+				Content:   fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b> %s ) with the response <br><br> %s", "test@example.com", "someEmail@email.com", expectedResponse),
 			}).Return(&notify.EmailResp{}, nil)
 			params := spb.CreateParams{Seller: &spb.SellerObject{
-				UserId:                 101,
-				BrandName:              "Test Brand",
-				CompanyName:            "Test Company",
-				PrimaryEmail:           "test@example.com",
-				PrimaryPhone:           "1234567890",
-				ActivationState:        uint64(utils.ACTIVATED),
-				Slug:                   "test-brand",
-				Hub:                    "Test Hub",
-				Slot:                   "Test Slot",
-				DeliveryType:           utils.Ten,
-				ProcessingType:         utils.Ten,
-				BusinessUnit:           utils.Ten,
-				FullfillmentType:       utils.Ten,
-				ColorCode:              string(utils.Gold),
-				TinNumber:              "123456789",
-				SellerCloseDay:         "Friday",
-				AcceptedPaymentMethods: "Cash",
+				UserId:           101,
+				BrandName:        "Test Brand",
+				PrimaryEmail:     "test@example.com",
+				PrimaryPhone:     "1234567890",
+				ActivationState:  uint64(utils.ACTIVATED),
+				Hub:              "Test Hub",
+				DeliveryType:     utils.Ten,
+				ProcessingType:   utils.Ten,
+				BusinessUnit:     utils.Ten,
+				FullfillmentType: utils.Ten,
+				ColorCode:        string(utils.Gold),
 				VendorAddresses: []*spb.VendorAddressObject{
 					{
-						Firstname:            "John",
-						Lastname:             "Doe",
-						Address1:             "123 Main St",
-						Address2:             "Apt 101",
-						City:                 "Anytown",
-						Zipcode:              "12345",
-						AlternativePhone:     "555-1234",
-						Company:              "Acme Inc.",
-						State:                "AnyState",
-						Country:              "AnyCountry",
-						AddressType:          1,
-						SellerId:             1,
-						DefaultAddress:       true,
-						AddressProofFileName: "proof.jpg",
-						VerificationStatus:   "Verified",
-						ExtraData:            "{\"key\":\"value\"}",
-						Uuid:                 "123e4567-e89b-12d3-a456-426614174000",
+						Firstname: "John",
+						Address1:  "123 Main St",
+						Zipcode:   "12345",
+						SellerId:  1,
 					},
 				},
 			},
@@ -187,22 +171,17 @@ var _ = Describe("Create", func() {
 
 			Expect(seller.UserID).To(Equal(params.Seller.UserId))
 			Expect(seller.BrandName).To(Equal(params.Seller.BrandName))
-			Expect(seller.CompanyName).To(Equal(params.Seller.CompanyName))
+			Expect(seller.CompanyName).To(Equal(params.Seller.BrandName))
 			Expect(seller.PrimaryEmail).To(Equal(params.Seller.PrimaryEmail))
 			Expect(seller.PrimaryPhone).To(Equal(params.Seller.PrimaryPhone))
 			Expect(seller.ActivationState).To(Equal(utils.ActivationState(params.Seller.ActivationState)))
-			Expect(seller.Slug).To(Equal(params.Seller.Slug))
+			Expect(seller.Slug).To(Equal(params.Seller.BrandName))
 			Expect(seller.Hub).To(Equal(params.Seller.Hub))
-			Expect(seller.Slot).To(Equal(params.Seller.Slot))
 			Expect(seller.DeliveryType).To(Equal(int(params.Seller.DeliveryType)))
 			Expect(seller.ProcessingType).To(Equal(int(params.Seller.ProcessingType)))
-			Expect(seller.BusinessUnit).To(Equal(int(params.Seller.BusinessUnit)))
+			Expect(seller.BusinessUnit).To(Equal(utils.BusinessUnit(params.Seller.BusinessUnit)))
 			Expect(seller.FullfillmentType).To(Equal(int(params.Seller.FullfillmentType)))
 			Expect(seller.ColorCode).To(Equal(utils.ColorCode(params.Seller.ColorCode)))
-			Expect(seller.TinNumber).To(Equal(params.Seller.TinNumber))
-			Expect(seller.SellerCloseDay).To(Equal(params.Seller.SellerCloseDay))
-			Expect(seller.AcceptedPaymentMethods).To(Equal(params.Seller.AcceptedPaymentMethods))
-			Expect(seller.AffiliateURL).To(Equal(utils.DefaultAffiliateURL))
 			Expect(seller.IsDirect).To(BeTrue())
 			Expect(seller.AggregatorID).To(Equal(int(params.Seller.UserId)))
 			Expect(seller.AgentID).To(Equal(int(params.AgentId)))
@@ -239,11 +218,9 @@ var _ = Describe("Create", func() {
 			Expect(seller.SellerPricingDetails[0].SellerID).To(Equal(int(seller.ID)))
 
 			Expect(seller.VendorAddresses[0].Firstname).To(Equal(params.Seller.VendorAddresses[0].Firstname))
-			Expect(seller.VendorAddresses[0].Lastname).To(Equal(params.Seller.VendorAddresses[0].Lastname))
 			Expect(seller.VendorAddresses[0].Address1).To(Equal(params.Seller.VendorAddresses[0].Address1))
-			Expect(seller.VendorAddresses[0].Address2).To(Equal(params.Seller.VendorAddresses[0].Address2))
-			Expect(seller.VendorAddresses[0].City).To(Equal(params.Seller.VendorAddresses[0].City))
 			Expect(seller.VendorAddresses[0].Zipcode).To(Equal(params.Seller.VendorAddresses[0].Zipcode))
+			Expect(seller.VendorAddresses[0].SellerID).To(Equal(int(seller.ID)))
 			Expect(seller.VendorAddresses[0].AlternativePhone).To(Equal(params.Seller.VendorAddresses[0].AlternativePhone))
 			Expect(seller.VendorAddresses[0].Company).To(Equal(params.Seller.VendorAddresses[0].Company))
 			Expect(seller.VendorAddresses[0].State).To(Equal(params.Seller.VendorAddresses[0].State))

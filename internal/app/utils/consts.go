@@ -289,8 +289,6 @@ var SellerDataMapping = map[string]interface{}{
 	},
 }
 
-const DefaultAffiliateURL = "{{product_url}}?utm_source=voonik&utm_medium=affiliate&utm_campaign=voonik"
-
 const (
 	UNICORN BusinessUnit = iota + 1
 	UNBRANDED
