@@ -51,7 +51,7 @@ var _ = Describe("Create", func() {
 
 			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
-		It("Should return error for missing params", func() {
+		It("Should return error for missing seller params", func() {
 			err := fmt.Errorf("Missing Seller Params: user_id,primary_email,business_unit,brand_name,hub,color_code,activation_state")
 			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Missing Seller Params: user_id,primary_email,business_unit,brand_name,hub,color_code,activation_state"}
 			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
@@ -70,7 +70,7 @@ var _ = Describe("Create", func() {
 
 			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
-		It("Should return error for invalid params", func() {
+		It("Should return error for invalid seller params", func() {
 			err := fmt.Errorf("Invalid Seller Params: business_unit,color_code,activation_state")
 			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Invalid Seller Params: business_unit,color_code,activation_state"}
 			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
@@ -87,6 +87,43 @@ var _ = Describe("Create", func() {
 				Hub:             "Test Hub",
 				ColorCode:       "InvalidColour",
 				ActivationState: 100,
+			}}
+			res, err := new(services.SellerService).Create(ctx, &params)
+			Expect(res.Status).To(Equal(false))
+			Expect(res.Message).To(Equal(expectedResponse.Message))
+			Expect(err).To(BeNil())
+
+			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
+		})
+		It("Should return error for missing vendor address params", func() {
+			err := fmt.Errorf("Missing VendorAddress Params: 0:address1,zipcode;1:firstname;")
+			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Missing VendorAddress Params: 0:address1,zipcode;1:firstname;"}
+			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
+				ToEmail:   "Mokam<noreply@shopf.co>",
+				FromEmail: "smk@shopf.co",
+				Subject:   "New Seller Registration Failed",
+				Content:   fmt.Sprintf("Seller Registration failed because of the error <br><br> %s  <br><br> with the response <br><br> %s", err.Error(), expectedResponse),
+			}).Return(&notify.EmailResp{}, nil)
+			params := spb.CreateParams{Seller: &spb.SellerObject{
+				UserId:          101,
+				PrimaryEmail:    "test@example.com",
+				BusinessUnit:    uint64(utils.UNICORN),
+				BrandName:       "Test Brand",
+				Hub:             "Test Hub",
+				ColorCode:       string(utils.Gold),
+				ActivationState: uint64(utils.ACTIVATED),
+				VendorAddresses: []*spb.VendorAddressObject{
+					{
+						Firstname: "SomeName",
+						Address1:  utils.EmptyString,
+						Zipcode:   utils.EmptyString,
+					},
+					{
+						Firstname: utils.EmptyString,
+						Address1:  "SomeAddress",
+						Zipcode:   "SomeZipCode",
+					},
+				},
 			}}
 			res, err := new(services.SellerService).Create(ctx, &params)
 			Expect(res.Status).To(Equal(false))

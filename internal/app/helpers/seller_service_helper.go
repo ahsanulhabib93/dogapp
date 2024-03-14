@@ -348,7 +348,33 @@ func ValidateSellerParams(params *spb.CreateParams) error {
 		failedSellerParams = strings.TrimSuffix(failedSellerParams, ",")
 		return fmt.Errorf("Invalid Seller Params: %s", failedSellerParams)
 	}
+
+	missingVendorAddressParams := findMissingVendorAddressParams(params.Seller.VendorAddresses)
+	if missingVendorAddressParams != utils.EmptyString {
+		return fmt.Errorf("Missing VendorAddress Params: %s", missingVendorAddressParams)
+	}
 	return nil
+}
+
+func findMissingVendorAddressParams(vendorAddresses []*spb.VendorAddressObject) string {
+	var vendorMissingParams string
+	for sequenceId, vendorAddress := range vendorAddresses {
+		var missingParams string
+		if vendorAddress.Firstname == utils.EmptyString {
+			missingParams += "firstname,"
+		}
+		if vendorAddress.Address1 == utils.EmptyString {
+			missingParams += "address1,"
+		}
+		if vendorAddress.Zipcode == utils.EmptyString {
+			missingParams += "zipcode,"
+		}
+		if missingParams != utils.EmptyString {
+			missingParams = strconv.Itoa(sequenceId) + ":" + strings.TrimSuffix(missingParams, ",") + ";"
+			vendorMissingParams += missingParams
+		}
+	}
+	return vendorMissingParams
 }
 
 func findMissingSellerParams(seller *spb.SellerObject) string {
