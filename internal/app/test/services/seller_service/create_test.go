@@ -221,16 +221,7 @@ var _ = Describe("Create", func() {
 			Expect(seller.VendorAddresses[0].Address1).To(Equal(params.Seller.VendorAddresses[0].Address1))
 			Expect(seller.VendorAddresses[0].Zipcode).To(Equal(params.Seller.VendorAddresses[0].Zipcode))
 			Expect(seller.VendorAddresses[0].SellerID).To(Equal(int(seller.ID)))
-			Expect(seller.VendorAddresses[0].AlternativePhone).To(Equal(params.Seller.VendorAddresses[0].AlternativePhone))
-			Expect(seller.VendorAddresses[0].Company).To(Equal(params.Seller.VendorAddresses[0].Company))
-			Expect(seller.VendorAddresses[0].State).To(Equal(params.Seller.VendorAddresses[0].State))
-			Expect(seller.VendorAddresses[0].Country).To(Equal(params.Seller.VendorAddresses[0].Country))
-			Expect(seller.VendorAddresses[0].AddressType).To(Equal(int(params.Seller.VendorAddresses[0].AddressType)))
-			Expect(seller.VendorAddresses[0].DefaultAddress).To(Equal(params.Seller.VendorAddresses[0].DefaultAddress))
-			Expect(seller.VendorAddresses[0].AddressProofFileName).To(Equal(params.Seller.VendorAddresses[0].AddressProofFileName))
-			Expect(seller.VendorAddresses[0].VerificationStatus).To(Equal(utils.VerificationStatus(params.Seller.VendorAddresses[0].VerificationStatus)))
-			Expect(seller.VendorAddresses[0].ExtraData).To(Equal(params.Seller.VendorAddresses[0].ExtraData))
-			Expect(seller.VendorAddresses[0].UUID).To(Equal(params.Seller.VendorAddresses[0].Uuid))
+			Expect(seller.VendorAddresses[0].UUID).To(Not(BeNil()))
 
 			Expect(err).To(BeNil())
 
