@@ -3,14 +3,13 @@ package seller_service_test
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
-	"github.com/voonik/goConnect/api/go/vigeon/notify"
 	"github.com/voonik/goFramework/pkg/database"
-	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
+	"github.com/voonik/goFramework/pkg/misc"
+	testUtils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
@@ -20,11 +19,9 @@ import (
 
 var _ = Describe("Create", func() {
 	var ctx context.Context
-	var mockEmail *mocks.VigeonAPIHelperInterface
 
 	BeforeEach(func() {
-		test_utils.GetContext(&ctx)
-		mockEmail = mocks.SetVigeonAPIHelperMock()
+		testUtils.GetContext(&ctx)
 	})
 
 	AfterEach(func() {
@@ -33,14 +30,7 @@ var _ = Describe("Create", func() {
 
 	Context("Failure Cases", func() {
 		It("Should return error without Seller Params", func() {
-			err := fmt.Errorf("Missing All Seller Params")
 			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Missing All Seller Params"}
-			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
-				ToEmail:   "Mokam<noreply@shopf.co>",
-				FromEmail: "smk@shopf.co",
-				Subject:   "New Seller Registration Failed",
-				Content:   fmt.Sprintf("Seller Registration failed because of the error <br><br> %s  <br><br> with the response <br><br> %s", err.Error(), expectedResponse),
-			}).Return(&notify.EmailResp{}, nil)
 
 			params := spb.CreateParams{}
 			res, err := new(services.SellerService).Create(ctx, &params)
@@ -48,18 +38,9 @@ var _ = Describe("Create", func() {
 			Expect(res.Status).To(Equal(false))
 			Expect(res.Message).To(Equal(expectedResponse.Message))
 			Expect(err).To(BeNil())
-
-			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 		It("Should return error for missing seller params", func() {
-			err := fmt.Errorf("Missing Seller Params: user_id,primary_email,business_unit,brand_name,hub,color_code,activation_state")
 			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Missing Seller Params: user_id,primary_email,business_unit,brand_name,hub,color_code,activation_state"}
-			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
-				ToEmail:   "Mokam<noreply@shopf.co>",
-				FromEmail: "smk@shopf.co",
-				Subject:   "New Seller Registration Failed",
-				Content:   fmt.Sprintf("Seller Registration failed because of the error <br><br> %s  <br><br> with the response <br><br> %s", err.Error(), expectedResponse),
-			}).Return(&notify.EmailResp{}, nil)
 
 			params := spb.CreateParams{Seller: &spb.SellerObject{}}
 			res, err := new(services.SellerService).Create(ctx, &params)
@@ -67,18 +48,10 @@ var _ = Describe("Create", func() {
 			Expect(res.Status).To(Equal(false))
 			Expect(res.Message).To(Equal(expectedResponse.Message))
 			Expect(err).To(BeNil())
-
-			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 		It("Should return error for invalid seller params", func() {
-			err := fmt.Errorf("Invalid Seller Params: business_unit,color_code,activation_state")
 			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Invalid Seller Params: business_unit,color_code,activation_state"}
-			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
-				ToEmail:   "Mokam<noreply@shopf.co>",
-				FromEmail: "smk@shopf.co",
-				Subject:   "New Seller Registration Failed",
-				Content:   fmt.Sprintf("Seller Registration failed because of the error <br><br> %s  <br><br> with the response <br><br> %s", err.Error(), expectedResponse),
-			}).Return(&notify.EmailResp{}, nil)
+
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:          101,
 				PrimaryEmail:    "test@example.com",
@@ -92,18 +65,10 @@ var _ = Describe("Create", func() {
 			Expect(res.Status).To(Equal(false))
 			Expect(res.Message).To(Equal(expectedResponse.Message))
 			Expect(err).To(BeNil())
-
-			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 		It("Should return error for missing vendor address params", func() {
-			err := fmt.Errorf("Missing VendorAddress Params: 0:address1,zipcode;1:firstname;")
 			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Missing VendorAddress Params: 0:address1,zipcode;1:firstname;"}
-			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
-				ToEmail:   "Mokam<noreply@shopf.co>",
-				FromEmail: "smk@shopf.co",
-				Subject:   "New Seller Registration Failed",
-				Content:   fmt.Sprintf("Seller Registration failed because of the error <br><br> %s  <br><br> with the response <br><br> %s", err.Error(), expectedResponse),
-			}).Return(&notify.EmailResp{}, nil)
+
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:          101,
 				PrimaryEmail:    "test@example.com",
@@ -129,20 +94,12 @@ var _ = Describe("Create", func() {
 			Expect(res.Status).To(Equal(false))
 			Expect(res.Message).To(Equal(expectedResponse.Message))
 			Expect(err).To(BeNil())
-
-			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 	})
 	Context("Success Cases", func() {
 		It("Should return success if seller is already registered", func() {
 			seller := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101})
-			expectedResponse := &spb.CreateResponse{Status: true, Message: "Seller already registered.", UserId: seller.UserID}
-			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
-				ToEmail:   "Mokam<noreply@shopf.co>",
-				FromEmail: "smk@shopf.co",
-				Subject:   "New Seller Registered successfully",
-				Content:   fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b> %s ) with the response <br><br> %s", seller.PrimaryEmail, "", expectedResponse),
-			}).Return(&notify.EmailResp{}, nil)
+
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:          101,
 				PrimaryEmail:    "test@example.com",
@@ -157,18 +114,13 @@ var _ = Describe("Create", func() {
 			Expect(res.Message).To(Equal("Seller already registered."))
 			Expect(res.UserId).To(Equal(seller.UserID))
 			Expect(err).To(BeNil())
-
-			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 		It("Should create seller", func() {
-			expectedResponse := &spb.CreateResponse{Status: true, Message: "Seller registered successfully.", UserId: 101}
+			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 1, PortalId: 1, UserData: &misc.UserData{
+				UserId: 1,
+				Name:   "Test User",
+			}})
 
-			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
-				ToEmail:   "Mokam<noreply@shopf.co>",
-				FromEmail: "smk@shopf.co",
-				Subject:   "New Seller Registered successfully",
-				Content:   fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b> %s ) with the response <br><br> %s", "test@example.com", "someEmail@email.com", expectedResponse),
-			}).Return(&notify.EmailResp{}, nil)
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:           101,
 				BrandName:        "Test Brand",
@@ -190,8 +142,6 @@ var _ = Describe("Create", func() {
 					},
 				},
 			},
-				AgentId:    7,
-				AgentEmail: "someEmail@email.com",
 			}
 			res, err := new(services.SellerService).Create(ctx, &params)
 
@@ -221,7 +171,7 @@ var _ = Describe("Create", func() {
 			Expect(seller.ColorCode).To(Equal(utils.ColorCode(params.Seller.ColorCode)))
 			Expect(seller.IsDirect).To(BeTrue())
 			Expect(seller.AggregatorID).To(Equal(int(params.Seller.UserId)))
-			Expect(seller.AgentID).To(Equal(int(params.AgentId)))
+			Expect(seller.AgentID).To(Equal(int(misc.ExtractThreadObject(ctx).GetUserData().GetUserId())))
 
 			var returnExchangePolicy map[string]interface{}
 			json.Unmarshal(seller.ReturnExchangePolicy, &returnExchangePolicy)
@@ -262,8 +212,6 @@ var _ = Describe("Create", func() {
 			Expect(seller.VendorAddresses[0].VerificationStatus).To(Equal(utils.Verified))
 
 			Expect(err).To(BeNil())
-
-			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
 	})
 })

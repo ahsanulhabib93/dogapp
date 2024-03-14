@@ -14,6 +14,7 @@ import (
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -212,6 +213,7 @@ func createSeller(ctx context.Context, params *spb.CreateParams) (*models.Seller
 	returnExchangePolicy, _ := json.Marshal(DefaultsellerReturnExchangePolicy())
 	jsonDataMapping, _ := json.Marshal(utils.SellerDataMapping)
 	sellerPricingDetails := &models.SellerPricingDetail{}
+	userId := misc.ExtractThreadObject(ctx).GetUserData().GetUserId()
 
 	seller := &models.Seller{
 		UserID:               params.Seller.UserId,
@@ -232,7 +234,7 @@ func createSeller(ctx context.Context, params *spb.CreateParams) (*models.Seller
 		DataMapping:          jsonDataMapping,
 		AggregatorID:         int(params.Seller.UserId),
 		SellerPricingDetails: []*models.SellerPricingDetail{sellerPricingDetails}, // Taking values from DB defaults
-		AgentID:              int(params.AgentId),
+		AgentID:              int(userId),
 		SellerConfig:         createSellerDefaultSellerConfig(),
 	}
 
