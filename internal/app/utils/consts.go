@@ -312,3 +312,20 @@ const (
 	REDX_FULFILLMENT_SERVICE
 	REDX_FULFILLMENT_SERVICE2
 )
+
+func IsValidBusinessUnit(bu BusinessUnit) bool {
+	return bu >= UNICORN && bu <= REDX_FULFILLMENT_SERVICE2
+}
+
+func IsValidActivationState(as ActivationState) bool {
+	return as >= NOT_ACTIVATED && as <= UNDER_REVIEW
+}
+
+func IsValidColorCode(cc ColorCode) bool {
+	switch cc {
+	case Platinum, Gold, Green, Brown, Black:
+		return true
+	default:
+		return false
+	}
+}

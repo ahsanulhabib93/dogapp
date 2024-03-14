@@ -70,6 +70,31 @@ var _ = Describe("Create", func() {
 
 			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
 		})
+		It("Should return error for invalid params", func() {
+			err := fmt.Errorf("Invalid Seller Params: business_unit,color_code,activation_state")
+			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Invalid Seller Params: business_unit,color_code,activation_state"}
+			mockEmail.On("SendEmailAPI", ctx, notify.EmailParam{
+				ToEmail:   "Mokam<noreply@shopf.co>",
+				FromEmail: "smk@shopf.co",
+				Subject:   "New Seller Registration Failed",
+				Content:   fmt.Sprintf("Seller Registration failed because of the error <br><br> %s  <br><br> with the response <br><br> %s", err.Error(), expectedResponse),
+			}).Return(&notify.EmailResp{}, nil)
+			params := spb.CreateParams{Seller: &spb.SellerObject{
+				UserId:          101,
+				PrimaryEmail:    "test@example.com",
+				BusinessUnit:    100,
+				BrandName:       "Test Brand",
+				Hub:             "Test Hub",
+				ColorCode:       "InvalidColour",
+				ActivationState: 100,
+			}}
+			res, err := new(services.SellerService).Create(ctx, &params)
+			Expect(res.Status).To(Equal(false))
+			Expect(res.Message).To(Equal(expectedResponse.Message))
+			Expect(err).To(BeNil())
+
+			Expect(mockEmail.Count["SendEmailAPI"]).To(Equal(1))
+		})
 	})
 	Context("Success Cases", func() {
 		It("Should return success if seller is already registered", func() {
@@ -78,7 +103,7 @@ var _ = Describe("Create", func() {
 				ToEmail:   "Mokam<noreply@shopf.co>",
 				FromEmail: "smk@shopf.co",
 				Subject:   "New Seller Registered successfully",
-				Content:   fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b>  ) with the response <br><br> status:true  message:\"Seller already registered.\"  user_id:101", seller.PrimaryEmail),
+				Content:   fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b>  ) with the response <br><br> status:true message:\"Seller already registered.\" user_id:101", seller.PrimaryEmail),
 			}).Return(&notify.EmailResp{}, nil)
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:          101,
@@ -102,7 +127,7 @@ var _ = Describe("Create", func() {
 				ToEmail:   "Mokam<noreply@shopf.co>",
 				FromEmail: "smk@shopf.co",
 				Subject:   "New Seller Registered successfully",
-				Content:   "Seller Registered (<b>email:</b> test@example.com, <b>agent_email:</b> someEmail@email.com ) with the response <br><br> status:true  message:\"Seller registered successfully.\"  user_id:101",
+				Content:   "Seller Registered (<b>email:</b> test@example.com, <b>agent_email:</b> someEmail@email.com ) with the response <br><br> status:true message:\"Seller registered successfully.\" user_id:101",
 			}).Return(&notify.EmailResp{}, nil)
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:                 101,

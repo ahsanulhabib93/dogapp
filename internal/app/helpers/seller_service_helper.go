@@ -356,6 +356,11 @@ func ValidateSellerParams(params *spb.CreateParams) error {
 		missingSellerParams = strings.TrimSuffix(missingSellerParams, ",")
 		return fmt.Errorf("Missing Seller Params: %s", missingSellerParams)
 	}
+
+	failedSellerParams := validateSellerObjectParams(params.Seller)
+	if failedSellerParams != utils.EmptyString {
+		failedSellerParams = strings.TrimSuffix(failedSellerParams, ",")
+		return fmt.Errorf("Invalid Seller Params: %s", failedSellerParams)
 	}
 	return nil
 }
@@ -386,6 +391,21 @@ func findMissingSellerParams(seller *spb.SellerObject) string {
 	}
 
 	return missingParams
+}
+
+func validateSellerObjectParams(seller *spb.SellerObject) string {
+
+	var failedParams string
+	if !utils.IsValidBusinessUnit(utils.BusinessUnit(seller.BusinessUnit)) {
+		failedParams += "business_unit,"
+	}
+	if !utils.IsValidColorCode(utils.ColorCode(seller.ColorCode)) {
+		failedParams += "color_code,"
+	}
+	if !utils.IsValidActivationState(utils.ActivationState(seller.ActivationState)) {
+		failedParams += "activation_state,"
+	}
+	return failedParams
 }
 
 func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*models.Seller, string, error) {
