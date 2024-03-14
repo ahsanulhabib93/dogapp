@@ -259,6 +259,7 @@ var _ = Describe("Create", func() {
 			Expect(seller.VendorAddresses[0].Zipcode).To(Equal(params.Seller.VendorAddresses[0].Zipcode))
 			Expect(seller.VendorAddresses[0].SellerID).To(Equal(int(seller.ID)))
 			Expect(seller.VendorAddresses[0].UUID).To(Not(BeNil()))
+			Expect(seller.VendorAddresses[0].VerificationStatus).To(Equal(utils.Verified))
 
 			Expect(err).To(BeNil())
 
