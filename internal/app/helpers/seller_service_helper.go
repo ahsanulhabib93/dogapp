@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
-	"github.com/voonik/goConnect/api/go/vigeon/notify"
 
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
@@ -309,29 +308,6 @@ func DefaultsellerReturnExchangePolicy() *spb.ReturnExchangePolicy {
 		Return:   exchangeConfig,
 		Exchange: exchangeConfig,
 	}
-}
-
-func SendEmailNotification(ctx context.Context, seller *models.Seller, agentEmail string, err error, response *spb.CreateResponse) *notify.EmailResp {
-	var subject, content string
-	toEmail := "Mokam<noreply@shopf.co>"
-	fromEmail := "smk@shopf.co"
-
-	if err != nil {
-		subject = "New Seller Registration Failed"
-		content = fmt.Sprintf("Seller Registration failed because of the error <br><br> %s  <br><br> with the response <br><br> %s", err.Error(), response)
-	} else {
-		subject = "New Seller Registered successfully"
-		content = fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b> %s ) with the response <br><br> %s", seller.PrimaryEmail, agentEmail, response)
-	}
-
-	emailParam := notify.EmailParam{
-		ToEmail:   toEmail,
-		FromEmail: fromEmail,
-		Subject:   subject,
-		Content:   content,
-	}
-
-	return getVigeonAPIHelperInstance().SendEmailAPI(ctx, emailParam)
 }
 
 func ValidateSellerParams(params *spb.CreateParams) error {
