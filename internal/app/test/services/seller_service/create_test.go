@@ -101,7 +101,11 @@ var _ = Describe("Create", func() {
 			seller1 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101, BrandName: "SomeBrand"})
 			seller2 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 102, CompanyName: "SomeBrand", Slug: "SomeBrand"})
 
-			expectedResponse := &spb.CreateResponse{Status: false, Message: fmt.Sprintf("Error in seller creation: Non Unique Seller Params: primary_email:%s,primary_phone:%s,brand_name:SomeBrand,company_name:SomeBrand,slug:SomeBrand", seller1.PrimaryEmail, seller2.PrimaryPhone)}
+			expectedResponse := &spb.CreateResponse{
+				Status: false,
+				Message: fmt.Sprintf("Error in seller creation: Non Unique Seller Params: primary_email:%s,primary_phone:%s,brand_name:SomeBrand,company_name:SomeBrand,slug:SomeBrand",
+					seller1.PrimaryEmail, seller2.PrimaryPhone,
+				)}
 
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:           103,
@@ -242,6 +246,9 @@ var _ = Describe("Create", func() {
 			Expect(seller.VendorAddresses[0].Firstname).To(Equal(params.Seller.VendorAddresses[0].Firstname))
 			Expect(seller.VendorAddresses[0].Address1).To(Equal(params.Seller.VendorAddresses[0].Address1))
 			Expect(seller.VendorAddresses[0].Zipcode).To(Equal(params.Seller.VendorAddresses[0].Zipcode))
+			Expect(seller.VendorAddresses[0].State).To(Equal(utils.DefaultState))
+			Expect(seller.VendorAddresses[0].Country).To(Equal(utils.DefaultCountry))
+			Expect(seller.VendorAddresses[0].AddressType).To(Equal(2))
 			Expect(seller.VendorAddresses[0].SellerID).To(Equal(int(seller.ID)))
 			Expect(seller.VendorAddresses[0].UUID).To(Not(BeNil()))
 			Expect(seller.VendorAddresses[0].VerificationStatus).To(Equal(utils.Verified))

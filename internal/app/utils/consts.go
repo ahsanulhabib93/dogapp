@@ -68,6 +68,8 @@ const (
 	DefaultSellerMaxQuantity     = uint64(1000)
 	DefaultSellerItemsPerPackage = uint64(1)
 	DefaultSellerPickupType      = uint64(1)
+	DefaultCountry               = "Bangladesh"
+	DefaultState                 = "Dhaka"
 )
 
 const (
