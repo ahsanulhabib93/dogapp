@@ -3,6 +3,7 @@ package seller_service_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -90,6 +91,40 @@ var _ = Describe("Create", func() {
 					},
 				},
 			}}
+			res, err := new(services.SellerService).Create(ctx, &params)
+			Expect(res.Status).To(Equal(false))
+			Expect(res.Message).To(Equal(expectedResponse.Message))
+			Expect(err).To(BeNil())
+		})
+
+		It("Should return error for non unique seller params", func() {
+			seller1 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101, BrandName: "SomeBrand"})
+			seller2 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101, CompanyName: "SomeBrand", Slug: "SomeBrand"})
+
+			expectedResponse := &spb.CreateResponse{Status: false, Message: fmt.Sprintf("Error in seller creation: Non Unique Seller Params: user_id:101,primary_email:%s,primary_phone:%s,brand_name:SomeBrand,company_name:SomeBrand,slug:SomeBrand", seller1.PrimaryEmail, seller2.PrimaryPhone)}
+
+			params := spb.CreateParams{Seller: &spb.SellerObject{
+				UserId:           101,
+				BrandName:        seller1.BrandName,
+				PrimaryEmail:     seller1.PrimaryEmail,
+				PrimaryPhone:     seller2.PrimaryPhone,
+				ActivationState:  uint64(utils.ACTIVATED),
+				Hub:              "Test Hub",
+				DeliveryType:     utils.Ten,
+				ProcessingType:   utils.Ten,
+				BusinessUnit:     utils.Ten,
+				FullfillmentType: utils.Ten,
+				ColorCode:        string(utils.Gold),
+				VendorAddresses: []*spb.VendorAddressObject{
+					{
+						Firstname: "John",
+						Address1:  "123 Main St",
+						Zipcode:   "12345",
+						SellerId:  1,
+					},
+				},
+			},
+			}
 			res, err := new(services.SellerService).Create(ctx, &params)
 			Expect(res.Status).To(Equal(false))
 			Expect(res.Message).To(Equal(expectedResponse.Message))

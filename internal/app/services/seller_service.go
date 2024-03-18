@@ -267,7 +267,7 @@ func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (
 		Status: false,
 	}
 
-	if err := helpers.ValidateSellerParams(params); err != nil {
+	if err := helpers.ValidateSellerParams(ctx, params); err != nil {
 		resp.Message = fmt.Sprint("Error in seller creation: ", err.Error())
 		return resp, nil
 	}

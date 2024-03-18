@@ -310,7 +310,7 @@ func DefaultsellerReturnExchangePolicy() *spb.ReturnExchangePolicy {
 	}
 }
 
-func ValidateSellerParams(params *spb.CreateParams) error {
+func ValidateSellerParams(ctx context.Context, params *spb.CreateParams) error {
 	if params.Seller == nil {
 		return fmt.Errorf("Missing All Seller Params")
 	}
@@ -330,6 +330,12 @@ func ValidateSellerParams(params *spb.CreateParams) error {
 	missingVendorAddressParams := findMissingVendorAddressParams(params.Seller.VendorAddresses)
 	if missingVendorAddressParams != utils.EmptyString {
 		return fmt.Errorf("Missing VendorAddress Params: %s", missingVendorAddressParams)
+	}
+
+	nonUniqueParams := findNonUniqueSellerParams(ctx, params.Seller)
+	if nonUniqueParams != utils.EmptyString {
+		nonUniqueParams = strings.TrimSuffix(nonUniqueParams, ",")
+		return fmt.Errorf("Non Unique Seller Params: %s", nonUniqueParams)
 	}
 	return nil
 }
@@ -396,6 +402,50 @@ func validateSellerObjectParams(seller *spb.SellerObject) string {
 		failedParams += "activation_state,"
 	}
 	return failedParams
+}
+
+func findNonUniqueSellerParams(ctx context.Context, seller *spb.SellerObject) string {
+	var nonUniqueParams string
+	type nonUniqueValue struct {
+		ColumnName string
+		Value      string
+		Count      int64
+	}
+
+	sql := `
+	SELECT column_name, value, count
+	FROM (
+		SELECT 'user_id' AS column_name, ? AS value, COUNT(*) AS count FROM sellers WHERE user_id = ? GROUP BY user_id
+		UNION ALL
+		SELECT 'primary_email', ?, COUNT(*) FROM sellers WHERE primary_email = ? GROUP BY primary_email
+		UNION ALL
+		SELECT 'primary_phone', ?, COUNT(*) FROM sellers WHERE primary_phone = ? GROUP BY primary_phone
+		UNION ALL
+		SELECT 'brand_name', ?, COUNT(*) FROM sellers WHERE brand_name = ? GROUP BY brand_name
+		UNION ALL
+		SELECT 'company_name', ?, COUNT(*) FROM sellers WHERE company_name = ? GROUP BY company_name
+		UNION ALL
+		SELECT 'slug', ?, COUNT(*) FROM sellers WHERE slug = ? GROUP BY slug
+	) AS subquery
+	;`
+	var results []nonUniqueValue
+	database.DBAPM(ctx).Raw(sql,
+		fmt.Sprint(seller.UserId), seller.UserId,
+		seller.PrimaryEmail, seller.PrimaryEmail,
+		seller.PrimaryPhone, seller.PrimaryPhone,
+		seller.BrandName, seller.BrandName,
+		seller.BrandName, seller.BrandName,
+		seller.BrandName, seller.BrandName,
+	).Scan(&results)
+
+	if len(results) > 0 {
+		for _, result := range results {
+			nonUniqueParams += result.ColumnName + ":" + fmt.Sprint(string(result.Value)) + ","
+		}
+		return nonUniqueParams
+	}
+
+	return utils.EmptyString
 }
 
 func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*models.Seller, string, error) {
