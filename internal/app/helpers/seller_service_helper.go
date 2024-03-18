@@ -412,35 +412,32 @@ func findNonUniqueSellerParams(ctx context.Context, seller *spb.SellerObject) st
 		Count      int64
 	}
 
-	sql := `
+	findNonUniqueParamQuery := `
 	SELECT column_name, value, count
 	FROM (
-		SELECT 'user_id' AS column_name, ? AS value, COUNT(*) AS count FROM sellers WHERE user_id = ? GROUP BY user_id
+		SELECT 'primary_email' AS column_name, primary_email AS value, COUNT(*) AS count FROM sellers WHERE primary_email = ? GROUP BY primary_email
 		UNION ALL
-		SELECT 'primary_email', ?, COUNT(*) FROM sellers WHERE primary_email = ? GROUP BY primary_email
+		SELECT 'primary_phone', primary_phone, COUNT(*) FROM sellers WHERE primary_phone = ? GROUP BY primary_phone
 		UNION ALL
-		SELECT 'primary_phone', ?, COUNT(*) FROM sellers WHERE primary_phone = ? GROUP BY primary_phone
+		SELECT 'brand_name', brand_name, COUNT(*) FROM sellers WHERE brand_name = ? GROUP BY brand_name
 		UNION ALL
-		SELECT 'brand_name', ?, COUNT(*) FROM sellers WHERE brand_name = ? GROUP BY brand_name
+		SELECT 'company_name', company_name, COUNT(*) FROM sellers WHERE company_name = ? GROUP BY company_name
 		UNION ALL
-		SELECT 'company_name', ?, COUNT(*) FROM sellers WHERE company_name = ? GROUP BY company_name
-		UNION ALL
-		SELECT 'slug', ?, COUNT(*) FROM sellers WHERE slug = ? GROUP BY slug
-	) AS subquery
-	;`
-	var results []nonUniqueValue
-	database.DBAPM(ctx).Raw(sql,
-		fmt.Sprint(seller.UserId), seller.UserId,
-		seller.PrimaryEmail, seller.PrimaryEmail,
-		seller.PrimaryPhone, seller.PrimaryPhone,
-		seller.BrandName, seller.BrandName,
-		seller.BrandName, seller.BrandName,
-		seller.BrandName, seller.BrandName,
-	).Scan(&results)
+		SELECT 'slug', slug, COUNT(*) FROM sellers WHERE slug = ? GROUP BY slug
+	) AS subquery;
+	`
+	var nonUniqueParamArray []nonUniqueValue
+	database.DBAPM(ctx).Raw(findNonUniqueParamQuery,
+		seller.PrimaryEmail,
+		seller.PrimaryPhone,
+		seller.BrandName,
+		seller.BrandName,
+		seller.BrandName,
+	).Scan(&nonUniqueParamArray)
 
-	if len(results) > 0 {
-		for _, result := range results {
-			nonUniqueParams += result.ColumnName + ":" + fmt.Sprint(string(result.Value)) + ","
+	if len(nonUniqueParamArray) > 0 {
+		for _, nonUniqueKey := range nonUniqueParamArray {
+			nonUniqueParams += nonUniqueKey.ColumnName + ":" + fmt.Sprint(string(nonUniqueKey.Value)) + ","
 		}
 		return nonUniqueParams
 	}
@@ -452,7 +449,7 @@ func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*
 	registrationMessage := "Seller registered successfully."
 	existingSeller := GetSellerByUserId(ctx, params.Seller.UserId)
 	if existingSeller.ID != utils.Zero {
-		registrationMessage = "Seller already registered."
+		registrationMessage = fmt.Sprintf("Seller already registered for UserID: %d", params.Seller.UserId)
 		return existingSeller, registrationMessage, nil
 	}
 	newSeller, err := createSeller(ctx, params)

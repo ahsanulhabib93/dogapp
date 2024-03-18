@@ -99,12 +99,12 @@ var _ = Describe("Create", func() {
 
 		It("Should return error for non unique seller params", func() {
 			seller1 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101, BrandName: "SomeBrand"})
-			seller2 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101, CompanyName: "SomeBrand", Slug: "SomeBrand"})
+			seller2 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 102, CompanyName: "SomeBrand", Slug: "SomeBrand"})
 
-			expectedResponse := &spb.CreateResponse{Status: false, Message: fmt.Sprintf("Error in seller creation: Non Unique Seller Params: user_id:101,primary_email:%s,primary_phone:%s,brand_name:SomeBrand,company_name:SomeBrand,slug:SomeBrand", seller1.PrimaryEmail, seller2.PrimaryPhone)}
+			expectedResponse := &spb.CreateResponse{Status: false, Message: fmt.Sprintf("Error in seller creation: Non Unique Seller Params: primary_email:%s,primary_phone:%s,brand_name:SomeBrand,company_name:SomeBrand,slug:SomeBrand", seller1.PrimaryEmail, seller2.PrimaryPhone)}
 
 			params := spb.CreateParams{Seller: &spb.SellerObject{
-				UserId:           101,
+				UserId:           103,
 				BrandName:        seller1.BrandName,
 				PrimaryEmail:     seller1.PrimaryEmail,
 				PrimaryPhone:     seller2.PrimaryPhone,
@@ -146,7 +146,7 @@ var _ = Describe("Create", func() {
 			}}
 			res, err := new(services.SellerService).Create(ctx, &params)
 			Expect(res.Status).To(Equal(true))
-			Expect(res.Message).To(Equal("Seller already registered."))
+			Expect(res.Message).To(Equal("Seller already registered for UserID: 101"))
 			Expect(res.UserId).To(Equal(seller.UserID))
 			Expect(err).To(BeNil())
 		})
