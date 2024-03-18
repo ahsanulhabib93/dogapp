@@ -458,6 +458,7 @@ func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*
 		registrationMessage = fmt.Sprintf("Seller already registered for UserID: %d", params.Seller.UserId)
 		return existingSeller, registrationMessage, nil
 	}
+
 	newSeller, err := createSeller(ctx, params)
 	return newSeller, registrationMessage, err
 }
