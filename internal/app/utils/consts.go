@@ -174,12 +174,15 @@ const (
 	EmptyString       = ""
 	Zero              = 0
 	One               = 1
+	Three             = 3
 	Ten               = 10
 	SixtyFour         = 64
 	DefaultDateFormat = "2006-01-02"
+	Params            = "params"
 )
 
 const ChangePendingSupplierStatus = "change_pending_supplier_status"
+const CreateOMSSellerSync = "create_oms_seller_sync"
 const ScheduleEveryDay = "0 0 * * *"
 const SS2UinquePrefixKey = "SS2-PAD-"
 

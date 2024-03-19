@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
+	omsPb "github.com/voonik/goConnect/api/go/oms/oms_seller"
 	"github.com/voonik/goConnect/api/go/vigeon/notify"
 
 	"github.com/shopuptech/go-libs/logger"
@@ -17,6 +18,17 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
+
+type ReturnExchangePolicy struct {
+	Return   ExchangeDetails `json:"return"`
+	Exchange ExchangeDetails `json:"exchange"`
+}
+
+// ExchangeDetails represents the details for return or exchange.
+type ExchangeDetails struct {
+	DefaultDuration      int    `json:"default_duration"`
+	ReturnDaysStartsFrom string `json:"return_days_starts_from"`
+}
 
 func PerformSendActivationMail(ctx context.Context, sellerIDs []uint64, params *spb.SendActivationMailParams) *spb.BasicApiResponse {
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
@@ -362,4 +374,66 @@ func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*
 	}
 	newSeller, err := createSeller(ctx, params)
 	return newSeller, registrationMessage, err
+}
+
+func getSellerPricingDetailsSum(sellerPricingDetails []*models.SellerPricingDetail) (uint64, uint64) {
+	var totalLeadShippingDays, totalCommissionPercent uint64
+	for _, pricingDetail := range sellerPricingDetails {
+		totalLeadShippingDays += uint64(pricingDetail.LeadShippingDays)
+		totalCommissionPercent += uint64(pricingDetail.CommissionPercent)
+	}
+	return totalLeadShippingDays, totalCommissionPercent
+}
+
+func CreateOMSSellerSync(ctx context.Context, params *models.Seller) (err error) {
+	var returnExchangePolicy ReturnExchangePolicy
+	if err := json.Unmarshal([]byte(params.ReturnExchangePolicy), &returnExchangePolicy); err != nil {
+		fmt.Println("Error unmarshaling JSON:", err)
+		return err
+	}
+	totalLeadShippingDays, totalCommissionPercent := getSellerPricingDetailsSum(params.SellerPricingDetails)
+	sellerParam := omsPb.SellerParams{
+		Seller: &omsPb.Seller{
+			UserId:           params.UserID,
+			FullfillmentType: uint64(params.FullfillmentType),
+			BrandName:        params.BrandName,
+			CompanyName:      params.CompanyName,
+			Slug:             params.Slug,
+			AggregatorId:     uint64(params.AggregatorID),
+			PrimaryEmail:     params.PrimaryEmail,
+			PrimaryPhone:     params.PrimaryPhone,
+			ReturnExchangePolicy: &omsPb.ReturnExchangePolicy{
+				Return: &omsPb.SellerReturnExchangePolicyConfig{
+					ReturnDaysStartsFrom: returnExchangePolicy.Return.ReturnDaysStartsFrom,
+					DefaultDuration:      uint64(returnExchangePolicy.Return.DefaultDuration),
+				},
+				Exchange: &omsPb.SellerReturnExchangePolicyConfig{
+					ReturnDaysStartsFrom: returnExchangePolicy.Exchange.ReturnDaysStartsFrom,
+					DefaultDuration:      uint64(returnExchangePolicy.Exchange.DefaultDuration),
+				},
+			},
+			TinNumber:             params.TinNumber,
+			PanNumber:             params.PanNumber,
+			SellerInvoiceNumber:   uint64(params.SellerInvoiceNumber),
+			SellerType:            uint64(params.SellerType),
+			SellerRating:          float32(params.SellerRating),
+			SellerId:              params.ID,
+			DeliveryType:          uint64(params.DeliveryType),
+			ProcessingType:        uint64(params.ProcessingType),
+			BusinessUnit:          uint64(params.BusinessUnit),
+			CodConfirmationNeeded: params.SellerConfig.CODConfirmationNeeded,
+			RefundPolicy:          params.SellerConfig.RefundPolicy.String(),
+			PenaltyPolicy:         params.SellerConfig.PenaltyPolicy,
+			ItemsPerPackage:       uint64(params.SellerConfig.ItemsPerPackage),
+			PickupType:            uint64(params.SellerConfig.PickupType),
+			QcFrequency:           uint64(params.SellerConfig.QCFrequency),
+			LeadShippingDays:      totalLeadShippingDays,
+			CommissionPercent:     totalCommissionPercent,
+		},
+	}
+	resp := getAPIHelperInstance().CreateOmsSeller(ctx, &sellerParam)
+	if !resp.Success {
+		return fmt.Errorf(resp.Message)
+	}
+	return nil
 }
