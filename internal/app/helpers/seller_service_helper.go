@@ -385,6 +385,32 @@ func getSellerPricingDetailsSum(sellerPricingDetails []*models.SellerPricingDeta
 	return totalLeadShippingDays, totalCommissionPercent
 }
 
+func getVendorAddressData(params *models.Seller) []*omsPb.VendorAddressObject {
+	vendorAddresses := params.VendorAddresses
+	vendorAddressData := []*omsPb.VendorAddressObject{}
+	for _, vendorAddress := range vendorAddresses {
+		vendorAddressData = append(vendorAddressData, &omsPb.VendorAddressObject{
+			SellerId:           params.ID,
+			Firstname:          vendorAddress.Firstname,
+			Lastname:           vendorAddress.Lastname,
+			Address1:           vendorAddress.Address1,
+			Address2:           vendorAddress.Address2,
+			City:               vendorAddress.City,
+			Zipcode:            vendorAddress.Zipcode,
+			Phone:              fmt.Sprint(vendorAddress.Phone),
+			AlternativePhone:   vendorAddress.AlternativePhone,
+			Company:            vendorAddress.Company,
+			State:              vendorAddress.State,
+			Country:            vendorAddress.Country,
+			AddressType:        uint64(vendorAddress.AddressType),
+			DefaultAddress:     vendorAddress.DefaultAddress,
+			VerificationStatus: string(vendorAddress.VerificationStatus),
+			ExtraData:          vendorAddress.ExtraData,
+		})
+	}
+	return vendorAddressData
+}
+
 func CreateOMSSellerSync(ctx context.Context, params *models.Seller) (err error) {
 	var returnExchangePolicy ReturnExchangePolicy
 	if err := json.Unmarshal([]byte(params.ReturnExchangePolicy), &returnExchangePolicy); err != nil {
@@ -430,6 +456,7 @@ func CreateOMSSellerSync(ctx context.Context, params *models.Seller) (err error)
 			LeadShippingDays:      totalLeadShippingDays,
 			CommissionPercent:     totalCommissionPercent,
 		},
+		VendorAddresses: getVendorAddressData(params),
 	}
 	resp := getAPIHelperInstance().CreateOmsSeller(ctx, &sellerParam)
 	if !resp.Success {
