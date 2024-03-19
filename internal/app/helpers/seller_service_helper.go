@@ -409,26 +409,25 @@ func findNonUniqueSellerParams(ctx context.Context, seller *spb.SellerObject) st
 	type nonUniqueValue struct {
 		ColumnName string
 		Value      string
-		Count      int64
 	}
 
 	vaccountId := misc.ExtractThreadObject(ctx).GetVaccountId()
 	findNonUniqueParamQuery := `
-	SELECT column_name, value, count
+	SELECT column_name, value
 	FROM (
-		SELECT 'primary_email' AS column_name, primary_email AS value, COUNT(*) AS count FROM sellers 
+		SELECT 'primary_email' AS column_name, primary_email AS value FROM sellers 
 		WHERE primary_email = ? AND deleted_at is null and vaccount_id = ? GROUP BY primary_email
 		UNION ALL
-		SELECT 'primary_phone', primary_phone, COUNT(*) FROM sellers 
+		SELECT 'primary_phone', primary_phone FROM sellers 
 		WHERE primary_phone = ? AND deleted_at is null and vaccount_id = ? GROUP BY primary_phone
 		UNION ALL
-		SELECT 'brand_name', brand_name, COUNT(*) FROM sellers 
+		SELECT 'brand_name', brand_name FROM sellers 
 		WHERE brand_name = ? AND deleted_at is null and vaccount_id = ? GROUP BY brand_name
 		UNION ALL
-		SELECT 'company_name', company_name, COUNT(*) FROM sellers 
+		SELECT 'company_name', company_name FROM sellers 
 		WHERE company_name = ? AND deleted_at is null and vaccount_id = ? GROUP BY company_name
 		UNION ALL
-		SELECT 'slug', slug, COUNT(*) FROM sellers 
+		SELECT 'slug', slug FROM sellers 
 		WHERE slug = ? AND deleted_at is null and vaccount_id = ? GROUP BY slug
 	) AS subquery;
 	`
