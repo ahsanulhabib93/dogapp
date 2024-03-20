@@ -69,7 +69,16 @@ var _ = Describe("CreateOMSSellerSyncHandler", func() {
 				Success: true,
 				Message: "OMS seller created successfully",
 			}
-			apiHelperInstance.On("CreateOmsSeller", ctx, mock.Anything).Return(&apiResp)
+			mockMatcher := mock.MatchedBy(func(omsSellerParams *omsPb.SellerParams) bool {
+				return omsSellerParams.Seller.SellerId == params.ID &&
+					omsSellerParams.Seller.UserId == params.UserID &&
+					omsSellerParams.Seller.BrandName == params.BrandName &&
+					omsSellerParams.VendorAddresses[0].Firstname == vendorAddress[0].Firstname &&
+					omsSellerParams.VendorAddresses[0].Lastname == vendorAddress[0].Lastname &&
+					omsSellerParams.Seller.CodConfirmationNeeded == sellerConfig.CODConfirmationNeeded &&
+					omsSellerParams.Seller.PickupType == uint64(sellerConfig.PickupType)
+			})
+			apiHelperInstance.On("CreateOmsSeller", ctx, mockMatcher).Return(&apiResp)
 		})
 
 		It("Should create oms_seller", func() {
