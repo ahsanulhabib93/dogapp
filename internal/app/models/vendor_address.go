@@ -15,7 +15,7 @@ type VendorAddress struct {
 	Address2                     string `gorm:"column:address2"`
 	City                         string `gorm:"column:city"`
 	Zipcode                      string `gorm:"column:zipcode"`
-	AlternativePhone             string `gorm:"column:alternate_phone"`
+	AlternativePhone             string `gorm:"column:alternative_phone"`
 	Company                      string `gorm:"column:company"`
 	State                        string `gorm:"column:state"`
 	Country                      string `gorm:"column:country"`
