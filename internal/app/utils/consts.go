@@ -292,25 +292,25 @@ var SellerDataMapping = map[string]interface{}{
 }
 
 const (
-	UNICORN BusinessUnit = iota + 1
-	UNBRANDED
-	BRANDED
-	LIFESTYLE
-	BLITZ
-	AGRO
-	WHOLESALE
-	MWS
-	FRESH
-	POULTRY
-	APPAREL
-	INFRA
-	ENERGY
-	ELECTRONICS
-	MOKAM_X
-	AGRO_FISH_PROJECT
-	POP_BOISHAKHI
-	REDX_FULFILLMENT_SERVICE
-	REDX_FULFILLMENT_SERVICE2
+	UNICORN                   BusinessUnit = 1
+	UNBRANDED                 BusinessUnit = 2
+	BRANDED                   BusinessUnit = 3
+	LIFESTYLE                 BusinessUnit = 4
+	BLITZ                     BusinessUnit = 5
+	AGRO                      BusinessUnit = 6
+	WHOLESALE                 BusinessUnit = 7
+	MWS                       BusinessUnit = 8
+	FRESH                     BusinessUnit = 9
+	POULTRY                   BusinessUnit = 10
+	APPAREL                   BusinessUnit = 11
+	INFRA                     BusinessUnit = 12
+	ENERGY                    BusinessUnit = 13
+	ELECTRONICS               BusinessUnit = 14
+	MOKAM_X                   BusinessUnit = 20
+	AGRO_FISH_PROJECT         BusinessUnit = 21
+	POP_BOISHAKHI             BusinessUnit = 22
+	REDX_FULFILLMENT_SERVICE  BusinessUnit = 100
+	REDX_FULFILLMENT_SERVICE2 BusinessUnit = 101
 )
 
 func IsValidBusinessUnit(bu BusinessUnit) bool {
