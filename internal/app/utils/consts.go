@@ -70,6 +70,7 @@ const (
 	DefaultSellerPickupType      = uint64(1)
 	DefaultCountry               = "Bangladesh"
 	DefaultState                 = "Dhaka"
+	Required                     = "required"
 )
 
 const (

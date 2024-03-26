@@ -22,21 +22,37 @@ func _() {
 	_ = x[INFRA-12]
 	_ = x[ENERGY-13]
 	_ = x[ELECTRONICS-14]
-	_ = x[MOKAM_X-15]
-	_ = x[AGRO_FISH_PROJECT-16]
-	_ = x[POP_BOISHAKHI-17]
-	_ = x[REDX_FULFILLMENT_SERVICE-18]
-	_ = x[REDX_FULFILLMENT_SERVICE2-19]
+	_ = x[MOKAM_X-20]
+	_ = x[AGRO_FISH_PROJECT-21]
+	_ = x[POP_BOISHAKHI-22]
+	_ = x[REDX_FULFILLMENT_SERVICE-100]
+	_ = x[REDX_FULFILLMENT_SERVICE2-101]
 }
 
-const _BusinessUnit_name = "UNICORNUNBRANDEDBRANDEDLIFESTYLEBLITZAGROWHOLESALEMWSFRESHPOULTRYAPPARELINFRAENERGYELECTRONICSMOKAM_XAGRO_FISH_PROJECTPOP_BOISHAKHIREDX_FULFILLMENT_SERVICEREDX_FULFILLMENT_SERVICE2"
+const (
+	_BusinessUnit_name_0 = "UNICORNUNBRANDEDBRANDEDLIFESTYLEBLITZAGROWHOLESALEMWSFRESHPOULTRYAPPARELINFRAENERGYELECTRONICS"
+	_BusinessUnit_name_1 = "MOKAM_XAGRO_FISH_PROJECTPOP_BOISHAKHI"
+	_BusinessUnit_name_2 = "REDX_FULFILLMENT_SERVICEREDX_FULFILLMENT_SERVICE2"
+)
 
-var _BusinessUnit_index = [...]uint8{0, 7, 16, 23, 32, 37, 41, 50, 53, 58, 65, 72, 77, 83, 94, 101, 118, 131, 155, 180}
+var (
+	_BusinessUnit_index_0 = [...]uint8{0, 7, 16, 23, 32, 37, 41, 50, 53, 58, 65, 72, 77, 83, 94}
+	_BusinessUnit_index_1 = [...]uint8{0, 7, 24, 37}
+	_BusinessUnit_index_2 = [...]uint8{0, 24, 49}
+)
 
 func (i BusinessUnit) String() string {
-	i -= 1
-	if i >= BusinessUnit(len(_BusinessUnit_index)-1) {
-		return "BusinessUnit(" + strconv.FormatInt(int64(i+1), 10) + ")"
+	switch {
+	case 1 <= i && i <= 14:
+		i -= 1
+		return _BusinessUnit_name_0[_BusinessUnit_index_0[i]:_BusinessUnit_index_0[i+1]]
+	case 20 <= i && i <= 22:
+		i -= 20
+		return _BusinessUnit_name_1[_BusinessUnit_index_1[i]:_BusinessUnit_index_1[i+1]]
+	case 100 <= i && i <= 101:
+		i -= 100
+		return _BusinessUnit_name_2[_BusinessUnit_index_2[i]:_BusinessUnit_index_2[i+1]]
+	default:
+		return "BusinessUnit(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _BusinessUnit_name[_BusinessUnit_index[i]:_BusinessUnit_index[i+1]]
 }

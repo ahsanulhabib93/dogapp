@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/asaskevich/govalidator"
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
 
 	"github.com/shopuptech/go-libs/logger"
@@ -315,10 +316,9 @@ func ValidateSellerParams(ctx context.Context, params *spb.CreateParams) error {
 		return fmt.Errorf("Missing All Seller Params")
 	}
 
-	missingSellerParams := findMissingSellerParams(params.Seller)
-	if missingSellerParams != utils.EmptyString {
-		missingSellerParams = strings.TrimSuffix(missingSellerParams, ",")
-		return fmt.Errorf("Missing Seller Params: %s", missingSellerParams)
+	missingSellerParamsErr := findMissingSellerParams(params.Seller)
+	if missingSellerParamsErr != nil {
+		return missingSellerParamsErr
 	}
 
 	failedSellerParams := validateSellerObjectParams(params.Seller)
@@ -327,9 +327,9 @@ func ValidateSellerParams(ctx context.Context, params *spb.CreateParams) error {
 		return fmt.Errorf("Invalid Seller Params: %s", failedSellerParams)
 	}
 
-	missingVendorAddressParams := findMissingVendorAddressParams(params.Seller.VendorAddresses)
-	if missingVendorAddressParams != utils.EmptyString {
-		return fmt.Errorf("Missing VendorAddress Params: %s", missingVendorAddressParams)
+	missingVendorAddressParamsErr := findMissingVendorAddressParams(params.Seller.VendorAddresses)
+	if missingVendorAddressParamsErr != nil {
+		return missingVendorAddressParamsErr
 	}
 
 	nonUniqueParams := findNonUniqueSellerParams(ctx, params.Seller)
@@ -340,53 +340,51 @@ func ValidateSellerParams(ctx context.Context, params *spb.CreateParams) error {
 	return nil
 }
 
-func findMissingVendorAddressParams(vendorAddresses []*spb.VendorAddressObject) string {
-	var vendorMissingParams string
+func findMissingVendorAddressParams(vendorAddresses []*spb.VendorAddressObject) error {
+	var mapTemplate, inputMap map[string]interface{}
+	var err error
 	for sequenceId, vendorAddress := range vendorAddresses {
-		var missingParams string
-		if vendorAddress.Firstname == utils.EmptyString {
-			missingParams += "firstname,"
+		mapTemplate = map[string]interface{}{
+			"firstname": utils.Required,
+			"address1":  utils.Required,
+			"zipcode":   utils.Required,
 		}
-		if vendorAddress.Address1 == utils.EmptyString {
-			missingParams += "address1,"
+		inputMap = map[string]interface{}{
+			"firstname": vendorAddress.Firstname,
+			"address1":  vendorAddress.Address1,
+			"zipcode":   vendorAddress.Zipcode,
 		}
-		if vendorAddress.Zipcode == utils.EmptyString {
-			missingParams += "zipcode,"
-		}
-		if missingParams != utils.EmptyString {
-			missingParams = strconv.Itoa(sequenceId) + ":" + strings.TrimSuffix(missingParams, ",") + ";"
-			vendorMissingParams += missingParams
+		_, err = govalidator.ValidateMap(inputMap, mapTemplate)
+		if err != nil {
+			return fmt.Errorf("%d: %s", sequenceId, err.Error())
 		}
 	}
-	return vendorMissingParams
+
+	return nil
 }
 
-func findMissingSellerParams(seller *spb.SellerObject) string {
-	var missingParams string
+func findMissingSellerParams(seller *spb.SellerObject) error {
+	mapTemplate := map[string]interface{}{
+		"user_id":          utils.Required,
+		"primary_email":    utils.Required,
+		"business_unit":    utils.Required,
+		"brand_name":       utils.Required,
+		"hub":              utils.Required,
+		"color_code":       utils.Required,
+		"activation_state": utils.Required,
+	}
+	inputMap := map[string]interface{}{
+		"user_id":          seller.UserId,
+		"primary_email":    seller.PrimaryEmail,
+		"business_unit":    seller.BusinessUnit,
+		"brand_name":       seller.BrandName,
+		"hub":              seller.Hub,
+		"color_code":       seller.ColorCode,
+		"activation_state": seller.ActivationState,
+	}
+	_, err := govalidator.ValidateMap(inputMap, mapTemplate)
 
-	if seller.UserId == utils.Zero {
-		missingParams += "user_id,"
-	}
-	if seller.PrimaryEmail == utils.EmptyString {
-		missingParams += "primary_email,"
-	}
-	if seller.BusinessUnit == utils.Zero {
-		missingParams += "business_unit,"
-	}
-	if seller.BrandName == utils.EmptyString {
-		missingParams += "brand_name,"
-	}
-	if seller.Hub == utils.EmptyString {
-		missingParams += "hub,"
-	}
-	if seller.ColorCode == utils.EmptyString {
-		missingParams += "color_code,"
-	}
-	if seller.ActivationState == utils.Zero {
-		missingParams += "activation_state,"
-	}
-
-	return missingParams
+	return err
 }
 
 func validateSellerObjectParams(seller *spb.SellerObject) string {

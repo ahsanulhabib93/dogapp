@@ -41,13 +41,17 @@ var _ = Describe("Create", func() {
 			Expect(err).To(BeNil())
 		})
 		It("Should return error for missing seller params", func() {
-			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Missing Seller Params: user_id,primary_email,business_unit,brand_name,hub,color_code,activation_state"}
-
 			params := spb.CreateParams{Seller: &spb.SellerObject{}}
 			res, err := new(services.SellerService).Create(ctx, &params)
 
 			Expect(res.Status).To(Equal(false))
-			Expect(res.Message).To(Equal(expectedResponse.Message))
+			Expect(res.Message).To(ContainSubstring("activation_state: non zero value required"))
+			Expect(res.Message).To(ContainSubstring("brand_name: non zero value required"))
+			Expect(res.Message).To(ContainSubstring("business_unit: non zero value required"))
+			Expect(res.Message).To(ContainSubstring("color_code: non zero value required"))
+			Expect(res.Message).To(ContainSubstring("hub: non zero value required"))
+			Expect(res.Message).To(ContainSubstring("primary_email: non zero value required"))
+			Expect(res.Message).To(ContainSubstring("user_id: non zero value required"))
 			Expect(err).To(BeNil())
 		})
 		It("Should return error for invalid seller params", func() {
@@ -56,7 +60,7 @@ var _ = Describe("Create", func() {
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:          101,
 				PrimaryEmail:    "test@example.com",
-				BusinessUnit:    100,
+				BusinessUnit:    649,
 				BrandName:       "Test Brand",
 				Hub:             "Test Hub",
 				ColorCode:       "InvalidColour",
@@ -68,8 +72,6 @@ var _ = Describe("Create", func() {
 			Expect(err).To(BeNil())
 		})
 		It("Should return error for missing vendor address params", func() {
-			expectedResponse := &spb.CreateResponse{Status: false, Message: "Error in seller creation: Missing VendorAddress Params: 0:address1,zipcode;1:firstname;"}
-
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:          101,
 				PrimaryEmail:    "test@example.com",
@@ -80,20 +82,19 @@ var _ = Describe("Create", func() {
 				ActivationState: uint64(utils.ACTIVATED),
 				VendorAddresses: []*spb.VendorAddressObject{
 					{
-						Firstname: "SomeName",
+						Firstname: utils.EmptyString,
 						Address1:  utils.EmptyString,
 						Zipcode:   utils.EmptyString,
 					},
-					{
-						Firstname: utils.EmptyString,
-						Address1:  "SomeAddress",
-						Zipcode:   "SomeZipCode",
-					},
 				},
 			}}
+
 			res, err := new(services.SellerService).Create(ctx, &params)
 			Expect(res.Status).To(Equal(false))
-			Expect(res.Message).To(Equal(expectedResponse.Message))
+			Expect(res.Message).To(ContainSubstring("address1: non zero value required"))
+			Expect(res.Message).To(ContainSubstring("firstname: non zero value required"))
+			Expect(res.Message).To(ContainSubstring("zipcode: non zero value required"))
+			Expect(res.Message).To(ContainSubstring("0:"))
 			Expect(err).To(BeNil())
 		})
 
