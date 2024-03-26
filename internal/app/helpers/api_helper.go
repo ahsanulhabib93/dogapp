@@ -88,6 +88,7 @@ func (apiHelper *APIHelper) VerifyOtpAPI(ctx context.Context, verifyOtpParam otp
 
 // CreateOmsSeller ...
 func (apiHelper *APIHelper) CreateOmsSeller(ctx context.Context, param *omsPb.SellerParams) *omsPb.SellerResponse {
+	logger.Log().Infof("OMS Create Seller Api Params: %+v", param)
 	apiResp, err := omsService.OMSSeller().CreateSeller(ctx, param)
 	logger.Log().Infof("OMS Create Seller Api Response: %+v", apiResp)
 	if err != nil {
