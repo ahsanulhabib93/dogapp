@@ -321,6 +321,10 @@ func IsValidActivationState(as ActivationState) bool {
 	return as >= NOT_ACTIVATED && as <= UNDER_REVIEW
 }
 
+func (pt BusinessUnit) ID() uint16 {
+	return uint16(pt)
+}
+
 func IsValidColorCode(cc ColorCode) bool {
 	switch cc {
 	case Platinum, Gold, Green, Brown, Black:
