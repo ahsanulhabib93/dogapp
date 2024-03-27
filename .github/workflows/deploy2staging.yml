@@ -35,117 +35,50 @@ jobs:
         if [[ ! $STATUS == 'OK' ]] ;then
         exit 1
         fi
-  setup-build-publish-deploy-staging:
+
+  docker-build:
     name: Setup, Build, Publish, and Deploy to staging
-    runs-on: ubuntu-20.04
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-    needs: sonarcloud
-    if: ${{ github.event.label.name == 'Ok to deploy in staging' && needs.sonarcloud.outputs.SONAR_STATUS == 'OK' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+    needs: [ sonarcloud ]
+    if: ${{ github.event.label.name == 'Ok to deploy in staging' }}
+    uses: shopuptech/shopup-cicd-git-actions/.github/workflows/build-docker.yml@master
+    with:
+      BUILD_NAME: "ss2"
+      DOCKER_FILE_PATH: "docker/Dockerfile"
+      IMAGE_TAG: ${{ github.event.pull_request.head.ref }}-${{ github.run_number }}
+      IMAGE_PATH: "gcr.io/voonik-tech/vnkshopup/ss2"
+      WORKLOAD_PROVIDER: "projects/144345706419/locations/global/workloadIdentityPools/github-actions/providers/github"
+      SERVICE_ACCOUNT: "circleci@voonik-tech.iam.gserviceaccount.com"
+    secrets:
+      BUILD_ARG: --build-arg GITHUB_TOKEN="${{secrets.GIHUB_PAT}}"
 
-      # Setup gcloud CLI
-      - uses: 'google-github-actions/auth@v1'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: 'projects/144345706419/locations/global/workloadIdentityPools/github-actions/providers/github'
-          service_account: 'circleci@voonik-tech.iam.gserviceaccount.com'
-          
-      - uses: google-github-actions/setup-gcloud@v1
+  update-proto-config:
+    needs: docker-build
+    uses: shopuptech/shopup-cicd-git-actions/.github/workflows/update-proto-config.yml@master
+    with:
+      GOCONNECT_DIRECTORIES: 'ss2,health,app_preference_service'
+      NAMESPACE: "mokam"
+      PB_FILE_NAME: "supplier.pb"
+      PROTO_BIN_NAME: "ss2-proto-bin"
+      LOCATION: "asia-southeast1"
+      CLUSTER_NAME: "mokam-stg-autopilot"
+      WORKLOAD_PROVIDER: "projects/144345706419/locations/global/workloadIdentityPools/github-actions/providers/github"
+      SERVICE_ACCOUNT: "circleci@voonik-tech.iam.gserviceaccount.com"
+    secrets:
+      ACCESS_TOKEN: ${{ secrets.GIHUB_PAT}}
 
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
-      - run: |-
-          gcloud --quiet auth configure-docker
-      # Build and Push the Docker image to Google Container Registry
-      - name: Build and push
-        id: build
-        run: |
-          IMAGE_TAG=$SOURCE_BRANCH_NAME-$GITHUB_RUN_NUMBER
-          docker build -t ss2 . --build-arg GITHUB_TOKEN="${{secrets.GIHUB_PAT}}" -f docker/Dockerfile
-          docker tag ss2 gcr.io/voonik-tech/vnkshopup/ss2:$IMAGE_TAG
-          docker push gcr.io/voonik-tech/vnkshopup/ss2:$IMAGE_TAG
-          echo "::set-output name=version::$IMAGE_TAG"
-      - id: 'get-credentials'
-        uses: 'google-github-actions/get-gke-credentials@v1'
-        with:
-          cluster_name: 'mokam-stg-autopilot'
-          location: 'asia-southeast1'
-
-      # Deploy to staging GKE cluster
-      - name: Apply Proto Config to staging
-        run: |
-          #gcloud container clusters get-credentials shopup-mokam-stg --zone asia-southeast1 --project $PROJECT_ID
-          ### Update envoy grpc transcoder if any changes are made to protobuf file ###
-            git clone https://$GITHUB_TOKEN@github.com/Voonik/goConnect.git
-            cd goConnect
-            git checkout $(grep "github.com/voonik/goConnect" ../go.mod | awk -F'-' '{print $(NF)}')
-            cd -
-            git clone https://github.com/googleapis/googleapis
-            GOOGLEAPIS_DIR=./googleapis
-            cp goConnect/api/proto/health/health_v1.proto .
-            cp goConnect/api/proto/app_preference_service/app_preference_service.proto .
-            cp goConnect/api/proto/ss2/{supplier*,payment*,key*,partner_service_mapping*,seller*,seller_bank_detail*,seller_pricing_detail*,vendor_address*,attachment*} .
-            sed -i 's/\/\/transcoder//' supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto attachment.proto
-            sudo apt-get install -y protobuf-compiler
-            protoc -I${GOOGLEAPIS_DIR} -I. --include_imports --include_source_info --descriptor_set_out=supplier.pb supplier.proto supplier_address.proto payment_account_detail.proto key_account_manager.proto health_v1.proto app_preference_service.proto partner_service_mapping.proto seller.proto seller_bank_detail.proto seller_pricing_detail.proto vendor_address.proto attachment.proto
-            kubectl -n mokam create configmap ss2-proto-bin --from-file=supplier.pb -o yaml --dry-run=client | kubectl apply -f -
-          ################################################################################
-
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          repository: shopuptech/cicd-automation
-          token: ${{ secrets.GIHUB_PAT }}
-          ref: 'master'
-
-      - name: Update protoservices
-        run: |
-          yq -i 'del(.protoservices.[])' charts/shopup/ss2/values-autopilot-stage.yaml
-          custom=(
-            "app_preference_service.app_preference_service.AppPreferenceService"
-            "health.health_v1.Health"
-            "ss2.supplier.Supplier"
-            "ss2.payment_account_detail.PaymentAccountDetail"
-            "ss2.key_account_manager.KeyAccountManager"
-            "ss2.partner_service_mapping.PartnerServiceMapping"
-            "ss2.vendor_address.VendorAddress"
-            "ss2.seller.Seller"
-            "ss2.seller_bank_detail.SellerBankDetail"
-            "ss2.seller_pricing_detail.SellerPricingDetail"
-            "ss2.supplier_address.SupplierAddress"
-            "ss2.attachment.Attachment"
-          )
-          i=0
-          for value in "${custom[@]}"; do
-            yq -i ".protoservices[$((i))]=\"${value}\"" charts/shopup/ss2/values-autopilot-stage.yaml
-            i=$((i+1))
-          done
-          if git status | grep -q modified
-          then
-            git config user.name "GitHub Actions"
-            git config user.email "actions@github.com"
-            git add charts/shopup/ss2/values-autopilot-stage.yaml
-            git commit -m "feat(helm): Update Proto to latest image"
-            git push origin master
-          fi
-      - name: Deploying to GCP Cluster
-        uses: fjogeleit/yaml-update-action@master
-        with:
-          valueFile: 'charts/shopup/ss2/values-autopilot-stage.yaml'
-          propertyPath: 'image.tag'
-          value: ${{ steps.build.outputs.version }}
-          repository: shopuptech/cicd-automation
-          branch: master
-          updateFile: true
-          message: 'feat(helm): Update Image Version to ${{ steps.build.outputs.version }}'
-          token: ${{ secrets.GIHUB_PAT }}
+  deploy-staging:
+    needs: [ docker-build,update-proto-config ]
+    uses: shopuptech/shopup-cicd-git-actions/.github/workflows/go-deployment.yml@go-deploy
+    with:
+      APP_NAME: "ss2"
+      IMAGE_TAG: ${{ github.event.pull_request.head.ref }}-${{ github.run_number }}
+      valueFile: "charts/shopup/ss2/values-autopilot-stage.yaml"
+      customValues: ${{ needs.update-proto-config.outputs.GOCONNECT_SERVICE_NAMES }}
+    secrets:
+      GIHUB_PAT: ${{ secrets.GIHUB_PAT }}
 
   integration-tests:
-    needs: setup-build-publish-deploy-staging
+    needs: deploy-staging
     uses: shopuptech/integration-tests/.github/workflows/integration-tests.yml@master
     secrets: inherit
     with:
