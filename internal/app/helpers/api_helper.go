@@ -7,7 +7,7 @@ import (
 	"github.com/shopuptech/go-libs/logger"
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
 	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
-	omsPb "github.com/voonik/goConnect/api/go/oms/oms_seller"
+	omsPb "github.com/voonik/goConnect/api/go/oms/seller"
 	paywellPb "github.com/voonik/goConnect/api/go/paywell_token/payment_gateway"
 	employeePb "github.com/voonik/goConnect/api/go/sr_service/attendance"
 	otpPb "github.com/voonik/goConnect/api/go/vigeon2/otp"

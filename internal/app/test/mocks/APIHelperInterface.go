@@ -9,13 +9,13 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	oms_seller "github.com/voonik/goConnect/api/go/oms/oms_seller"
-
 	otp "github.com/voonik/goConnect/api/go/vigeon2/otp"
 
 	payment_gateway "github.com/voonik/goConnect/api/go/paywell_token/payment_gateway"
 
 	product "github.com/voonik/goConnect/api/go/cmt/product"
+
+	seller "github.com/voonik/goConnect/api/go/oms/seller"
 
 	users_detail "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
 )
@@ -42,15 +42,15 @@ func (_m *APIHelperInterface) CmtApproveItems(_a0 context.Context, _a1 *product.
 }
 
 // CreateOmsSeller provides a mock function with given fields: ctx, param
-func (_m *APIHelperInterface) CreateOmsSeller(ctx context.Context, param *oms_seller.SellerParams) *oms_seller.SellerResponse {
+func (_m *APIHelperInterface) CreateOmsSeller(ctx context.Context, param *seller.SellerParams) *seller.SellerResponse {
 	ret := _m.Called(ctx, param)
 
-	var r0 *oms_seller.SellerResponse
-	if rf, ok := ret.Get(0).(func(context.Context, *oms_seller.SellerParams) *oms_seller.SellerResponse); ok {
+	var r0 *seller.SellerResponse
+	if rf, ok := ret.Get(0).(func(context.Context, *seller.SellerParams) *seller.SellerResponse); ok {
 		r0 = rf(ctx, param)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*oms_seller.SellerResponse)
+			r0 = ret.Get(0).(*seller.SellerResponse)
 		}
 	}
 

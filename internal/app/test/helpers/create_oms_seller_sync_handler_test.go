@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/shopuptech/go-jobs/v3/jobs"
 	"github.com/stretchr/testify/mock"
-	omsPb "github.com/voonik/goConnect/api/go/oms/oms_seller"
+	omsPb "github.com/voonik/goConnect/api/go/oms/seller"
 	testUtils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"

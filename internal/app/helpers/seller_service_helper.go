@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
-	omsPb "github.com/voonik/goConnect/api/go/oms/oms_seller"
+	omsPb "github.com/voonik/goConnect/api/go/oms/seller"
 	"github.com/voonik/goConnect/api/go/vigeon/notify"
 
 	"github.com/shopuptech/go-libs/logger"
