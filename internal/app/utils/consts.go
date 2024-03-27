@@ -1,6 +1,9 @@
 package utils
 
-import "database/sql/driver"
+import (
+	"database/sql/driver"
+	"strings"
+)
 
 type ServiceType uint16
 type SupplierType uint16
@@ -315,11 +318,11 @@ const (
 )
 
 func IsValidBusinessUnit(bu BusinessUnit) bool {
-	return bu >= UNICORN && bu <= REDX_FULFILLMENT_SERVICE2
+	return !strings.Contains(bu.String(), "BusinessUnit")
 }
 
 func IsValidActivationState(as ActivationState) bool {
-	return as >= NOT_ACTIVATED && as <= UNDER_REVIEW
+	return !strings.Contains(as.String(), "ActivationState")
 }
 
 func (pt BusinessUnit) ID() uint16 {
