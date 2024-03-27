@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/jinzhu/gorm"
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
 
 	"github.com/shopuptech/go-libs/logger"
@@ -403,49 +404,24 @@ func validateSellerObjectParams(seller *spb.SellerObject) string {
 }
 
 func findNonUniqueSellerParams(ctx context.Context, seller *spb.SellerObject) string {
-	var nonUniqueParams string
-	type nonUniqueValue struct {
-		ColumnName string
-		Value      string
+	var existingSeller models.Seller
+	err := database.DBAPM(ctx).Model(&models.Seller{}).Where("primary_email = ? OR primary_phone = ? OR brand_name = ?", seller.PrimaryEmail, seller.PrimaryPhone, seller.BrandName).First(&existingSeller).Error
+	if err == gorm.ErrRecordNotFound {
+		return utils.EmptyString
 	}
 
-	vaccountId := misc.ExtractThreadObject(ctx).GetVaccountId()
-	findNonUniqueParamQuery := `
-	SELECT column_name, value
-	FROM (
-		SELECT 'primary_email' AS column_name, primary_email AS value FROM sellers 
-		WHERE primary_email = ? AND deleted_at is null and vaccount_id = ? GROUP BY primary_email
-		UNION ALL
-		SELECT 'primary_phone', primary_phone FROM sellers 
-		WHERE primary_phone = ? AND deleted_at is null and vaccount_id = ? GROUP BY primary_phone
-		UNION ALL
-		SELECT 'brand_name', brand_name FROM sellers 
-		WHERE brand_name = ? AND deleted_at is null and vaccount_id = ? GROUP BY brand_name
-		UNION ALL
-		SELECT 'company_name', company_name FROM sellers 
-		WHERE company_name = ? AND deleted_at is null and vaccount_id = ? GROUP BY company_name
-		UNION ALL
-		SELECT 'slug', slug FROM sellers 
-		WHERE slug = ? AND deleted_at is null and vaccount_id = ? GROUP BY slug
-	) AS subquery;
-	`
-	var nonUniqueParamArray []nonUniqueValue
-	database.DBAPM(ctx).Raw(findNonUniqueParamQuery,
-		seller.PrimaryEmail, vaccountId,
-		seller.PrimaryPhone, vaccountId,
-		seller.BrandName, vaccountId,
-		seller.BrandName, vaccountId,
-		seller.BrandName, vaccountId,
-	).Scan(&nonUniqueParamArray)
-
-	if len(nonUniqueParamArray) > 0 {
-		for _, nonUniqueKey := range nonUniqueParamArray {
-			nonUniqueParams += nonUniqueKey.ColumnName + ":" + fmt.Sprint(string(nonUniqueKey.Value)) + ","
-		}
-		return nonUniqueParams
+	var duplicatedFields string
+	if existingSeller.PrimaryEmail == seller.PrimaryEmail {
+		duplicatedFields += "primary_email,"
+	}
+	if existingSeller.PrimaryPhone == seller.PrimaryPhone {
+		duplicatedFields += "primary_phone,"
+	}
+	if existingSeller.BrandName == seller.BrandName {
+		duplicatedFields += "brand_name,"
 	}
 
-	return utils.EmptyString
+	return duplicatedFields
 }
 
 func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*models.Seller, string, error) {

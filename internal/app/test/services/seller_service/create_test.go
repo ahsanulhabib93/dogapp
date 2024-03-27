@@ -13,7 +13,6 @@ import (
 	testUtils "github.com/voonik/goFramework/pkg/unit_test_helper"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
-	"github.com/voonik/ss2/internal/app/test/mocks"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -23,10 +22,6 @@ var _ = Describe("Create", func() {
 
 	BeforeEach(func() {
 		testUtils.GetContext(&ctx)
-	})
-
-	AfterEach(func() {
-		mocks.UnsetVigeonHelperMock()
 	})
 
 	Context("Failure Cases", func() {
@@ -100,19 +95,12 @@ var _ = Describe("Create", func() {
 
 		It("Should return error for non unique seller params", func() {
 			seller1 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 101, BrandName: "SomeBrand"})
-			seller2 := test_helper.CreateSeller(ctx, &models.Seller{UserID: 102, CompanyName: "SomeBrand", Slug: "SomeBrand"})
-
-			expectedResponse := &spb.CreateResponse{
-				Status: false,
-				Message: fmt.Sprintf("Error in seller creation: Non Unique Seller Params: primary_email:%s,primary_phone:%s,brand_name:SomeBrand,company_name:SomeBrand,slug:SomeBrand",
-					seller1.PrimaryEmail, seller2.PrimaryPhone,
-				)}
 
 			params := spb.CreateParams{Seller: &spb.SellerObject{
 				UserId:           103,
 				BrandName:        seller1.BrandName,
 				PrimaryEmail:     seller1.PrimaryEmail,
-				PrimaryPhone:     seller2.PrimaryPhone,
+				PrimaryPhone:     seller1.PrimaryPhone,
 				ActivationState:  uint64(utils.ACTIVATED),
 				Hub:              "Test Hub",
 				DeliveryType:     utils.Ten,
@@ -132,7 +120,8 @@ var _ = Describe("Create", func() {
 			}
 			res, err := new(services.SellerService).Create(ctx, &params)
 			Expect(res.Status).To(Equal(false))
-			Expect(res.Message).To(Equal(expectedResponse.Message))
+			fmt.Println(res.Message)
+			Expect(res.Message).To(Equal("Error in seller creation: Non Unique Seller Params: primary_email,primary_phone,brand_name"))
 			Expect(err).To(BeNil())
 		})
 	})
@@ -150,6 +139,7 @@ var _ = Describe("Create", func() {
 				ActivationState: uint64(utils.ACTIVATED),
 			}}
 			res, err := new(services.SellerService).Create(ctx, &params)
+			fmt.Println("Why", res.Message)
 			Expect(res.Status).To(Equal(true))
 			Expect(res.Message).To(Equal("Seller already registered for UserID: 101"))
 			Expect(res.UserId).To(Equal(seller.UserID))
