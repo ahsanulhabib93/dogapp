@@ -33,6 +33,10 @@ jobs:
           - 6379/tcp
 
     steps:
+      - name: Setup Env Vars and work dir
+        run: |
+          test -d "GoLang/src/github.com/voonik/ss2" || mkdir -p "GoLang/src/github.com/voonik/ss2"
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:

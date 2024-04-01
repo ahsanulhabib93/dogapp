@@ -35,7 +35,7 @@ build:
 
 test:
 	mkdir -p coverage/
-	GO111MODULE=on go clean -testcache ./internal/app/... && go test -race ./internal/app/... -v -count=1 -p 1 -covermode=atomic -coverprofile=coverage/coverage.out.temp -coverpkg=$(PKGLIST)
+	GO111MODULE=on go clean -testcache ./internal/app/test/... && go test -race ./internal/app/test/... -v -count=1 -p 1 -covermode=atomic -coverprofile=coverage/coverage.out.temp -coverpkg=$(PKGLIST)
 
 test.cover: test
 	cat coverage/coverage.out.temp | grep -v -E $(FILES_TO_EXCLUDE) > coverage/coverage.out
