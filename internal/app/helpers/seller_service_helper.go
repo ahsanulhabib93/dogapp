@@ -462,7 +462,7 @@ func getVendorAddressData(params *models.Seller) []*omsPb.VendorAddressObject {
 	vendorAddressData := []*omsPb.VendorAddressObject{}
 	for _, vendorAddress := range vendorAddresses {
 		vendorAddressData = append(vendorAddressData, &omsPb.VendorAddressObject{
-			SellerId:           params.ID,
+			SellerId:           params.UserID,
 			Firstname:          vendorAddress.Firstname,
 			Lastname:           vendorAddress.Lastname,
 			Address1:           vendorAddress.Address1,
