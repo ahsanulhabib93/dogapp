@@ -4,20 +4,24 @@ SHELL := /bin/bash # Use bash syntax
 
 APP_EXECUTABLE="out/ss2"
 
-GOPATH=$(shell go env GOPATH)
+# GOPATH=$(shell go env GOPATH)
 GONOSUMDB="github.com/voonik/*,github.com/shopuptech/*"
 ENV=test
-FILES_TO_EXCLUDE="'|$(shell yq e '.files' coverignore.yaml | tr '\n' '|' | tr -d '-' | tr -d [:blank:])'"
-DIRS_TO_EXCLUDE="'|$(shell yq e '.dirs' coverignore.yaml | tr '\n' '|' | tr -d '-' | tr -d [:blank:])'"
-PKGLIST="$(shell go list ./... | grep -v -E $(DIRS_TO_EXCLUDE) | tr '\n' ',')"
+# FILES_TO_EXCLUDE="'|$(shell yq e '.files' coverignore.yaml | tr '\n' '|' | tr -d '-' | tr -d [:blank:])'"
+# DIRS_TO_EXCLUDE="'|$(shell yq e '.dirs' coverignore.yaml | tr '\n' '|' | tr -d '-' | tr -d [:blank:])'"
+# PKGLIST="$(shell go list ./... | grep -v -E $(DIRS_TO_EXCLUDE) | tr '\n' ',')"
 
 
-export GOPATH
+export GOPATH=$(go env GOPATH)
 export GONOSUMDB
 export ENV
-export FILES_TO_EXCLUDE
-export DIRS_TO_EXCLUDE
-export PKGLIST
+
+export FILES_TO_EXCLUDE="'|$(yq e '.files' coverignore.yaml | tr '\n' '|' | tr -d '-' | tr -d [:blank:])'"
+
+
+export DIRS_TO_EXCLUDE="'|$(yq e '.dirs' coverignore.yaml | tr '\n' '|' | tr -d '-' | tr -d [:blank:])'"
+
+export PKGLIST=$(go list ./... | grep -v -E $DIRS_TO_EXCLUDE | tr '\n' ',')
 
 default: setup test build
 
