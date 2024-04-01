@@ -4,7 +4,7 @@ SHELL := /bin/bash # Use bash syntax
 
 APP_EXECUTABLE="out/ss2"
 
-# GOPATH=$(shell go env GOPATH)
+GOPATH=$(shell go env GOPATH)
 GONOSUMDB="github.com/voonik/*,github.com/shopuptech/*"
 ENV=test
 # FILES_TO_EXCLUDE="'|$(shell yq e '.files' coverignore.yaml | tr '\n' '|' | tr -d '-' | tr -d [:blank:])'"
@@ -12,7 +12,7 @@ ENV=test
 # PKGLIST="$(shell go list ./... | grep -v -E $(DIRS_TO_EXCLUDE) | tr '\n' ',')"
 
 
-export GOPATH=$(go env GOPATH)
+export GOPATH
 export GONOSUMDB
 export ENV
 
