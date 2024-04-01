@@ -115,8 +115,6 @@ var _ = Describe("Create", func() {
 					},
 				},
 			},
-				AgentId:    7,
-				AgentEmail: "someEmail@email.com",
 			}
 			res, err := new(services.SellerService).Create(ctx, &params)
 
@@ -151,7 +149,6 @@ var _ = Describe("Create", func() {
 			Expect(seller.AffiliateURL).To(Equal(utils.DefaultAffiliateURL))
 			Expect(seller.IsDirect).To(BeTrue())
 			Expect(seller.AggregatorID).To(Equal(int(params.Seller.UserId)))
-			Expect(seller.AgentID).To(Equal(int(params.AgentId)))
 
 			var returnExchangePolicy map[string]interface{}
 			json.Unmarshal(seller.ReturnExchangePolicy, &returnExchangePolicy)

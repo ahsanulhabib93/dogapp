@@ -249,7 +249,6 @@ func createSeller(ctx context.Context, params *spb.CreateParams) (*models.Seller
 		DataMapping:            jsonDataMapping,
 		AggregatorID:           int(params.Seller.UserId),
 		SellerPricingDetails:   []*models.SellerPricingDetail{sellerPricingDetails}, // Taking values from DB defaults
-		AgentID:                int(params.AgentId),
 		SellerConfig:           createSellerDefaultSellerConfig(),
 	}
 
@@ -390,7 +389,7 @@ func getVendorAddressData(params *models.Seller) []*omsPb.VendorAddressObject {
 	vendorAddressData := []*omsPb.VendorAddressObject{}
 	for _, vendorAddress := range vendorAddresses {
 		vendorAddressData = append(vendorAddressData, &omsPb.VendorAddressObject{
-			SellerId:           params.ID,
+			SellerId:           params.UserID,
 			Firstname:          vendorAddress.Firstname,
 			Lastname:           vendorAddress.Lastname,
 			Address1:           vendorAddress.Address1,
