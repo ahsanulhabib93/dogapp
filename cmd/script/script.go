@@ -7,10 +7,12 @@ import (
 
 	"github.com/urfave/cli"
 	"github.com/voonik/goFramework/pkg/misc"
+	"github.com/voonik/ss2/internal/app/helpers"
 	script "github.com/voonik/ss2/internal/app/helpers/scripts"
 )
 
 func main() {
+	helpers.InitGoJobsWorker()
 	app := cli.NewApp()
 	app.Commands = []cli.Command{
 		updateSupplierType(),
