@@ -144,6 +144,7 @@ var _ = Describe("Create", func() {
 			Expect(res.UserId).To(Equal(seller.UserID))
 			Expect(err).To(BeNil())
 		})
+
 		It("Should create seller", func() {
 			ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 1, PortalId: 1, UserData: &misc.UserData{
 				UserId: 1,
