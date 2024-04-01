@@ -1,4 +1,4 @@
-secret = ["12","34", "34", "56","56","56","45"]
+secret = ["12", "34", "34", "56", "56", "56", "45"]
 
 [logconfig]
 logger = "logrus"
@@ -13,10 +13,10 @@ param = 1
 
 [grpcserverconfig]
 port = "5006"
-reflection=true
+reflection = true
 
 [gRPCAddOnAPIServices]
-AppPreferenceAPI=true
+AppPreferenceAPI = true
 
 [serviceconfig]
 name = "ss2"
@@ -24,3 +24,15 @@ originalName = "ss2"
 
 [cloudStorageConfig]
 serviceAccount = "config/service-account.json"
+
+[asynqConfig]
+teamName = "mokam"
+serviceName = "sc2_admin"
+poolSize = 10
+rabbitMQURL = "amqp://admin:admin@localhost"
+enabled = false
+
+[statsdconfig]
+host = "localhost"
+port = "8125"
+enabled = false

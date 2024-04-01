@@ -1,0 +1,16 @@
+[asynqconfig]
+teamname = "mokam"
+servicename = "ss2"
+poolsize = 10
+rabbitmqurl = "amqp://guest:guest@localhost:5672/"
+connectionurl = "localhost:6379"
+enabled = false
+
+[statsdconfig]
+host = "localhost"
+port = "8125"
+enabled = true
+
+[metricconfig]
+teamname = "mokam"
+servicename = "ss2"
