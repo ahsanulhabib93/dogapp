@@ -9,6 +9,7 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
 	"github.com/shopuptech/go-libs/logger"
+	"github.com/shopuptech/work"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
 
@@ -264,23 +265,14 @@ func (ss *SellerService) SendActivationMail(ctx context.Context, params *spb.Sen
 
 func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (*spb.CreateResponse, error) {
 	resp := &spb.CreateResponse{
-		Status:  false,
-		Message: "Failed to register the seller. Please try again.",
+		Status: false,
 	}
 
-	var (
-		err        error
-		seller     *models.Seller
-		agentEmail string = utils.EmptyString
-		message    string
-	)
-
-	if err = helpers.ValidateSellerParams(params); err != nil {
+	if err := helpers.ValidateSellerParams(params); err != nil {
 		resp.Message = fmt.Sprint("Error in seller creation: ", err.Error())
-		goto SEND_EMAIL
 	}
 
-	seller, message, err = helpers.ProcessSellerRegistration(ctx, params)
+	seller, message, err := helpers.ProcessSellerRegistration(ctx, params)
 	if seller != nil {
 		resp.UserId = seller.UserID
 	}
@@ -290,13 +282,8 @@ func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (
 	} else {
 		resp.Status = true
 		resp.Message = message
-	}
+		helpers.EnqueueJobs(ctx, utils.CreateOMSSellerSync, work.Q{utils.Params: seller})
 
-SEND_EMAIL:
-	if params.AgentEmail != "" {
-		agentEmail = params.AgentEmail
 	}
-	helpers.SendEmailNotification(ctx, seller, agentEmail, err, resp)
-
 	return resp, nil
 }
