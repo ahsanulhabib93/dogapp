@@ -139,7 +139,6 @@ var _ = Describe("Create", func() {
 				ActivationState: uint64(utils.ACTIVATED),
 			}}
 			res, err := new(services.SellerService).Create(ctx, &params)
-			fmt.Println("Why", res.Message)
 			Expect(res.Status).To(Equal(true))
 			Expect(res.Message).To(Equal("Seller already registered for UserID: 101"))
 			Expect(res.UserId).To(Equal(seller.UserID))

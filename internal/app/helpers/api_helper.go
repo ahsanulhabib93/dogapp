@@ -7,11 +7,13 @@ import (
 	"github.com/shopuptech/go-libs/logger"
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
 	userPb "github.com/voonik/goConnect/api/go/cre_admin/users_detail"
+	omsPb "github.com/voonik/goConnect/api/go/oms/seller"
 	paywellPb "github.com/voonik/goConnect/api/go/paywell_token/payment_gateway"
 	employeePb "github.com/voonik/goConnect/api/go/sr_service/attendance"
 	otpPb "github.com/voonik/goConnect/api/go/vigeon2/otp"
 	cmt "github.com/voonik/goConnect/cmt/product"
 	userSrv "github.com/voonik/goConnect/cre_admin/users_detail"
+	omsService "github.com/voonik/goConnect/oms/seller"
 	paywell "github.com/voonik/goConnect/paywell_token/payment_gateway"
 	employeeSrv "github.com/voonik/goConnect/sr_service/attendance"
 	Vigeon2Service "github.com/voonik/goConnect/vigeon2/otp"
@@ -30,6 +32,7 @@ type APIHelperInterface interface {
 	FindTalentXUserByPhone(context.Context, string) []*employeePb.EmployeeRecord
 	CmtApproveItems(context.Context, *cmtPb.ApproveItemParams) *cmtPb.ItemCountResponse
 	CreatePaywellCard(ctx context.Context, params *paywellPb.CreateCardRequest) *paywellPb.CreateCardResponse
+	CreateOmsSeller(ctx context.Context, param *omsPb.SellerParams) *omsPb.SellerResponse
 }
 
 var apiHelper APIHelperInterface
@@ -81,6 +84,18 @@ func VerifyOtpAPI(ctx context.Context, supplierID uint64, otpCode string) *otpPb
 func (apiHelper *APIHelper) VerifyOtpAPI(ctx context.Context, verifyOtpParam otpPb.VerifyOtpParam) *otpPb.OtpResponse {
 	resp, _ := Vigeon2Service.Otp().VerifyOtp(ctx, &verifyOtpParam)
 	return resp
+}
+
+// CreateOmsSeller ...
+func (apiHelper *APIHelper) CreateOmsSeller(ctx context.Context, param *omsPb.SellerParams) *omsPb.SellerResponse {
+	logger.Log().Infof("OMS Create Seller Api Params: %+v", param)
+	apiResp, err := omsService.OMSSeller().CreateSeller(ctx, param)
+	logger.Log().Infof("OMS Create Seller Api Response: %+v", apiResp)
+	if err != nil {
+		logger.Log().Errorf("OMS Create Seller Api error : %+v", err)
+		return &omsPb.SellerResponse{}
+	}
+	return apiResp
 }
 
 // FindCreUserByPhone ...

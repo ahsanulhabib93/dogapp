@@ -9,6 +9,7 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
 	"github.com/shopuptech/go-libs/logger"
+	"github.com/shopuptech/work"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
 
@@ -279,6 +280,7 @@ func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (
 		resp.Status = true
 		resp.Message = message
 		resp.UserId = seller.UserID
+		helpers.EnqueueJobs(ctx, utils.CreateOMSSellerSync, work.Q{utils.Params: seller})
 	}
 
 	return resp, nil
