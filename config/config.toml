@@ -24,15 +24,3 @@ originalName = "ss2"
 
 [cloudStorageConfig]
 serviceAccount = "config/service-account.json"
-
-[asynqConfig]
-teamName = "mokam"
-serviceName = "sc2_admin"
-poolSize = 10
-rabbitMQURL = "amqp://admin:admin@localhost"
-enabled = false
-
-[statsdconfig]
-host = "localhost"
-port = "8125"
-enabled = false
