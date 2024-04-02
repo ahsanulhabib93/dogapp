@@ -43,7 +43,7 @@ jobs:
 
       - name: lint
         run: |
-          go mod tidy
+          make test
           make lint
 
   tests:
