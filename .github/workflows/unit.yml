@@ -18,10 +18,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Setup Env Vars and work dir
-        run: |
-          test -d "GoLang/src/github.com/voonik/ss2" || mkdir -p "GoLang/src/github.com/voonik/ss2"
-
       - name: Set up Go Version 1.17
         uses: actions/setup-go@v3
         with:
@@ -47,7 +43,7 @@ jobs:
 
       - name: lint
         run: |
-          cd GoLang/src/github.com/voonik/ss2
+          go mod tidy
           make lint
 
   tests:
