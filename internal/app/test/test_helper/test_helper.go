@@ -75,7 +75,7 @@ func CreateSeller(ctx context.Context, seller *models.Seller) *models.Seller {
 
 func CreateVendorAddress(ctx context.Context, vendor *models.VendorAddress) *models.VendorAddress {
 	id := getUniqueID()
-	vendor.Firstname = fmt.Sprintf("test")
+	vendor.Firstname = "test"
 	vendor.Lastname = fmt.Sprintf("name-%v", id)
 	vendor.UUID = fmt.Sprintf("abc-%v", id)
 	database.DBAPM(ctx).Save(vendor)

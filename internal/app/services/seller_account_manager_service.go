@@ -57,7 +57,7 @@ func (sams *SellerAccountManagerService) List(ctx context.Context, params *sampb
 	if params.GetId() != utils.Zero {
 		query = query.Where(`id =?`, params.GetId())
 	}
-	query = query.Order("role, priority").Scan(&samList)
+	query.Order("role, priority").Scan(&samList)
 	for _, sam := range samList {
 		accountManagers = append(accountManagers, &sampb.AccountManagerObject{
 			Id:       sam.ID,

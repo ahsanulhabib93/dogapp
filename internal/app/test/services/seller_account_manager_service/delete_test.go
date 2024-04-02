@@ -54,7 +54,7 @@ var _ = Describe("SellerAccountManager Delete", func() {
 			Expect(resp.Message).To(Equal("deletion successfull"))
 			Expect(resp.SellerUserId).To(Equal(seller.UserID))
 			updatedSam := &models.SellerAccountManager{}
-			err = database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where("id = ? ", sam.ID).Unscoped().Find(updatedSam).Error
+			database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where("id = ? ", sam.ID).Unscoped().Find(updatedSam)
 			Expect(updatedSam.DeletedAt).NotTo(BeNil())
 		})
 	})
