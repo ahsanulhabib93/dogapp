@@ -39,12 +39,10 @@ jobs:
         run: |
           git config --global --add url."git@github.com:voonik/".insteadOf "https://github.com/voonik/"
           git config --global --add url."git@github.com:shopuptech/".insteadOf "https://github.com/shopuptech/"
-          cd GoLang/src/github.com/voonik/ss2
           make setup
 
       - name: lint
         run: |
-          cd GoLang/src/github.com/voonik/ss2
           make lint
 
   tests:
