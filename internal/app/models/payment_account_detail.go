@@ -103,7 +103,7 @@ func (paymentAccount *PaymentAccountDetail) AfterSave(db *gorm.DB) error {
 	return nil
 }
 
-func (paymentAccount PaymentAccountDetail) validAccountSubType() bool {
+func (paymentAccount *PaymentAccountDetail) validAccountSubType() bool {
 	mapping := paymentAccount.accountTypeMapping()
 	subTypes := mapping[paymentAccount.AccountType]
 	if len(subTypes) == utils.Zero {
