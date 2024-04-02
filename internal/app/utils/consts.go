@@ -161,6 +161,7 @@ const (
 	Bank AccountType = 1 + iota
 	Mfs
 	PrepaidCard
+	Cheque
 )
 
 const (
