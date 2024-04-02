@@ -67,7 +67,7 @@ var _ = Describe("SendVerificationOtp", func() {
 				Message: "OTP created and sent successfully",
 				Uuid:    "1234",
 			}
-			apiHelperInstance.On("SendOtpAPI", ctx, &param).Return(&resp)
+			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(&resp) //nolint:govet
 		})
 
 		It("Should call vigeon service to send OTP", func() {
@@ -99,7 +99,7 @@ var _ = Describe("SendVerificationOtp", func() {
 				Message: "OTP created and sent successfully",
 				Uuid:    "1234",
 			}
-			apiHelperInstance.On("SendOtpAPI", ctx, &param).Return(&resp)
+			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(&resp) //nolint:govet
 		})
 
 		It("Should call vigeon service to resend otp", func() {
@@ -130,7 +130,7 @@ var _ = Describe("SendVerificationOtp", func() {
 				Success: false,
 				Message: "Error while creating OTP",
 			}
-			apiHelperInstance.On("SendOtpAPI", ctx, &param).Return(&resp)
+			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(&resp) //nolint:govet
 		})
 
 		It("Should return error", func() {
