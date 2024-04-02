@@ -528,4 +528,29 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
 		})
 	})
+
+	Context("Editing all attributes of existing PaymentAccount - Cheque", func() {
+		It("Should update and return success response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Cheque, IsDefault: true})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:          paymentAccount.ID,
+				AccountType: uint64(utils.Cheque),
+				AccountName: "New Account Name",
+				IsDefault:   true,
+			}
+			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("PaymentAccountDetail Edited Successfully"))
+
+			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccount, paymentAccount.ID)
+			Expect(paymentAccount.AccountType).To(Equal(utils.Cheque))
+			Expect(paymentAccount.AccountName).To(Equal(param.AccountName))
+			Expect(paymentAccount.IsDefault).To(Equal(true))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+	})
 })

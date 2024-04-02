@@ -115,7 +115,7 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 	id := getUniqueID()
 	paymentAccount.AccountName = fmt.Sprintf("AccountName-%v", id)
 	number := paymentAccount.AccountNumber
-	if number == "" {
+	if number == "" && paymentAccount.AccountType != utils.Cheque {
 		paymentAccount.AccountNumber = fmt.Sprintf("AccountNumber-%v", id)
 	} else {
 		paymentAccount.AccountNumber = number
@@ -129,7 +129,7 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 		if paymentAccount.AccountSubType == 0 {
 			paymentAccount.AccountSubType = utils.EBL
 		}
-	} else {
+	} else if paymentAccount.AccountType != utils.Cheque {
 		paymentAccount.AccountType = utils.Bank
 		paymentAccount.AccountSubType = utils.Current
 	}
@@ -138,8 +138,10 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 		paymentAccount.BankID = bank.ID
 	}
 
-	paymentAccount.BranchName = fmt.Sprintf("BranchName-%v", id)
-	paymentAccount.RoutingNumber = fmt.Sprintf("RoutingNumber-%v", id)
+	if paymentAccount.AccountType != utils.Cheque {
+		paymentAccount.BranchName = fmt.Sprintf("BranchName-%v", id)
+		paymentAccount.RoutingNumber = fmt.Sprintf("RoutingNumber-%v", id)
+	}
 
 	database.DBAPM(ctx).Save(paymentAccount)
 	return paymentAccount

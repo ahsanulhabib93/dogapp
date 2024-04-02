@@ -18,9 +18,9 @@ type PaymentAccountDetail struct {
 	database.VaccountGorm
 	SupplierID                            uint64                           `gorm:"index:idx_supplier_id" valid:"required"`
 	AccountType                           utils.AccountType                `valid:"required" json:"account_type,omitempty"`
-	AccountSubType                        utils.AccountSubType             `valid:"required" json:"account_sub_type,omitempty"`
+	AccountSubType                        utils.AccountSubType             `json:"account_sub_type,omitempty"`
 	AccountName                           string                           `gorm:"not null" valid:"required" json:"account_name,omitempty"`
-	AccountNumber                         string                           `gorm:"not null" valid:"required" json:"account_number,omitempty"`
+	AccountNumber                         string                           `gorm:"not null" json:"account_number,omitempty"`
 	BankID                                uint64                           `json:"bank_id,omitempty"`
 	BranchName                            string                           `json:"branch_name,omitempty"`
 	RoutingNumber                         string                           `json:"routing_number,omitempty"`
@@ -87,6 +87,10 @@ func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 		(paymentAccount.BankID == 0 || len(strings.TrimSpace(paymentAccount.BranchName)) == 0) {
 		db.AddError(errors.New("For Bank account type BankID and BranchName needed")) //nolint:errcheck
 	}
+
+	if !paymentAccount.validAccountNumber() {
+		db.AddError(errors.New("account_number is required"))
+	}
 }
 
 // AfterSave ...
@@ -99,9 +103,13 @@ func (paymentAccount *PaymentAccountDetail) AfterSave(db *gorm.DB) error {
 	return nil
 }
 
-func (paymentAccount PaymentAccountDetail) validAccountSubType() bool {
+func (paymentAccount *PaymentAccountDetail) validAccountSubType() bool {
 	mapping := paymentAccount.accountTypeMapping()
-	for _, accountSubType := range mapping[paymentAccount.AccountType] {
+	subTypes := mapping[paymentAccount.AccountType]
+	if len(subTypes) == utils.Zero {
+		return true
+	}
+	for _, accountSubType := range subTypes {
 		if accountSubType == paymentAccount.AccountSubType {
 			return true
 		}
@@ -115,6 +123,13 @@ func (paymentAccount PaymentAccountDetail) accountTypeMapping() map[utils.Accoun
 		utils.Mfs:         {utils.Bkash, utils.Nagada},
 		utils.PrepaidCard: {utils.UCBL, utils.EBL},
 	}
+}
+
+func (paymentAccount PaymentAccountDetail) validAccountNumber() bool {
+	if paymentAccount.AccountType != utils.Cheque {
+		return len(strings.TrimSpace(paymentAccount.AccountNumber)) != utils.Zero
+	}
+	return true
 }
 
 func JoinPaymentAccountDetailWarehouseMappings() string {

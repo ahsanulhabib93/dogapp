@@ -227,10 +227,9 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 				IsDefault:   true,
 			}
 			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
-
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(false))
-			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: Invalid Account SubType; account_type can't be blank; account_sub_type can't be blank; account_number can't be blank"))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: account_number is required; account_type can't be blank"))
 		})
 	})
 
@@ -527,6 +526,35 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+	})
+
+	Context("Cheque", func() {
+		It("Should fail if account name is not passed", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:  supplier.ID,
+				AccountType: uint64(utils.Cheque),
+				IsDefault:   true,
+			}
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(false))
+			Expect(res.Message).To(Equal("Error while creating Payment Account Detail: account_name can't be blank"))
+		})
+
+		It("Should add cheque payment account detail", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			param := paymentpb.PaymentAccountDetailParam{
+				SupplierId:  supplier.ID,
+				AccountType: uint64(utils.Cheque),
+				AccountName: "Payee Name ABC",
+				IsDefault:   true,
+			}
+			res, err := new(services.PaymentAccountDetailService).Add(ctx, &param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("Payment Account Detail Added Successfully"))
 		})
 	})
 })
