@@ -99,7 +99,7 @@ var _ = Describe("SendVerificationOtp", func() {
 				Message: "OTP created and sent successfully",
 				Uuid:    "1234",
 			}
-			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(&resp)
+			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(resp)
 		})
 
 		It("Should call vigeon service to resend otp", func() {
