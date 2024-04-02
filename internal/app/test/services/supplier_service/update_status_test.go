@@ -16,9 +16,7 @@ import (
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
-	"github.com/voonik/goFramework/pkg/rest"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
-	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
@@ -29,7 +27,6 @@ import (
 var _ = Describe("UpdateStatus", func() {
 	var ctx context.Context
 	var userId uint64 = uint64(101)
-	var mock1 *mocks.ApiCallHelperInterface
 	var mockAudit *mocks.AuditLogMock
 	var appPreferenceMockInstance *aaaMocks.AppPreferenceInterface
 
@@ -40,9 +37,8 @@ var _ = Describe("UpdateStatus", func() {
 		test_helper.SetContextUser(&ctx, userId, []string{})
 		ctx = metadata.NewIncomingContext(ctx, metadata.New(header))
 
-		mock1, mockAudit = mocks.SetApiCallerMock(), mocks.SetAuditLogMock()
+		mockAudit = mocks.SetAuditLogMock()
 		mockAudit.On("RecordAuditAction", ctx, mock.Anything).Return(nil)
-		mock1.On("Get", ctx, mock.Anything, mock.Anything).Return(&rest.Response{Body: "{\"data\":{\"users\":[{\"id\":101,\"email\":\"user_email@gmail.com\"}]}}"}, nil)
 
 		appPreferenceMockInstance = new(aaaMocks.AppPreferenceInterface)
 		aaaModels.InjectMockAppPreferenceServiceInstance(appPreferenceMockInstance)
@@ -86,7 +82,6 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusFailed))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
 			Expect(updatedSupplier.AgentID).To(BeNil())
-			Expect(mock1.Count[helpers.MethodGet]).To(Equal(1))
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 			mockedEventBus.AssertExpectations(t)
 		})
@@ -121,7 +116,6 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(updatedSupplier.Status).To(Equal(models.SupplierStatusVerified))
 			Expect(updatedSupplier.Reason).To(Equal(param.Reason))
 			Expect(*updatedSupplier.AgentID).To(Equal(userId))
-			Expect(mock1.Count[helpers.MethodGet]).To(Equal(0))
 			Expect(mockAudit.Count["RecordAuditAction"]).To(Equal(1))
 			mockedEventBus.AssertExpectations(t)
 		})
@@ -148,7 +142,6 @@ var _ = Describe("UpdateStatus", func() {
 			Expect(err).To(BeNil())
 			Expect(res.Success).To(Equal(true))
 			Expect(res.Message).To(Equal("Supplier status updated successfully"))
-			Expect(mock1.Count[helpers.MethodGet]).To(Equal(1))
 			mockedEventBus.AssertExpectations(t)
 		})
 	})
