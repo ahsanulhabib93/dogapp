@@ -166,7 +166,6 @@ func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supp
 	err := json.Unmarshal(temp, supplierObject)
 	if err != nil {
 		logger.Log().Errorf("Unmarshal Error: %+v", err)
-		return supplierObject
 	}
 
 	supplierObject.CategoryIds = []uint64{}
