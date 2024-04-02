@@ -33,15 +33,7 @@ build:
 	mkdir -p out/
 	GO111MODULE=on go build -o $(APP_EXECUTABLE) ./cmd/server/
 
-# Ensure the test environment is correctly set up and dependencies are installed
 test:
-# Display environment variables to help debug potential issues
-	echo "GOPATH: $(GOPATH)"
-	echo "PKGLIST: $(PKGLIST)"
-	echo "FILES_TO_EXCLUDE: $(FILES_TO_EXCLUDE)"
-	echo "DIRS_TO_EXCLUDE: $(DIRS_TO_EXCLUDE)"
-
-# Run tests with detailed output to help identify any failures
 	mkdir -p ./coverage/
 	GO111MODULE=on go clean -testcache ./internal/app/test/... && go test -race ./internal/app/test/... -v -count=1 -p 1 -covermode=atomic -coverprofile=./coverage/coverage.out.temp -coverpkg=$(PKGLIST)
 
