@@ -101,7 +101,6 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	err := json.Unmarshal(temp, &resp.Data)
 	if err != nil {
 		logger.Log().Errorf("Unmarshal Error: %+v", err)
-		return &resp, nil
 	}
 	resp.TotalCount = total
 	log.Printf("ListwithAddressResponse: Data: %+v, TotalCount: %+v", resp.Data, resp.TotalCount)

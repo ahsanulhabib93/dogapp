@@ -46,7 +46,6 @@ func supplierMetadata(ctx context.Context, action models.AuditActionType, data i
 	err := json.Unmarshal(d, &dataMap)
 	if err != nil {
 		logger.Log().Errorf("Unmarshal Error: %+v", err)
-		return dataMap
 	}
 
 	for k, v := range dataMap {
