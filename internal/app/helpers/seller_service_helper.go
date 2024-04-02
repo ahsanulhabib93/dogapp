@@ -8,13 +8,15 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/asaskevich/govalidator"
+	"github.com/jinzhu/gorm"
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
 	omsPb "github.com/voonik/goConnect/api/go/oms/seller"
-	"github.com/voonik/goConnect/api/go/vigeon/notify"
 
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -224,32 +226,29 @@ func createSeller(ctx context.Context, params *spb.CreateParams) (*models.Seller
 	returnExchangePolicy, _ := json.Marshal(DefaultsellerReturnExchangePolicy())
 	jsonDataMapping, _ := json.Marshal(utils.SellerDataMapping)
 	sellerPricingDetails := &models.SellerPricingDetail{}
+	userId := misc.ExtractThreadObject(ctx).GetUserData().GetUserId()
 
 	seller := &models.Seller{
-		UserID:                 params.Seller.UserId,
-		BrandName:              params.Seller.BrandName,
-		CompanyName:            params.Seller.CompanyName,
-		PrimaryEmail:           params.Seller.PrimaryEmail,
-		PrimaryPhone:           params.Seller.PrimaryPhone,
-		ActivationState:        utils.ActivationState(params.Seller.ActivationState),
-		Slug:                   params.Seller.Slug,
-		Hub:                    params.Seller.Hub,
-		Slot:                   params.Seller.Slot,
-		DeliveryType:           int(params.Seller.DeliveryType),
-		ProcessingType:         int(params.Seller.ProcessingType),
-		BusinessUnit:           int(params.Seller.BusinessUnit),
-		FullfillmentType:       int(params.Seller.FullfillmentType),
-		ColorCode:              utils.ColorCode(params.Seller.ColorCode),
-		TinNumber:              params.Seller.TinNumber,
-		SellerCloseDay:         params.Seller.SellerCloseDay,
-		AcceptedPaymentMethods: params.Seller.AcceptedPaymentMethods,
-		AffiliateURL:           utils.DefaultAffiliateURL,
-		IsDirect:               true,
-		ReturnExchangePolicy:   returnExchangePolicy,
-		DataMapping:            jsonDataMapping,
-		AggregatorID:           int(params.Seller.UserId),
-		SellerPricingDetails:   []*models.SellerPricingDetail{sellerPricingDetails}, // Taking values from DB defaults
-		SellerConfig:           createSellerDefaultSellerConfig(),
+		UserID:               params.Seller.UserId,
+		BrandName:            params.Seller.BrandName,
+		CompanyName:          params.Seller.BrandName,
+		PrimaryEmail:         params.Seller.PrimaryEmail,
+		PrimaryPhone:         params.Seller.PrimaryPhone,
+		ActivationState:      utils.ActivationState(params.Seller.ActivationState),
+		Slug:                 params.Seller.BrandName,
+		Hub:                  params.Seller.Hub,
+		DeliveryType:         int(params.Seller.DeliveryType),
+		ProcessingType:       int(params.Seller.ProcessingType),
+		BusinessUnit:         utils.BusinessUnit(params.Seller.BusinessUnit),
+		FullfillmentType:     int(params.Seller.FullfillmentType),
+		ColorCode:            utils.ColorCode(params.Seller.ColorCode),
+		IsDirect:             true,
+		ReturnExchangePolicy: returnExchangePolicy,
+		DataMapping:          jsonDataMapping,
+		AggregatorID:         int(params.Seller.UserId),
+		SellerPricingDetails: []*models.SellerPricingDetail{sellerPricingDetails}, // Taking values from DB defaults
+		AgentID:              int(userId),
+		SellerConfig:         createSellerDefaultSellerConfig(),
 	}
 
 	if len(params.Seller.VendorAddresses) != utils.Zero {
@@ -268,22 +267,13 @@ func assignVendorAddressData(vendorAddressesObjects []*spb.VendorAddressObject) 
 	vendorAddresses := []*models.VendorAddress{}
 	for _, vendorAddress := range vendorAddressesObjects {
 		vendorAddresses = append(vendorAddresses, &models.VendorAddress{
-			Firstname:            vendorAddress.Firstname,
-			Lastname:             vendorAddress.Lastname,
-			Address1:             vendorAddress.Address1,
-			Address2:             vendorAddress.Address2,
-			City:                 vendorAddress.City,
-			Zipcode:              vendorAddress.Zipcode,
-			AlternativePhone:     vendorAddress.AlternativePhone,
-			Company:              vendorAddress.Company,
-			State:                vendorAddress.State,
-			Country:              vendorAddress.Country,
-			AddressType:          int(vendorAddress.AddressType),
-			DefaultAddress:       vendorAddress.DefaultAddress,
-			AddressProofFileName: vendorAddress.AddressProofFileName,
-			VerificationStatus:   utils.VerificationStatus(vendorAddress.VerificationStatus),
-			UUID:                 vendorAddress.Uuid,
-			ExtraData:            vendorAddress.ExtraData,
+			Firstname:          vendorAddress.Firstname,
+			Address1:           vendorAddress.Address1,
+			Zipcode:            vendorAddress.Zipcode,
+			State:              utils.DefaultState,
+			Country:            utils.DefaultCountry,
+			AddressType:        2,
+			VerificationStatus: utils.Verified,
 		})
 	}
 	return vendorAddresses
@@ -334,43 +324,126 @@ func DefaultsellerReturnExchangePolicy() *spb.ReturnExchangePolicy {
 	}
 }
 
-func SendEmailNotification(ctx context.Context, seller *models.Seller, agentEmail string, err error, response *spb.CreateResponse) *notify.EmailResp {
-	var subject, content string
-	toEmail := "Mokam<noreply@shopf.co>"
-	fromEmail := "smk@shopf.co"
-
-	if err != nil {
-		subject = "New Seller Registration Failed"
-		content = fmt.Sprintf("Seller Registration failed because of the error <br><br> %s <br><br> %s <br><br> with the response <br><br> %s", err.Error(), strings.Join(strings.Split(fmt.Sprintf("%+v", err), "\n"), "<br>"), response)
-	} else {
-		subject = "New Seller Registered successfully"
-		content = fmt.Sprintf("Seller Registered (<b>email:</b> %s, <b>agent_email:</b> %s ) with the response <br><br> %s", seller.PrimaryEmail, agentEmail, response)
-	}
-
-	emailParam := notify.EmailParam{
-		ToEmail:   toEmail,
-		FromEmail: fromEmail,
-		Subject:   subject,
-		Content:   content,
-	}
-
-	return getVigeonAPIHelperInstance().SendEmailAPI(ctx, emailParam)
-}
-
-func ValidateSellerParams(params *spb.CreateParams) error {
+func ValidateSellerParams(ctx context.Context, params *spb.CreateParams) error {
 	if params.Seller == nil {
-		return fmt.Errorf("Missing Seller Params")
+		return fmt.Errorf("Missing All Seller Params")
+	}
+
+	missingSellerParamsErr := findMissingSellerParams(params.Seller)
+	if missingSellerParamsErr != nil {
+		return missingSellerParamsErr
+	}
+
+	failedSellerParams := validateSellerObjectParams(params.Seller)
+	if failedSellerParams != utils.EmptyString {
+		failedSellerParams = strings.TrimSuffix(failedSellerParams, ",")
+		return fmt.Errorf("Invalid Seller Params: %s", failedSellerParams)
+	}
+
+	missingVendorAddressParamsErr := findMissingVendorAddressParams(params.Seller.VendorAddresses)
+	if missingVendorAddressParamsErr != nil {
+		return missingVendorAddressParamsErr
+	}
+
+	nonUniqueParams := findNonUniqueSellerParams(ctx, params.Seller)
+	if nonUniqueParams != utils.EmptyString {
+		nonUniqueParams = strings.TrimSuffix(nonUniqueParams, ",")
+		return fmt.Errorf("Non Unique Seller Params: %s", nonUniqueParams)
 	}
 	return nil
+}
+
+func findMissingVendorAddressParams(vendorAddresses []*spb.VendorAddressObject) error {
+	var mapTemplate, inputMap map[string]interface{}
+	var err error
+	for sequenceId, vendorAddress := range vendorAddresses {
+		mapTemplate = map[string]interface{}{
+			"firstname": utils.Required,
+			"address1":  utils.Required,
+			"zipcode":   utils.Required,
+		}
+		inputMap = map[string]interface{}{
+			"firstname": vendorAddress.Firstname,
+			"address1":  vendorAddress.Address1,
+			"zipcode":   vendorAddress.Zipcode,
+		}
+		_, err = govalidator.ValidateMap(inputMap, mapTemplate)
+		if err != nil {
+			return fmt.Errorf("%d: %s", sequenceId, err.Error())
+		}
+	}
+
+	return nil
+}
+
+func findMissingSellerParams(seller *spb.SellerObject) error {
+	mapTemplate := map[string]interface{}{
+		"user_id":          utils.Required,
+		"primary_email":    utils.Required,
+		"business_unit":    utils.Required,
+		"brand_name":       utils.Required,
+		"hub":              utils.Required,
+		"color_code":       utils.Required,
+		"activation_state": utils.Required,
+	}
+	inputMap := map[string]interface{}{
+		"user_id":          seller.UserId,
+		"primary_email":    seller.PrimaryEmail,
+		"business_unit":    seller.BusinessUnit,
+		"brand_name":       seller.BrandName,
+		"hub":              seller.Hub,
+		"color_code":       seller.ColorCode,
+		"activation_state": seller.ActivationState,
+	}
+	_, err := govalidator.ValidateMap(inputMap, mapTemplate)
+
+	return err
+}
+
+func validateSellerObjectParams(seller *spb.SellerObject) string {
+
+	var failedParams string
+	if !utils.IsValidBusinessUnit(utils.BusinessUnit(seller.BusinessUnit)) {
+		failedParams += "business_unit,"
+	}
+	if !utils.IsValidColorCode(utils.ColorCode(seller.ColorCode)) {
+		failedParams += "color_code,"
+	}
+	if !utils.IsValidActivationState(utils.ActivationState(seller.ActivationState)) {
+		failedParams += "activation_state,"
+	}
+	return failedParams
+}
+
+func findNonUniqueSellerParams(ctx context.Context, seller *spb.SellerObject) string {
+	var existingSeller models.Seller
+	err := database.DBAPM(ctx).Model(&models.Seller{}).Where("primary_email = ? OR primary_phone = ? OR brand_name = ?", seller.PrimaryEmail, seller.PrimaryPhone, seller.BrandName).First(&existingSeller).Error
+	if err == gorm.ErrRecordNotFound {
+		return utils.EmptyString
+	}
+
+	var duplicatedFields string
+	if existingSeller.PrimaryEmail == seller.PrimaryEmail {
+		duplicatedFields += "primary_email,"
+	}
+	if existingSeller.PrimaryPhone == seller.PrimaryPhone {
+		duplicatedFields += "primary_phone,"
+	}
+	if existingSeller.BrandName == seller.BrandName {
+		duplicatedFields += "brand_name,"
+	}
+
+	return duplicatedFields
 }
 
 func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*models.Seller, string, error) {
 	registrationMessage := "Seller registered successfully."
 	existingSeller := GetSellerByUserId(ctx, params.Seller.UserId)
 	if existingSeller.ID != utils.Zero {
-		registrationMessage = "Seller already registered."
+		registrationMessage = fmt.Sprintf("Seller already registered for UserID: %d", params.Seller.UserId)
 		return existingSeller, registrationMessage, nil
 	}
+
 	newSeller, err := createSeller(ctx, params)
 	return newSeller, registrationMessage, err
 }

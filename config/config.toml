@@ -1,4 +1,4 @@
-secret = ["12","34", "34", "56","56","56","45"]
+secret = ["12", "34", "34", "56", "56", "56", "45"]
 
 [logconfig]
 logger = "logrus"
@@ -13,10 +13,10 @@ param = 1
 
 [grpcserverconfig]
 port = "5006"
-reflection=true
+reflection = true
 
 [gRPCAddOnAPIServices]
-AppPreferenceAPI=true
+AppPreferenceAPI = true
 
 [serviceconfig]
 name = "ss2"

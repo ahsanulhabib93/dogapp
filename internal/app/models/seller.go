@@ -54,10 +54,10 @@ type Seller struct {
 	Slot                         string `json:"slot"`
 	SellerCloseDay               string
 	AcceptedPaymentMethods       string
-	DeliveryType                 int            `gorm:"default:1" json:"delivery_type"`
-	ProcessingType               int            `gorm:"default:1" json:"processing_type"`
-	BusinessUnit                 int            `json:"business_unit"`
-	ReturnExchangePolicy         datatypes.JSON `gorm:"type:json"`
+	DeliveryType                 int                `gorm:"default:1" json:"delivery_type"`
+	ProcessingType               int                `gorm:"default:1" json:"processing_type"`
+	BusinessUnit                 utils.BusinessUnit `json:"business_unit"`
+	ReturnExchangePolicy         datatypes.JSON     `gorm:"type:json"`
 	SellerConfig                 *SellerConfig
 	VendorAddresses              []*VendorAddress
 	SellerBankDetail             *SellerBankDetail

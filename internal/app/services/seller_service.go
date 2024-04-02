@@ -268,22 +268,20 @@ func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (
 		Status: false,
 	}
 
-	if err := helpers.ValidateSellerParams(params); err != nil {
+	if err := helpers.ValidateSellerParams(ctx, params); err != nil {
 		resp.Message = fmt.Sprint("Error in seller creation: ", err.Error())
+		return resp, nil
 	}
 
 	seller, message, err := helpers.ProcessSellerRegistration(ctx, params)
-	if seller != nil {
-		resp.UserId = seller.UserID
-	}
-
 	if err != nil {
 		resp.Message = fmt.Sprint("Error in seller creation: ", err.Error())
 	} else {
 		resp.Status = true
 		resp.Message = message
+		resp.UserId = seller.UserID
 		helpers.EnqueueJobs(ctx, utils.CreateOMSSellerSync, work.Q{utils.Params: seller})
-
 	}
+
 	return resp, nil
 }

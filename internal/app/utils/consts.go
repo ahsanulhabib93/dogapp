@@ -1,6 +1,9 @@
 package utils
 
-import "database/sql/driver"
+import (
+	"database/sql/driver"
+	"strings"
+)
 
 type ServiceType uint16
 type SupplierType uint16
@@ -14,6 +17,7 @@ type StateReason int
 type ActivationState int
 type AttachableType uint64
 type FileType uint64
+type BusinessUnit uint64
 
 const (
 	Supplier ServiceType = 1 + iota
@@ -67,6 +71,9 @@ const (
 	DefaultSellerMaxQuantity     = uint64(1000)
 	DefaultSellerItemsPerPackage = uint64(1)
 	DefaultSellerPickupType      = uint64(1)
+	DefaultCountry               = "Bangladesh"
+	DefaultState                 = "Dhaka"
+	Required                     = "required"
 )
 
 const (
@@ -291,4 +298,45 @@ var SellerDataMapping = map[string]interface{}{
 	},
 }
 
-const DefaultAffiliateURL = "{{product_url}}?utm_source=voonik&utm_medium=affiliate&utm_campaign=voonik"
+const (
+	UNICORN                   BusinessUnit = 1
+	UNBRANDED                 BusinessUnit = 2
+	BRANDED                   BusinessUnit = 3
+	LIFESTYLE                 BusinessUnit = 4
+	BLITZ                     BusinessUnit = 5
+	AGRO                      BusinessUnit = 6
+	WHOLESALE                 BusinessUnit = 7
+	MWS                       BusinessUnit = 8
+	FRESH                     BusinessUnit = 9
+	POULTRY                   BusinessUnit = 10
+	APPAREL                   BusinessUnit = 11
+	INFRA                     BusinessUnit = 12
+	ENERGY                    BusinessUnit = 13
+	ELECTRONICS               BusinessUnit = 14
+	MOKAM_X                   BusinessUnit = 20
+	AGRO_FISH_PROJECT         BusinessUnit = 21
+	POP_BOISHAKHI             BusinessUnit = 22
+	REDX_FULFILLMENT_SERVICE  BusinessUnit = 100
+	REDX_FULFILLMENT_SERVICE2 BusinessUnit = 101
+)
+
+func IsValidBusinessUnit(bu BusinessUnit) bool {
+	return !strings.Contains(bu.String(), "BusinessUnit")
+}
+
+func IsValidActivationState(as ActivationState) bool {
+	return !strings.Contains(as.String(), "ActivationState")
+}
+
+func (pt BusinessUnit) ID() uint16 {
+	return uint16(pt)
+}
+
+func IsValidColorCode(cc ColorCode) bool {
+	switch cc {
+	case Platinum, Gold, Green, Brown, Black:
+		return true
+	default:
+		return false
+	}
+}
