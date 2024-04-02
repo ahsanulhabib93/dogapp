@@ -102,7 +102,7 @@ var _ = Describe("VerifyOtp", func() {
 				Message: "Verified OTP successfully",
 				Uuid:    "9876765",
 			}
-			apiHelperInstance.On("VerifyOtpAPI", ctx, param).Return(&resp)
+			apiHelperInstance.On("VerifyOtpAPI", ctx, &param).Return(&resp)
 		})
 
 		It("Should call vigeon service and verify OTP", func() {
@@ -145,7 +145,7 @@ var _ = Describe("VerifyOtp", func() {
 				Success: false,
 				Message: "Invalid OTP",
 			}
-			apiHelperInstance.On("VerifyOtpAPI", ctx, param).Return(&resp)
+			apiHelperInstance.On("VerifyOtpAPI", ctx, &param).Return(&resp)
 		})
 
 		It("Should return error", func() {

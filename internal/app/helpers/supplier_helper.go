@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/shopuptech/go-libs/logger"
 	supplierPb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
@@ -162,7 +163,11 @@ func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse
 func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supplierData SupplierDBResponse) *supplierPb.SupplierObject {
 	temp, _ := json.Marshal(supplierData)
 	supplierObject := &supplierPb.SupplierObject{}
-	json.Unmarshal(temp, supplierObject)
+	err := json.Unmarshal(temp, supplierObject)
+	if err != nil {
+		logger.Log().Errorf("Unmarshal Error: %+v", err)
+		return supplierObject
+	}
 
 	supplierObject.CategoryIds = []uint64{}
 	for _, cId := range strings.Split(supplierData.CategoryIds, ",") {

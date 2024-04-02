@@ -75,7 +75,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			Expect(accountData3.IsDefault).To(Equal(false))
 
 			testExtraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(accountData3.ExtraDetails, &testExtraDetails)
+			utils.CopyStructAtoB(accountData3.ExtraDetails, &testExtraDetails) //nolint:errcheck
 			Expect(testExtraDetails.ClientId).To(Equal(uint64(123)))
 			Expect(testExtraDetails.EmployeeId).To(Equal(uint64(12344)))
 			Expect(testExtraDetails.ExpiryDate).To(Equal("2025-01-02"))

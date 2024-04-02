@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	eventBus "github.com/voonik/goConnect/api/go/event_bus/publisher"
 	eventBusPublisher "github.com/voonik/goConnect/event_bus/publisher"
 	"google.golang.org/grpc"

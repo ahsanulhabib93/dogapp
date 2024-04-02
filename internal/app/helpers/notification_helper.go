@@ -46,7 +46,7 @@ func SendStatusChangeEmailNotification(ctx context.Context, supplier models.Supp
 		Content:   content,
 	}
 
-	return getVigeonAPIHelperInstance().SendEmailAPI(ctx, emailParam)
+	return getVigeonAPIHelperInstance().SendEmailAPI(ctx, emailParam) //nolint:govet
 }
 
 type VigeonAPIHelper struct{}
@@ -70,7 +70,7 @@ func getVigeonAPIHelperInstance() VigeonAPIHelperInterface {
 	return vigeonApiHelper
 }
 
-func (apiHelper *VigeonAPIHelper) SendEmailAPI(ctx context.Context, emailParam notify.EmailParam) *notify.EmailResp {
+func (apiHelper *VigeonAPIHelper) SendEmailAPI(ctx context.Context, emailParam notify.EmailParam) *notify.EmailResp { //nolint:govet
 	resp, err := vigeon.Notify().EmailNotification(ctx, &emailParam)
 	if err != nil {
 		log.Println("SentEmailAPI: Failed to sent email. Error: ", err.Error())

@@ -18,7 +18,7 @@ func (kams *KeyAccountManagerService) List(ctx context.Context, params *kampb.Li
 	log.Printf("ListKamParams: %+v", params)
 	resp := kampb.ListResponse{}
 	database.DBAPM(ctx).Model(&models.KeyAccountManager{}).Where("supplier_id = ?", params.GetSupplierId()).Scan(&resp.Data)
-	log.Printf("ListKamResponse: %+v", resp)
+	log.Printf("ListKamResponse: %+v", resp.Data)
 	return &resp, nil
 }
 
@@ -47,7 +47,7 @@ func (kams *KeyAccountManagerService) Add(ctx context.Context, params *kampb.Key
 			resp.Success = true
 		}
 	}
-	log.Printf("AddKamResponse: %+v", resp)
+	log.Printf("AddKamResponse: Success: %+v, Message: %+v", resp.Success, resp.Message)
 	return &resp, nil
 }
 
@@ -73,6 +73,6 @@ func (kams *KeyAccountManagerService) Edit(ctx context.Context, params *kampb.Ke
 			resp.Success = true
 		}
 	}
-	log.Printf("EditKamResponse: %+v", resp)
+	log.Printf("EditKamResponse: Success: %+v, Message: %+v", resp.Success, resp.Message)
 	return &resp, nil
 }

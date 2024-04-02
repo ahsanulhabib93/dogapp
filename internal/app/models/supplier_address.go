@@ -29,13 +29,13 @@ type SupplierAddress struct {
 // Validate ...
 func (supplierAddress *SupplierAddress) Validate(db *gorm.DB) {
 	if supplierAddress.SupplierID == 0 {
-		db.AddError(errors.New("SupplierID can't be blank"))
+		db.AddError(errors.New("SupplierID can't be blank")) //nolint:errcheck
 	}
 
 	if phoneNumber := strings.TrimSpace(supplierAddress.Phone); len(phoneNumber) == 0 {
-		db.AddError(errors.New("Phone Number can't be blank"))
+		db.AddError(errors.New("Phone Number can't be blank")) //nolint:errcheck
 	} else if !(strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) {
-		db.AddError(errors.New("Phone Number should have 13 digits"))
+		db.AddError(errors.New("Phone Number should have 13 digits")) //nolint:errcheck
 	}
 }
 

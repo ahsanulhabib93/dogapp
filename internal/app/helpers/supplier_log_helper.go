@@ -9,6 +9,7 @@ import (
 	"github.com/shopuptech/event-bus-logs-go/core"
 	"github.com/shopuptech/event-bus-logs-go/models/supplier"
 	"github.com/shopuptech/event-bus-logs-go/ss2"
+	"github.com/shopuptech/go-libs/logger"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/publisher"
 	"github.com/voonik/ss2/internal/app/utils"
@@ -42,7 +43,11 @@ func supplierMetadata(ctx context.Context, action models.AuditActionType, data i
 
 	var dataMap map[string]string
 	d, _ := json.Marshal(data)
-	json.Unmarshal(d, &dataMap)
+	err := json.Unmarshal(d, &dataMap)
+	if err != nil {
+		logger.Log().Errorf("Unmarshal Error: %+v", err)
+		return dataMap
+	}
 
 	for k, v := range dataMap {
 		m[k] = v

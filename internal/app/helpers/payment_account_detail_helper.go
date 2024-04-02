@@ -42,7 +42,7 @@ func GetPaymentAccountDetails(ctx context.Context, supplier models.Supplier, war
 		database.DBAPM(ctx).Model(&models.Bank{}).Where("banks.id = ?", paymentDetail.BankID).Scan(&bank)
 
 		extraDetails := &supplierpb.ExtraDetails{}
-		utils.CopyStructAtoB(paymentDetail.ExtraDetails, extraDetails)
+		utils.CopyStructAtoB(paymentDetail.ExtraDetails, extraDetails) //nolint:errcheck
 		paymentResponse = append(paymentResponse, &supplierpb.PaymentAccountDetailObject{
 			Id:                 paymentDetail.ID,
 			SupplierId:         paymentDetail.SupplierID,
@@ -147,9 +147,9 @@ func UpdatePaymentAccountDetailWarehouseMapping(ctx context.Context, paymentAcco
 	return nil
 }
 
-func PrepaidCardValidations(ctx context.Context, extraDetails paymentpb.ExtraDetails, paymentAccountDetails *models.PaymentAccountDetail, accountNumber string) (bool, string) {
+func PrepaidCardValidations(ctx context.Context, extraDetails *paymentpb.ExtraDetails, paymentAccountDetails *models.PaymentAccountDetail, accountNumber string) (bool, string) {
 	extraDetailStruct := models.PaymentAccountDetailExtraDetails{}
-	isError, errMsg := HandleExtraDetailsValidation(&extraDetails)
+	isError, errMsg := HandleExtraDetailsValidation(extraDetails)
 
 	if isError {
 		database.DBAPM(ctx).Delete(paymentAccountDetails)

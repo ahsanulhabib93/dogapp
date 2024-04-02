@@ -58,7 +58,7 @@ type Supplier struct {
 func (supplier *Supplier) Validate(db *gorm.DB) {
 	result := db.Model(&supplier).First(&Supplier{}, "id != ? and phone = ?", supplier.ID, supplier.Phone)
 	if !result.RecordNotFound() {
-		db.AddError(errors.New("Phone Number Already Exists"))
+		db.AddError(errors.New("Phone Number Already Exists")) //nolint:errcheck
 	}
 
 	isNIDInvalid := false
@@ -71,13 +71,13 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 	}
 
 	if isNIDInvalid {
-		db.AddError(errors.New("NID number should only consist of digits"))
+		db.AddError(errors.New("NID number should only consist of digits")) //nolint:errcheck
 	}
 
 	if phoneNumber := strings.TrimSpace(supplier.Phone); len(phoneNumber) == 0 {
-		db.AddError(errors.New("Phone Number can't be blank"))
+		db.AddError(errors.New("Phone Number can't be blank")) //nolint:errcheck
 	} else if !(strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) {
-		db.AddError(errors.New("Phone Number should have 13 digits"))
+		db.AddError(errors.New("Phone Number should have 13 digits")) //nolint:errcheck
 	}
 }
 

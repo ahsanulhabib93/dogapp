@@ -125,7 +125,7 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 		}
 	}
 
-	log.Printf("PartnerServiceMappingService Edit response: %+v", response)
+	log.Printf("PartnerServiceMappingService Edit response: Success: %+v, Message: %+v, Id: %+v", response.Success, response.Message, response.Id)
 	return &response, nil
 }
 
@@ -155,7 +155,7 @@ func (psm *PartnerServiceMappingService) UpdateStatus(ctx context.Context, param
 		}
 	}
 
-	log.Printf("PartnerServiceMappingService UpdateStatus response: %+v", response)
+	log.Printf("PartnerServiceMappingService UpdateStatus response: Success: %+v, Message: %+v, Id: %+v", response.Success, response.Message, response.Id)
 	return &response, nil
 }
 

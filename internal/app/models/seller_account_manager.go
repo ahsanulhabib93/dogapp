@@ -24,15 +24,15 @@ type SellerAccountManager struct {
 
 func (sam *SellerAccountManager) Validate(db *gorm.DB) {
 	if sam.SellerID == 0 {
-		db.AddError(errors.New("SellerID can't be blank"))
+		db.AddError(errors.New("SellerID can't be blank")) //nolint:errcheck
 	}
 	if sam.Role == "" {
-		db.AddError(errors.New("Role can't be blank"))
+		db.AddError(errors.New("Role can't be blank")) //nolint:errcheck
 	}
 	if sam.Name == "" {
-		db.AddError(errors.New("Name can't be blank"))
+		db.AddError(errors.New("Name can't be blank")) //nolint:errcheck
 	}
 	if phoneNumber := fmt.Sprint(sam.Phone); !(strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) {
-		db.AddError(errors.New("Phone Number should have 13 digits"))
+		db.AddError(errors.New("Phone Number should have 13 digits")) //nolint:errcheck
 	}
 }

@@ -60,11 +60,11 @@ func SendOtpAPI(ctx context.Context, supplierID uint64, phone string, content st
 		Content:    content,
 		Resend:     resend,
 	}
-	return getAPIHelperInstance().SendOtpAPI(ctx, otpParam)
+	return getAPIHelperInstance().SendOtpAPI(ctx, otpParam) //nolint:govet
 }
 
 // SendOtpAPI ...
-func (apiHelper *APIHelper) SendOtpAPI(ctx context.Context, otpParam otpPb.OtpParam) *otpPb.OtpResponse {
+func (apiHelper *APIHelper) SendOtpAPI(ctx context.Context, otpParam otpPb.OtpParam) *otpPb.OtpResponse { //nolint:govet
 	resp, _ := Vigeon2Service.Otp().CreateOtp(ctx, &otpParam)
 	return resp
 }
@@ -77,11 +77,11 @@ func VerifyOtpAPI(ctx context.Context, supplierID uint64, otpCode string) *otpPb
 		SourceId:   supplierID,
 		OtpCode:    otpCode,
 	}
-	return getAPIHelperInstance().VerifyOtpAPI(ctx, verifyOtpParam)
+	return getAPIHelperInstance().VerifyOtpAPI(ctx, verifyOtpParam) //nolint:govet
 }
 
 // VerifyOtpAPI ...
-func (apiHelper *APIHelper) VerifyOtpAPI(ctx context.Context, verifyOtpParam otpPb.VerifyOtpParam) *otpPb.OtpResponse {
+func (apiHelper *APIHelper) VerifyOtpAPI(ctx context.Context, verifyOtpParam otpPb.VerifyOtpParam) *otpPb.OtpResponse { //nolint:govet
 	resp, _ := Vigeon2Service.Otp().VerifyOtp(ctx, &verifyOtpParam)
 	return resp
 }

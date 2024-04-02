@@ -60,7 +60,7 @@ func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 		if aaaModels.GetAppPreferenceServiceInstance().GetValue(ctxx.(context.Context), "enabled_account_number_validation", false).(bool) {
 			res := db.Model(&paymentAccount).First(&PaymentAccountDetail{}, "supplier_id!= ? and account_number = ?", paymentAccount.SupplierID, paymentAccount.AccountNumber)
 			if !res.RecordNotFound() {
-				db.AddError(errors.New("Provided bank account number already exists"))
+				db.AddError(errors.New("Provided bank account number already exists")) //nolint:errcheck
 			}
 		}
 	}
@@ -68,24 +68,24 @@ func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 	if !paymentAccount.IsDefault {
 		result := db.Model(&paymentAccount).Where("supplier_id = ? and is_default = ? and id != ?", paymentAccount.SupplierID, true, paymentAccount.ID).First(&PaymentAccountDetail{})
 		if result.RecordNotFound() {
-			db.AddError(errors.New("Default Payment Account is required"))
+			db.AddError(errors.New("Default Payment Account is required")) //nolint:errcheck
 		}
 	}
 
 	if !paymentAccount.validAccountSubType() {
-		db.AddError(errors.New("Invalid Account SubType"))
+		db.AddError(errors.New("Invalid Account SubType")) //nolint:errcheck
 	}
 
 	if paymentAccount.BankID != 0 {
 		result := db.Model(&Bank{}).First(&Bank{}, paymentAccount.BankID)
 		if result.RecordNotFound() {
-			db.AddError(errors.New("Invalid Bank Name"))
+			db.AddError(errors.New("Invalid Bank Name")) //nolint:errcheck
 		}
 	}
 
 	if paymentAccount.AccountType == utils.Bank &&
 		(paymentAccount.BankID == 0 || len(strings.TrimSpace(paymentAccount.BranchName)) == 0) {
-		db.AddError(errors.New("For Bank account type BankID and BranchName needed"))
+		db.AddError(errors.New("For Bank account type BankID and BranchName needed")) //nolint:errcheck
 	}
 }
 
