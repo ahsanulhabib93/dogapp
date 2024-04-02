@@ -43,7 +43,7 @@ jobs:
 
       - name: lint
         run: |
-          make test
+          go get ./...
           make lint
 
   tests:
