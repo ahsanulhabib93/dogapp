@@ -89,7 +89,7 @@ func (paymentAccount PaymentAccountDetail) Validate(db *gorm.DB) {
 	}
 
 	if !paymentAccount.validAccountNumber() {
-		db.AddError(errors.New("account_number is required"))
+		db.AddError(errors.New("account_number is required")) ////nolint:errcheck
 	}
 }
 
