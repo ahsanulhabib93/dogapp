@@ -47,6 +47,7 @@ jobs:
 
       - name: lint
         run: |
+          cd GoLang/src/github.com/voonik/ss2
           make lint
 
   tests:
