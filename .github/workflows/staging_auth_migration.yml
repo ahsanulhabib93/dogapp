@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      
+
       - name: URL and File Check
         run: |
           echo "Migration URL : "
@@ -26,7 +26,7 @@ jobs:
           echo "Migration File Name : "
           echo ${{ env.FILE_NAME }} | sed 's/./& /g'
           (ls ${{ env.FILE_NAME }} && echo "File Exists") || (echo "File Does not Exists. Creating an Empty file" && echo "{}" > ${{ env.FILE_NAME }})
-      
+
       - name: curl
         run: |
           curl -X POST '${{ env.AUTH_MIGRATION_API }}' --header 'Authorization: bearer ${{ env.AUTH_TOKEN }}' --form 'json_file=@${{ env.FILE_NAME }}'
@@ -41,7 +41,7 @@ jobs:
       POSTGRES_DB: "auth_stage_vacc"
       IS_SERVICE_NAME: "ss2"
       GOCONNECT_DIRECTORIES: "ss2"
-      EXCLUDE_ROUTES: '/seller/small_report,seller_account_manager/create,seller_account_manager/list,seller_account_manager/update,seller_account_manager/delete,/seller_bank_detail/verify_bank_detail,/seller_pricing_detail/verify_detail'
+      EXCLUDE_ROUTES: "/seller/small_report,/seller_account_manager/create,/seller_account_manager/list,/seller_account_manager/update,/seller_account_manager/delete,/seller_bank_detail/verify_bank_detail,/seller_pricing_detail/verify_detail"
     secrets:
       POSTGRES_PASSWORD: ${{ secrets.IS_MOKAM_POSTGRES_PASSWORD }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
