@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	"github.com/stretchr/testify/assert"
 
 	"github.com/shopuptech/event-bus-logs-go/core"

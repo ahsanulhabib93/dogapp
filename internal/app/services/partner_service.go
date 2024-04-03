@@ -26,7 +26,7 @@ func (psm *PartnerServiceMappingService) Add(ctx context.Context, params *psmpb.
 		return &response, nil
 	}
 
-	allowedservicelevel, _ := utils.PartnerServiceTypeLevelMapping[serviceType]
+	allowedservicelevel := utils.PartnerServiceTypeLevelMapping[serviceType]
 
 	if !utils.Includes(allowedservicelevel, serviceLevel) {
 		response.Message = "Incompatible Service Type and Service Level"
@@ -77,7 +77,7 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 		serviceType = utils.PartnerServiceTypeMapping[params.GetServiceType()]
 		serviceLevel = utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
 
-		allowedservicelevel, _ := utils.PartnerServiceTypeLevelMapping[serviceType]
+		allowedservicelevel := utils.PartnerServiceTypeLevelMapping[serviceType]
 
 		if !utils.Includes(allowedservicelevel, serviceLevel) {
 			response.Message = "Incompatible Service Type and Service Level"
@@ -125,7 +125,7 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 		}
 	}
 
-	log.Printf("PartnerServiceMappingService Edit response: %+v", response)
+	log.Printf("PartnerServiceMappingService Edit response: Success: %+v, Message: %+v, Id: %+v", response.Success, response.Message, response.Id)
 	return &response, nil
 }
 
@@ -155,7 +155,7 @@ func (psm *PartnerServiceMappingService) UpdateStatus(ctx context.Context, param
 		}
 	}
 
-	log.Printf("PartnerServiceMappingService UpdateStatus response: %+v", response)
+	log.Printf("PartnerServiceMappingService UpdateStatus response: Success: %+v, Message: %+v, Id: %+v", response.Success, response.Message, response.Id)
 	return &response, nil
 }
 

@@ -204,7 +204,7 @@ var _ = Describe("Create", func() {
 			Expect(seller.AgentID).To(Equal(int(misc.ExtractThreadObject(ctx).GetUserData().GetUserId())))
 
 			var returnExchangePolicy map[string]interface{}
-			json.Unmarshal(seller.ReturnExchangePolicy, &returnExchangePolicy)
+			json.Unmarshal(seller.ReturnExchangePolicy, &returnExchangePolicy) //nolint:errcheck
 
 			var policyDetails = map[string]interface{}{
 				"return": map[string]interface{}{
@@ -220,7 +220,7 @@ var _ = Describe("Create", func() {
 			Expect(returnExchangePolicy).To(Equal(policyDetails))
 
 			var dataMappingJson map[string]interface{}
-			json.Unmarshal(seller.DataMapping, &dataMappingJson)
+			json.Unmarshal(seller.DataMapping, &dataMappingJson) //nolint:errcheck
 			Expect(dataMappingJson).To(Equal(utils.SellerDataMapping))
 
 			Expect(seller.SellerConfig.SellerID).To(Equal(int(seller.ID)))

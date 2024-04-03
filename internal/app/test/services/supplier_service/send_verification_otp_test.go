@@ -54,7 +54,7 @@ var _ = Describe("SendVerificationOtp", func() {
 			apiHelperInstance = new(mocks.APIHelperInterface)
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			supplier = test_helper.CreateSupplier(ctx, &models.Supplier{})
-			param := otpPb.OtpParam{
+			param := &otpPb.OtpParam{
 				Service:    "ss2",
 				SourceType: "SupplierVerification",
 				SourceId:   supplier.ID,
@@ -62,12 +62,12 @@ var _ = Describe("SendVerificationOtp", func() {
 				Content:    "OTP for supplier verification: $otp",
 				Resend:     false,
 			}
-			resp := otpPb.OtpResponse{
+			resp := &otpPb.OtpResponse{
 				Success: true,
 				Message: "OTP created and sent successfully",
 				Uuid:    "1234",
 			}
-			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(&resp)
+			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(resp)
 		})
 
 		It("Should call vigeon service to send OTP", func() {
@@ -86,7 +86,7 @@ var _ = Describe("SendVerificationOtp", func() {
 			apiHelperInstance = new(mocks.APIHelperInterface)
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			supplier = test_helper.CreateSupplier(ctx, &models.Supplier{})
-			param := otpPb.OtpParam{
+			param := &otpPb.OtpParam{
 				Service:    "ss2",
 				SourceType: "SupplierVerification",
 				SourceId:   supplier.ID,
@@ -94,12 +94,12 @@ var _ = Describe("SendVerificationOtp", func() {
 				Content:    "OTP for supplier verification: $otp",
 				Resend:     true,
 			}
-			resp := otpPb.OtpResponse{
+			resp := &otpPb.OtpResponse{
 				Success: true,
 				Message: "OTP created and sent successfully",
 				Uuid:    "1234",
 			}
-			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(&resp)
+			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(resp)
 		})
 
 		It("Should call vigeon service to resend otp", func() {
@@ -118,7 +118,7 @@ var _ = Describe("SendVerificationOtp", func() {
 			apiHelperInstance = new(mocks.APIHelperInterface)
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			supplier = test_helper.CreateSupplier(ctx, &models.Supplier{})
-			param := otpPb.OtpParam{
+			param := &otpPb.OtpParam{
 				Service:    "ss2",
 				SourceType: "SupplierVerification",
 				SourceId:   supplier.ID,
@@ -126,11 +126,11 @@ var _ = Describe("SendVerificationOtp", func() {
 				Content:    "OTP for supplier verification: $otp",
 				Resend:     false,
 			}
-			resp := otpPb.OtpResponse{
+			resp := &otpPb.OtpResponse{
 				Success: false,
 				Message: "Error while creating OTP",
 			}
-			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(&resp)
+			apiHelperInstance.On("SendOtpAPI", ctx, param).Return(resp)
 		})
 
 		It("Should return error", func() {

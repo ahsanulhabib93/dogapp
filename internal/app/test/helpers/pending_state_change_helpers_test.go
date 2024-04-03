@@ -40,7 +40,7 @@ var _ = Describe("ChangePendingState", func() {
 		suppliers := []models.Supplier{}
 		database.DBAPM(ctx).Model(&models.Supplier{}).Where("status = ?", models.SupplierStatusFailed).Scan(&suppliers)
 
-		err := helpers.ChangePendingState(&worker.VaccountContext{1, 1}, &work.Job{})
+		err := helpers.ChangePendingState(&worker.VaccountContext{VaccountID: 1, PortalID: 1}, &work.Job{})
 		Expect(err).To(BeNil())
 
 		var count int
@@ -84,7 +84,7 @@ var _ = Describe("ChangePendingState", func() {
 			Status:          models.SupplierStatusPending,
 		}, date)
 
-		err := helpers.ChangePendingState(&worker.VaccountContext{1, 1}, &work.Job{})
+		err := helpers.ChangePendingState(&worker.VaccountContext{VaccountID: 1, PortalID: 1}, &work.Job{})
 		Expect(err).To(BeNil())
 
 		var count int

@@ -26,7 +26,7 @@ func (sas *SupplierAddressService) List(ctx context.Context, params *addresspb.L
 		query = query.Where("id = ?", params.GetId())
 	}
 	query.Scan(&resp.Data)
-	log.Printf("ListAddressResponse: %+v", resp)
+	log.Printf("ListAddressResponse: Data: %+v", resp.Data)
 	return &resp, nil
 }
 
@@ -67,7 +67,7 @@ func (sas *SupplierAddressService) Add(ctx context.Context, params *addresspb.Su
 			resp.Success = true
 		}
 	}
-	log.Printf("AddAddressResponse: %+v", resp)
+	log.Printf("AddAddressResponse: Success: %+v, Message: %+v", resp.Success, resp.Message)
 	return &resp, nil
 }
 
@@ -112,6 +112,6 @@ func (sas *SupplierAddressService) Edit(ctx context.Context, params *addresspb.S
 			}
 		}
 	}
-	log.Printf("EditAddressResponse: %+v", resp)
+	log.Printf("EditAddressResponse: Success: %+v, Message: %+v", resp.Success, resp.Message)
 	return &resp, nil
 }

@@ -316,7 +316,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount.IsDefault).To(Equal(true))
 
 			extraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &extraDetails)
+			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &extraDetails) //nolint:errcheck
 			Expect(extraDetails.ExpiryDate).To(Equal("2025-01-02"))
 			Expect(extraDetails.Token).To(Equal("sample_token_1"))
 			Expect(extraDetails.ClientId).To(Equal(uint64(123)))
@@ -517,7 +517,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount.IsDefault).To(Equal(true))
 
 			finalExtraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &finalExtraDetails)
+			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &finalExtraDetails) //nolint:errcheck
 			Expect(finalExtraDetails.ExpiryDate).To(Equal("2025-01-02"))
 			Expect(finalExtraDetails.Token).To(Equal("sample_token_1"))
 			Expect(finalExtraDetails.EmployeeId).To(Equal(uint64(12345)))

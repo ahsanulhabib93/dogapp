@@ -12,6 +12,40 @@ env:
   GOPRIVATE: github.com/voonik/*,github.com/shopuptech/*
 
 jobs:
+  lint:
+    if: github.actor != 'dependabot[bot]'
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go Version 1.17
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.17.12"
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+
+      - name: Install SSH keys
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
+
+      - name: setup
+        run: |
+          git config --global --add url."git@github.com:voonik/".insteadOf "https://github.com/voonik/"
+          git config --global --add url."git@github.com:shopuptech/".insteadOf "https://github.com/shopuptech/"
+          make setup
+
+      - name: lint
+        run: |
+          go get ./...
+          make lint
+
   tests:
     if: github.actor != 'dependabot[bot]'
     name: Unit Testing

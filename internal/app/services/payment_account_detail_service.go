@@ -30,7 +30,7 @@ func (ps *PaymentAccountDetailService) List(ctx context.Context, params *payment
 		if bank.ID != utils.Zero {
 			bankName = bank.Name
 		}
-		utils.CopyStructAtoB(paymentAccountDetail.ExtraDetails, extraDetails)
+		utils.CopyStructAtoB(paymentAccountDetail.ExtraDetails, extraDetails) //nolint:errcheck
 		resp.Data = append(resp.Data, &paymentpb.PaymentAccountDetailObject{
 			Id:             paymentAccountDetail.ID,
 			SupplierId:     paymentAccountDetail.SupplierID,
@@ -79,7 +79,7 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 			return &resp, nil
 		}
 		if params.GetAccountType() == uint64(utils.PrepaidCard) {
-			isError, errMsg := helpers.PrepaidCardValidations(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+			isError, errMsg := helpers.PrepaidCardValidations(ctx, params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
 			if isError {
 				resp.Message = fmt.Sprintf("Cannot Create Payment Account: %v", errMsg)
 				return &resp, nil
@@ -90,7 +90,7 @@ func (ps *PaymentAccountDetailService) Add(ctx context.Context, params *paymentp
 		resp.Success = true
 
 	}
-	log.Printf("AddPaymentAccountResponse: %+v", resp)
+	log.Printf("AddPaymentAccountResponse: Success: %+v, Message: %+v", resp.Success, resp.Message)
 	return &resp, nil
 }
 
@@ -128,7 +128,7 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			database.DBAPM(ctx).Save(&paymentAccountDetail)
 
 			if params.GetAccountType() == uint64(utils.PrepaidCard) {
-				isError, errMsg := helpers.PrepaidCardValidations(ctx, *params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
+				isError, errMsg := helpers.PrepaidCardValidations(ctx, params.GetExtraDetails(), &paymentAccountDetail, params.GetAccountNumber())
 				if isError {
 					fmt.Printf("\n\n\nlogger here isError %v , errMsg %v\n", isError, errMsg)
 					resp.Message = fmt.Sprintf("Cannot Edit Payment Account: %v", errMsg)
@@ -140,7 +140,7 @@ func (ps *PaymentAccountDetailService) Edit(ctx context.Context, params *payment
 			resp.Success = true
 		}
 	}
-	log.Printf("EditPaymentAccountResponse: %+v", resp)
+	log.Printf("EditPaymentAccountResponse: Success: %+v, Message: %+v", resp.Success, resp.Message)
 	return &resp, nil
 }
 

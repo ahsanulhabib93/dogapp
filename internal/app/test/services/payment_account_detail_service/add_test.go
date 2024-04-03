@@ -111,7 +111,7 @@ var _ = Describe("AddPaymentAccountDetail", func() {
 			Expect(paymentAccount.IsDefault).To(Equal(true))
 
 			extraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &extraDetails)
+			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &extraDetails) //nolint:errcheck
 			Expect(extraDetails.ExpiryDate).To(Equal("2025-01-01"))
 			Expect(extraDetails.Token).To(Equal("sample_token_1"))
 			Expect(extraDetails.ClientId).To(Equal(uint64(123)))
