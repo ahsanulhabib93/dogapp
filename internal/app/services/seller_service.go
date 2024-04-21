@@ -19,6 +19,10 @@ import (
 
 type SellerService struct{}
 
+func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
+	return &spb.GetSellersResponse{}, nil
+}
+
 func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserIDParams) (*spb.GetByUserIDResponse, error) {
 	userId := params.GetUserId()
 	seller := helpers.GetSellerByUserId(ctx, userId)
