@@ -21,7 +21,42 @@ import (
 type SellerService struct{}
 
 func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
-	return &spb.GetSellersResponse{}, nil
+	var userIDs []uint64
+	if len(params.GetUserId()) > utils.Zero {
+		userIDs = append(userIDs, params.GetUserId()...)
+	}
+	if len(params.GetId()) > utils.Zero {
+		userIDs = append(userIDs, params.GetId()...)
+	}
+	if len(userIDs) == utils.Zero && params.GetBrandName() == utils.EmptyString {
+		return &spb.GetSellersResponse{
+			Message: "No valid filter provided",
+			Status:  utils.Failure,
+		}, nil
+	}
+	sellers := []*spb.SellerObject{}
+	query := database.DBAPM(ctx).Model(&models.Seller{})
+	if len(userIDs) > utils.Zero {
+		query = query.Where("user_id in (?)", userIDs)
+	}
+	if params.GetBrandName() != utils.EmptyString {
+		searchValue := fmt.Sprintf("%s%%", params.GetBrandName())
+		query = query.Where("brand_name like ?", searchValue)
+	}
+	if len(params.GetBusinessUnits()) > utils.Zero {
+		query = query.Where("business_unit in (?)", params.GetBusinessUnits())
+	}
+	if err := query.Scan(&sellers).Error; err != nil {
+		return &spb.GetSellersResponse{
+			Message: err.Error(),
+			Status:  utils.Failure,
+		}, nil
+	}
+	return &spb.GetSellersResponse{
+		Seller:  sellers,
+		Status:  utils.Success,
+		Message: "fetched seller details successfully",
+	}, nil
 }
 
 func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserIDParams) (*spb.GetByUserIDResponse, error) {
