@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	supplierPb "github.com/voonik/goConnect/api/go/audit_log_service/supplier"
 	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/goFramework/pkg/pubsub/publisher"

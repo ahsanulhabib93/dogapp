@@ -2,19 +2,35 @@ package helpers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"strconv"
 	"strings"
 
+	"github.com/asaskevich/govalidator"
+	"github.com/jinzhu/gorm"
 	cmtPb "github.com/voonik/goConnect/api/go/cmt/product"
+	omsPb "github.com/voonik/goConnect/api/go/oms/seller"
 
 	"github.com/shopuptech/go-libs/logger"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
+
+type ReturnExchangePolicy struct {
+	Return   ExchangeDetails `json:"return"`
+	Exchange ExchangeDetails `json:"exchange"`
+}
+
+// ExchangeDetails represents the details for return or exchange.
+type ExchangeDetails struct {
+	DefaultDuration      int    `json:"default_duration"`
+	ReturnDaysStartsFrom string `json:"return_days_starts_from"`
+}
 
 func PerformSendActivationMail(ctx context.Context, sellerIDs []uint64, params *spb.SendActivationMailParams) *spb.BasicApiResponse {
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
@@ -204,4 +220,319 @@ func GetArrayIdsFromString(id string) (string, []uint64) {
 		sellerIDs[i] = id
 	}
 	return "", sellerIDs
+}
+
+func createSeller(ctx context.Context, params *spb.CreateParams) (*models.Seller, error) {
+	returnExchangePolicy, _ := json.Marshal(DefaultsellerReturnExchangePolicy())
+	jsonDataMapping, _ := json.Marshal(utils.SellerDataMapping)
+	sellerPricingDetails := &models.SellerPricingDetail{}
+	userId := misc.ExtractThreadObject(ctx).GetUserData().GetUserId()
+
+	seller := &models.Seller{
+		UserID:               params.Seller.UserId,
+		BrandName:            params.Seller.BrandName,
+		CompanyName:          params.Seller.BrandName,
+		PrimaryEmail:         params.Seller.PrimaryEmail,
+		PrimaryPhone:         params.Seller.PrimaryPhone,
+		ActivationState:      utils.ActivationState(params.Seller.ActivationState),
+		Slug:                 params.Seller.BrandName,
+		Hub:                  params.Seller.Hub,
+		DeliveryType:         int(params.Seller.DeliveryType),
+		ProcessingType:       int(params.Seller.ProcessingType),
+		BusinessUnit:         utils.BusinessUnit(params.Seller.BusinessUnit),
+		FullfillmentType:     int(params.Seller.FullfillmentType),
+		ColorCode:            utils.ColorCode(params.Seller.ColorCode),
+		IsDirect:             true,
+		ReturnExchangePolicy: returnExchangePolicy,
+		DataMapping:          jsonDataMapping,
+		AggregatorID:         int(params.Seller.UserId),
+		SellerPricingDetails: []*models.SellerPricingDetail{sellerPricingDetails}, // Taking values from DB defaults
+		AgentID:              int(userId),
+		SellerConfig:         createSellerDefaultSellerConfig(),
+	}
+
+	if len(params.Seller.VendorAddresses) != utils.Zero {
+		seller.VendorAddresses = assignVendorAddressData(params.Seller.VendorAddresses)
+	}
+
+	err := database.DBAPM(ctx).Model(&models.Seller{}).Create(seller).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return seller, nil
+}
+
+func assignVendorAddressData(vendorAddressesObjects []*spb.VendorAddressObject) []*models.VendorAddress {
+	vendorAddresses := []*models.VendorAddress{}
+	for _, vendorAddress := range vendorAddressesObjects {
+		vendorAddresses = append(vendorAddresses, &models.VendorAddress{
+			Firstname:          vendorAddress.Firstname,
+			Address1:           vendorAddress.Address1,
+			Zipcode:            vendorAddress.Zipcode,
+			State:              utils.DefaultState,
+			Country:            utils.DefaultCountry,
+			AddressType:        2,
+			VerificationStatus: utils.Verified,
+		})
+	}
+	return vendorAddresses
+}
+
+func createSellerDefaultSellerConfig() *models.SellerConfig {
+	refundPolicy, _ := json.Marshal(map[string]int{
+		"cod":           1,
+		"payu_redirect": 1,
+	})
+	sellerConfig := &models.SellerConfig{
+		ItemsPerPackage:       int(utils.DefaultSellerItemsPerPackage),
+		MaxQuantity:           int(utils.DefaultSellerMaxQuantity),
+		SellerStockEnabled:    true,
+		CODConfirmationNeeded: true,
+		AllowPriceUpdate:      true,
+		PickupType:            int(utils.DefaultSellerPickupType),
+		AllowVendorCoupons:    true,
+		RefundPolicy:          refundPolicy,
+	}
+	return sellerConfig
+}
+
+func GetDefaultSellerConfig() *spb.SellerConfig {
+	return &spb.SellerConfig{
+		ItemsPerPackage:       utils.DefaultSellerItemsPerPackage,
+		MaxQuantity:           utils.DefaultSellerMaxQuantity,
+		SellerStockEnabled:    true,
+		CodConfirmationNeeded: true,
+		AllowPriceUpdate:      true,
+		PickupType:            utils.DefaultSellerPickupType,
+		AllowVendorCoupons:    true,
+	}
+}
+
+func defaultsellerReturnExchangePolicyConfig() *spb.SellerReturnExchangePolicyConfig {
+	return &spb.SellerReturnExchangePolicyConfig{
+		ReturnDaysStartsFrom: "delivery",
+		DefaultDuration:      uint64(15),
+	}
+}
+
+func DefaultsellerReturnExchangePolicy() *spb.ReturnExchangePolicy {
+	exchangeConfig := defaultsellerReturnExchangePolicyConfig()
+	return &spb.ReturnExchangePolicy{
+		Return:   exchangeConfig,
+		Exchange: exchangeConfig,
+	}
+}
+
+func ValidateSellerParams(ctx context.Context, params *spb.CreateParams) error {
+	if params.Seller == nil {
+		return fmt.Errorf("Missing All Seller Params")
+	}
+
+	missingSellerParamsErr := findMissingSellerParams(params.Seller)
+	if missingSellerParamsErr != nil {
+		return missingSellerParamsErr
+	}
+
+	failedSellerParams := validateSellerObjectParams(params.Seller)
+	if failedSellerParams != utils.EmptyString {
+		failedSellerParams = strings.TrimSuffix(failedSellerParams, ",")
+		return fmt.Errorf("Invalid Seller Params: %s", failedSellerParams)
+	}
+
+	missingVendorAddressParamsErr := findMissingVendorAddressParams(params.Seller.VendorAddresses)
+	if missingVendorAddressParamsErr != nil {
+		return missingVendorAddressParamsErr
+	}
+
+	nonUniqueParams := findNonUniqueSellerParams(ctx, params.Seller)
+	if nonUniqueParams != utils.EmptyString {
+		nonUniqueParams = strings.TrimSuffix(nonUniqueParams, ",")
+		return fmt.Errorf("Non Unique Seller Params: %s", nonUniqueParams)
+	}
+	return nil
+}
+
+func findMissingVendorAddressParams(vendorAddresses []*spb.VendorAddressObject) error {
+	var mapTemplate, inputMap map[string]interface{}
+	var err error
+	for sequenceId, vendorAddress := range vendorAddresses {
+		mapTemplate = map[string]interface{}{
+			"firstname": utils.Required,
+			"address1":  utils.Required,
+			"zipcode":   utils.Required,
+		}
+		inputMap = map[string]interface{}{
+			"firstname": vendorAddress.Firstname,
+			"address1":  vendorAddress.Address1,
+			"zipcode":   vendorAddress.Zipcode,
+		}
+		_, err = govalidator.ValidateMap(inputMap, mapTemplate)
+		if err != nil {
+			return fmt.Errorf("%d: %s", sequenceId, err.Error())
+		}
+	}
+
+	return nil
+}
+
+func findMissingSellerParams(seller *spb.SellerObject) error {
+	mapTemplate := map[string]interface{}{
+		"user_id":          utils.Required,
+		"primary_email":    utils.Required,
+		"business_unit":    utils.Required,
+		"brand_name":       utils.Required,
+		"hub":              utils.Required,
+		"color_code":       utils.Required,
+		"activation_state": utils.Required,
+	}
+	inputMap := map[string]interface{}{
+		"user_id":          seller.UserId,
+		"primary_email":    seller.PrimaryEmail,
+		"business_unit":    seller.BusinessUnit,
+		"brand_name":       seller.BrandName,
+		"hub":              seller.Hub,
+		"color_code":       seller.ColorCode,
+		"activation_state": seller.ActivationState,
+	}
+	_, err := govalidator.ValidateMap(inputMap, mapTemplate)
+
+	return err
+}
+
+func validateSellerObjectParams(seller *spb.SellerObject) string {
+
+	var failedParams string
+	if !utils.IsValidBusinessUnit(utils.BusinessUnit(seller.BusinessUnit)) {
+		failedParams += "business_unit,"
+	}
+	if !utils.IsValidColorCode(utils.ColorCode(seller.ColorCode)) {
+		failedParams += "color_code,"
+	}
+	if !utils.IsValidActivationState(utils.ActivationState(seller.ActivationState)) {
+		failedParams += "activation_state,"
+	}
+	return failedParams
+}
+
+func findNonUniqueSellerParams(ctx context.Context, seller *spb.SellerObject) string {
+	var existingSeller models.Seller
+	err := database.DBAPM(ctx).Model(&models.Seller{}).Where("primary_email = ? OR primary_phone = ? OR brand_name = ?", seller.PrimaryEmail, seller.PrimaryPhone, seller.BrandName).First(&existingSeller).Error
+	if err == gorm.ErrRecordNotFound {
+		return utils.EmptyString
+	}
+
+	var duplicatedFields string
+	if existingSeller.PrimaryEmail == seller.PrimaryEmail {
+		duplicatedFields += "primary_email,"
+	}
+	if existingSeller.PrimaryPhone == seller.PrimaryPhone {
+		duplicatedFields += "primary_phone,"
+	}
+	if existingSeller.BrandName == seller.BrandName {
+		duplicatedFields += "brand_name,"
+	}
+
+	return duplicatedFields
+}
+
+func ProcessSellerRegistration(ctx context.Context, params *spb.CreateParams) (*models.Seller, string, error) {
+	registrationMessage := "Seller registered successfully."
+	existingSeller := GetSellerByUserId(ctx, params.Seller.UserId)
+	if existingSeller.ID != utils.Zero {
+		registrationMessage = fmt.Sprintf("Seller already registered for UserID: %d", params.Seller.UserId)
+		return existingSeller, registrationMessage, nil
+	}
+
+	newSeller, err := createSeller(ctx, params)
+	return newSeller, registrationMessage, err
+}
+
+func getSellerPricingDetailsSum(sellerPricingDetails []*models.SellerPricingDetail) (uint64, uint64) {
+	var totalLeadShippingDays, totalCommissionPercent uint64
+	for _, pricingDetail := range sellerPricingDetails {
+		totalLeadShippingDays += uint64(pricingDetail.LeadShippingDays)
+		totalCommissionPercent += uint64(pricingDetail.CommissionPercent)
+	}
+	return totalLeadShippingDays, totalCommissionPercent
+}
+
+func getVendorAddressData(params *models.Seller) []*omsPb.VendorAddressObject {
+	vendorAddresses := params.VendorAddresses
+	vendorAddressData := []*omsPb.VendorAddressObject{}
+	for _, vendorAddress := range vendorAddresses {
+		vendorAddressData = append(vendorAddressData, &omsPb.VendorAddressObject{
+			SellerId:           params.UserID,
+			Firstname:          vendorAddress.Firstname,
+			Lastname:           vendorAddress.Lastname,
+			Address1:           vendorAddress.Address1,
+			Address2:           vendorAddress.Address2,
+			City:               vendorAddress.City,
+			Zipcode:            vendorAddress.Zipcode,
+			Phone:              fmt.Sprint(vendorAddress.Phone),
+			AlternativePhone:   vendorAddress.AlternativePhone,
+			Company:            vendorAddress.Company,
+			State:              vendorAddress.State,
+			Country:            vendorAddress.Country,
+			AddressType:        uint64(vendorAddress.AddressType),
+			DefaultAddress:     vendorAddress.DefaultAddress,
+			VerificationStatus: string(vendorAddress.VerificationStatus),
+			ExtraData:          vendorAddress.ExtraData,
+		})
+	}
+	return vendorAddressData
+}
+
+func CreateOMSSellerSync(ctx context.Context, params *models.Seller) (err error) {
+	var returnExchangePolicy ReturnExchangePolicy
+	if err := json.Unmarshal([]byte(params.ReturnExchangePolicy), &returnExchangePolicy); err != nil {
+		fmt.Println("Error unmarshaling JSON:", err)
+		return err
+	}
+	totalLeadShippingDays, totalCommissionPercent := getSellerPricingDetailsSum(params.SellerPricingDetails)
+	sellerParam := omsPb.SellerParams{
+		Seller: &omsPb.Seller{
+			UserId:           params.UserID,
+			FullfillmentType: uint64(params.FullfillmentType),
+			BrandName:        params.BrandName,
+			CompanyName:      params.CompanyName,
+			Slug:             params.Slug,
+			AggregatorId:     uint64(params.AggregatorID),
+			PrimaryEmail:     params.PrimaryEmail,
+			PrimaryPhone:     params.PrimaryPhone,
+			ReturnExchangePolicy: &omsPb.ReturnExchangePolicy{
+				Return: &omsPb.SellerReturnExchangePolicyConfig{
+					ReturnDaysStartsFrom: returnExchangePolicy.Return.ReturnDaysStartsFrom,
+					DefaultDuration:      uint64(returnExchangePolicy.Return.DefaultDuration),
+				},
+				Exchange: &omsPb.SellerReturnExchangePolicyConfig{
+					ReturnDaysStartsFrom: returnExchangePolicy.Exchange.ReturnDaysStartsFrom,
+					DefaultDuration:      uint64(returnExchangePolicy.Exchange.DefaultDuration),
+				},
+			},
+			TinNumber:             params.TinNumber,
+			PanNumber:             params.PanNumber,
+			SellerInvoiceNumber:   uint64(params.SellerInvoiceNumber),
+			SellerType:            uint64(params.SellerType),
+			SellerRating:          float32(params.SellerRating),
+			SellerId:              params.ID,
+			DeliveryType:          uint64(params.DeliveryType),
+			ProcessingType:        uint64(params.ProcessingType),
+			BusinessUnit:          uint64(params.BusinessUnit),
+			CodConfirmationNeeded: params.SellerConfig.CODConfirmationNeeded,
+			RefundPolicy:          params.SellerConfig.RefundPolicy.String(),
+			PenaltyPolicy:         params.SellerConfig.PenaltyPolicy,
+			ItemsPerPackage:       uint64(params.SellerConfig.ItemsPerPackage),
+			PickupType:            uint64(params.SellerConfig.PickupType),
+			QcFrequency:           uint64(params.SellerConfig.QCFrequency),
+			LeadShippingDays:      totalLeadShippingDays,
+			CommissionPercent:     totalCommissionPercent,
+		},
+		VendorAddresses: getVendorAddressData(params),
+	}
+	resp := getAPIHelperInstance().CreateOmsSeller(ctx, &sellerParam)
+	if !resp.Success {
+		return fmt.Errorf(resp.Message)
+	}
+	return nil
 }

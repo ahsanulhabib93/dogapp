@@ -119,7 +119,7 @@ func (service *AttachmentService) GetAttachmentFileTypes(ctx context.Context, pa
 		},
 	}
 	activeFileTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "active_file_types", []string{}).([]string)
-	fileTypes, _ := utils.AttachableFileTypeMapping[utils.AttachableType(params.GetAttachableType())]
+	fileTypes := utils.AttachableFileTypeMapping[utils.AttachableType(params.GetAttachableType())]
 
 	for _, fileType := range fileTypes {
 		if utils.Includes(activeFileTypes, fileType.String()) {

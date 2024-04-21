@@ -1,13 +1,16 @@
 package models
 
-import "github.com/voonik/goFramework/pkg/database"
+import (
+	"github.com/voonik/goFramework/pkg/database"
+	"gorm.io/datatypes"
+)
 
 type SellerConfig struct {
 	database.VaccountGorm
 	AllowPriceUpdate      bool `gorm:"default:true"`
 	CODConfirmationNeeded bool `gorm:"default:true"`
 	SellerID              int
-	RefundPolicy          string
+	RefundPolicy          datatypes.JSON `gorm:"type:json"`
 	ServiceCheckerConfig  string
 	MaxQuantity           int `gorm:"default:50"`
 	DeliveryCheckType     int `gorm:"default:0"`

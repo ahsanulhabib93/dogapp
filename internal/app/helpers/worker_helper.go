@@ -2,7 +2,9 @@ package helpers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,6 +24,7 @@ import (
 	"github.com/voonik/goFramework/pkg/config"
 	"github.com/voonik/goFramework/pkg/misc"
 	worker2 "github.com/voonik/goFramework/pkg/worker"
+	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/utils"
 )
 
@@ -32,6 +35,21 @@ func GetWorkerInstance() *worker.Worker {
 		InitGoJobsWorker()
 	}
 	return wrk
+}
+
+func EnqueueJobs(ctx context.Context, jobName string, args map[string]interface{}) {
+	if wrk != nil {
+		log.Printf("Enqueueing %v to go-jobs", jobName)
+		wrk.EnqueueJob(ctx, jobName, args)
+		return
+	}
+	log.Printf("Enqueueing %v to go-worker", jobName)
+	EnqueueGoWorkerJobs(ctx, jobName, args)
+}
+
+var EnqueueGoWorkerJobs = func(ctx context.Context, jobName string, args map[string]interface{}) {
+	instance := worker2.GetSchedulerInstance()
+	instance.Enqueue(ctx, jobName, args, false)
 }
 
 func InitGoJobsWorker() {
@@ -94,7 +112,14 @@ func initRabbitMQBackend() (backend.Backend, error) {
 }
 
 func registerJobs(wrk *worker.Worker) {
-
+	wrk.RegisterJob(
+		utils.CreateOMSSellerSync,
+		handler.NewHandler(
+			CreateOMSSellerSyncHandler,
+			opts.WithPriority(utils.Ten),
+			opts.WithMaxRetries(utils.Three),
+		),
+	)
 }
 
 func ScheduleJobs() {
@@ -122,4 +147,17 @@ func changePendingState(ctx context.Context, _ jobs.Job) error {
 	vcontext := &worker2.VaccountContext{VaccountID: thread.VaccountId, PortalID: thread.PortalId}
 
 	return ChangePendingState(vcontext, &work.Job{})
+}
+
+func CreateOMSSellerSyncHandler(ctx context.Context, job jobs.Job) (err error) {
+	if err != nil {
+		return err
+	}
+	var seller models.Seller
+	err = json.Unmarshal(job.Body, &seller)
+
+	if err != nil {
+		return err
+	}
+	return CreateOMSSellerSync(ctx, &seller)
 }

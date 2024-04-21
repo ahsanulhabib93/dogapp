@@ -11,11 +11,12 @@ func _() {
 	_ = x[Bank-1]
 	_ = x[Mfs-2]
 	_ = x[PrepaidCard-3]
+	_ = x[Cheque-4]
 }
 
-const _AccountType_name = "BankMfsPrepaidCard"
+const _AccountType_name = "BankMfsPrepaidCardCheque"
 
-var _AccountType_index = [...]uint8{0, 4, 7, 18}
+var _AccountType_index = [...]uint8{0, 4, 7, 18, 24}
 
 func (i AccountType) String() string {
 	i -= 1

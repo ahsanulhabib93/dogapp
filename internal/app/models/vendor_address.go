@@ -3,6 +3,8 @@ package models
 import (
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jinzhu/gorm"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
 )
@@ -15,7 +17,7 @@ type VendorAddress struct {
 	Address2                     string `gorm:"column:address2"`
 	City                         string `gorm:"column:city"`
 	Zipcode                      string `gorm:"column:zipcode"`
-	AlternativePhone             string `gorm:"column:alternate_phone"`
+	AlternativePhone             string `gorm:"column:alternative_phone"`
 	Company                      string `gorm:"column:company"`
 	State                        string `gorm:"column:state"`
 	Country                      string `gorm:"column:country"`
@@ -43,4 +45,9 @@ type VendorAddress struct {
 	GSTRelatedPanCardFileSize    int
 	GSTRelatedPanCardUpdatedAt   string
 	ExtraData                    string `gorm:"default:'{}';column:extra_detail"`
+}
+
+func (model *VendorAddress) BeforeCreate(tx *gorm.DB) (err error) {
+	model.UUID = uuid.New().String()
+	return
 }

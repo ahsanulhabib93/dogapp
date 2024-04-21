@@ -2,15 +2,15 @@ package script
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"log"
+	"strconv"
+	"strings"
+
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/jinzhu/gorm"
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/models"
-	"log"
-	"strconv"
-	"strings"
 )
 
 //Excel Format
@@ -106,13 +106,13 @@ func validateSupplierData(ctx context.Context, row []string) error {
 	var count int64
 	db.Model(&models.Supplier{}).Where("phone = ?", row[3]).Count(&count)
 	if count > 0 {
-		return errors.New(fmt.Sprintf("phone number %s already exists", row[3]))
+		return fmt.Errorf("phone number %s already exists", row[3])
 	}
 
 	bankID := uint64(atoui(row[6]))
 	db.Model(&models.Bank{}).Where("id = ?", bankID).Count(&count)
 	if count == 0 {
-		return errors.New(fmt.Sprintf("provided BankID-%d does not exist", bankID))
+		return fmt.Errorf("provided BankID-%d does not exist", bankID)
 	}
 
 	return nil

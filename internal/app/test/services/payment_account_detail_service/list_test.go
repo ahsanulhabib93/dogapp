@@ -29,6 +29,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			accountDetail1 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Mfs, BankID: bank.ID, IsDefault: true})
 			accountDetail2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Bank, BankID: bank.ID})
 			accountDetail3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.PrepaidCard, AccountSubType: utils.EBL, BankID: bank.ID})
+			accountDetail4 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier1.ID, AccountType: utils.Cheque, BankID: bank.ID})
 			extraDetails := models.PaymentAccountDetailExtraDetails{
 				EmployeeId: uint64(12344),
 				ClientId:   uint64(123),
@@ -41,7 +42,7 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 
 			res, err := new(services.PaymentAccountDetailService).List(ctx, &paymentpb.ListParams{SupplierId: supplier1.ID})
 			Expect(err).To(BeNil())
-			Expect(len(res.Data)).To(Equal(3))
+			Expect(len(res.Data)).To(Equal(4))
 
 			accountData1 := res.Data[0]
 			Expect(accountData1.AccountType).To(Equal(uint64(utils.Mfs)))
@@ -75,12 +76,16 @@ var _ = Describe("ListPaymentAccountDetail", func() {
 			Expect(accountData3.IsDefault).To(Equal(false))
 
 			testExtraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(accountData3.ExtraDetails, &testExtraDetails)
+			utils.CopyStructAtoB(accountData3.ExtraDetails, &testExtraDetails) //nolint:errcheck
 			Expect(testExtraDetails.ClientId).To(Equal(uint64(123)))
 			Expect(testExtraDetails.EmployeeId).To(Equal(uint64(12344)))
 			Expect(testExtraDetails.ExpiryDate).To(Equal("2025-01-02"))
 			Expect(testExtraDetails.Token).To(Equal("sample_token_1"))
 			Expect(testExtraDetails.UniqueId).To(Equal("SS2-PAD-3"))
+
+			accountData4 := res.Data[3]
+			Expect(accountData4.AccountType).To(Equal(uint64(utils.Cheque)))
+			Expect(accountData4.AccountName).To(Equal(accountDetail4.AccountName))
 		})
 	})
 })

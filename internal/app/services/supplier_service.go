@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/shopuptech/go-libs/logger"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
@@ -52,7 +53,7 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 
 	resp.Success = true
 
-	log.Printf("GetSupplierResponse: %+v", resp)
+	log.Printf("GetSupplierResponse: Success: %+v, Data: %+v", resp.Success, resp.Data)
 	return &resp, nil
 }
 
@@ -74,7 +75,7 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	query.Select(ss.getResponseField()).Scan(&suppliersData)
 	resp.Data = helpers.PrepareListResponse(ctx, suppliersData)
 
-	log.Printf("ListSupplierResponse: %+v", resp)
+	log.Printf("ListSupplierResponse: Data: %+v, TotalCount: %+v", resp.Data, resp.TotalCount)
 	return &resp, nil
 }
 
@@ -97,9 +98,12 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 		Find(&suppliersWithAddresses)
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
-	json.Unmarshal(temp, &resp.Data)
+	err := json.Unmarshal(temp, &resp.Data)
+	if err != nil {
+		logger.Log().Errorf("Unmarshal Error: %+v", err)
+	}
 	resp.TotalCount = total
-	log.Printf("ListwithAddressResponse: %+v", resp)
+	log.Printf("ListwithAddressResponse: Data: %+v, TotalCount: %+v", resp.Data, resp.TotalCount)
 	return &resp, nil
 }
 
@@ -160,7 +164,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 			log.Println(err)
 		}
 	}
-	log.Printf("AddSupplierResponse: %+v", resp)
+	log.Printf("AddSupplierResponse: Success: %+v, Message: %+v, Id: %+v", resp.Success, resp.Message, resp.Id)
 	return &resp, nil
 }
 
@@ -223,7 +227,7 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			}
 		}
 	}
-	log.Printf("EditSupplierResponse: %+v", resp)
+	log.Printf("EditSupplierResponse: Success: %+v, Message: %+v, Id: %+v", resp.Success, resp.Message, resp.Id)
 	return &resp, nil
 }
 
@@ -290,7 +294,7 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 		}
 	}
 
-	log.Printf("RemoveDocumentResponse: %+v", resp)
+	log.Printf("RemoveDocumentResponse: Success: %+v, Message: %+v, Id: %+v", resp.Success, resp.Message, resp.Id)
 	return &resp, nil
 }
 
@@ -322,16 +326,16 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 		} else {
 			resp.Message = "Supplier status updated successfully"
 			resp.Success = true
-			if newSupplierStatus == models.SupplierStatusFailed || newSupplierStatus == models.SupplierStatusBlocked {
-				helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus), params.GetReason())
-			}
+			// if newSupplierStatus == models.SupplierStatusFailed || newSupplierStatus == models.SupplierStatusBlocked {
+			// 	helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus), params.GetReason())
+			// }
 
 			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplierStatus, updateDetails, supplier); err != nil {
 				log.Println(err)
 			}
 		}
 	}
-	log.Printf("UpdateStatusResponse: %+v", resp)
+	log.Printf("UpdateStatusResponse: Success: %+v, Message: %+v, Id: %+v", resp.Success, resp.Message, resp.Id)
 	return &resp, nil
 }
 

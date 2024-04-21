@@ -3,7 +3,7 @@ package mocks
 import (
 	"context"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/proto" //nolint:staticcheck
 	mock "github.com/stretchr/testify/mock"
 	"github.com/voonik/ss2/internal/app/helpers"
 )

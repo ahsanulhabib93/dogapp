@@ -91,18 +91,18 @@ var _ = Describe("VerifyOtp", func() {
 			apiHelperInstance = new(mocks.APIHelperInterface)
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			supplier = test_helper.CreateSupplier(ctx, &models.Supplier{})
-			param := otpPb.VerifyOtpParam{
+			param := &otpPb.VerifyOtpParam{
 				Service:    "ss2",
 				SourceType: "SupplierVerification",
 				SourceId:   supplier.ID,
 				OtpCode:    "1234",
 			}
-			resp := otpPb.OtpResponse{
+			resp := &otpPb.OtpResponse{
 				Success: true,
 				Message: "Verified OTP successfully",
 				Uuid:    "9876765",
 			}
-			apiHelperInstance.On("VerifyOtpAPI", ctx, param).Return(&resp)
+			apiHelperInstance.On("VerifyOtpAPI", ctx, param).Return(resp)
 		})
 
 		It("Should call vigeon service and verify OTP", func() {
@@ -135,17 +135,17 @@ var _ = Describe("VerifyOtp", func() {
 			apiHelperInstance = new(mocks.APIHelperInterface)
 			helpers.InjectMockAPIHelperInstance(apiHelperInstance)
 			supplier = test_helper.CreateSupplier(ctx, &models.Supplier{})
-			param := otpPb.VerifyOtpParam{
+			param := &otpPb.VerifyOtpParam{
 				Service:    "ss2",
 				SourceType: "SupplierVerification",
 				SourceId:   supplier.ID,
 				OtpCode:    "1234",
 			}
-			resp := otpPb.OtpResponse{
+			resp := &otpPb.OtpResponse{
 				Success: false,
 				Message: "Invalid OTP",
 			}
-			apiHelperInstance.On("VerifyOtpAPI", ctx, param).Return(&resp)
+			apiHelperInstance.On("VerifyOtpAPI", ctx, param).Return(resp)
 		})
 
 		It("Should return error", func() {

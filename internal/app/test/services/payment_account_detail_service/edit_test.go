@@ -316,7 +316,7 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount.IsDefault).To(Equal(true))
 
 			extraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &extraDetails)
+			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &extraDetails) //nolint:errcheck
 			Expect(extraDetails.ExpiryDate).To(Equal("2025-01-02"))
 			Expect(extraDetails.Token).To(Equal("sample_token_1"))
 			Expect(extraDetails.ClientId).To(Equal(uint64(123)))
@@ -517,12 +517,37 @@ var _ = Describe("EditPaymentAccountDetail", func() {
 			Expect(paymentAccount.IsDefault).To(Equal(true))
 
 			finalExtraDetails := models.PaymentAccountDetailExtraDetails{}
-			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &finalExtraDetails)
+			utils.CopyStructAtoB(paymentAccount.ExtraDetails, &finalExtraDetails) //nolint:errcheck
 			Expect(finalExtraDetails.ExpiryDate).To(Equal("2025-01-02"))
 			Expect(finalExtraDetails.Token).To(Equal("sample_token_1"))
 			Expect(finalExtraDetails.EmployeeId).To(Equal(uint64(12345)))
 			Expect(finalExtraDetails.UniqueId).To(Equal("SS2-PAD-1"))
 			Expect(finalExtraDetails.ClientId).To(Equal(uint64(0)))
+
+			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
+			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))
+		})
+	})
+
+	Context("Editing all attributes of existing PaymentAccount - Cheque", func() {
+		It("Should update and return success response", func() {
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
+			paymentAccount := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, AccountType: utils.Cheque, IsDefault: true})
+			param := &paymentpb.PaymentAccountDetailObject{
+				Id:          paymentAccount.ID,
+				AccountType: uint64(utils.Cheque),
+				AccountName: "New Account Name",
+				IsDefault:   true,
+			}
+			res, err := new(services.PaymentAccountDetailService).Edit(ctx, param)
+			Expect(err).To(BeNil())
+			Expect(res.Success).To(Equal(true))
+			Expect(res.Message).To(Equal("PaymentAccountDetail Edited Successfully"))
+
+			database.DBAPM(ctx).Model(&models.PaymentAccountDetail{}).First(&paymentAccount, paymentAccount.ID)
+			Expect(paymentAccount.AccountType).To(Equal(utils.Cheque))
+			Expect(paymentAccount.AccountName).To(Equal(param.AccountName))
+			Expect(paymentAccount.IsDefault).To(Equal(true))
 
 			database.DBAPM(ctx).Model(&models.Supplier{}).First(&supplier, supplier.ID)
 			Expect(supplier.Status).To(Equal(models.SupplierStatusPending))

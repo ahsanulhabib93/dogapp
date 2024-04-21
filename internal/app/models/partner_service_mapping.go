@@ -21,6 +21,6 @@ type PartnerServiceMapping struct {
 func (partnerService *PartnerServiceMapping) Validate(db *gorm.DB) {
 	result := db.Model(&partnerService).First(&PartnerServiceMapping{}, "id != ? and supplier_id = ? and service_type = ?", partnerService.ID, partnerService.SupplierId, partnerService.ServiceType)
 	if !result.RecordNotFound() {
-		db.AddError(errors.New("Partner Service Already Exists"))
+		db.AddError(errors.New("Partner Service Already Exists")) //nolint:errcheck
 	}
 }

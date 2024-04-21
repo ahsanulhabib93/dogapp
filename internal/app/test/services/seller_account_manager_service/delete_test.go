@@ -17,9 +17,14 @@ import (
 
 var _ = Describe("SellerAccountManager Delete", func() {
 	var ctx context.Context
+	var seller *models.Seller
 
 	BeforeEach(func() {
 		testUtils.GetContext(&ctx)
+		seller = test_helper.CreateSeller(ctx, &models.Seller{
+			UserID:    123456,
+			BrandName: "test_brand",
+		})
 	})
 
 	Context("Failure Cases", func() {
@@ -40,17 +45,17 @@ var _ = Describe("SellerAccountManager Delete", func() {
 
 	Context("Succes Cases", func() {
 		It("Should return success on update", func() {
-			sam := test_helper.CreateSellerAccountManager(ctx, 1, "SAM 1", 8801548654342, "example@example.com", 1, "sourcing-associate")
+			sam := test_helper.CreateSellerAccountManager(ctx, seller.ID, "SAM 1", 8801548654342, "example@example.com", 1, "sourcing-associate")
 			resp, err := new(services.SellerAccountManagerService).Delete(ctx, &sampb.AccountManagerObject{
 				Id: sam.ID,
 			})
 			Expect(err).To(BeNil())
 			Expect(resp.Success).To(BeTrue())
 			Expect(resp.Message).To(Equal("deletion successfull"))
+			Expect(resp.SellerUserId).To(Equal(seller.UserID))
 			updatedSam := &models.SellerAccountManager{}
-			err = database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where("id = ? ", sam.ID).Find(updatedSam).Error
-			Expect(err).NotTo(BeNil())
-			Expect(err.Error()).To(Equal("record not found"))
+			database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Where("id = ? ", sam.ID).Unscoped().Find(updatedSam)
+			Expect(updatedSam.DeletedAt).NotTo(BeNil())
 		})
 	})
 })
