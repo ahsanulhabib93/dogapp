@@ -1,8 +1,10 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -35,4 +37,16 @@ func (sam *SellerAccountManager) Validate(db *gorm.DB) {
 	if phoneNumber := fmt.Sprint(sam.Phone); !(strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) {
 		db.AddError(errors.New("Phone Number should have 13 digits")) //nolint:errcheck
 	}
+}
+
+func GetSellerCodesForSA(ctx context.Context, phone string) ([]uint64, error) {
+	sellerCodes := []uint64{}
+	intPhone, _ := strconv.ParseInt(phone, 10, 64)
+	err := database.DBAPM(ctx).Model(&SellerAccountManager{}).Joins("Seller").Where(
+		&SellerAccountManager{
+			Phone: intPhone,
+			Role:  "sourcing_associate",
+		},
+	).Pluck("sellers.user_id", &sellerCodes).Error
+	return sellerCodes, err
 }

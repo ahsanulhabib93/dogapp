@@ -12,6 +12,7 @@ import (
 	"github.com/shopuptech/work"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
@@ -21,12 +22,25 @@ import (
 type SellerService struct{}
 
 func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
-	filter, err := helpers.PrepareSellerSearchFilters(params)
+	filter, err := helpers.PrepareSellerCommonFilters(params)
 	if err != nil {
 		return &spb.GetSellersResponse{
 			Message: err.Error(),
 			Status:  utils.Failure,
 		}, nil
+	}
+	threadUser := misc.ExtractThreadObject(ctx).UserData
+	if threadUser != nil && threadUser.Phone != utils.EmptyString {
+		sellerCodes, err := models.GetSellerCodesForSA(ctx, threadUser.Phone)
+		if err != nil {
+			return &spb.GetSellersResponse{
+				Message: err.Error(),
+				Status:  utils.Failure,
+			}, nil
+		}
+		filter.UserIDs = sellerCodes
+	} else {
+		filter.FullfillmentType = 2
 	}
 	sellers := []*spb.SellerObject{}
 	query := helpers.QuerySellers(ctx, filter)
@@ -54,7 +68,7 @@ func (ss *SellerService) SellerByBrandName(ctx context.Context, params *spb.GetS
 
 	}
 	params.BusinessUnits = businessUnits
-	filter, err := helpers.PrepareSellerSearchFilters(params)
+	filter, err := helpers.PrepareSellerCommonFilters(params)
 	if err != nil {
 		return &spb.GetSellersResponse{
 			Message: err.Error(),

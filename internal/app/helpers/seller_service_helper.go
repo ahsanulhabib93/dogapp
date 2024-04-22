@@ -33,11 +33,12 @@ type ExchangeDetails struct {
 }
 
 type SellerSearchFilters struct {
-	UserIDs       []uint64
-	BusinessUnits []uint64
-	BrandName     string
-	Page          uint64
-	PerPage       uint64
+	UserIDs          []uint64
+	BusinessUnits    []uint64
+	BrandName        string
+	Page             uint64
+	PerPage          uint64
+	FullfillmentType int
 }
 
 func FetchBuToFilter(ctx context.Context, inputBUs []uint64) ([]uint64, error) {
@@ -45,12 +46,12 @@ func FetchBuToFilter(ctx context.Context, inputBUs []uint64) ([]uint64, error) {
 	if currentUserID = utils.GetCurrentUserID(ctx); currentUserID == nil {
 		return inputBUs, nil
 	}
-	userMappingData, err := FetchUserMappingData(ctx, []uint64{*currentUserID})
+	userMappingData, err := FetchFormattedUserMappingData(ctx, []uint64{*currentUserID})
 	if err != nil {
 		return nil, err
 	}
 	if userData, ok := userMappingData[*currentUserID]; ok {
-		buIDs := []uint64{}
+		var buIDs []uint64
 		if len(inputBUs) == utils.Zero {
 			buIDs = userData.BusinessUnits
 		} else if len(userData.BusinessUnits) == utils.Zero {
@@ -63,7 +64,7 @@ func FetchBuToFilter(ctx context.Context, inputBUs []uint64) ([]uint64, error) {
 	return inputBUs, nil
 }
 
-func PrepareSellerSearchFilters(params *spb.GetSellerParams) (SellerSearchFilters, error) {
+func PrepareSellerCommonFilters(params *spb.GetSellerParams) (SellerSearchFilters, error) {
 	filter := SellerSearchFilters{}
 	userIDs := []uint64{}
 	if len(params.GetUserId()) > utils.Zero {
@@ -94,6 +95,9 @@ func QuerySellers(ctx context.Context, params SellerSearchFilters) *gorm.DB {
 	}
 	if len(params.BusinessUnits) > utils.Zero {
 		query = query.Where("business_unit in (?)", params.BusinessUnits)
+	}
+	if params.FullfillmentType != utils.Zero {
+		query = query.Where("fulfilment_type = ?", params.FullfillmentType)
 	}
 	if params.PerPage <= 0 || params.PerPage > 10 {
 		params.PerPage = 10

@@ -7,42 +7,27 @@ import (
 	userMappingService "github.com/voonik/goConnect/oms/user_mapping"
 )
 
-type UserMapping struct {
-	BusinessUnits []uint64
-	ZoneIDs       []uint64
-	OpcIDs        []uint64
-	UserData      ISUserData
+type OmsApiHelper struct{}
+
+type OmsApiHelperInterface interface {
+	FetchUserMappingData(ctx context.Context, userIDs []uint64) (*userMappingPb.UserMappingResponse, error)
 }
 
-type ISUserData struct {
-	email string
-	name  string
-	roles []uint64
+var omsApiHelper OmsApiHelperInterface
+
+func InjectMockOmsAPIHelperInstance(mockObj OmsApiHelperInterface) {
+	omsApiHelper = mockObj
 }
 
-func FetchUserMappingData(ctx context.Context, userIDs []uint64) (map[uint64]UserMapping, error) {
-	omsResp, err := userMappingService.OMSUserMapping().Index(ctx, &userMappingPb.UserMappingIndexParams{
+func GetOmsAPIHelperInstance() OmsApiHelperInterface {
+	if omsApiHelper == nil {
+		return new(OmsApiHelper)
+	}
+	return omsApiHelper
+}
+
+func (omsApiHelper *OmsApiHelper) FetchUserMappingData(ctx context.Context, userIDs []uint64) (*userMappingPb.UserMappingResponse, error) {
+	return userMappingService.OMSUserMapping().Index(ctx, &userMappingPb.UserMappingIndexParams{
 		UserId: userIDs,
 	})
-	if err != nil {
-		return nil, err
-	}
-	userMappingMap := make(map[uint64]UserMapping)
-	for _, data := range omsResp.GetData() {
-		mappingData := UserMapping{
-			BusinessUnits: data.GetBusinessUnits(),
-			OpcIDs:        data.GetOpcIds(),
-			ZoneIDs:       data.GetZoneIds(),
-		}
-
-		if data.GetUserData() != nil {
-			mappingData.UserData = ISUserData{
-				email: data.GetUserData().GetEmail(),
-				name:  data.GetUserData().GetName(),
-				roles: data.GetUserData().GetRoles(),
-			}
-		}
-		userMappingMap[data.GetUserId()] = mappingData
-	}
-	return userMappingMap, nil
 }
