@@ -30,7 +30,13 @@ func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams)
 	}
 	sellers := []*spb.SellerObject{}
 	query := helpers.QuerySellers(ctx, filter)
-	query.Scan(&sellers)
+	err = query.Scan(&sellers).Error
+	if err != nil {
+		return &spb.GetSellersResponse{
+			Message: err.Error(),
+			Status:  utils.Failure,
+		}, nil
+	}
 	return &spb.GetSellersResponse{
 		Seller:  sellers,
 		Status:  utils.Success,
@@ -58,7 +64,13 @@ func (ss *SellerService) SellerByBrandName(ctx context.Context, params *spb.GetS
 	query := helpers.QuerySellers(ctx, filter)
 	query.Select("id,brand_name,user_id")
 	sellers := []*spb.SellerObject{}
-	query.Scan(&sellers)
+	err = query.Scan(&sellers).Error
+	if err != nil {
+		return &spb.GetSellersResponse{
+			Message: err.Error(),
+			Status:  utils.Failure,
+		}, nil
+	}
 	return &spb.GetSellersResponse{
 		Seller:  sellers,
 		Status:  utils.Success,
