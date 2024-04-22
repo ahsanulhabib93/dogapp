@@ -42,7 +42,7 @@ func (sam *SellerAccountManager) Validate(db *gorm.DB) {
 func GetSellerCodesForSA(ctx context.Context, phone string) ([]uint64, error) {
 	sellerCodes := []uint64{}
 	intPhone, _ := strconv.ParseInt(phone, 10, 64)
-	err := database.DBAPM(ctx).Model(&SellerAccountManager{}).Joins("Seller").Where(
+	err := database.DBAPM(ctx).Model(&SellerAccountManager{}).Joins(SamSellerJoinString()).Where(
 		&SellerAccountManager{
 			Phone: intPhone,
 			Role:  "sourcing_associate",

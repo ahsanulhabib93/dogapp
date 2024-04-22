@@ -73,9 +73,6 @@ func PrepareSellerCommonFilters(params *spb.GetSellerParams) (SellerSearchFilter
 	if len(params.GetId()) > utils.Zero {
 		userIDs = append(userIDs, params.GetId()...)
 	}
-	if len(userIDs) == utils.Zero && params.GetBrandName() == utils.EmptyString {
-		return filter, fmt.Errorf("No valid filter provided")
-	}
 	filter.UserIDs = userIDs
 	filter.BusinessUnits = params.GetBusinessUnits()
 	filter.BrandName = params.GetBrandName()
@@ -97,12 +94,11 @@ func QuerySellers(ctx context.Context, params SellerSearchFilters) *gorm.DB {
 		query = query.Where("business_unit in (?)", params.BusinessUnits)
 	}
 	if params.FullfillmentType != utils.Zero {
-		query = query.Where("fulfilment_type = ?", params.FullfillmentType)
+		query = query.Where("fullfillment_type = ?", params.FullfillmentType)
 	}
 	if params.PerPage <= 0 || params.PerPage > 10 {
 		params.PerPage = 10
 	}
-
 	params.Page = utils.Int64Max(utils.DEFAULT_PAGE, params.Page)
 	offset := (params.Page - 1) * params.PerPage
 	query = query.Offset(offset).Limit(params.PerPage)
