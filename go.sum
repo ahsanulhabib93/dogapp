@@ -1321,10 +1321,6 @@ github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGr
 github.com/urfave/cli v1.22.10 h1:p8Fspmz3iTctJstry1PYS3HVdllxnEzTEsgIgtxTrCk=
 github.com/urfave/cli v1.22.10/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli/v2 v2.16.3/go.mod h1:1CNUng3PtjQMtRzJO4FMXBQvkGtuYRxxiR9xMa7jMwI=
-github.com/voonik/goConnect v0.0.0-20240421090342-d163cd544bb5 h1:hZsNWf7O5qa34tfmacxjC/X559omQ3B0CHzZBcZ1WqY=
-github.com/voonik/goConnect v0.0.0-20240421090342-d163cd544bb5/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
-github.com/voonik/goConnect v0.0.0-20240422073825-21c6605873ed h1:j7JJOnvX/9oMag3xiU7KmCTFyRukj1eqm5d9u5o0hG0=
-github.com/voonik/goConnect v0.0.0-20240422073825-21c6605873ed/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
 github.com/voonik/goConnect v0.0.0-20240422100753-d2d345034e2b h1:oVE742NfhP/Oxs5PF0WvrQbxcJY0uIa+bPXaRaO5xtU=
 github.com/voonik/goConnect v0.0.0-20240422100753-d2d345034e2b/go.mod h1:KW/G/3+GlLyC5bPiGkPXsq1ffh7ICGPOFWAHOrS7dAw=
 github.com/voonik/goFramework v0.0.0-20221006080900-34f22876386b/go.mod h1:IOtcJERqfsdL3ckoUICj4DSkY6LWEBUDWG3lTlz8JmY=
