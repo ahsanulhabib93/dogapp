@@ -50,7 +50,15 @@ func FetchBuToFilter(ctx context.Context, inputBUs []uint64) ([]uint64, error) {
 		return nil, err
 	}
 	if userData, ok := userMappingData[*currentUserID]; ok {
-		return utils.Uint64SliceInterSection(inputBUs, userData.BusinessUnits), nil
+		buIDs := []uint64{}
+		if len(inputBUs) == utils.Zero {
+			buIDs = userData.BusinessUnits
+		} else if len(userData.BusinessUnits) == utils.Zero {
+			buIDs = inputBUs
+		} else {
+			buIDs = utils.Uint64SliceInterSection(inputBUs, userData.BusinessUnits)
+		}
+		return buIDs, nil
 	}
 	return inputBUs, nil
 }
