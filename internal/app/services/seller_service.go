@@ -21,37 +21,44 @@ import (
 type SellerService struct{}
 
 func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
-	var userIDs []uint64
-	if len(params.GetUserId()) > utils.Zero {
-		userIDs = append(userIDs, params.GetUserId()...)
-	}
-	if len(params.GetId()) > utils.Zero {
-		userIDs = append(userIDs, params.GetId()...)
-	}
-	if len(userIDs) == utils.Zero && params.GetBrandName() == utils.EmptyString {
-		return &spb.GetSellersResponse{
-			Message: "No valid filter provided",
-			Status:  utils.Failure,
-		}, nil
-	}
-	sellers := []*spb.SellerObject{}
-	query := database.DBAPM(ctx).Model(&models.Seller{})
-	if len(userIDs) > utils.Zero {
-		query = query.Where("user_id in (?)", userIDs)
-	}
-	if params.GetBrandName() != utils.EmptyString {
-		searchValue := fmt.Sprintf("%s%%", params.GetBrandName())
-		query = query.Where("brand_name like ?", searchValue)
-	}
-	if len(params.GetBusinessUnits()) > utils.Zero {
-		query = query.Where("business_unit in (?)", params.GetBusinessUnits())
-	}
-	if err := query.Scan(&sellers).Error; err != nil {
+	filter, err := helpers.PrepareSellerSearchFilters(params)
+	if err != nil {
 		return &spb.GetSellersResponse{
 			Message: err.Error(),
 			Status:  utils.Failure,
 		}, nil
 	}
+	sellers := []*spb.SellerObject{}
+	query := helpers.QuerySellers(ctx, filter)
+	query.Scan(&sellers)
+	return &spb.GetSellersResponse{
+		Seller:  sellers,
+		Status:  utils.Success,
+		Message: "fetched seller details successfully",
+	}, nil
+}
+
+func (ss *SellerService) SellerByBrandName(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
+	businessUnits, err := helpers.FetchBuToFilter(ctx, params.BusinessUnits)
+	if err != nil {
+		return &spb.GetSellersResponse{
+			Message: err.Error(),
+			Status:  utils.Failure,
+		}, nil
+
+	}
+	params.BusinessUnits = businessUnits
+	filter, err := helpers.PrepareSellerSearchFilters(params)
+	if err != nil {
+		return &spb.GetSellersResponse{
+			Message: err.Error(),
+			Status:  utils.Failure,
+		}, nil
+	}
+	query := helpers.QuerySellers(ctx, filter)
+	query.Select("id,brand_name,user_id")
+	sellers := []*spb.SellerObject{}
+	query.Scan(&sellers)
 	return &spb.GetSellersResponse{
 		Seller:  sellers,
 		Status:  utils.Success,

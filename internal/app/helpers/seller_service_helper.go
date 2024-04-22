@@ -32,6 +32,71 @@ type ExchangeDetails struct {
 	ReturnDaysStartsFrom string `json:"return_days_starts_from"`
 }
 
+type SellerSearchFilters struct {
+	UserIDs       []uint64
+	BusinessUnits []uint64
+	BrandName     string
+	Page          uint64
+	PerPage       uint64
+}
+
+func FetchBuToFilter(ctx context.Context, inputBUs []uint64) ([]uint64, error) {
+	var currentUserID *uint64
+	if currentUserID = utils.GetCurrentUserID(ctx); currentUserID == nil {
+		return inputBUs, nil
+	}
+	userMappingData, err := FetchUserMappingData(ctx, []uint64{*currentUserID})
+	if err != nil {
+		return nil, err
+	}
+	if userData, ok := userMappingData[*currentUserID]; ok {
+		return utils.Uint64SliceInterSection(inputBUs, userData.BusinessUnits), nil
+	}
+	return inputBUs, nil
+}
+
+func PrepareSellerSearchFilters(params *spb.GetSellerParams) (SellerSearchFilters, error) {
+	filter := SellerSearchFilters{}
+	userIDs := []uint64{}
+	if len(params.GetUserId()) > utils.Zero {
+		userIDs = append(userIDs, params.GetUserId()...)
+	}
+	if len(params.GetId()) > utils.Zero {
+		userIDs = append(userIDs, params.GetId()...)
+	}
+	if len(userIDs) == utils.Zero && params.GetBrandName() == utils.EmptyString {
+		return filter, fmt.Errorf("No valid filter provided")
+	}
+	filter.UserIDs = userIDs
+	filter.BusinessUnits = params.GetBusinessUnits()
+	filter.BrandName = params.GetBrandName()
+	filter.Page = params.GetPage()
+	filter.PerPage = params.GetPerPage()
+	return filter, nil
+}
+
+func QuerySellers(ctx context.Context, params SellerSearchFilters) *gorm.DB {
+	query := database.DBAPM(ctx).Model(&models.Seller{})
+	if len(params.UserIDs) > utils.Zero {
+		query = query.Where("user_id in (?)", params.UserIDs)
+	}
+	if params.BrandName != utils.EmptyString {
+		searchValue := fmt.Sprintf("%s%%", params.BrandName)
+		query = query.Where("brand_name like ?", searchValue)
+	}
+	if len(params.BusinessUnits) > utils.Zero {
+		query = query.Where("business_unit in (?)", params.BusinessUnits)
+	}
+	if params.PerPage <= 0 || params.PerPage > 10 {
+		params.PerPage = 10
+	}
+
+	params.Page = utils.Int64Max(utils.DEFAULT_PAGE, params.Page)
+	offset := (params.Page - 1) * params.PerPage
+	query = query.Offset(offset).Limit(params.PerPage)
+	return query
+}
+
 func PerformSendActivationMail(ctx context.Context, sellerIDs []uint64, params *spb.SendActivationMailParams) *spb.BasicApiResponse {
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
 	sellerDetails := GetSellerByIds(ctx, sellerIDs)
