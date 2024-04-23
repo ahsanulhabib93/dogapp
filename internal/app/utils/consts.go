@@ -19,6 +19,10 @@ type AttachableType uint64
 type FileType uint64
 type BusinessUnit uint64
 
+const VoonikFulfilmentType = 2
+const SellerFetchSuccessMessage = "fetched seller details successfully"
+const SourcingAssociateRole = "sourcing_associate"
+
 const (
 	Supplier ServiceType = 1 + iota
 	Transporter

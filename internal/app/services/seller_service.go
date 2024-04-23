@@ -34,7 +34,7 @@ func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams)
 		}
 		filter.UserIDs = sellerCodes
 	} else {
-		filter.FullfillmentType = 2
+		filter.FullfillmentType = utils.VoonikFulfilmentType
 	}
 	sellers := []*spb.SellerObject{}
 	query := helpers.QuerySellers(ctx, filter)
@@ -49,7 +49,7 @@ func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams)
 	return &spb.GetSellersResponse{
 		Seller:  sellers,
 		Status:  utils.Success,
-		Message: "fetched seller details successfully",
+		Message: utils.SellerFetchSuccessMessage,
 	}, nil
 }
 
@@ -76,7 +76,7 @@ func (ss *SellerService) SellerByBrandName(ctx context.Context, params *spb.GetS
 	return &spb.GetSellersResponse{
 		Seller:  sellers,
 		Status:  utils.Success,
-		Message: "fetched seller details successfully",
+		Message: utils.SellerFetchSuccessMessage,
 	}, nil
 }
 
@@ -127,7 +127,7 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 	}
 	response.Seller = sellers
 	response.Status = utils.Success
-	response.Message = "fetched seller details successfully"
+	response.Message = utils.SellerFetchSuccessMessage
 	return &response, nil
 }
 
@@ -158,7 +158,7 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 	addDefaultSellerConfigs(sellerData)
 	response.Seller = sellerData
 	response.Status = utils.Success
-	response.Message = "fetched seller details successfully"
+	response.Message = utils.SellerFetchSuccessMessage
 	return &response, nil
 }
 
@@ -209,7 +209,7 @@ func (ss *SellerService) SellerPhoneRelation(ctx context.Context, params *spb.Se
 	}
 	response.Seller = sellers
 	response.Status = "success"
-	response.Message = "fetched seller details successfully"
+	response.Message = utils.SellerFetchSuccessMessage
 	return &response, nil
 
 }

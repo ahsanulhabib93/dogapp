@@ -33,6 +33,9 @@ var _ = Describe("SellerByBrandName", func() {
 					BusinessUnits: []uint64{1},
 					OpcIds:        []uint64{1},
 					ZoneIds:       []uint64{1},
+					UserData: &userMappingPb.UserData{
+						Roles: []uint64{1},
+					},
 				},
 			},
 		}

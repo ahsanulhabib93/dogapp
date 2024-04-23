@@ -60,7 +60,7 @@ var _ = Describe("FetchBuToFilter", func() {
 			})
 		})
 		Context("When inputBUs is present", func() {
-			Context("When OMS response is empty", func() {
+			Context("When OMS BU is empty", func() {
 				It("Should return BUs from passed as arguments", func() {
 					omsResponse.Data[0].BusinessUnits = []uint64{}
 					omsApiMock.On("FetchUserMappingData", ctx, []uint64{999}).Return(omsResponse, nil)
@@ -70,7 +70,18 @@ var _ = Describe("FetchBuToFilter", func() {
 					Expect(bu).To(Equal([]uint64{1, 2, 3}))
 				})
 			})
-			Context("When OMS response is not empty", func() {
+			Context("When OMS response is not present for the user", func() {
+				It("Should return BUs from passed as arguments", func() {
+					omsResponse.Data[0].UserId = 1000
+					omsApiMock.On("FetchUserMappingData", ctx, []uint64{999}).Return(omsResponse, nil)
+					bu, err := helpers.FetchBuToFilter(ctx, []uint64{1, 2, 3})
+					omsResponse.Data[0].UserId = 999
+					omsResponse.Data[0].BusinessUnits = []uint64{1}
+					Expect(err).To(BeNil())
+					Expect(bu).To(Equal([]uint64{1, 2, 3}))
+				})
+			})
+			Context("When OMS response has user data", func() {
 				It("Should return intersection of input and oms response", func() {
 					omsApiMock.On("FetchUserMappingData", ctx, []uint64{999}).Return(omsResponse, nil)
 					bu, err := helpers.FetchBuToFilter(ctx, []uint64{1, 2, 3})

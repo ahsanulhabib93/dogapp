@@ -9,6 +9,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/ss2/internal/app/utils"
 	gormio "gorm.io/gorm"
 )
 
@@ -45,7 +46,7 @@ func GetSellerCodesForSA(ctx context.Context, phone string) ([]uint64, error) {
 	err := database.DBAPM(ctx).Model(&SellerAccountManager{}).Joins(SamSellerJoinString()).Where(
 		&SellerAccountManager{
 			Phone: intPhone,
-			Role:  "sourcing_associate",
+			Role:  utils.SourcingAssociateRole,
 		},
 	).Pluck("sellers.user_id", &sellerCodes).Error
 	return sellerCodes, err

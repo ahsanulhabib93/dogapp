@@ -79,7 +79,7 @@ var _ = Describe("Index", func() {
 		})
 	})
 	Context("Failure cases", func() {
-		Context("when seller select query fails", func() {
+		Context("when SAM select query fails", func() {
 			It("Should return error", func() {
 				ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 1, PortalId: 1, UserData: &misc.UserData{
 					UserId: 1,
@@ -93,6 +93,17 @@ var _ = Describe("Index", func() {
 				Expect(err).To(BeNil())
 				Expect(resp.Status).To(Equal("failure"))
 				Expect(resp.Message).To(ContainSubstring("Unknown column 'seller_account_managers.role' in 'where clause'"))
+			})
+		})
+		Context("when Seller select query fails", func() {
+			It("Should return error", func() {
+				database.DBAPM(ctx).Model(&models.Seller{}).DropColumn("vaccount_id")
+				resp, err := new(services.SellerService).Index(ctx, &spb.GetSellerParams{})
+				fmt.Println(resp)
+				database.DBAPM(ctx).AutoMigrate(&models.Seller{})
+				Expect(err).To(BeNil())
+				Expect(resp.Status).To(Equal("failure"))
+				Expect(resp.Message).To(ContainSubstring("Unknown column 'sellers.vaccount_id' in 'where clause'"))
 			})
 		})
 	})
