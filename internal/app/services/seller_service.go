@@ -22,13 +22,7 @@ import (
 type SellerService struct{}
 
 func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
-	filter, err := helpers.PrepareSellerCommonFilters(params)
-	if err != nil {
-		return &spb.GetSellersResponse{
-			Message: err.Error(),
-			Status:  utils.Failure,
-		}, nil
-	}
+	filter := helpers.PrepareSellerCommonFilters(params)
 	threadUser := misc.ExtractThreadObject(ctx).UserData
 	if threadUser != nil && threadUser.Phone != utils.EmptyString {
 		sellerCodes, err := models.GetSellerCodesForSA(ctx, threadUser.Phone)
@@ -44,13 +38,14 @@ func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams)
 	}
 	sellers := []*spb.SellerObject{}
 	query := helpers.QuerySellers(ctx, filter)
-	err = query.Scan(&sellers).Error
+	err := query.Scan(&sellers).Error
 	if err != nil {
 		return &spb.GetSellersResponse{
 			Message: err.Error(),
 			Status:  utils.Failure,
 		}, nil
 	}
+	addDefaultSellerConfigs(sellers)
 	return &spb.GetSellersResponse{
 		Seller:  sellers,
 		Status:  utils.Success,
@@ -65,16 +60,9 @@ func (ss *SellerService) SellerByBrandName(ctx context.Context, params *spb.GetS
 			Message: err.Error(),
 			Status:  utils.Failure,
 		}, nil
-
 	}
 	params.BusinessUnits = businessUnits
-	filter, err := helpers.PrepareSellerCommonFilters(params)
-	if err != nil {
-		return &spb.GetSellersResponse{
-			Message: err.Error(),
-			Status:  utils.Failure,
-		}, nil
-	}
+	filter := helpers.PrepareSellerCommonFilters(params)
 	query := helpers.QuerySellers(ctx, filter)
 	query.Select("id,brand_name,user_id")
 	sellers := []*spb.SellerObject{}
@@ -167,10 +155,7 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 		response.Message = "seller not found"
 		return &response, nil
 	}
-	for _, seller := range sellerData {
-		seller.SellerConfig = helpers.GetDefaultSellerConfig()
-		seller.ReturnExchangePolicy = helpers.DefaultsellerReturnExchangePolicy()
-	}
+	addDefaultSellerConfigs(sellerData)
 	response.Seller = sellerData
 	response.Status = utils.Success
 	response.Message = "fetched seller details successfully"
@@ -356,4 +341,11 @@ func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (
 	}
 
 	return resp, nil
+}
+
+func addDefaultSellerConfigs(sellers []*spb.SellerObject) {
+	for _, seller := range sellers {
+		seller.SellerConfig = helpers.GetDefaultSellerConfig()
+		seller.ReturnExchangePolicy = helpers.DefaultsellerReturnExchangePolicy()
+	}
 }

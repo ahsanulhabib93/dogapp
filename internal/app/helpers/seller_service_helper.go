@@ -64,7 +64,7 @@ func FetchBuToFilter(ctx context.Context, inputBUs []uint64) ([]uint64, error) {
 	return inputBUs, nil
 }
 
-func PrepareSellerCommonFilters(params *spb.GetSellerParams) (SellerSearchFilters, error) {
+func PrepareSellerCommonFilters(params *spb.GetSellerParams) SellerSearchFilters {
 	filter := SellerSearchFilters{}
 	userIDs := []uint64{}
 	if len(params.GetUserId()) > utils.Zero {
@@ -78,7 +78,7 @@ func PrepareSellerCommonFilters(params *spb.GetSellerParams) (SellerSearchFilter
 	filter.BrandName = params.GetBrandName()
 	filter.Page = params.GetPage()
 	filter.PerPage = params.GetPerPage()
-	return filter, nil
+	return filter
 }
 
 func QuerySellers(ctx context.Context, params SellerSearchFilters) *gorm.DB {
