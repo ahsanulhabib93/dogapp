@@ -59,7 +59,7 @@ var _ = Describe("SellerByBrandName", func() {
 		helpers.InjectMockOmsAPIHelperInstance(omsApiMock)
 	})
 	AfterEach(func() {
-		helpers.InjectMockOmsAPIHelperInstance(omsApiMock)
+		helpers.InjectMockOmsAPIHelperInstance(nil)
 	})
 	Context("Success case", func() {
 		BeforeEach(func() {
