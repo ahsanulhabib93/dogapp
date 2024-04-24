@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"gorm.io/datatypes"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
@@ -31,27 +32,33 @@ type Supplier struct {
 	Reason                    string
 	Email                     string
 	Phone                     string
-	AlternatePhone            string                 `json:"alternate_phone"`
-	BusinessName              string                 `json:"business_name"`
-	IsPhoneVerified           *bool                  `gorm:"default:false" json:"is_phone_verified"` // using pointer to update false value in Edit API
-	ShopImageURL              string                 `json:"shop_image_url"`
-	UserID                    *uint64                `json:"user_id"`
-	AgentID                   *uint64                `json:"agent_id"`
-	NidNumber                 string                 `json:"nid_number"`
-	NidFrontImageUrl          string                 `gorm:"type:varchar(512)" json:"nid_front_image_url"`
-	NidBackImageUrl           string                 `gorm:"type:varchar(512)" json:"nid_back_image_url"`
-	ShopOwnerImageUrl         string                 `gorm:"type:varchar(512)" json:"shop_owner_image_url"`
-	GuarantorImageUrl         string                 `gorm:"type:varchar(512)" json:"guarantor_image_url"`
-	GuarantorNidNumber        string                 `json:"guarantor_nid_number"`
-	GuarantorNidFrontImageUrl string                 `gorm:"type:varchar(512)" json:"guarantor_nid_front_image_url"`
-	GuarantorNidBackImageUrl  string                 `gorm:"type:varchar(512)" json:"guarantor_nid_back_image_url"`
-	ChequeImageUrl            string                 `gorm:"type:varchar(512)" json:"cheque_image_url"`
-	SupplierAddresses         []SupplierAddress      `json:"supplier_addresses"`
-	PaymentAccountDetails     []PaymentAccountDetail `json:"payment_account_details"`
-	KeyAccountManagers        []KeyAccountManager
-	SupplierCategoryMappings  []SupplierCategoryMapping
-	SupplierOpcMappings       []SupplierOpcMapping
-	PartnerServiceMappings    []PartnerServiceMapping `json:"partner_service_mappings"`
+	AlternatePhone            string         `json:"alternate_phone"`
+	BusinessName              string         `json:"business_name"`
+	IsPhoneVerified           *bool          `gorm:"default:false" json:"is_phone_verified"` // using pointer to update false value in Edit API
+	ShopImageURL              string         `json:"shop_image_url"`
+	UserID                    *uint64        `json:"user_id"`
+	AgentID                   *uint64        `json:"agent_id"`
+	NidNumber                 string         `json:"nid_number"`
+	NidFrontImageUrl          string         `gorm:"type:varchar(512)" json:"nid_front_image_url"`
+	NidBackImageUrl           string         `gorm:"type:varchar(512)" json:"nid_back_image_url"`
+	ShopOwnerImageUrl         string         `gorm:"type:varchar(512)" json:"shop_owner_image_url"`
+	GuarantorImageUrl         string         `gorm:"type:varchar(512)" json:"guarantor_image_url"`
+	GuarantorNidNumber        string         `json:"guarantor_nid_number"`
+	GuarantorNidFrontImageUrl string         `gorm:"type:varchar(512)" json:"guarantor_nid_front_image_url"`
+	GuarantorNidBackImageUrl  string         `gorm:"type:varchar(512)" json:"guarantor_nid_back_image_url"`
+	ChequeImageUrl            string         `gorm:"type:varchar(512)" json:"cheque_image_url"`
+	ExtraDetails              datatypes.JSON `gorm:"type:json"`
+
+	SupplierAddresses        []SupplierAddress      `json:"supplier_addresses"`
+	PaymentAccountDetails    []PaymentAccountDetail `json:"payment_account_details"`
+	KeyAccountManagers       []KeyAccountManager
+	SupplierCategoryMappings []SupplierCategoryMapping
+	SupplierOpcMappings      []SupplierOpcMapping
+	PartnerServiceMappings   []PartnerServiceMapping `json:"partner_service_mappings"`
+}
+
+type SupplierExtraDetails struct {
+	AdvanceLimit map[string]float64 `json:"advance_limit,omitempty"`
 }
 
 // Validate ...
