@@ -58,6 +58,9 @@ func FetchBuToFilter(ctx context.Context, inputBUs []uint64) ([]uint64, error) {
 			buIDs = inputBUs
 		} else {
 			buIDs = utils.Uint64SliceInterSection(inputBUs, userData.BusinessUnits)
+			if len(buIDs) == utils.Zero {
+				buIDs = []uint64{0} // to return no records
+			}
 		}
 		return buIDs, nil
 	}
