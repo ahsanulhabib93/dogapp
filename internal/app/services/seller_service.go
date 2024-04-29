@@ -46,7 +46,7 @@ func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams)
 		}, nil
 	}
 	sellersData := []*spb.SellerObject{}
-	copier.Copy(&sellersData, &sellers)
+	copier.Copy(&sellersData, &sellers) //nolint:errcheck
 	addDefaultSellerConfigs(sellersData)
 	return &spb.GetSellersResponse{
 		Seller:  sellersData,
@@ -70,7 +70,7 @@ func (ss *SellerService) SellerByBrandName(ctx context.Context, params *spb.GetS
 	sellers := []*models.Seller{}
 	err = query.Scan(&sellers).Error
 	sellersData := []*spb.SellerObject{}
-	copier.Copy(&sellersData, &sellers)
+	copier.Copy(&sellersData, &sellers) //nolint:errcheck
 	if err != nil {
 		return &spb.GetSellersResponse{
 			Message: err.Error(),
