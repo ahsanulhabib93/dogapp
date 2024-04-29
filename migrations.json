@@ -1,6 +1,11 @@
 {
     "scopes": [
         {
+            "id": "sellerpanel",
+            "description": "seller panel",
+            "vaccount_id": 2
+        },
+        {
           "id": "supplierpanel",
           "description": "supplier panel",
           "vaccount_id": 12
@@ -101,6 +106,12 @@
         }
     ],
     "permissions": [
+        {
+            "id": "sellerpanel:sellers:view",
+            "description": "Seller listing apis",
+            "scope_id": "sellerpanel",
+            "vaccount_id": 2
+        },
         {
             "id": "supplierpanel:supplierstatusupdateapi:admin",
             "description": "supplier Status update API",
@@ -301,6 +312,20 @@
         }
     ],
     "route_permissions": [
+        {
+            "route": "/seller/index",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "sellerpanel:sellers:view",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/seller/search_seller_brand_name",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "sellerpanel:sellers:view",
+            "vaccount_id": 2
+        },
         {
             "route": "/supplier/update_status",
             "request_method": "POST",

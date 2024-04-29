@@ -1,11 +1,10 @@
 package models
 
 import (
-	"time"
-
 	"github.com/voonik/goFramework/pkg/database"
 	"github.com/voonik/ss2/internal/app/utils"
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type Seller struct {
@@ -16,7 +15,7 @@ type Seller struct {
 	Configuration                string
 	DataMapping                  datatypes.JSON `gorm:"type:json"`
 	FullfillmentType             int
-	DeletedAt                    *time.Time
+	DeletedAt                    gorm.DeletedAt
 	BrandName                    string `json:"brand_name"`
 	CompanyName                  string `json:"company_name"`
 	PrimaryEmail                 string `json:"primary_email"`

@@ -21,5 +21,6 @@ var _ = AfterEach(func() {
 		"seller_pricing_details",
 		"vendor_addresses",
 		"seller_configs",
+		"seller_account_managers",
 	)
 })

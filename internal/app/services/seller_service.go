@@ -12,6 +12,7 @@ import (
 	"github.com/shopuptech/work"
 	spb "github.com/voonik/goConnect/api/go/ss2/seller"
 	"github.com/voonik/goFramework/pkg/database"
+	"github.com/voonik/goFramework/pkg/misc"
 
 	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
@@ -19,6 +20,69 @@ import (
 )
 
 type SellerService struct{}
+
+func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
+	filter := helpers.PrepareSellerCommonFilters(params)
+	threadUser := misc.ExtractThreadObject(ctx).UserData
+	if threadUser != nil && threadUser.Phone != utils.EmptyString {
+		sellerCodes, err := models.GetSellerCodesForSA(ctx, threadUser.Phone)
+		if err != nil {
+			return &spb.GetSellersResponse{
+				Message: err.Error(),
+				Status:  utils.Failure,
+			}, nil
+		}
+		filter.UserIDs = sellerCodes
+	} else {
+		filter.FullfillmentType = utils.VoonikFulfilmentType
+	}
+	sellers := []*models.Seller{}
+	query := helpers.QuerySellers(ctx, filter)
+	err := query.Scan(&sellers).Error
+	if err != nil {
+		return &spb.GetSellersResponse{
+			Message: err.Error(),
+			Status:  utils.Failure,
+		}, nil
+	}
+	sellersData := []*spb.SellerObject{}
+	copier.Copy(&sellersData, &sellers) //nolint:errcheck
+	addDefaultSellerConfigs(sellersData)
+	return &spb.GetSellersResponse{
+		Seller:  sellersData,
+		Status:  utils.Success,
+		Message: utils.SellerFetchSuccessMessage,
+	}, nil
+}
+
+func (ss *SellerService) SellerByBrandName(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
+	businessUnits, err := helpers.FetchBuToFilter(ctx, params.BusinessUnits)
+	if err != nil {
+		return &spb.GetSellersResponse{
+			Message: err.Error(),
+			Status:  utils.Failure,
+		}, nil
+	}
+	params.BusinessUnits = businessUnits
+	filter := helpers.PrepareSellerCommonFilters(params)
+	query := helpers.QuerySellers(ctx, filter)
+	query.Select("id,brand_name,user_id")
+	sellers := []*models.Seller{}
+	err = query.Scan(&sellers).Error
+	sellersData := []*spb.SellerObject{}
+	copier.Copy(&sellersData, &sellers) //nolint:errcheck
+	if err != nil {
+		return &spb.GetSellersResponse{
+			Message: err.Error(),
+			Status:  utils.Failure,
+		}, nil
+	}
+	return &spb.GetSellersResponse{
+		Seller:  sellersData,
+		Status:  utils.Success,
+		Message: utils.SellerFetchSuccessMessage,
+	}, nil
+}
 
 func (ss *SellerService) GetByUserID(ctx context.Context, params *spb.GetByUserIDParams) (*spb.GetByUserIDResponse, error) {
 	userId := params.GetUserId()
@@ -67,7 +131,7 @@ func (SellerService) GetSellerByCondition(ctx context.Context, params *spb.GetSe
 	}
 	response.Seller = sellers
 	response.Status = utils.Success
-	response.Message = "fetched seller details successfully"
+	response.Message = utils.SellerFetchSuccessMessage
 	return &response, nil
 }
 
@@ -95,13 +159,10 @@ func (ss *SellerService) GetSellersRelatedToOrder(ctx context.Context, params *s
 		response.Message = "seller not found"
 		return &response, nil
 	}
-	for _, seller := range sellerData {
-		seller.SellerConfig = helpers.GetDefaultSellerConfig()
-		seller.ReturnExchangePolicy = helpers.DefaultsellerReturnExchangePolicy()
-	}
+	addDefaultSellerConfigs(sellerData)
 	response.Seller = sellerData
 	response.Status = utils.Success
-	response.Message = "fetched seller details successfully"
+	response.Message = utils.SellerFetchSuccessMessage
 	return &response, nil
 }
 
@@ -152,7 +213,7 @@ func (ss *SellerService) SellerPhoneRelation(ctx context.Context, params *spb.Se
 	}
 	response.Seller = sellers
 	response.Status = "success"
-	response.Message = "fetched seller details successfully"
+	response.Message = utils.SellerFetchSuccessMessage
 	return &response, nil
 
 }
@@ -284,4 +345,11 @@ func (ss *SellerService) Create(ctx context.Context, params *spb.CreateParams) (
 	}
 
 	return resp, nil
+}
+
+func addDefaultSellerConfigs(sellers []*spb.SellerObject) {
+	for _, seller := range sellers {
+		seller.SellerConfig = helpers.GetDefaultSellerConfig()
+		seller.ReturnExchangePolicy = helpers.DefaultsellerReturnExchangePolicy()
+	}
 }

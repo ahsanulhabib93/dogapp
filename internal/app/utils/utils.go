@@ -118,6 +118,20 @@ func SliceDifference(sliceA, sliceB interface{}) (interface{}, error) {
 	return nil, nil
 }
 
+func Uint64SliceInterSection(sliceA, sliceB []uint64) []uint64 {
+	elementMap := make(map[uint64]bool)
+	commonElements := []uint64{}
+	for _, element := range sliceA {
+		elementMap[element] = true
+	}
+	for _, element := range sliceB {
+		if elementMap[element] {
+			commonElements = append(commonElements, element)
+		}
+	}
+	return commonElements
+}
+
 func isEqual(a, b interface{}) bool {
 	aReflect := reflect.ValueOf(a)
 	bReflect := reflect.ValueOf(b)

@@ -32,6 +32,82 @@ type ExchangeDetails struct {
 	ReturnDaysStartsFrom string `json:"return_days_starts_from"`
 }
 
+type SellerSearchFilters struct {
+	UserIDs          []uint64
+	BusinessUnits    []uint64
+	BrandName        string
+	Page             uint64
+	PerPage          uint64
+	FullfillmentType int
+}
+
+func FetchBuToFilter(ctx context.Context, inputBUs []uint64) ([]uint64, error) {
+	var currentUserID *uint64
+	if currentUserID = utils.GetCurrentUserID(ctx); currentUserID == nil {
+		return inputBUs, nil
+	}
+	userMappingData, err := FetchFormattedUserMappingData(ctx, []uint64{*currentUserID})
+	if err != nil {
+		return nil, err
+	}
+	if userData, ok := userMappingData[*currentUserID]; ok {
+		var buIDs []uint64
+		if len(inputBUs) == utils.Zero {
+			buIDs = userData.BusinessUnits
+		} else if len(userData.BusinessUnits) == utils.Zero {
+			buIDs = inputBUs
+		} else {
+			buIDs = utils.Uint64SliceInterSection(inputBUs, userData.BusinessUnits)
+			if len(buIDs) == utils.Zero {
+				buIDs = []uint64{0} // to return no records
+			}
+		}
+		return buIDs, nil
+	}
+	return inputBUs, nil
+}
+
+func PrepareSellerCommonFilters(params *spb.GetSellerParams) SellerSearchFilters {
+	filter := SellerSearchFilters{}
+	userIDs := []uint64{}
+	if len(params.GetUserId()) > utils.Zero {
+		userIDs = append(userIDs, params.GetUserId()...)
+	}
+	if len(params.GetId()) > utils.Zero {
+		userIDs = append(userIDs, params.GetId()...)
+	}
+	filter.UserIDs = userIDs
+	filter.BusinessUnits = params.GetBusinessUnits()
+	filter.BrandName = params.GetBrandName()
+	filter.Page = params.GetPage()
+	filter.PerPage = params.GetPerPage()
+	return filter
+}
+
+func QuerySellers(ctx context.Context, params SellerSearchFilters) *gorm.DB {
+	query := database.DBAPM(ctx).Model(&models.Seller{})
+	if len(params.UserIDs) > utils.Zero {
+		query = query.Where("user_id in (?)", params.UserIDs)
+	}
+	if params.BrandName != utils.EmptyString {
+		searchValue := fmt.Sprintf("%s%%", params.BrandName)
+		query = query.Where("brand_name like ?", searchValue)
+	}
+	if len(params.BusinessUnits) > utils.Zero {
+		query = query.Where("business_unit in (?)", params.BusinessUnits)
+	}
+	if params.FullfillmentType != utils.Zero {
+		query = query.Where("fullfillment_type = ?", params.FullfillmentType)
+	}
+	if params.PerPage <= 0 || params.PerPage > 10 {
+		params.PerPage = 10
+	}
+	params.Page = utils.Int64Max(utils.DEFAULT_PAGE, params.Page)
+	offset := (params.Page - 1) * params.PerPage
+	query = query.Offset(offset).Limit(params.PerPage)
+	return query
+}
+
 func PerformSendActivationMail(ctx context.Context, sellerIDs []uint64, params *spb.SendActivationMailParams) *spb.BasicApiResponse {
 	resp := &spb.BasicApiResponse{Status: utils.Failure}
 	sellerDetails := GetSellerByIds(ctx, sellerIDs)
