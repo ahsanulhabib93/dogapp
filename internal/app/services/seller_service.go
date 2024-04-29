@@ -36,7 +36,7 @@ func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams)
 	} else {
 		filter.FullfillmentType = utils.VoonikFulfilmentType
 	}
-	sellers := []*spb.SellerObject{}
+	sellers := []*models.Seller{}
 	query := helpers.QuerySellers(ctx, filter)
 	err := query.Scan(&sellers).Error
 	if err != nil {
@@ -45,9 +45,11 @@ func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams)
 			Status:  utils.Failure,
 		}, nil
 	}
-	addDefaultSellerConfigs(sellers)
+	sellersData := []*spb.SellerObject{}
+	copier.Copy(&sellersData, &sellers)
+	addDefaultSellerConfigs(sellersData)
 	return &spb.GetSellersResponse{
-		Seller:  sellers,
+		Seller:  sellersData,
 		Status:  utils.Success,
 		Message: utils.SellerFetchSuccessMessage,
 	}, nil
@@ -65,8 +67,10 @@ func (ss *SellerService) SellerByBrandName(ctx context.Context, params *spb.GetS
 	filter := helpers.PrepareSellerCommonFilters(params)
 	query := helpers.QuerySellers(ctx, filter)
 	query.Select("id,brand_name,user_id")
-	sellers := []*spb.SellerObject{}
+	sellers := []*models.Seller{}
 	err = query.Scan(&sellers).Error
+	sellersData := []*spb.SellerObject{}
+	copier.Copy(&sellersData, &sellers)
 	if err != nil {
 		return &spb.GetSellersResponse{
 			Message: err.Error(),
@@ -74,7 +78,7 @@ func (ss *SellerService) SellerByBrandName(ctx context.Context, params *spb.GetS
 		}, nil
 	}
 	return &spb.GetSellersResponse{
-		Seller:  sellers,
+		Seller:  sellersData,
 		Status:  utils.Success,
 		Message: utils.SellerFetchSuccessMessage,
 	}, nil
