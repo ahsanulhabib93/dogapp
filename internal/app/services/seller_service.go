@@ -24,17 +24,19 @@ type SellerService struct{}
 func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
 	filter := helpers.PrepareSellerCommonFilters(params)
 	threadUser := misc.ExtractThreadObject(ctx).UserData
-	if len(filter.UserIDs) == utils.Zero && threadUser != nil && threadUser.Phone != utils.EmptyString {
-		sellerCodes, err := models.GetSellerCodesForSA(ctx, threadUser.Phone)
-		if err != nil {
-			return &spb.GetSellersResponse{
-				Message: err.Error(),
-				Status:  utils.Failure,
-			}, nil
+	if len(filter.UserIDs) == utils.Zero {
+		if threadUser != nil && threadUser.Phone != utils.EmptyString {
+			sellerCodes, err := models.GetSellerCodesForSA(ctx, threadUser.Phone)
+			if err != nil {
+				return &spb.GetSellersResponse{
+					Message: err.Error(),
+					Status:  utils.Failure,
+				}, nil
+			}
+			filter.UserIDs = sellerCodes
+		} else {
+			filter.FullfillmentType = utils.VoonikFulfilmentType
 		}
-		filter.UserIDs = sellerCodes
-	} else {
-		filter.FullfillmentType = utils.VoonikFulfilmentType
 	}
 	sellers := []*models.Seller{}
 	query := helpers.QuerySellers(ctx, filter)
