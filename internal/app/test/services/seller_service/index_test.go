@@ -28,14 +28,42 @@ var _ = Describe("Index", func() {
 		}
 		seller2 = &models.Seller{
 			UserID:           102,
-			BusinessUnit:     1,
-			BrandName:        "testBrand",
-			FullfillmentType: 1,
+			BusinessUnit:     2,
+			BrandName:        "testBrand2",
+			FullfillmentType: 2,
 		}
 		database.DBAPM(ctx).Model(&models.Seller{}).Create(seller)
 		database.DBAPM(ctx).Model(&models.Seller{}).Create(seller2)
 	})
 	Context("Success cases", func() {
+		Context("Business Unit filter", func() {
+			It("Should filter sellers with BU", func() {
+				resp, err := new(services.SellerService).Index(ctx, &spb.GetSellerParams{
+					BusinessUnits: []uint64{2},
+				})
+				Expect(err).To(BeNil())
+				Expect(resp.Status).To(Equal("success"))
+				Expect(resp.Seller).To(HaveLen(1))
+				sellerData := resp.Seller[0]
+				Expect(sellerData.Id).To(Equal(seller2.ID))
+				Expect(sellerData.UserId).To(Equal(seller2.UserID))
+				Expect(sellerData.BusinessUnit).To(Equal(uint64(seller2.BusinessUnit)))
+			})
+		})
+		Context("BrandName filter", func() {
+			It("Should filter sellers with BrandName", func() {
+				resp, err := new(services.SellerService).Index(ctx, &spb.GetSellerParams{
+					BrandName: seller2.BrandName,
+				})
+				Expect(err).To(BeNil())
+				Expect(resp.Status).To(Equal("success"))
+				Expect(resp.Seller).To(HaveLen(1))
+				sellerData := resp.Seller[0]
+				Expect(sellerData.Id).To(Equal(seller2.ID))
+				Expect(sellerData.UserId).To(Equal(seller2.UserID))
+				Expect(sellerData.BusinessUnit).To(Equal(uint64(seller2.BusinessUnit)))
+			})
+		})
 		Context("When UserID is passed", func() {
 			It("Should filter sellers with userID even if current user is present", func() {
 				ctx = misc.SetInContextThreadObject(ctx, &misc.ThreadObject{VaccountId: 1, PortalId: 1, UserData: &misc.UserData{
@@ -57,13 +85,10 @@ var _ = Describe("Index", func() {
 		})
 		Context("When Current User is not present and userID is not passed", func() {
 			It("Should filter seller with fulfilment type as 2", func() {
-				resp, err := new(services.SellerService).Index(ctx, &spb.GetSellerParams{
-					BusinessUnits: []uint64{uint64(seller.BusinessUnit)},
-					BrandName:     seller.BrandName,
-				})
+				resp, err := new(services.SellerService).Index(ctx, &spb.GetSellerParams{})
 				Expect(err).To(BeNil())
 				Expect(resp.Status).To(Equal("success"))
-				Expect(resp.Seller).To(HaveLen(1))
+				Expect(resp.Seller).To(HaveLen(2))
 				sellerData := resp.Seller[0]
 				Expect(sellerData.Id).To(Equal(seller.ID))
 				Expect(sellerData.BusinessUnit).To(Equal(uint64(seller.BusinessUnit)))
