@@ -24,7 +24,7 @@ type SellerService struct{}
 func (ss *SellerService) Index(ctx context.Context, params *spb.GetSellerParams) (*spb.GetSellersResponse, error) {
 	filter := helpers.PrepareSellerCommonFilters(params)
 	threadUser := misc.ExtractThreadObject(ctx).UserData
-	if threadUser != nil && threadUser.Phone != utils.EmptyString {
+	if len(filter.UserIDs) == utils.Zero && threadUser != nil && threadUser.Phone != utils.EmptyString {
 		sellerCodes, err := models.GetSellerCodesForSA(ctx, threadUser.Phone)
 		if err != nil {
 			return &spb.GetSellersResponse{
