@@ -7,7 +7,7 @@ import (
 
 type PartnerServiceLevel struct {
 	database.VModel
-	ServiceType utils.SupplierType `valid:"required" json:"service_type"`
-	Name        string             `gorm:"type:varchar(255)" json:"name"`
-	Active      bool               `gorm:"default:false" json:"active"`
+	ServiceType utils.ServiceType `valid:"required" json:"service_type"`
+	Name        string            `gorm:"type:varchar(255)" json:"name"`
+	Active      bool              `gorm:"default:false" json:"active"`
 }

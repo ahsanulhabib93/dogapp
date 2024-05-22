@@ -32,6 +32,13 @@ const (
 	ProcurementVendor
 	Employee
 	Vendor
+	OfficeSuppliesAndConsumables
+	LogisticsAndTransportation
+	CleaningAndMaintenance
+	ProfessionalServices
+	UtilitiesAndCommunication
+	EmployeeAndClientRelations
+	Insurance
 )
 
 const (
@@ -199,14 +206,21 @@ const ScheduleEveryDay = "0 0 * * *"
 const SS2UinquePrefixKey = "SS2-PAD-"
 
 var PartnerServiceTypeMapping = map[string]ServiceType{
-	"Supplier":          Supplier,
-	"Transporter":       Transporter,
-	"RentVendor":        RentVendor,
-	"MwsOwner":          MwsOwner,
-	"DoBuyer":           DoBuyer,
-	"ProcurementVendor": ProcurementVendor,
-	"Employee":          Employee,
-	"Vendor":            Vendor,
+	"Supplier":                     Supplier,
+	"Transporter":                  Transporter,
+	"RentVendor":                   RentVendor,
+	"MwsOwner":                     MwsOwner,
+	"DoBuyer":                      DoBuyer,
+	"ProcurementVendor":            ProcurementVendor,
+	"Employee":                     Employee,
+	"Vendor":                       Vendor,
+	"OfficeSuppliesAndConsumables": OfficeSuppliesAndConsumables,
+	"LogisticsAndTransportation":   LogisticsAndTransportation,
+	"CleaningAndMaintenance":       CleaningAndMaintenance,
+	"ProfessionalServices":         ProfessionalServices,
+	"UtilitiesAndCommunication":    UtilitiesAndCommunication,
+	"EmployeeAndClientRelations":   EmployeeAndClientRelations,
+	"Insurance":                    Insurance,
 }
 
 var PartnerServiceLevelMapping = map[string]SupplierType{
