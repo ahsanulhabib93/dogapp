@@ -2,6 +2,7 @@ package helper_tests
 
 import (
 	"context"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,52 +20,52 @@ var _ = Describe("PartnerServiceHelpers", func() {
 		test_utils.GetContext(&ctx)
 	})
 
-	Context("ParseServiceLevels", func() {
-		It("Should return parsed service levels", func() {
-			serviceLevels := []string{"CashVendor", "CreditVendor", "GoldVendor"}
-			Expect(helpers.ParseServiceLevels(serviceLevels)).To(Equal(
-				[]utils.SupplierType{utils.CashVendor, utils.CreditVendor, utils.SupplierType(0)}))
-		})
-	})
-
 	Context("ValidatePartnerSericeEdit", func() {
 		var incoming, existing helpers.PartnerServiceEditEntity
-
 		BeforeEach(func() {
+			cashVendorServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Cash Vendor")
+			creditVendorServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Credit Vendor")
 			aaaModels.InjectMockAppPreferenceServiceInstance(mocks.GetAppPreferenceMock(map[string]interface{}{
-				"edit_allowed_service_levels": []string{"CashVendor", "CreditVendor"},
+				"edit_allowed_service_levels": []string{fmt.Sprint(cashVendorServiceLevel.ID), fmt.Sprint(creditVendorServiceLevel.ID)},
 			}))
 			incoming = helpers.PartnerServiceEditEntity{
-				ServiceType:  utils.Transporter,
-				ServiceLevel: utils.CashVendor,
+				ServiceType:    utils.Transporter,
+				ServiceLevelId: cashVendorServiceLevel.ID,
 			}
 			existing = helpers.PartnerServiceEditEntity{
-				ServiceType:  utils.Transporter,
-				ServiceLevel: utils.CreditVendor,
+				ServiceType:    utils.Transporter,
+				ServiceLevelId: creditVendorServiceLevel.ID,
 			}
 		})
 
 		It("Should return true if incomingServiceLevel is same as existingServiceLevel", func() {
-			incoming.ServiceLevel = utils.CashVendor
-			existing.ServiceLevel = utils.CashVendor
+			cashVendorServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Cash Vendor")
+			incoming.ServiceLevelId = cashVendorServiceLevel.ID
+			existing.ServiceLevelId = cashVendorServiceLevel.ID
 			Expect(helpers.ValidatePartnerSericeEdit(ctx, incoming, existing)).To(Equal(true))
 		})
 
 		It("Should return true if incomingServiceLevel is different from existingServiceLevel and both are allowed", func() {
-			incoming.ServiceLevel = utils.CashVendor
-			existing.ServiceLevel = utils.CreditVendor
+			cashVendorServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Cash Vendor")
+			creditVendorServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Credit Vendor")
+			incoming.ServiceLevelId = cashVendorServiceLevel.ID
+			existing.ServiceLevelId = creditVendorServiceLevel.ID
 			Expect(helpers.ValidatePartnerSericeEdit(ctx, incoming, existing)).To(Equal(true))
 		})
 
 		It("Should return false if incomingServiceLevel is different from existingServiceLevel and either is not allowed", func() {
-			incoming.ServiceLevel = utils.Driver
-			existing.ServiceLevel = utils.CreditVendor
+			driverServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Driver")
+			creditVendorServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Credit Vendor")
+			incoming.ServiceLevelId = driverServiceLevel.ID
+			existing.ServiceLevelId = creditVendorServiceLevel.ID
 			Expect(helpers.ValidatePartnerSericeEdit(ctx, incoming, existing)).To(Equal(false))
 		})
 
 		It("Should return false if incomingServiceLevel is different from existingServiceLevel and both are not allowed", func() {
-			incoming.ServiceLevel = utils.Driver
-			existing.ServiceLevel = utils.Captive
+			driverServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Driver")
+			captiveServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Captive")
+			incoming.ServiceLevelId = driverServiceLevel.ID
+			existing.ServiceLevelId = captiveServiceLevel.ID
 			Expect(helpers.ValidatePartnerSericeEdit(ctx, incoming, existing)).To(Equal(false))
 		})
 	})
