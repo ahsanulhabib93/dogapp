@@ -117,7 +117,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	}
 
 	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
-	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
+	serviceLevel := helpers.GetServiceLevelByTypeAndName(ctx, serviceType, params.GetServiceLevel())
 
 	supplier := models.Supplier{
 		Name:                      params.GetName(),
@@ -140,9 +140,9 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		SupplierOpcMappings:       helpers.PrepareOpcMapping(ctx, params.GetOpcIds(), params.GetCreateWithOpcMapping()),
 		SupplierAddresses:         helpers.PrepareSupplierAddress(params),
 		PartnerServiceMappings: []models.PartnerServiceMapping{{
-			ServiceType:  serviceType,
-			ServiceLevel: serviceLevel,
-			Active:       true,
+			ServiceType:           serviceType,
+			PartnerServiceLevelID: serviceLevel.ID,
+			Active:                true,
 		}},
 	}
 

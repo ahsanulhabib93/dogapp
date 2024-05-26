@@ -19,17 +19,10 @@ func (psm *PartnerServiceMappingService) Add(ctx context.Context, params *psmpb.
 	response := psmpb.BasicApiResponse{Success: false, Message: "Failed to add partner service"}
 
 	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
-	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
+	serviceLevel := helpers.GetServiceLevelByTypeAndName(ctx, serviceType, params.GetServiceLevel())
 
-	if (serviceType == 0) || (serviceLevel == 0) {
+	if (serviceType == 0) || (serviceLevel.ID == 0) {
 		response.Message = "Invalid Service Type and/or Service Level"
-		return &response, nil
-	}
-
-	allowedservicelevel := utils.PartnerServiceTypeLevelMapping[serviceType]
-
-	if !utils.Includes(allowedservicelevel, serviceLevel) {
-		response.Message = "Incompatible Service Type and Service Level"
 		return &response, nil
 	}
 
@@ -40,12 +33,12 @@ func (psm *PartnerServiceMappingService) Add(ctx context.Context, params *psmpb.
 		response.Message = "Partner Not Found"
 	} else {
 		partnerService := models.PartnerServiceMapping{
-			SupplierId:      params.GetSupplierId(),
-			ServiceType:     serviceType,
-			ServiceLevel:    serviceLevel,
-			Active:          true,
-			TradeLicenseUrl: params.GetTradeLicenseUrl(),
-			AgreementUrl:    params.GetAgreementUrl(),
+			SupplierId:            params.GetSupplierId(),
+			ServiceType:           serviceType,
+			PartnerServiceLevelID: serviceLevel.ID,
+			Active:                true,
+			TradeLicenseUrl:       params.GetTradeLicenseUrl(),
+			AgreementUrl:          params.GetAgreementUrl(),
 		}
 
 		err := database.DBAPM(ctx).Save(&partnerService)
@@ -66,7 +59,7 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 	response := psmpb.BasicApiResponse{Message: "Partner Service Added Successfully"}
 
 	var serviceType utils.ServiceType
-	var serviceLevel utils.SupplierType
+	var serviceLevel models.PartnerServiceLevel
 
 	if params.GetPartnerServiceId() == 0 || params.GetSupplierId() == 0 {
 		response.Message = "Invalid Partner/Partner Service ID"
@@ -75,11 +68,9 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 
 	if params.GetServiceType() != "" && params.GetServiceLevel() != "" {
 		serviceType = utils.PartnerServiceTypeMapping[params.GetServiceType()]
-		serviceLevel = utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
+		serviceLevel = helpers.GetServiceLevelByTypeAndName(ctx, serviceType, params.GetServiceLevel())
 
-		allowedservicelevel := utils.PartnerServiceTypeLevelMapping[serviceType]
-
-		if !utils.Includes(allowedservicelevel, serviceLevel) {
+		if serviceLevel.ServiceType != serviceType {
 			response.Message = "Incompatible Service Type and Service Level"
 			return &response, nil
 		}
@@ -91,25 +82,21 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 	partnerService := models.PartnerServiceMapping{}
 	partnerServiceQuery := database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Where("id = ? and supplier_id = ?", params.GetPartnerServiceId(), params.GetSupplierId()).First(&partnerService)
 
-	if serviceLevel == 0 {
-		serviceLevel = partnerService.ServiceLevel
-	}
-
 	if partnerServiceQuery.RecordNotFound() {
 		response.Message = "Partner/Partner Service Not Found"
 	} else if !helpers.ValidatePartnerSericeEdit(ctx, helpers.PartnerServiceEditEntity{
-		ServiceType:  serviceType,
-		ServiceLevel: serviceLevel,
+		ServiceType:    serviceType,
+		ServiceLevelId: serviceLevel.ID,
 	}, helpers.PartnerServiceEditEntity{
-		ServiceType:  partnerService.ServiceType,
-		ServiceLevel: partnerService.ServiceLevel,
+		ServiceType:    partnerService.ServiceType,
+		ServiceLevelId: partnerService.PartnerServiceLevelID,
 	}) {
 		response.Message = "Not allowed to edit Partner Service Info"
 	} else {
 		err := database.DBAPM(ctx).Model(&partnerService).Updates(models.PartnerServiceMapping{
-			ServiceLevel:    serviceLevel,
-			TradeLicenseUrl: params.GetTradeLicenseUrl(),
-			AgreementUrl:    params.GetAgreementUrl(),
+			PartnerServiceLevelID: serviceLevel.ID,
+			TradeLicenseUrl:       params.GetTradeLicenseUrl(),
+			AgreementUrl:          params.GetAgreementUrl(),
 		})
 
 		errorMsg, _ := psm.updateUserStatus(ctx, supplier, params.GetSupplierId())
@@ -163,15 +150,16 @@ func (psm *PartnerServiceMappingService) PartnerTypesList(ctx context.Context, p
 	responseMappings := []*psmpb.PartnerServiceTypeMapping{}
 
 	allowedServiceTypes := helpers.GetAllowedServiceTypes(ctx)
-	for serviceType, serviceLevels := range utils.PartnerServiceTypeLevelMapping {
+	serviceTypeLevelMappings := helpers.GetServiceTypeLevelMappings(ctx)
+	for _, serviceType := range utils.PartnerServiceTypeMapping {
 		if !utils.Includes(allowedServiceTypes, serviceType.String()) {
 			continue // Skipping if not allowed
 		}
 
 		object := psmpb.PartnerServiceTypeMapping{}
 		object.PartnerType = serviceType.String()
-		for _, serviceLevel := range serviceLevels {
-			object.ServiceTypes = append(object.ServiceTypes, serviceLevel.String())
+		for _, serviceLevel := range serviceTypeLevelMappings[serviceType] {
+			object.ServiceTypes = append(object.ServiceTypes, serviceLevel.Name)
 		}
 
 		responseMappings = append(responseMappings, &object)

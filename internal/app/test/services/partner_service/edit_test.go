@@ -43,7 +43,8 @@ var _ = Describe("EditPartnerService", func() {
 	Context("When proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{Status: models.SupplierStatusVerified})
-			partnerservice2 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.Captive, SupplierId: supplier1.ID})
+			captiveServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Captive")
+			partnerservice2 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, PartnerServiceLevelID: captiveServiceLevel.ID, SupplierId: supplier1.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
@@ -95,7 +96,8 @@ var _ = Describe("EditPartnerService", func() {
 	Context("When service type and level are incompatible", func() {
 		It("Should return failure response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.Captive, SupplierId: supplier1.ID})
+			captiveServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Captive")
+			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, PartnerServiceLevelID: captiveServiceLevel.ID, SupplierId: supplier1.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
@@ -115,7 +117,8 @@ var _ = Describe("EditPartnerService", func() {
 	Context("When service type is edited", func() {
 		It("Should return failure response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.RedxHubVendor, SupplierId: supplier1.ID})
+			redxHubVendorServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Redx Hub Vendor")
+			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, PartnerServiceLevelID: redxHubVendorServiceLevel.ID, SupplierId: supplier1.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
@@ -134,13 +137,14 @@ var _ = Describe("EditPartnerService", func() {
 	Context("When service level edit is not allowed", func() {
 		It("Should return failure response", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.Captive, SupplierId: supplier1.ID})
+			captiveServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Captive")
+			partnerservice1 := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, PartnerServiceLevelID: captiveServiceLevel.ID, SupplierId: supplier1.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier1.ID,
 				PartnerServiceId: partnerservice1.ID,
 				ServiceType:      "Transporter",
-				ServiceLevel:     "CashVendor",
+				ServiceLevel:     "Cash Vendor",
 			}
 
 			res, _ := new(services.PartnerServiceMappingService).Edit(ctx, &param)

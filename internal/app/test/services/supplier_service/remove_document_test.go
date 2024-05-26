@@ -10,6 +10,7 @@ import (
 	eventBus "github.com/voonik/goConnect/api/go/event_bus/publisher"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	aaaMocks "github.com/voonik/goFramework/pkg/aaa/models/mocks"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/publisher"
 	mockPublisher "github.com/voonik/ss2/internal/app/publisher/mocks"
 
@@ -123,12 +124,13 @@ var _ = Describe("RemoveDocument", func() {
 
 	Context("Removing agreement_url for given partner service mapping", func() {
 		It("Should remove document successfully", func() {
+			driverServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Driver")
 			partnerService := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
-				ServiceType:  utils.Transporter,
-				ServiceLevel: utils.Driver,
-				SupplierId:   supplier.ID,
-				AgreementUrl: "abc/xyz.pdf",
-				Active:       true,
+				ServiceType:           utils.Transporter,
+				PartnerServiceLevelID: driverServiceLevel.ID,
+				SupplierId:            supplier.ID,
+				AgreementUrl:          "abc/xyz.pdf",
+				Active:                true,
 			})
 
 			param := &supplierpb.RemoveDocumentParam{

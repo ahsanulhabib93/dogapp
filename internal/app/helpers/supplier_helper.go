@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -76,21 +77,26 @@ func PrepareFilter(ctx context.Context, query *gorm.DB, params *supplierPb.ListP
 		query = query.Where("partner_service_mappings.service_type IN (?)", serviceTypes)
 	}
 
-	// partner_service_mappings is already joined in places where PrepareFilter is called
 	if len(params.GetTypes()) != 0 {
-		query = query.Where("partner_service_mappings.service_level IN (?)", params.GetTypes())
+		query = query.Where("partner_service_mappings.partner_service_level_id IN (?)", params.GetTypes())
 	}
 
 	if len(params.GetServiceLevels()) != 0 {
-		var serviceLevels []utils.SupplierType
-		for _, serviceLevel := range params.GetServiceLevels() {
-			if val, ok := utils.PartnerServiceLevelMapping[serviceLevel]; ok {
-				serviceLevels = append(serviceLevels, val)
-			}
-		}
-		query = query.Where("partner_service_mappings.service_level IN (?)", serviceLevels)
+		serviceLevelIds := getServiceLevelForFiltering(ctx, params.GetServiceLevels())
+		query = query.Where("partner_service_mappings.partner_service_level_id IN (?)", serviceLevelIds)
 	}
 	return query
+}
+
+func getServiceLevelForFiltering(ctx context.Context, names []string) []uint64 {
+	var serviceLevels []uint64
+	serviceLevelNameMapping := GetServiceLevelIdMapping(ctx)
+	for _, name := range names {
+		if val, ok := serviceLevelNameMapping[name]; ok {
+			serviceLevels = append(serviceLevels, val)
+		}
+	}
+	return serviceLevels
 }
 
 func SetPage(ctx context.Context, query *gorm.DB, params *supplierPb.ListParams) {
@@ -190,7 +196,7 @@ func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supp
 
 func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []*supplierPb.PartnerServiceObject {
 	partnerServiceData := []*supplierPb.PartnerServiceObject{}
-
+	serviceLevelNameMapping := GetServiceLevelNameMapping(ctx)
 	partnerServices := supplier.PartnerServiceMappings // preloaded
 	for _, partnerService := range partnerServices {
 		partnerServiceData = append(partnerServiceData, &supplierPb.PartnerServiceObject{
@@ -199,7 +205,7 @@ func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []
 			AgreementUrl:    partnerService.AgreementUrl,
 			TradeLicenseUrl: partnerService.TradeLicenseUrl,
 			ServiceType:     partnerService.ServiceType.String(),
-			ServiceLevel:    partnerService.ServiceLevel.String(),
+			ServiceLevel:    serviceLevelNameMapping[partnerService.PartnerServiceLevelID],
 		})
 	}
 
@@ -260,14 +266,49 @@ func PrepareSupplierAddress(params *supplierPb.SupplierParam) []models.SupplierA
 	}}
 }
 
-// IsValidStatusUpdate ...
+func verify(ctx context.Context, supplier *models.Supplier) error {
+	paymentAccountsCount := database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Count()
+	if paymentAccountsCount == 0 {
+		return errors.New("At least one payment account details should be present")
+	}
+
+	addressesCount := database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Count()
+	if addressesCount == 0 {
+		return errors.New("At least one supplier address should be present")
+	}
+
+	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent(ctx)) {
+		return errors.New("At least one primary document or OTP verification needed")
+	}
+
+	// TBD: How to handle if multiple service mappings present
+	partnerService := models.PartnerServiceMapping{}
+	database.DBAPM(ctx).Model(models.PartnerServiceMapping{}).Where("supplier_id = ?", supplier.ID).First(&partnerService)
+	serviceLevelNameMapping := GetServiceLevelNameMapping(ctx)
+	typeValue := serviceLevelNameMapping[partnerService.PartnerServiceLevelID]
+
+	otpTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_otp_verification", []string{}).([]string)
+	if utils.IsInclude(otpTypeVerificationList, typeValue) && !supplier.IsOTPVerified() {
+		msg := fmt.Sprint("OTP verification required for supplier type: ", typeValue)
+		return errors.New(msg)
+	}
+
+	docTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_primary_doc_verification", []string{}).([]string)
+	if utils.IsInclude(docTypeVerificationList, typeValue) && !(supplier.IsAnyDocumentPresent(ctx)) {
+		msg := fmt.Sprint("At least one primary document required for supplier type: ", typeValue)
+		return errors.New(msg)
+	}
+
+	return nil
+}
+
 func IsValidStatusUpdate(ctx context.Context, supplier models.Supplier, newStatus models.SupplierStatus) (valid bool, message string) {
 	if !isValidStatus(newStatus) {
 		return false, "Invalid Status"
 	} else if !isValidStatusTransition(supplier.Status, newStatus) {
 		return false, "Status transition not allowed"
 	} else if newStatus == models.SupplierStatusVerified {
-		err := supplier.Verify(ctx)
+		err := verify(ctx, &supplier)
 		if err != nil {
 			return false, err.Error()
 		}
@@ -351,7 +392,7 @@ func GetAllowedServiceTypes(ctx context.Context) []string {
 	globalPermission := utils.IsInclude(permissions, "supplierpanel:allservices:view")
 	allServiceAccess := frameworkUser || globalPermission
 
-	for serviceType := range utils.PartnerServiceTypeLevelMapping {
+	for _, serviceType := range utils.PartnerServiceTypeMapping {
 		requiedPermission := fmt.Sprintf("supplierpanel:%sservice:view", strings.ToLower(serviceType.String()))
 		if allServiceAccess || utils.IsInclude(permissions, requiedPermission) {
 			allowedServiceTypes = append(allowedServiceTypes, serviceType.String())
