@@ -94,7 +94,7 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 	query.Count(&total)
 	helpers.SetPage(ctx, query, params)
 	suppliersWithAddresses := []models.Supplier{{}}
-	query.Select("suppliers.*, partner_service_mappings.service_level_id supplier_type").
+	query.Select("suppliers.*, partner_service_mappings.partner_service_level_id supplier_type").
 		Find(&suppliersWithAddresses)
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
@@ -478,7 +478,7 @@ func (ss *SupplierService) getResponseField() string {
 	s := []string{
 		"suppliers.id",
 		"suppliers.status",
-		"partner_service_mappings.service_level_id supplier_type",
+		"partner_service_mappings.partner_service_level_id supplier_type",
 		"suppliers.name",
 		"suppliers.email",
 		"suppliers.phone",
