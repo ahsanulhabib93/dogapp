@@ -2,9 +2,12 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
+	"time"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/misc"
@@ -47,6 +50,16 @@ func GetCurrentUserPermissions(ctx context.Context) []string {
 	}
 
 	return []string{}
+}
+
+func ParamCount(params ...[]uint64) int {
+	count := 0
+	for _, param := range params {
+		if len(param) > 0 {
+			count += 1
+		}
+	}
+	return count
 }
 
 func Int64Min(a, b uint64) uint64 {
@@ -103,6 +116,20 @@ func SliceDifference(sliceA, sliceB interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("arguments should be slices")
 	}
 	return nil, nil
+}
+
+func Uint64SliceInterSection(sliceA, sliceB []uint64) []uint64 {
+	elementMap := make(map[uint64]bool)
+	commonElements := []uint64{}
+	for _, element := range sliceA {
+		elementMap[element] = true
+	}
+	for _, element := range sliceB {
+		if elementMap[element] {
+			commonElements = append(commonElements, element)
+		}
+	}
+	return commonElements
 }
 
 func isEqual(a, b interface{}) bool {
@@ -182,4 +209,47 @@ func GetCommonElements(arr1 []string, arr2 []string) []string {
 	}
 
 	return commonElements
+}
+
+func GetArrIntToArrStr(arrInt []uint64) []string {
+	arrStr := make([]string, len(arrInt))
+	for i, access := range arrInt {
+		arrStr[i] = strconv.Itoa(int(access))
+	}
+	return arrStr
+}
+
+func CopyStructAtoB(a, b interface{}) (err error) {
+	temp, err := json.Marshal(a)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(temp, b)
+	if err != nil {
+		panic(err)
+	}
+	return err
+}
+
+func CheckForOlderDate(dateStr string) bool {
+	date, _ := time.Parse(DefaultDateFormat, dateStr)
+	currentDate := time.Now()
+	return date.Before(currentDate)
+}
+
+func FetchMonthAndYear(dateStr string) (string, string) {
+	date, _ := time.Parse(DefaultDateFormat, dateStr)
+	month := fmt.Sprintf("%02d", int(date.Month()))
+	year := fmt.Sprintf("%04d", date.Year())
+	return month, year
+}
+
+func CreatePaywellUniqueKey(id uint64) string {
+	uniqueId := SS2UinquePrefixKey + strconv.FormatUint(uint64(id), 10)
+	return uniqueId
+}
+
+func ValidDate(dateStr string) bool {
+	_, err := time.Parse(DefaultDateFormat, dateStr)
+	return err == nil
 }

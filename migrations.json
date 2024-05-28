@@ -1,6 +1,11 @@
 {
     "scopes": [
         {
+            "id": "sellerpanel",
+            "description": "seller panel",
+            "vaccount_id": 2
+        },
+        {
           "id": "supplierpanel",
           "description": "supplier panel",
           "vaccount_id": 12
@@ -26,6 +31,41 @@
             "name": "supplier",
             "description": "supplier role",
             "vaccount_id": 2
+        },
+        {
+            "name": "Vendor Panel Manager",
+            "description": "Base roles for all vendors",
+            "vaccount_id": 2
+        },
+        {
+            "name": "Rent Vendor",
+            "description": "Role for rent vendors",
+            "vaccount_id": 2
+        },
+        {
+            "name": "Mws Management",
+            "description": "Role for Manging Mws",
+            "vaccount_id": 2
+        },
+        {
+            "name": "Do Buyer",
+            "description": "Role for DO Buyer",
+            "vaccount_id": 2
+        },
+        {
+            "name": "Procurement Vendor",
+            "description": "Role for Procurement Vendor",
+            "vaccount_id": 2
+        },
+        {
+            "name": "Employee",
+            "description": "Role for Employee",
+            "vaccount_id": 2
+        },
+        {
+            "name": "Vendor",
+            "description": "Role for Vendor",
+            "vaccount_id": 2
         }
     ],
     "role_scopes": [
@@ -43,9 +83,35 @@
             "role_name": "Cargo SS2 Admin",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
+        },
+        {
+            "role_name": "Do Buyer",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Procurement Vendor",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Employee",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
         }
     ],
     "permissions": [
+        {
+            "id": "sellerpanel:sellers:view",
+            "description": "Seller listing apis",
+            "scope_id": "sellerpanel",
+            "vaccount_id": 2
+        },
         {
             "id": "supplierpanel:supplierstatusupdateapi:admin",
             "description": "supplier Status update API",
@@ -183,9 +249,83 @@
             "description": "Remove Document API access",
             "scope_id": "supplierpanel",
             "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:rentvendorservice:view",
+            "description": "Access to view rent vendors",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:mwsownerservice:view",
+            "description": "Access to view mws vendors",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:dobuyerservice:view",
+            "description": "Access to view do buyers",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:procurementvendorservice:view",
+            "description": "Access to view procurement vendors",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:employeeservice:view",
+            "description": "Access to view employees",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:vendorservice:view",
+            "description": "Access to view vendors",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:attachment:admin",
+            "description": "Access to add attachments",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:attachment:admin",
+            "description": "Access to add attachments",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:attachment:view",
+            "description": "Access to view attachments",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 12
+        },
+        {
+            "id": "supplierpanel:attachment:view",
+            "description": "Access to view attachments",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
         }
     ],
     "route_permissions": [
+        {
+            "route": "/seller/index",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "sellerpanel:sellers:view",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/seller/search_seller_brand_name",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "sellerpanel:sellers:view",
+            "vaccount_id": 2
+        },
         {
             "route": "/supplier/update_status",
             "request_method": "POST",
@@ -460,6 +600,27 @@
             "vaccount_id": 2
         },
         {
+            "route": "/app_preferences/index",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "admin:appPreferencePanel:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/app_preferences/create",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "admin:appPreferencePanel:create",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/app_preferences/update",
+            "request_method": "PUT",
+            "service": "ss2",
+            "required_permission_id": "admin:appPreferencePanel:update",
+            "vaccount_id": 12
+        },
+        {
             "route": "/partner_service/add",
             "request_method": "POST",
             "service": "ss2",
@@ -513,6 +674,48 @@
             "service": "ss2",
             "required_permission_id": "supplierpanel:supplierlistadminapi:admin",
             "vaccount_id": 12
+        },
+        {
+            "route": "/attachment/add_attachment",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/attachment/remove_attachment",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 2
+        },
+        {
+            "route": "/attachment/add_attachment",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/attachment/remove_attachment",
+            "request_method": "POST",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/attachment/file_types/list",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:view",
+            "vaccount_id": 12
+        },
+        {
+            "route": "/attachment/file_types/list",
+            "request_method": "GET",
+            "service": "ss2",
+            "required_permission_id": "supplierpanel:attachment:view",
+            "vaccount_id": 2
         }
     ],
     "role_permissions": [
@@ -617,6 +820,16 @@
             "vaccount_id": 2
         },
         {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "admin:appPreferencePanel:view",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "admin:appPreferencePanel:update",
+            "vaccount_id": 12
+        },
+        {
             "role_name": "ss2owner",
             "permission_id": "supplierpanel:partnerservice:admin",
             "vaccount_id": 2
@@ -629,6 +842,11 @@
         {
             "role_name": "Cargo SS2 Admin",
             "permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "admin:appPreferencePanel:create",
             "vaccount_id": 12
         },
         {
@@ -739,6 +957,131 @@
         {
             "role_name": "Digital Credit Team",
             "permission_id": "wmsroutes:Warehouse:listWarehouses",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "oms:opclist:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:partnermodule:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:partnerservice:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:removedocument:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:supplierlist:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:supplierlistadminapi:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:supplierphoneverificationpi:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "wmsroutes:Warehouse:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "wmsroutes:Warehouse:listWarehouses",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Rent Vendor",
+            "permission_id": "supplierpanel:rentvendorservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Mws Management",
+            "permission_id": "supplierpanel:mwsownerservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Do Buyer",
+            "permission_id": "supplierpanel:dobuyerservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "DO Liquidator",
+            "permission_id": "supplierpanel:dobuyerservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "DO Liquidator",
+            "permission_id": "supplierpanel:supplierlist:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "DO Liquidator",
+            "permission_id": "supplierpanel:supplierlistapi:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Procurement Vendor",
+            "permission_id": "supplierpanel:procurementvendorservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Employee",
+            "permission_id": "supplierpanel:employeeservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:vendorservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "ss2owner",
+            "permission_id": "supplierpanel:attachment:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Cargo SS2 Admin",
+            "permission_id": "supplierpanel:attachment:view",
+            "vaccount_id": 12
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:attachment:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor Panel Manager",
+            "permission_id": "supplierpanel:attachment:admin",
             "vaccount_id": 2
         }
     ]

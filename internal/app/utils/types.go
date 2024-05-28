@@ -2,16 +2,26 @@ package utils
 
 var AllowedUploadType = map[string][]string{
 	// key - name - extension
-	"SupplierShopImage":      {"shop_images", "", "jpg"},
-	"SupplierNIDFrontImage":  {"nid_front_images", "", "jpg"},
-	"SupplierNIDBackImage":   {"nid_back_images", "", "jpg"},
-	"SupplierTradeLicense":   {"trade_licenses", "", "pdf"},
-	"SupplierAgreement":      {"agreements", "", "pdf"},
-	"ShopOwnerImage":         {"shop_owner_images", "", "jpg"},
-	"GuarantorImage":         {"guarantor_images", "", "jpg"},
-	"GuarantorNIDFrontImage": {"guarantor_nid_front_images", "", "jpg"},
-	"GuarantorNIDBackImage":  {"guarantor_nid_back_images", "", "jpg"},
-	"ChequeImage":            {"cheque_images", "", "jpg"},
+	"SupplierShopImage":        {"shop_images", "", "jpg"},
+	"SupplierNIDFrontImage":    {"nid_front_images", "", "jpg"},
+	"SupplierNIDBackImage":     {"nid_back_images", "", "jpg"},
+	"SupplierTradeLicense":     {"trade_licenses", "", "pdf"},
+	"SupplierAgreement":        {"agreements", "", "pdf"},
+	"ShopOwnerImage":           {"shop_owner_images", "", "jpg"},
+	"GuarantorImage":           {"guarantor_images", "", "jpg"},
+	"GuarantorNIDFrontImage":   {"guarantor_nid_front_images", "", "jpg"},
+	"GuarantorNIDBackImage":    {"guarantor_nid_back_images", "", "jpg"},
+	"ChequeImage":              {"cheque_images", "", "jpg"},
+	"SecurityCheque":           {"security_cheque", "", "jpg"},
+	"GuarantorNID":             {"guarantor_nid", "", "jpg"},
+	"TIN":                      {"tin", "", "jpg"},
+	"BIN":                      {"bin", "", "jpg"},
+	"IncorporationCertificate": {"incorporation_certificate", "", "jpg"},
+	"TradeLicense":             {"trade_license", "", "jpg"},
+	"PartnershipDeed":          {"partnership_deed", "", "jpg"},
+	"EngagementLetter":         {"engagement_letter", "", "jpg"},
+	"ConfirmationLetter":       {"confirmation_letter", "", "jpg"},
+	"AcknowledgementLetter":    {"acknowledgement_letter", "", "jpg"},
 }
 
 var SupplierPrimaryDocumentType = []string{
@@ -34,6 +44,17 @@ var SupplierSecondaryDocumentType = []string{
 
 var PartnerServiceTypeLevelMapping = map[ServiceType][]SupplierType{
 	// service type - service level
-	Supplier:    {L0, L1, L2, L3, Hlc},
-	Transporter: {Captive, Driver, CashVendor, RedxHubVendor, CreditVendor},
+	Supplier:          {L0, L1, L2, L3, Hlc},
+	Transporter:       {Captive, Driver, CashVendor, RedxHubVendor, CreditVendor},
+	RentVendor:        {HubRent, WarehouseRent, DBHouseRent, OfficeRent},
+	MwsOwner:          {Mws},
+	DoBuyer:           {Buyer},
+	ProcurementVendor: {Procurement},
+	Employee:          {InternalEmployee},
+	Vendor:            {ExternalVendor},
+}
+
+var AttachableFileTypeMapping = map[AttachableType][]FileType{
+	AttachableTypeSupplier:              {SecurityCheque, GuarantorNID, TIN, BIN, IncorporationCertificate, TradeLicense, PartnershipDeed, EngagementLetter, ConfirmationLetter, AcknowledgementLetter},
+	AttachableTypePartnerServiceMapping: {},
 }

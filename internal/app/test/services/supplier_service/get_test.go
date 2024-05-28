@@ -40,11 +40,26 @@ var _ = Describe("GetSupplier", func() {
 						AgreementUrl: "abc.com",
 					}},
 				})
-				test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
+				psMapping := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
 					SupplierId:   supplier.ID,
 					ServiceType:  utils.Transporter,
 					ServiceLevel: utils.Driver,
 					Active:       false,
+				})
+				attachment1 := test_helper.CreateAttachment(ctx, &models.Attachment{
+					AttachableType: utils.AttachableTypeSupplier,
+					AttachableID:   supplier.ID,
+					FileType:       utils.TIN,
+				})
+				attachment2 := test_helper.CreateAttachment(ctx, &models.Attachment{
+					AttachableType: utils.AttachableTypeSupplier,
+					AttachableID:   supplier.ID,
+					FileType:       utils.BIN,
+				})
+				attachment3 := test_helper.CreateAttachment(ctx, &models.Attachment{
+					AttachableType: utils.AttachableTypePartnerServiceMapping,
+					AttachableID:   psMapping.ID,
+					FileType:       utils.SecurityCheque,
 				})
 
 				supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
@@ -69,9 +84,6 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.GuarantorImageUrl).To(Equal(supplier.GuarantorImageUrl))
 				Expect(resp.Data.Status).To(Equal(string(models.SupplierStatusPending)))
 
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
-				Expect(resp.Data.AgreementUrl).To(Equal("abc.com"))
-
 				Expect(resp.Data.PartnerServices).To(HaveLen(2))
 				Expect(resp.Data.PartnerServices[0].ServiceType).To(Equal("Supplier"))
 				Expect(resp.Data.PartnerServices[0].ServiceLevel).To(Equal("Hlc"))
@@ -79,6 +91,28 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.PartnerServices[1].ServiceType).To(Equal("Transporter"))
 				Expect(resp.Data.PartnerServices[1].ServiceLevel).To(Equal("Driver"))
 				Expect(resp.Data.PartnerServices[1].Active).To(Equal(false))
+
+				Expect(len(resp.Data.Attachments)).To(Equal(3))
+				Expect(resp.Data.Attachments[0].Id).To(Equal(attachment1.ID))
+				Expect(resp.Data.Attachments[0].FileType).To(Equal("TIN"))
+				Expect(resp.Data.Attachments[0].AttachableType).To(Equal(uint64(1)))
+				Expect(resp.Data.Attachments[0].AttachableId).To(Equal(supplier.ID))
+				Expect(resp.Data.Attachments[0].FileUrl).To(Equal(attachment1.FileURL))
+				Expect(resp.Data.Attachments[0].ReferenceNumber).To(Equal(attachment1.ReferenceNumber))
+
+				Expect(resp.Data.Attachments[1].Id).To(Equal(attachment2.ID))
+				Expect(resp.Data.Attachments[1].FileType).To(Equal("BIN"))
+				Expect(resp.Data.Attachments[1].AttachableType).To(Equal(uint64(1)))
+				Expect(resp.Data.Attachments[1].AttachableId).To(Equal(supplier.ID))
+				Expect(resp.Data.Attachments[1].FileUrl).To(Equal(attachment2.FileURL))
+				Expect(resp.Data.Attachments[1].ReferenceNumber).To(Equal(attachment2.ReferenceNumber))
+
+				Expect(resp.Data.Attachments[2].Id).To(Equal(attachment3.ID))
+				Expect(resp.Data.Attachments[2].FileType).To(Equal("SecurityCheque"))
+				Expect(resp.Data.Attachments[2].AttachableType).To(Equal(uint64(2)))
+				Expect(resp.Data.Attachments[2].AttachableId).To(Equal(psMapping.ID))
+				Expect(resp.Data.Attachments[2].FileUrl).To(Equal(attachment3.FileURL))
+				Expect(resp.Data.Attachments[2].ReferenceNumber).To(Equal(attachment3.ReferenceNumber))
 
 				Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))
 				Expect(resp.Data.SupplierAddresses[0].Firstname).To(Equal(supplierAddress.Firstname))
@@ -123,7 +157,6 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.Name).To(Equal(supplier.Name))
 				Expect(resp.Data.CategoryIds).To(Equal([]uint64{2}))
 				Expect(resp.Data.OpcIds).To(Equal([]uint64{2, 4}))
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
 			})
 		})
 
@@ -147,10 +180,10 @@ var _ = Describe("GetSupplier", func() {
 				paymentDetail1 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
 				paymentDetail2 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
 				paymentDetail3 := test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: false})
-				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, PaymentAccountDetailID: paymentDetail1.ID})
-				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, PaymentAccountDetailID: paymentDetail1.ID})
+				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, DhCode: "1,2", PaymentAccountDetailID: paymentDetail1.ID})
+				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, DhCode: "3", PaymentAccountDetailID: paymentDetail1.ID})
 				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 10, PaymentAccountDetailID: paymentDetail2.ID})
-				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, PaymentAccountDetailID: paymentDetail3.ID})
+				test_helper.CreatePaymentAccountDetailWarehouseMappings(ctx, &models.PaymentAccountDetailWarehouseMapping{WarehouseID: 11, DhCode: "5", PaymentAccountDetailID: paymentDetail3.ID})
 
 				resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{
 					Id:          supplier.ID,
@@ -174,9 +207,6 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Data.GuarantorNidNumber).To(Equal(supplier.GuarantorNidNumber))
 				Expect(resp.Data.GuarantorImageUrl).To(Equal(supplier.GuarantorImageUrl))
 				Expect(resp.Data.Status).To(Equal(string(models.SupplierStatusPending)))
-
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Hlc)))
-				Expect(resp.Data.AgreementUrl).To(Equal("abc.com"))
 
 				Expect(len(resp.Data.SupplierAddresses)).To(Equal(1))
 				Expect(resp.Data.SupplierAddresses[0].Firstname).To(Equal(supplierAddress.Firstname))
@@ -203,6 +233,9 @@ var _ = Describe("GetSupplier", func() {
 					return resp.Data.PaymentAccountDetails[0].Warehouses[i] < resp.Data.PaymentAccountDetails[0].Warehouses[j]
 				})
 				Expect(resp.Data.PaymentAccountDetails[0].Warehouses).To(Equal([]uint64{10, 11}))
+				Expect(resp.Data.PaymentAccountDetails[0].DhCode).To(Equal([]string{"1", "2"}))
+				Expect(resp.Data.PaymentAccountDetails[0].WarehouseDhCodeMap[10].GetDhCode()).To(Equal([]string{"1", "2"}))
+				Expect(resp.Data.PaymentAccountDetails[0].WarehouseDhCodeMap[11].GetDhCode()).To(Equal([]string{"3"}))
 
 				Expect(resp.Data.PaymentAccountDetails[1].Id).To(Equal(paymentDetail2.ID))
 				Expect(resp.Data.PaymentAccountDetails[1].AccountName).To(Equal(paymentDetail2.AccountName))
@@ -218,6 +251,8 @@ var _ = Describe("GetSupplier", func() {
 					return resp.Data.PaymentAccountDetails[1].Warehouses[i] < resp.Data.PaymentAccountDetails[1].Warehouses[j]
 				})
 				Expect(resp.Data.PaymentAccountDetails[1].Warehouses).To(Equal([]uint64{10}))
+				Expect(resp.Data.PaymentAccountDetails[1].DhCode).To(HaveLen(0))
+				Expect(resp.Data.PaymentAccountDetails[1].WarehouseDhCodeMap[10].GetDhCode()).To(HaveLen(0))
 			})
 		})
 
@@ -242,7 +277,6 @@ var _ = Describe("GetSupplier", func() {
 				Expect(resp.Success).To(Equal(true))
 
 				Expect(resp.Data.Email).To(Equal(supplier.Email))
-				Expect(resp.Data.SupplierType).To(Equal(uint64(utils.Driver)))
 				Expect(len(resp.Data.PartnerServices)).To(Equal(1))
 				Expect(resp.Data.PartnerServices[0].ServiceType).To(Equal("Transporter"))
 				Expect(resp.Data.PartnerServices[0].ServiceLevel).To(Equal("Driver"))

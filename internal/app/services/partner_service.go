@@ -26,7 +26,7 @@ func (psm *PartnerServiceMappingService) Add(ctx context.Context, params *psmpb.
 		return &response, nil
 	}
 
-	allowedservicelevel, _ := utils.PartnerServiceTypeLevelMapping[serviceType]
+	allowedservicelevel := utils.PartnerServiceTypeLevelMapping[serviceType]
 
 	if !utils.Includes(allowedservicelevel, serviceLevel) {
 		response.Message = "Incompatible Service Type and Service Level"
@@ -77,7 +77,7 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 		serviceType = utils.PartnerServiceTypeMapping[params.GetServiceType()]
 		serviceLevel = utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
 
-		allowedservicelevel, _ := utils.PartnerServiceTypeLevelMapping[serviceType]
+		allowedservicelevel := utils.PartnerServiceTypeLevelMapping[serviceType]
 
 		if !utils.Includes(allowedservicelevel, serviceLevel) {
 			response.Message = "Incompatible Service Type and Service Level"
@@ -97,8 +97,14 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 
 	if partnerServiceQuery.RecordNotFound() {
 		response.Message = "Partner/Partner Service Not Found"
-	} else if utils.ServiceType(partnerService.ServiceType) != utils.ServiceType(serviceType) {
-		response.Message = "Not allowed to edit Partner Type"
+	} else if !helpers.ValidatePartnerSericeEdit(ctx, helpers.PartnerServiceEditEntity{
+		ServiceType:  serviceType,
+		ServiceLevel: serviceLevel,
+	}, helpers.PartnerServiceEditEntity{
+		ServiceType:  partnerService.ServiceType,
+		ServiceLevel: partnerService.ServiceLevel,
+	}) {
+		response.Message = "Not allowed to edit Partner Service Info"
 	} else {
 		err := database.DBAPM(ctx).Model(&partnerService).Updates(models.PartnerServiceMapping{
 			ServiceLevel:    serviceLevel,
@@ -119,7 +125,7 @@ func (psm *PartnerServiceMappingService) Edit(ctx context.Context, params *psmpb
 		}
 	}
 
-	log.Printf("PartnerServiceMappingService Edit response: %+v", response)
+	log.Printf("PartnerServiceMappingService Edit response: Success: %+v, Message: %+v, Id: %+v", response.Success, response.Message, response.Id)
 	return &response, nil
 }
 
@@ -149,7 +155,7 @@ func (psm *PartnerServiceMappingService) UpdateStatus(ctx context.Context, param
 		}
 	}
 
-	log.Printf("PartnerServiceMappingService UpdateStatus response: %+v", response)
+	log.Printf("PartnerServiceMappingService UpdateStatus response: Success: %+v, Message: %+v, Id: %+v", response.Success, response.Message, response.Id)
 	return &response, nil
 }
 

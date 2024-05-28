@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/shopuptech/go-libs/logger"
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
@@ -48,9 +49,11 @@ func (ss *SupplierService) Get(ctx context.Context, params *supplierpb.GetSuppli
 
 	resp.Data = helpers.PrepareSupplierResponse(ctx, supplier, supplierData)
 	resp.Data.PaymentAccountDetails = helpers.GetPaymentAccountDetails(ctx, supplier, params.GetWarehouseId())
+	resp.Data.Attachments = helpers.GetAttachments(ctx, supplier.ID, resp.Data.PartnerServices)
+
 	resp.Success = true
 
-	log.Printf("GetSupplierResponse: %+v", resp)
+	log.Printf("GetSupplierResponse: Success: %+v, Data: %+v", resp.Success, resp.Data)
 	return &resp, nil
 }
 
@@ -72,7 +75,7 @@ func (ss *SupplierService) List(ctx context.Context, params *supplierpb.ListPara
 	query.Select(ss.getResponseField()).Scan(&suppliersData)
 	resp.Data = helpers.PrepareListResponse(ctx, suppliersData)
 
-	log.Printf("ListSupplierResponse: %+v", resp)
+	log.Printf("ListSupplierResponse: Data: %+v, TotalCount: %+v", resp.Data, resp.TotalCount)
 	return &resp, nil
 }
 
@@ -95,9 +98,12 @@ func (ss *SupplierService) ListWithSupplierAddresses(ctx context.Context, params
 		Find(&suppliersWithAddresses)
 
 	temp, _ := json.Marshal(suppliersWithAddresses)
-	json.Unmarshal(temp, &resp.Data)
+	err := json.Unmarshal(temp, &resp.Data)
+	if err != nil {
+		logger.Log().Errorf("Unmarshal Error: %+v", err)
+	}
 	resp.TotalCount = total
-	log.Printf("ListwithAddressResponse: %+v", resp)
+	log.Printf("ListwithAddressResponse: Data: %+v, TotalCount: %+v", resp.Data, resp.TotalCount)
 	return &resp, nil
 }
 
@@ -111,19 +117,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 	}
 
 	serviceType := utils.PartnerServiceTypeMapping[params.GetServiceType()]
-	if serviceType == 0 {
-		serviceType = helpers.GetDefaultServiceType(ctx)
-	}
 	serviceLevel := utils.PartnerServiceLevelMapping[params.GetServiceLevel()]
-	if serviceLevel == 0 {
-		serviceLevel = utils.SupplierType(params.GetSupplierType())
-	}
-
-	errorMessage := ss.checkAllowedSupplierTypes(ctx, serviceLevel)
-	if errorMessage != "" {
-		resp.Message = errorMessage
-		return &resp, nil
-	}
 
 	supplier := models.Supplier{
 		Name:                      params.GetName(),
@@ -136,8 +130,6 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 		NidNumber:                 params.GetNidNumber(),
 		NidFrontImageUrl:          params.GetNidFrontImageUrl(),
 		NidBackImageUrl:           params.GetNidBackImageUrl(),
-		TradeLicenseUrl:           params.GetTradeLicenseUrl(),
-		AgreementUrl:              params.GetAgreementUrl(),
 		ShopOwnerImageUrl:         params.GetShopOwnerImageUrl(),
 		GuarantorImageUrl:         params.GetGuarantorImageUrl(),
 		GuarantorNidNumber:        params.GetGuarantorNidNumber(),
@@ -172,7 +164,7 @@ func (ss *SupplierService) Add(ctx context.Context, params *supplierpb.SupplierP
 			log.Println(err)
 		}
 	}
-	log.Printf("AddSupplierResponse: %+v", resp)
+	log.Printf("AddSupplierResponse: Success: %+v, Message: %+v, Id: %+v", resp.Success, resp.Message, resp.Id)
 	return &resp, nil
 }
 
@@ -204,12 +196,6 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 			status = models.SupplierStatusPending // Moving to Pending if any data is updated
 		}
 
-		errorMessage := ss.checkAllowedSupplierTypes(ctx, utils.SupplierType(params.GetSupplierType()))
-		if errorMessage != "" {
-			resp.Message = errorMessage
-			return &resp, nil
-		}
-
 		err := database.DBAPM(ctx).Model(&supplier).Updates(models.Supplier{
 			Status:                    status,
 			Name:                      params.GetName(),
@@ -234,27 +220,14 @@ func (ss *SupplierService) Edit(ctx context.Context, params *supplierpb.Supplier
 		if err != nil && err.Error != nil {
 			resp.Message = fmt.Sprintf("Error while updating Supplier: %s", err.Error)
 		} else {
-			partnerServiceMapping := models.PartnerServiceMapping{}
-			database.DBAPM(ctx).Model(&partnerServiceMapping).Where("supplier_id = ?", supplier.ID).First(&partnerServiceMapping)
-			err = database.DBAPM(ctx).Model(&partnerServiceMapping).Updates(models.PartnerServiceMapping{
-				ServiceLevel:    utils.SupplierType(params.GetSupplierType()),
-				TradeLicenseUrl: params.GetTradeLicenseUrl(),
-				AgreementUrl:    params.GetAgreementUrl(),
-			})
-
-			if err != nil && err.Error != nil {
-				resp.Message = fmt.Sprintf("Error while updating PartnerServiceMapping: %s", err.Error)
-			} else {
-				resp.Message = "Supplier Edited Successfully"
-				resp.Success = true
-
-				if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier); err != nil {
-					log.Println(err)
-				}
+			resp.Message = "Supplier Edited Successfully"
+			resp.Success = true
+			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplier, params, supplier); err != nil {
+				log.Println(err)
 			}
 		}
 	}
-	log.Printf("EditSupplierResponse: %+v", resp)
+	log.Printf("EditSupplierResponse: Success: %+v, Message: %+v, Id: %+v", resp.Success, resp.Message, resp.Id)
 	return &resp, nil
 }
 
@@ -321,7 +294,7 @@ func (ss *SupplierService) RemoveDocument(ctx context.Context, params *supplierp
 		}
 	}
 
-	log.Printf("RemoveDocumentResponse: %+v", resp)
+	log.Printf("RemoveDocumentResponse: Success: %+v, Message: %+v, Id: %+v", resp.Success, resp.Message, resp.Id)
 	return &resp, nil
 }
 
@@ -353,16 +326,16 @@ func (ss *SupplierService) UpdateStatus(ctx context.Context, params *supplierpb.
 		} else {
 			resp.Message = "Supplier status updated successfully"
 			resp.Success = true
-			if newSupplierStatus == models.SupplierStatusFailed || newSupplierStatus == models.SupplierStatusBlocked {
-				helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus), params.GetReason())
-			}
+			// if newSupplierStatus == models.SupplierStatusFailed || newSupplierStatus == models.SupplierStatusBlocked {
+			// 	helpers.SendStatusChangeEmailNotification(ctx, supplier, string(newSupplierStatus), params.GetReason())
+			// }
 
 			if err := helpers.AuditAction(ctx, supplier.ID, "supplier", models.ActionUpdateSupplierStatus, updateDetails, supplier); err != nil {
 				log.Println(err)
 			}
 		}
 	}
-	log.Printf("UpdateStatusResponse: %+v", resp)
+	log.Printf("UpdateStatusResponse: Success: %+v, Message: %+v, Id: %+v", resp.Success, resp.Message, resp.Id)
 	return &resp, nil
 }
 
@@ -530,16 +503,4 @@ func (ss *SupplierService) getResponseField() string {
 	}
 
 	return strings.Join(s, ",")
-}
-
-func (ss *SupplierService) checkAllowedSupplierTypes(ctx context.Context, supplierType utils.SupplierType) string {
-	typeValue := utils.SupplierTypeValue[supplierType]
-	allowedSupplierTypes := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "allowed_supplier_types", []string{"L0", "L1", "L2", "L3", "Hlc", "Captive", "Driver"}).([]string)
-
-	if supplierType != utils.Zero && !utils.IsInclude(allowedSupplierTypes, typeValue) {
-		resp := fmt.Sprintf("Supplier Type: %s is not Allowed for this Supplier", typeValue)
-		return resp
-	}
-
-	return ""
 }

@@ -12,7 +12,6 @@ import (
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
-	"github.com/voonik/ss2/internal/app/utils"
 )
 
 var _ = Describe("AddKeyAccountManager", func() {
@@ -24,7 +23,7 @@ var _ = Describe("AddKeyAccountManager", func() {
 
 	Context("Add", func() {
 		It("Should create key account manager and return success", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := kampb.KeyAccountManagerParam{
 				SupplierId: supplier.ID,
 				Name:       "Name",
@@ -63,7 +62,7 @@ var _ = Describe("AddKeyAccountManager", func() {
 
 	Context("While adding account manager without name", func() {
 		It("Should return error response", func() {
-			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{SupplierType: utils.Hlc})
+			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
 			param := kampb.KeyAccountManagerParam{
 				SupplierId: supplier.ID,
 			}

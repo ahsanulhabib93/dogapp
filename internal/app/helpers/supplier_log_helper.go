@@ -9,6 +9,7 @@ import (
 	"github.com/shopuptech/event-bus-logs-go/core"
 	"github.com/shopuptech/event-bus-logs-go/models/supplier"
 	"github.com/shopuptech/event-bus-logs-go/ss2"
+	"github.com/shopuptech/go-libs/logger"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/publisher"
 	"github.com/voonik/ss2/internal/app/utils"
@@ -42,7 +43,10 @@ func supplierMetadata(ctx context.Context, action models.AuditActionType, data i
 
 	var dataMap map[string]string
 	d, _ := json.Marshal(data)
-	json.Unmarshal(d, &dataMap)
+	err := json.Unmarshal(d, &dataMap)
+	if err != nil {
+		logger.Log().Errorf("Unmarshal Error: %+v", err)
+	}
 
 	for k, v := range dataMap {
 		m[k] = v
@@ -84,15 +88,12 @@ func supplierLog(ctx context.Context, supplier models.Supplier, metadata map[str
 		NidNumber:                 supplier.NidNumber,
 		NidFrontImageUrl:          supplier.NidFrontImageUrl,
 		NidBackImageUrl:           supplier.NidBackImageUrl,
-		TradeLicenseUrl:           supplier.TradeLicenseUrl,
-		AgreementUrl:              supplier.AgreementUrl,
 		ShopOwnerImageUrl:         supplier.ShopOwnerImageUrl,
 		GuarantorImageUrl:         supplier.GuarantorImageUrl,
 		GuarantorNidNumber:        supplier.GuarantorNidNumber,
 		GuarantorNidFrontImageUrl: supplier.GuarantorNidFrontImageUrl,
 		GuarantorNidBackImageUrl:  supplier.GuarantorNidBackImageUrl,
 		ChequeImageUrl:            supplier.ChequeImageUrl,
-		SupplierType:              ss2.SupplierType(supplier.SupplierType),
 		SupplierAddresses:         getSupplierAddresses(supplier.SupplierAddresses),
 		PaymentAccountDetails:     getPaymentAccountDetails(supplier.PaymentAccountDetails),
 		CategoryIds:               getCategoryIds(supplier.SupplierCategoryMappings),

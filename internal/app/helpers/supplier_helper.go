@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"github.com/shopuptech/go-libs/logger"
 	supplierPb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
@@ -162,7 +163,10 @@ func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse
 func PrepareSupplierResponse(ctx context.Context, supplier models.Supplier, supplierData SupplierDBResponse) *supplierPb.SupplierObject {
 	temp, _ := json.Marshal(supplierData)
 	supplierObject := &supplierPb.SupplierObject{}
-	json.Unmarshal(temp, supplierObject)
+	err := json.Unmarshal(temp, supplierObject)
+	if err != nil {
+		logger.Log().Errorf("Unmarshal Error: %+v", err)
+	}
 
 	supplierObject.CategoryIds = []uint64{}
 	for _, cId := range strings.Split(supplierData.CategoryIds, ",") {
@@ -200,6 +204,37 @@ func GetPartnerServiceMappings(ctx context.Context, supplier models.Supplier) []
 	}
 
 	return partnerServiceData
+}
+
+func GetAttachments(ctx context.Context, supplierId uint64, partnerServices []*supplierPb.PartnerServiceObject) []*supplierPb.AttachmentObject {
+	var attachmentData []*supplierPb.AttachmentObject
+	var attachments []models.Attachment
+	var partnerServiceIds []uint64
+
+	for _, partnerService := range partnerServices {
+		partnerServiceIds = append(partnerServiceIds, partnerService.Id)
+	}
+
+	err := database.DBAPM(ctx).Model(&models.Attachment{}).
+		Where("(attachable_id = ? AND attachable_type = ?) OR (attachable_id IN (?) AND attachable_type = ?)",
+			supplierId, utils.AttachableTypeSupplier, partnerServiceIds, utils.AttachableTypePartnerServiceMapping).
+		Find(&attachments).Error
+	if err != nil {
+		return attachmentData
+	}
+
+	for _, attachment := range attachments {
+		attachmentData = append(attachmentData, &supplierPb.AttachmentObject{
+			Id:              attachment.ID,
+			AttachableType:  uint64(attachment.AttachableType),
+			AttachableId:    attachment.AttachableID,
+			FileType:        attachment.FileType.String(),
+			FileUrl:         attachment.FileURL,
+			ReferenceNumber: attachment.ReferenceNumber,
+		})
+	}
+
+	return attachmentData
 }
 
 func PrepareSupplierAddress(params *supplierPb.SupplierParam) []models.SupplierAddress {

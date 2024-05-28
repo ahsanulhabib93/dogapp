@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/jinzhu/gorm"
+	"gorm.io/datatypes"
 
 	aaaModels "github.com/voonik/goFramework/pkg/aaa/models"
 	"github.com/voonik/goFramework/pkg/database"
@@ -31,37 +32,40 @@ type Supplier struct {
 	Reason                    string
 	Email                     string
 	Phone                     string
-	AlternatePhone            string                 `json:"alternate_phone"`
-	BusinessName              string                 `json:"business_name"`
-	IsPhoneVerified           *bool                  `gorm:"default:false" json:"is_phone_verified"` // using pointer to update false value in Edit API
-	ShopImageURL              string                 `json:"shop_image_url"`
-	UserID                    *uint64                `json:"user_id"`
-	AgentID                   *uint64                `json:"agent_id"`
-	NidNumber                 string                 `json:"nid_number"`
-	NidFrontImageUrl          string                 `gorm:"type:varchar(512)" json:"nid_front_image_url"`
-	NidBackImageUrl           string                 `gorm:"type:varchar(512)" json:"nid_back_image_url"`
-	TradeLicenseUrl           string                 `gorm:"type:varchar(512)" json:"trade_license_url"`
-	AgreementUrl              string                 `gorm:"type:varchar(512)" json:"agreement_url"`
-	ShopOwnerImageUrl         string                 `gorm:"type:varchar(512)" json:"shop_owner_image_url"`
-	GuarantorImageUrl         string                 `gorm:"type:varchar(512)" json:"guarantor_image_url"`
-	GuarantorNidNumber        string                 `json:"guarantor_nid_number"`
-	GuarantorNidFrontImageUrl string                 `gorm:"type:varchar(512)" json:"guarantor_nid_front_image_url"`
-	GuarantorNidBackImageUrl  string                 `gorm:"type:varchar(512)" json:"guarantor_nid_back_image_url"`
-	ChequeImageUrl            string                 `gorm:"type:varchar(512)" json:"cheque_image_url"`
-	SupplierType              utils.SupplierType     `json:"supplier_type"`
-	SupplierAddresses         []SupplierAddress      `json:"supplier_addresses"`
-	PaymentAccountDetails     []PaymentAccountDetail `json:"payment_account_details"`
-	KeyAccountManagers        []KeyAccountManager
-	SupplierCategoryMappings  []SupplierCategoryMapping
-	SupplierOpcMappings       []SupplierOpcMapping
-	PartnerServiceMappings    []PartnerServiceMapping `json:"partner_service_mappings"`
+	AlternatePhone            string         `json:"alternate_phone"`
+	BusinessName              string         `json:"business_name"`
+	IsPhoneVerified           *bool          `gorm:"default:false" json:"is_phone_verified"` // using pointer to update false value in Edit API
+	ShopImageURL              string         `json:"shop_image_url"`
+	UserID                    *uint64        `json:"user_id"`
+	AgentID                   *uint64        `json:"agent_id"`
+	NidNumber                 string         `json:"nid_number"`
+	NidFrontImageUrl          string         `gorm:"type:varchar(512)" json:"nid_front_image_url"`
+	NidBackImageUrl           string         `gorm:"type:varchar(512)" json:"nid_back_image_url"`
+	ShopOwnerImageUrl         string         `gorm:"type:varchar(512)" json:"shop_owner_image_url"`
+	GuarantorImageUrl         string         `gorm:"type:varchar(512)" json:"guarantor_image_url"`
+	GuarantorNidNumber        string         `json:"guarantor_nid_number"`
+	GuarantorNidFrontImageUrl string         `gorm:"type:varchar(512)" json:"guarantor_nid_front_image_url"`
+	GuarantorNidBackImageUrl  string         `gorm:"type:varchar(512)" json:"guarantor_nid_back_image_url"`
+	ChequeImageUrl            string         `gorm:"type:varchar(512)" json:"cheque_image_url"`
+	ExtraDetails              datatypes.JSON `gorm:"type:json"`
+
+	SupplierAddresses        []SupplierAddress      `json:"supplier_addresses"`
+	PaymentAccountDetails    []PaymentAccountDetail `json:"payment_account_details"`
+	KeyAccountManagers       []KeyAccountManager
+	SupplierCategoryMappings []SupplierCategoryMapping
+	SupplierOpcMappings      []SupplierOpcMapping
+	PartnerServiceMappings   []PartnerServiceMapping `json:"partner_service_mappings"`
+}
+
+type SupplierExtraDetails struct {
+	AdvanceLimit map[string]float64 `json:"advance_limit,omitempty"`
 }
 
 // Validate ...
 func (supplier *Supplier) Validate(db *gorm.DB) {
 	result := db.Model(&supplier).First(&Supplier{}, "id != ? and phone = ?", supplier.ID, supplier.Phone)
 	if !result.RecordNotFound() {
-		db.AddError(errors.New("Phone Number Already Exists"))
+		db.AddError(errors.New("Phone Number Already Exists")) //nolint:errcheck
 	}
 
 	isNIDInvalid := false
@@ -74,13 +78,13 @@ func (supplier *Supplier) Validate(db *gorm.DB) {
 	}
 
 	if isNIDInvalid {
-		db.AddError(errors.New("NID number should only consist of digits"))
+		db.AddError(errors.New("NID number should only consist of digits")) //nolint:errcheck
 	}
 
 	if phoneNumber := strings.TrimSpace(supplier.Phone); len(phoneNumber) == 0 {
-		db.AddError(errors.New("Phone Number can't be blank"))
+		db.AddError(errors.New("Phone Number can't be blank")) //nolint:errcheck
 	} else if !(strings.HasPrefix(phoneNumber, "8801") && len(phoneNumber) == 13) {
-		db.AddError(errors.New("Phone Number should have 13 digits"))
+		db.AddError(errors.New("Phone Number should have 13 digits")) //nolint:errcheck
 	}
 }
 
@@ -103,7 +107,7 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 		return errors.New("At least one supplier address should be present")
 	}
 
-	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent()) {
+	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent(ctx)) {
 		return errors.New("At least one primary document or OTP verification needed")
 	}
 
@@ -119,7 +123,7 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 	}
 
 	docTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_primary_doc_verification", []string{}).([]string)
-	if utils.IsInclude(docTypeVerificationList, typeValue) && !supplier.IsAnyDocumentPresent() {
+	if utils.IsInclude(docTypeVerificationList, typeValue) && !(supplier.IsAnyDocumentPresent(ctx)) {
 		msg := fmt.Sprint("At least one primary document required for supplier type: ", typeValue)
 		return errors.New(msg)
 	}
@@ -127,9 +131,20 @@ func (supplier *Supplier) Verify(ctx context.Context) error {
 	return nil
 }
 
-func (supplier *Supplier) IsAnyDocumentPresent() bool {
-	return !(supplier.NidNumber == "" && supplier.NidFrontImageUrl == "" && supplier.NidBackImageUrl == "" &&
-		supplier.TradeLicenseUrl == "" && supplier.AgreementUrl == "")
+func (supplier *Supplier) IsAnyDocumentPresent(ctx context.Context) bool {
+	return supplier.IsNidDocumentPresent() || supplier.IsAnyAttachedDocumentPresent(ctx)
+}
+
+func (supplier *Supplier) IsNidDocumentPresent() bool {
+	return (supplier.NidNumber != "" || supplier.NidFrontImageUrl != "" || supplier.NidBackImageUrl != "")
+}
+
+func (supplier *Supplier) IsAnyAttachedDocumentPresent(ctx context.Context) bool {
+	attachedDocuments := []Attachment{}
+	database.DBAPM(ctx).Model(&Attachment{}).
+		Where("attachable_type = ? AND attachable_id = ?", utils.AttachableTypeSupplier, supplier.ID).
+		Find(&attachedDocuments)
+	return len(attachedDocuments) > utils.Zero
 }
 
 func (supplier *Supplier) IsChangeAllowed(ctx context.Context) bool {

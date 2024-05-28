@@ -43,9 +43,7 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 		supplier.Phone = fmt.Sprintf("8801%v", id[:9])
 	}
 
-	if supplier.SupplierType != 0 {
-		partnerServiceMapping.ServiceLevel = supplier.SupplierType
-	} else if partnerServiceMapping.ServiceLevel == 0 {
+	if partnerServiceMapping.ServiceLevel == 0 {
 		partnerServiceMapping.ServiceLevel = utils.Hlc
 	}
 
@@ -65,6 +63,23 @@ func CreatePartnerServiceMapping(ctx context.Context, partnerServiceMapping *mod
 
 	database.DBAPM(ctx).Save(partnerServiceMapping)
 	return partnerServiceMapping
+}
+
+func CreateSeller(ctx context.Context, seller *models.Seller) *models.Seller {
+	id := getUniqueID()
+	seller.PrimaryEmail = fmt.Sprintf("test-%v@shopup.org", id)
+	seller.PrimaryPhone = fmt.Sprintf("8801%v", id[:9])
+	database.DBAPM(ctx).Save(seller)
+	return seller
+}
+
+func CreateVendorAddress(ctx context.Context, vendor *models.VendorAddress) *models.VendorAddress {
+	id := getUniqueID()
+	vendor.Firstname = "test"
+	vendor.Lastname = fmt.Sprintf("name-%v", id)
+	vendor.UUID = fmt.Sprintf("abc-%v", id)
+	database.DBAPM(ctx).Save(vendor)
+	return vendor
 }
 
 func CreateSupplierWithDateTime(ctx context.Context, supplier *models.Supplier, createAt time.Time) *models.Supplier {
@@ -100,21 +115,30 @@ func CreatePaymentAccountDetail(ctx context.Context, paymentAccount *models.Paym
 	id := getUniqueID()
 	paymentAccount.AccountName = fmt.Sprintf("AccountName-%v", id)
 	number := paymentAccount.AccountNumber
-	if number == "" {
+	if number == "" && paymentAccount.AccountType != utils.Cheque {
 		paymentAccount.AccountNumber = fmt.Sprintf("AccountNumber-%v", id)
 	} else {
 		paymentAccount.AccountNumber = number
 	}
 
 	if paymentAccount.AccountType == utils.Mfs {
-		paymentAccount.AccountSubType = utils.Bkash
-	} else {
+		if paymentAccount.AccountSubType == 0 {
+			paymentAccount.AccountSubType = utils.Bkash
+		}
+	} else if paymentAccount.AccountType == utils.PrepaidCard {
+		if paymentAccount.AccountSubType == 0 {
+			paymentAccount.AccountSubType = utils.EBL
+		}
+	} else if paymentAccount.AccountType != utils.Cheque {
 		paymentAccount.AccountType = utils.Bank
 		paymentAccount.AccountSubType = utils.Current
-		if paymentAccount.BankID == 0 {
-			bank := CreateBank(ctx, &models.Bank{})
-			paymentAccount.BankID = bank.ID
-		}
+	}
+	if paymentAccount.BankID == 0 {
+		bank := CreateBank(ctx, &models.Bank{})
+		paymentAccount.BankID = bank.ID
+	}
+
+	if paymentAccount.AccountType != utils.Cheque {
 		paymentAccount.BranchName = fmt.Sprintf("BranchName-%v", id)
 		paymentAccount.RoutingNumber = fmt.Sprintf("RoutingNumber-%v", id)
 	}
@@ -143,6 +167,14 @@ func CreateKeyAccountManager(ctx context.Context, accountManager *models.KeyAcco
 	return accountManager
 }
 
+func CreateAttachment(ctx context.Context, attachment *models.Attachment) *models.Attachment {
+	id := getUniqueID()
+	attachment.ReferenceNumber = id
+	attachment.FileURL = "/some_url"
+	database.DBAPM(ctx).Save(attachment)
+	return attachment
+}
+
 func CreateBank(ctx context.Context, bank *models.Bank) *models.Bank {
 	id := getUniqueID()
 	bank.Name = fmt.Sprintf("TestBank-%v", id)
@@ -167,4 +199,18 @@ func SetContextUser(ctx *context.Context, userId uint64, permissions []string) *
 	}
 	*ctx = misc.SetInContextThreadObject(*ctx, threadObject)
 	return ctx
+}
+
+func CreateSellerAccountManager(ctx context.Context, sellerID uint64, name string, phone uint64, email string, priority uint64, role string) *models.SellerAccountManager {
+	sam := &models.SellerAccountManager{
+		SellerID: sellerID,
+		Name:     name,
+		Phone:    int64(phone),
+		Email:    email,
+		Priority: int(priority),
+		Role:     role,
+	}
+
+	database.DBAPM(ctx).Model(&models.SellerAccountManager{}).Save(sam)
+	return sam
 }
