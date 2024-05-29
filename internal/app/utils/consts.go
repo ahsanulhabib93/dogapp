@@ -6,7 +6,6 @@ import (
 )
 
 type ServiceType uint16
-type SupplierType uint16
 type AccountType uint16
 type AccountSubType uint16
 type VerificationStatus string
@@ -125,50 +124,6 @@ const (
 )
 
 const (
-	L0 SupplierType = 1 + iota
-	L1
-	L2
-	L3
-	Hlc
-	Captive
-	Driver
-	CashVendor
-	RedxHubVendor
-	CreditVendor
-	HubRent
-	WarehouseRent
-	DBHouseRent
-	OfficeRent
-	Mws
-	Buyer
-	Procurement
-	InternalEmployee
-	ExternalVendor
-)
-
-var SupplierTypeValue = map[SupplierType]string{
-	L0:               "L0",
-	L1:               "L1",
-	L2:               "L2",
-	L3:               "L3",
-	Hlc:              "Hlc",
-	Captive:          "Captive",
-	Driver:           "Driver",
-	CashVendor:       "Cash Vendor",
-	RedxHubVendor:    "Redx Hub Vendor",
-	CreditVendor:     "Credit Vendor",
-	HubRent:          "Hub Rent",
-	WarehouseRent:    "Warehouse Rent",
-	DBHouseRent:      "DBHouse Rent",
-	OfficeRent:       "Office Rent",
-	Mws:              "Mws",
-	Buyer:            "Buyer",
-	Procurement:      "Procurement",
-	InternalEmployee: "Internal Employee",
-	ExternalVendor:   "External Vendor",
-}
-
-const (
 	Bank AccountType = 1 + iota
 	Mfs
 	PrepaidCard
@@ -221,28 +176,6 @@ var PartnerServiceTypeMapping = map[string]ServiceType{
 	"UtilitiesAndCommunication":    UtilitiesAndCommunication,
 	"EmployeeAndClientRelations":   EmployeeAndClientRelations,
 	"Insurance":                    Insurance,
-}
-
-var PartnerServiceLevelMapping = map[string]SupplierType{
-	"L0":               L0,
-	"L1":               L1,
-	"L2":               L2,
-	"L3":               L3,
-	"Hlc":              Hlc,
-	"Captive":          Captive,
-	"Driver":           Driver,
-	"CashVendor":       CashVendor,
-	"RedxHubVendor":    RedxHubVendor,
-	"CreditVendor":     CreditVendor,
-	"HubRent":          HubRent,
-	"WarehouseRent":    WarehouseRent,
-	"DBHouseRent":      DBHouseRent,
-	"OfficeRent":       OfficeRent,
-	"Mws":              Mws,
-	"Buyer":            Buyer,
-	"Procurement":      Procurement,
-	"InternalEmployee": InternalEmployee,
-	"ExternalVendor":   ExternalVendor,
 }
 
 const (

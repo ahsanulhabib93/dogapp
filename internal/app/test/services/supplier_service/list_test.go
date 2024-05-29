@@ -11,6 +11,7 @@ import (
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	"github.com/voonik/goFramework/pkg/database"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/mocks"
@@ -30,22 +31,24 @@ var _ = Describe("ListSupplier", func() {
 
 	Context("Supplier List", func() {
 		It("Should Respond with all the suppliers and attachments", func() {
-
+			hlcServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "Hlc")
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{
 				SupplierCategoryMappings: []models.SupplierCategoryMapping{{CategoryID: 1}, {CategoryID: 2}},
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
-				PartnerServiceMappings:   []models.PartnerServiceMapping{{ServiceLevel: utils.Hlc}},
+				PartnerServiceMappings:   []models.PartnerServiceMapping{{PartnerServiceLevelID: hlcServiceLevel.ID}},
 			})
+			driverServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Driver")
 			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
-				SupplierId:   supplier1.ID,
-				ServiceType:  utils.Transporter,
-				ServiceLevel: utils.Driver,
+				SupplierId:            supplier1.ID,
+				ServiceType:           utils.Transporter,
+				PartnerServiceLevelID: driverServiceLevel.ID,
 			})
 
 			isPhoneVerified := true
+			l1ServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "L1")
 			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{
 				IsPhoneVerified:        &isPhoneVerified,
-				PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L1}},
+				PartnerServiceMappings: []models.PartnerServiceMapping{{PartnerServiceLevelID: l1ServiceLevel.ID}},
 			})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})
@@ -433,9 +436,10 @@ var _ = Describe("ListSupplier", func() {
 
 	Context("When ServiceLevels filter is applied", func() {
 		It("Should Respond with corresponding suppliers", func() {
-			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.Hlc}}})
-			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L0}}})
-			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.L1}}})
+			mapping := helpers.GetServiceLevelIdMapping(ctx)
+			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{PartnerServiceLevelID: mapping["Hlc"]}}})
+			supplier2 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{PartnerServiceLevelID: mapping["L0"]}}})
+			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{PartnerServiceLevelID: mapping["L1"]}}})
 
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{ServiceLevels: []string{"Hlc", "L0"}})
 			Expect(err).To(BeNil())
@@ -474,10 +478,11 @@ var _ = Describe("ListSupplier", func() {
 		})
 		It("Should Respond with only supplier service type data", func() {
 			supplier1 := test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Supplier}}})
+			driverServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Driver")
 			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
-				SupplierId:   supplier1.ID,
-				ServiceType:  utils.Transporter,
-				ServiceLevel: utils.Driver,
+				SupplierId:            supplier1.ID,
+				ServiceType:           utils.Transporter,
+				PartnerServiceLevelID: driverServiceLevel.ID,
 			})
 			test_helper.CreateSupplier(ctx, &models.Supplier{PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceType: utils.Transporter}}})
 			res, err := new(services.SupplierService).List(ctx, &supplierpb.ListParams{})

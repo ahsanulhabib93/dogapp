@@ -8,6 +8,7 @@ import (
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
@@ -196,11 +197,13 @@ var _ = Describe("ListSupplierWithAddress", func() {
 	Context("With supplier Types filter", func() {
 		var supplier1, supplier3 *models.Supplier
 		BeforeEach(func() {
+			l0ServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "L0")
+			captiveServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Captive")
 			partnerService1 := []models.PartnerServiceMapping{
-				{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
+				{ServiceType: utils.Supplier, PartnerServiceLevelID: l0ServiceLevel.ID},
 			}
 			partnerService3 := []models.PartnerServiceMapping{
-				{ServiceType: utils.Supplier, ServiceLevel: utils.Captive},
+				{ServiceType: utils.Transporter, PartnerServiceLevelID: captiveServiceLevel.ID},
 			}
 			supplier1 = test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{PartnerServiceMappings: partnerService1})
 			test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{})
@@ -209,8 +212,8 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 		Context("for given supplier type", func() {
 			It("Should return corresponding suppliers", func() {
-
-				res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{uint64(utils.L0)}})
+				mapping := helpers.GetServiceLevelIdMapping(ctx)
+				res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{mapping["L0"]}})
 				Expect(err).To(BeNil())
 				Expect(res.TotalCount).To(Equal(uint64(1)))
 				Expect(len(res.Data)).To(Equal(1))
@@ -221,7 +224,8 @@ var _ = Describe("ListSupplierWithAddress", func() {
 
 		Context("for given multiple supplier types", func() {
 			It("Should return corresponding suppliers for given multiple supplier types", func() {
-				res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{uint64(utils.L0), uint64(utils.Captive)}})
+				mapping := helpers.GetServiceLevelIdMapping(ctx)
+				res, err := new(services.SupplierService).ListWithSupplierAddresses(ctx, &supplierpb.ListParams{Types: []uint64{mapping["L0"], mapping["Captive"]}})
 				Expect(err).To(BeNil())
 				Expect(res.TotalCount).To(Equal(uint64(2)))
 				Expect(len(res.Data)).To(Equal(2))

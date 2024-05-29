@@ -10,13 +10,12 @@ import (
 
 type PartnerServiceMapping struct {
 	database.VaccountGorm
-	SupplierId            uint64             `gorm:"not null" json:"supplier_id"`
-	ServiceType           utils.ServiceType  `valid:"required" json:"service_type"`
-	ServiceLevel          utils.SupplierType `valid:"required" json:"service_level"`
-	Active                bool               `gorm:"default:false"`
-	TradeLicenseUrl       string             `gorm:"type:varchar(512)" json:"trade_license_url"`
-	AgreementUrl          string             `gorm:"type:varchar(512)" json:"agreement_url"`
-	PartnerServiceLevelID uint64             `json:"partner_service_level_id"`
+	SupplierId            uint64            `gorm:"not null" json:"supplier_id"`
+	ServiceType           utils.ServiceType `valid:"required" json:"service_type"`
+	Active                bool              `gorm:"default:false"`
+	TradeLicenseUrl       string            `gorm:"type:varchar(512)" json:"trade_license_url"`
+	AgreementUrl          string            `gorm:"type:varchar(512)" json:"agreement_url"`
+	PartnerServiceLevelID uint64            `valid:"required" json:"partner_service_level_id"`
 }
 
 func (partnerService *PartnerServiceMapping) Validate(db *gorm.DB) {

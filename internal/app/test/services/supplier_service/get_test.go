@@ -10,6 +10,7 @@ import (
 
 	supplierpb "github.com/voonik/goConnect/api/go/ss2/supplier"
 	test_utils "github.com/voonik/goFramework/pkg/unit_test_helper"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/models"
 	"github.com/voonik/ss2/internal/app/services"
 	"github.com/voonik/ss2/internal/app/test/test_helper"
@@ -27,6 +28,8 @@ var _ = Describe("GetSupplier", func() {
 		Context("PaymentAccountDetails Doen't Have Warehouses Mapped", func() {
 			It("Should Respond with success", func() {
 				isPhoneVerified := true
+				hlcServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "Hlc")
+				driverServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Driver")
 				supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 					IsPhoneVerified:          &isPhoneVerified,
 					NidNumber:                "123456789",
@@ -36,15 +39,15 @@ var _ = Describe("GetSupplier", func() {
 					GuarantorImageUrl:        "abc.xyz",
 					GuarantorNidNumber:       "0987654321",
 					PartnerServiceMappings: []models.PartnerServiceMapping{{
-						ServiceLevel: utils.Hlc,
-						AgreementUrl: "abc.com",
+						PartnerServiceLevelID: hlcServiceLevel.ID,
+						AgreementUrl:          "abc.com",
 					}},
 				})
 				psMapping := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
-					SupplierId:   supplier.ID,
-					ServiceType:  utils.Transporter,
-					ServiceLevel: utils.Driver,
-					Active:       false,
+					SupplierId:            supplier.ID,
+					ServiceType:           utils.Transporter,
+					PartnerServiceLevelID: driverServiceLevel.ID,
+					Active:                false,
 				})
 				attachment1 := test_helper.CreateAttachment(ctx, &models.Attachment{
 					AttachableType: utils.AttachableTypeSupplier,
@@ -134,6 +137,7 @@ var _ = Describe("GetSupplier", func() {
 
 			It("Should Respond with only non-deleted mapping", func() {
 				deletedAt := time.Now()
+				hlcServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "Hlc")
 				supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 					SupplierCategoryMappings: []models.SupplierCategoryMapping{
 						{CategoryID: 1, DeletedAt: &deletedAt},
@@ -145,7 +149,7 @@ var _ = Describe("GetSupplier", func() {
 						{ProcessingCenterID: 4},
 					},
 					PartnerServiceMappings: []models.PartnerServiceMapping{{
-						ServiceLevel: utils.Hlc,
+						PartnerServiceLevelID: hlcServiceLevel.ID,
 					}},
 				})
 
@@ -163,6 +167,7 @@ var _ = Describe("GetSupplier", func() {
 		Context("PaymentAccountDetails Have Warehouses Mapped", func() {
 			It("Should Return only Given Warehouse Mapped PaymentAccountDetails", func() {
 				isPhoneVerified := true
+				hlcServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "Hlc")
 				supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
 					IsPhoneVerified:          &isPhoneVerified,
 					NidNumber:                "123456789",
@@ -172,8 +177,8 @@ var _ = Describe("GetSupplier", func() {
 					GuarantorImageUrl:        "abc.xyz",
 					GuarantorNidNumber:       "0987654321",
 					PartnerServiceMappings: []models.PartnerServiceMapping{{
-						ServiceLevel: utils.Hlc,
-						AgreementUrl: "abc.com",
+						PartnerServiceLevelID: hlcServiceLevel.ID,
+						AgreementUrl:          "abc.com",
 					}},
 				})
 				supplierAddress := test_helper.CreateSupplierAddress(ctx, &models.SupplierAddress{SupplierID: supplier.ID})
@@ -261,14 +266,16 @@ var _ = Describe("GetSupplier", func() {
 				test_helper.SetContextUser(&ctx, 1, []string{"supplierpanel:transporterservice:view"})
 			})
 			It("Should return supplier data only", func() {
+				hlcServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "Hlc")
+				driverServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Driver")
 				supplier := test_helper.CreateSupplier(ctx, &models.Supplier{
-					PartnerServiceMappings: []models.PartnerServiceMapping{{ServiceLevel: utils.Hlc}},
+					PartnerServiceMappings: []models.PartnerServiceMapping{{PartnerServiceLevelID: hlcServiceLevel.ID}},
 				})
 				test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
-					SupplierId:   supplier.ID,
-					ServiceType:  utils.Transporter,
-					ServiceLevel: utils.Driver,
-					Active:       false,
+					SupplierId:            supplier.ID,
+					ServiceType:           utils.Transporter,
+					PartnerServiceLevelID: driverServiceLevel.ID,
+					Active:                false,
 				})
 
 				resp, err := new(services.SupplierService).Get(ctx, &supplierpb.GetSupplierParam{Id: supplier.ID})

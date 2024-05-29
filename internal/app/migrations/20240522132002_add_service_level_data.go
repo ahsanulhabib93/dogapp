@@ -43,4 +43,16 @@ func init() {
 			return nil
 		},
 	})
+
+	migrator.Register(&gormigrate.Migration{
+		ID: "20240527045457",
+		Migrate: func(tx *gorm.DB) (err error) {
+			tx.Exec("update partner_service_mappings set partner_service_level_id = service_level;")
+			return nil
+		},
+		Rollback: func(tx *gorm.DB) error {
+			return nil
+		},
+	})
+
 }
