@@ -43,6 +43,12 @@ var SupplierSecondaryDocumentType = []string{
 }
 
 var AttachableFileTypeMapping = map[AttachableType][]FileType{
-	AttachableTypeSupplier:              {SecurityCheque, GuarantorNID, TIN, BIN, IncorporationCertificate, TradeLicense, PartnershipDeed, EngagementLetter, ConfirmationLetter, AcknowledgementLetter},
+	AttachableTypeSupplier: {
+		SecurityCheque, GuarantorNID, TIN, BIN, IncorporationCertificate, TradeLicense,
+		PartnershipDeed, EngagementLetter, ConfirmationLetter, AcknowledgementLetter,
+		MerchantPhoto, GuarantorPhoto, SanctionLetter, Undertaking, BankStatement,
+		RentalDeed, ForwardingLetter, DealershipDeed, CIBReport, ExitLetter,
+		SettlementAgreement, NOC, TaxAcknowledgement, SalesStatement, CompanyProfile,
+	},
 	AttachableTypePartnerServiceMapping: {},
 }

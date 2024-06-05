@@ -194,6 +194,21 @@ const (
 	EngagementLetter
 	ConfirmationLetter
 	AcknowledgementLetter
+	MerchantPhoto
+	GuarantorPhoto
+	SanctionLetter
+	Undertaking
+	BankStatement
+	RentalDeed
+	ForwardingLetter
+	DealershipDeed
+	CIBReport
+	ExitLetter
+	SettlementAgreement
+	NOC
+	TaxAcknowledgement
+	SalesStatement
+	CompanyProfile
 )
 
 var FileTypeMapping = map[string]FileType{
@@ -207,6 +222,21 @@ var FileTypeMapping = map[string]FileType{
 	"EngagementLetter":         EngagementLetter,
 	"ConfirmationLetter":       ConfirmationLetter,
 	"AcknowledgementLetter":    AcknowledgementLetter,
+	"MerchantPhoto":            MerchantPhoto,
+	"GuarantorPhoto":           GuarantorPhoto,
+	"SanctionLetter":           SanctionLetter,
+	"Undertaking":              Undertaking,
+	"BankStatement":            BankStatement,
+	"RentalDeed":               RentalDeed,
+	"ForwardingLetter":         ForwardingLetter,
+	"DealershipDeed":           DealershipDeed,
+	"CIBReport":                CIBReport,
+	"ExitLetter":               ExitLetter,
+	"SettlementAgreement":      SettlementAgreement,
+	"NOC":                      NOC,
+	"TaxAcknowledgement":       TaxAcknowledgement,
+	"SalesStatement":           SalesStatement,
+	"CompanyProfile":           CompanyProfile,
 }
 
 var SellerDataMapping = map[string]interface{}{

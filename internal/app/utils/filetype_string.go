@@ -18,11 +18,26 @@ func _() {
 	_ = x[EngagementLetter-8]
 	_ = x[ConfirmationLetter-9]
 	_ = x[AcknowledgementLetter-10]
+	_ = x[MerchantPhoto-11]
+	_ = x[GuarantorPhoto-12]
+	_ = x[SanctionLetter-13]
+	_ = x[Undertaking-14]
+	_ = x[BankStatement-15]
+	_ = x[RentalDeed-16]
+	_ = x[ForwardingLetter-17]
+	_ = x[DealershipDeed-18]
+	_ = x[CIBReport-19]
+	_ = x[ExitLetter-20]
+	_ = x[SettlementAgreement-21]
+	_ = x[NOC-22]
+	_ = x[TaxAcknowledgement-23]
+	_ = x[SalesStatement-24]
+	_ = x[CompanyProfile-25]
 }
 
-const _FileType_name = "SecurityChequeGuarantorNIDTINBINIncorporationCertificateTradeLicensePartnershipDeedEngagementLetterConfirmationLetterAcknowledgementLetter"
+const _FileType_name = "SecurityChequeGuarantorNIDTINBINIncorporationCertificateTradeLicensePartnershipDeedEngagementLetterConfirmationLetterAcknowledgementLetterMerchantPhotoGuarantorPhotoSanctionLetterUndertakingBankStatementRentalDeedForwardingLetterDealershipDeedCIBReportExitLetterSettlementAgreementNOCTaxAcknowledgementSalesStatementCompanyProfile"
 
-var _FileType_index = [...]uint8{0, 14, 26, 29, 32, 56, 68, 83, 99, 117, 138}
+var _FileType_index = [...]uint16{0, 14, 26, 29, 32, 56, 68, 83, 99, 117, 138, 151, 165, 179, 190, 203, 213, 229, 243, 252, 262, 281, 284, 302, 316, 330}
 
 func (i FileType) String() string {
 	i -= 1
