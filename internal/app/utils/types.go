@@ -49,6 +49,7 @@ var AttachableFileTypeMapping = map[AttachableType][]FileType{
 		MerchantPhoto, GuarantorPhoto, SanctionLetter, Undertaking, BankStatement,
 		RentalDeed, ForwardingLetter, DealershipDeed, CIBReport, ExitLetter,
 		SettlementAgreement, NOC, TaxAcknowledgement, SalesStatement, CompanyProfile,
+		KYC, Invoice, UtilityBill,
 	},
 	AttachableTypePartnerServiceMapping: {},
 }

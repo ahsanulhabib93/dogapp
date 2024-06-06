@@ -209,6 +209,9 @@ const (
 	TaxAcknowledgement
 	SalesStatement
 	CompanyProfile
+	KYC
+	Invoice
+	UtilityBill
 )
 
 var FileTypeMapping = map[string]FileType{
@@ -237,6 +240,9 @@ var FileTypeMapping = map[string]FileType{
 	"TaxAcknowledgement":       TaxAcknowledgement,
 	"SalesStatement":           SalesStatement,
 	"CompanyProfile":           CompanyProfile,
+	"KYC":                      KYC,
+	"Invoice":                  Invoice,
+	"UtilityBill":              UtilityBill,
 }
 
 var SellerDataMapping = map[string]interface{}{
