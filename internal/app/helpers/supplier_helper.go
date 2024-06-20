@@ -151,9 +151,11 @@ func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse
 	suppliers := []models.Supplier{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Preload("PartnerServiceMappings", "partner_service_mappings.service_type IN (?)", serviceTypes).
+		Preload("Attachments", "attachments.file_type in (?)", []utils.FileType{utils.TIN, utils.BIN}).
 		Where("id IN (?)", supplierIDs).
 		Find(&suppliers)
 
+	supplierAttachmentsMap := GetAttachmentsBySupplierIDs(ctx, suppliers)
 	supplierMap := make(map[uint64]models.Supplier)
 	for _, supplier := range suppliers {
 		supplierMap[supplier.ID] = supplier
@@ -161,7 +163,12 @@ func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse
 
 	for _, supplierData := range suppliersData {
 		supplier := supplierMap[supplierData.ID]
-		data = append(data, PrepareSupplierResponse(ctx, supplier, supplierData))
+		supplierObject := PrepareSupplierResponse(ctx, supplier, supplierData)
+		if attachmentData, ok := supplierAttachmentsMap[supplier.ID]; ok {
+			supplierObject.Attachments = attachmentData
+		}
+		data = append(data, supplierObject)
+
 	}
 	return data
 }
@@ -240,6 +247,24 @@ func GetAttachments(ctx context.Context, supplierId uint64, partnerServices []*s
 		})
 	}
 
+	return attachmentData
+}
+
+func GetAttachmentsBySupplierIDs(ctx context.Context, suppliers []models.Supplier) map[uint64][]*supplierPb.AttachmentObject {
+	attachmentData := map[uint64][]*supplierPb.AttachmentObject{}
+	for _, supplier := range suppliers {
+		attachmentData[supplier.ID] = []*supplierPb.AttachmentObject{}
+		for _, attachment := range supplier.Attachments {
+			attachmentData[supplier.ID] = append(attachmentData[supplier.ID], &supplierPb.AttachmentObject{
+				Id:              attachment.ID,
+				AttachableType:  uint64(attachment.AttachableType),
+				AttachableId:    attachment.AttachableID,
+				FileType:        attachment.FileType.String(),
+				FileUrl:         attachment.FileURL,
+				ReferenceNumber: attachment.ReferenceNumber,
+			})
+		}
+	}
 	return attachmentData
 }
 
