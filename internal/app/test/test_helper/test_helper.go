@@ -43,8 +43,8 @@ func CreateSupplier(ctx context.Context, supplier *models.Supplier) *models.Supp
 		supplier.Phone = fmt.Sprintf("8801%v", id[:9])
 	}
 
-	if partnerServiceMapping.ServiceLevel == 0 {
-		partnerServiceMapping.ServiceLevel = utils.Hlc
+	if partnerServiceMapping.PartnerServiceLevelID == 0 {
+		partnerServiceMapping.PartnerServiceLevelID = 5
 	}
 
 	if partnerServiceMapping.ServiceType == 0 {

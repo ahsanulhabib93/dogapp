@@ -6,7 +6,6 @@ import (
 )
 
 type ServiceType uint16
-type SupplierType uint16
 type AccountType uint16
 type AccountSubType uint16
 type VerificationStatus string
@@ -125,50 +124,6 @@ const (
 )
 
 const (
-	L0 SupplierType = 1 + iota
-	L1
-	L2
-	L3
-	Hlc
-	Captive
-	Driver
-	CashVendor
-	RedxHubVendor
-	CreditVendor
-	HubRent
-	WarehouseRent
-	DBHouseRent
-	OfficeRent
-	Mws
-	Buyer
-	Procurement
-	InternalEmployee
-	ExternalVendor
-)
-
-var SupplierTypeValue = map[SupplierType]string{
-	L0:               "L0",
-	L1:               "L1",
-	L2:               "L2",
-	L3:               "L3",
-	Hlc:              "Hlc",
-	Captive:          "Captive",
-	Driver:           "Driver",
-	CashVendor:       "Cash Vendor",
-	RedxHubVendor:    "Redx Hub Vendor",
-	CreditVendor:     "Credit Vendor",
-	HubRent:          "Hub Rent",
-	WarehouseRent:    "Warehouse Rent",
-	DBHouseRent:      "DBHouse Rent",
-	OfficeRent:       "Office Rent",
-	Mws:              "Mws",
-	Buyer:            "Buyer",
-	Procurement:      "Procurement",
-	InternalEmployee: "Internal Employee",
-	ExternalVendor:   "External Vendor",
-}
-
-const (
 	Bank AccountType = 1 + iota
 	Mfs
 	PrepaidCard
@@ -223,28 +178,6 @@ var PartnerServiceTypeMapping = map[string]ServiceType{
 	"Insurance":                    Insurance,
 }
 
-var PartnerServiceLevelMapping = map[string]SupplierType{
-	"L0":               L0,
-	"L1":               L1,
-	"L2":               L2,
-	"L3":               L3,
-	"Hlc":              Hlc,
-	"Captive":          Captive,
-	"Driver":           Driver,
-	"CashVendor":       CashVendor,
-	"RedxHubVendor":    RedxHubVendor,
-	"CreditVendor":     CreditVendor,
-	"HubRent":          HubRent,
-	"WarehouseRent":    WarehouseRent,
-	"DBHouseRent":      DBHouseRent,
-	"OfficeRent":       OfficeRent,
-	"Mws":              Mws,
-	"Buyer":            Buyer,
-	"Procurement":      Procurement,
-	"InternalEmployee": InternalEmployee,
-	"ExternalVendor":   ExternalVendor,
-}
-
 const (
 	AttachableTypeSupplier AttachableType = iota + 1
 	AttachableTypePartnerServiceMapping
@@ -261,6 +194,24 @@ const (
 	EngagementLetter
 	ConfirmationLetter
 	AcknowledgementLetter
+	MerchantPhoto
+	GuarantorPhoto
+	SanctionLetter
+	Undertaking
+	BankStatement
+	RentalDeed
+	ForwardingLetter
+	DealershipDeed
+	CIBReport
+	ExitLetter
+	SettlementAgreement
+	NOC
+	TaxAcknowledgement
+	SalesStatement
+	CompanyProfile
+	KYC
+	Invoice
+	UtilityBill
 )
 
 var FileTypeMapping = map[string]FileType{
@@ -274,6 +225,24 @@ var FileTypeMapping = map[string]FileType{
 	"EngagementLetter":         EngagementLetter,
 	"ConfirmationLetter":       ConfirmationLetter,
 	"AcknowledgementLetter":    AcknowledgementLetter,
+	"MerchantPhoto":            MerchantPhoto,
+	"GuarantorPhoto":           GuarantorPhoto,
+	"SanctionLetter":           SanctionLetter,
+	"Undertaking":              Undertaking,
+	"BankStatement":            BankStatement,
+	"RentalDeed":               RentalDeed,
+	"ForwardingLetter":         ForwardingLetter,
+	"DealershipDeed":           DealershipDeed,
+	"CIBReport":                CIBReport,
+	"ExitLetter":               ExitLetter,
+	"SettlementAgreement":      SettlementAgreement,
+	"NOC":                      NOC,
+	"TaxAcknowledgement":       TaxAcknowledgement,
+	"SalesStatement":           SalesStatement,
+	"CompanyProfile":           CompanyProfile,
+	"KYC":                      KYC,
+	"Invoice":                  Invoice,
+	"UtilityBill":              UtilityBill,
 }
 
 var SellerDataMapping = map[string]interface{}{

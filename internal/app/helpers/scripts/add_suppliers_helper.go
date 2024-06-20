@@ -30,7 +30,7 @@ const (
 	supplierFileName  = "internal/app/helpers/scripts/procurement_vendors_02_11_23.xlsx"
 	supplierSheetName = "Sheet1"
 	serviceType       = 6
-	serviceLevel      = 17
+	serviceLevelId    = 17
 )
 
 func AddSuppliersFromExcel(ctx context.Context) {
@@ -164,10 +164,10 @@ func addPaymentDetailToDB(tx *gorm.DB, row []string, supplierId uint64) error {
 
 func addPartnerServiceMappingsToDB(tx *gorm.DB, supplierId uint64) error {
 	partnerServiceMapping := models.PartnerServiceMapping{
-		SupplierId:   supplierId,
-		ServiceType:  serviceType,
-		ServiceLevel: serviceLevel,
-		Active:       true,
+		SupplierId:            supplierId,
+		ServiceType:           serviceType,
+		PartnerServiceLevelID: serviceLevelId,
+		Active:                true,
 	}
 	return tx.Model(&models.PartnerServiceMapping{}).Save(&partnerServiceMapping).Error
 }

@@ -42,19 +42,14 @@ var SupplierSecondaryDocumentType = []string{
 	"cheque_image_url",
 }
 
-var PartnerServiceTypeLevelMapping = map[ServiceType][]SupplierType{
-	// service type - service level
-	Supplier:          {L0, L1, L2, L3, Hlc},
-	Transporter:       {Captive, Driver, CashVendor, RedxHubVendor, CreditVendor},
-	RentVendor:        {HubRent, WarehouseRent, DBHouseRent, OfficeRent},
-	MwsOwner:          {Mws},
-	DoBuyer:           {Buyer},
-	ProcurementVendor: {Procurement},
-	Employee:          {InternalEmployee},
-	Vendor:            {ExternalVendor},
-}
-
 var AttachableFileTypeMapping = map[AttachableType][]FileType{
-	AttachableTypeSupplier:              {SecurityCheque, GuarantorNID, TIN, BIN, IncorporationCertificate, TradeLicense, PartnershipDeed, EngagementLetter, ConfirmationLetter, AcknowledgementLetter},
+	AttachableTypeSupplier: {
+		SecurityCheque, GuarantorNID, TIN, BIN, IncorporationCertificate, TradeLicense,
+		PartnershipDeed, EngagementLetter, ConfirmationLetter, AcknowledgementLetter,
+		MerchantPhoto, GuarantorPhoto, SanctionLetter, Undertaking, BankStatement,
+		RentalDeed, ForwardingLetter, DealershipDeed, CIBReport, ExitLetter,
+		SettlementAgreement, NOC, TaxAcknowledgement, SalesStatement, CompanyProfile,
+		KYC, Invoice, UtilityBill,
+	},
 	AttachableTypePartnerServiceMapping: {},
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	eventBus "github.com/voonik/goConnect/api/go/event_bus/publisher"
 	aaaMocks "github.com/voonik/goFramework/pkg/aaa/models/mocks"
+	"github.com/voonik/ss2/internal/app/helpers"
 	"github.com/voonik/ss2/internal/app/publisher"
 	mockPublisher "github.com/voonik/ss2/internal/app/publisher/mocks"
 	"github.com/voonik/ss2/internal/app/utils"
@@ -292,11 +293,12 @@ var _ = Describe("UpdateStatus", func() {
 	Context("When at least one primary document required for given supplier type", func() {
 		It("Should return error", func() {
 			isPhoneVerified := true
+			l0ServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "L0")
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
 				Status:          models.SupplierStatusBlocked,
 				PartnerServiceMappings: []models.PartnerServiceMapping{
-					{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
+					{ServiceType: utils.Supplier, PartnerServiceLevelID: l0ServiceLevel.ID},
 				},
 			})
 			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
@@ -315,11 +317,12 @@ var _ = Describe("UpdateStatus", func() {
 
 	Context("When otp verification required for given supplier type", func() {
 		It("Should return error", func() {
+			l0ServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "L0")
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
 				Status:    models.SupplierStatusBlocked,
 				NidNumber: "1234567890",
 				PartnerServiceMappings: []models.PartnerServiceMapping{
-					{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
+					{ServiceType: utils.Supplier, PartnerServiceLevelID: l0ServiceLevel.ID},
 				},
 			})
 			test_helper.CreatePaymentAccountDetail(ctx, &models.PaymentAccountDetail{SupplierID: supplier.ID, IsDefault: true})
@@ -339,11 +342,12 @@ var _ = Describe("UpdateStatus", func() {
 	Context("When attachment is present", func() {
 		It("should update the status successfully", func() {
 			isPhoneVerified := true
+			l0ServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "L0")
 			supplier := test_helper.CreateSupplierWithAddress(ctx, &models.Supplier{
 				IsPhoneVerified: &isPhoneVerified,
 				Status:          models.SupplierStatusBlocked,
 				PartnerServiceMappings: []models.PartnerServiceMapping{
-					{ServiceType: utils.Supplier, ServiceLevel: utils.L0},
+					{ServiceType: utils.Supplier, PartnerServiceLevelID: l0ServiceLevel.ID},
 				},
 			})
 			test_helper.CreateAttachment(ctx, &models.Attachment{

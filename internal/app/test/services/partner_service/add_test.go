@@ -57,10 +57,11 @@ var _ = Describe("AddPartnerService", func() {
 
 			partnerServiceObj := &models.PartnerServiceMapping{}
 			database.DBAPM(ctx).Model(&models.PartnerServiceMapping{}).Last(&partnerServiceObj)
+			captiveServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Captive")
 
 			Expect(partnerServiceObj.SupplierId).To(Equal(supplier1.ID))
 			Expect(partnerServiceObj.ServiceType).To(Equal(utils.Transporter))
-			Expect(partnerServiceObj.ServiceLevel).To(Equal(utils.Captive))
+			Expect(partnerServiceObj.PartnerServiceLevelID).To(Equal(captiveServiceLevel.ID))
 		})
 	})
 	Context("When partner service already exist for a user", func() {
@@ -112,12 +113,12 @@ var _ = Describe("AddPartnerService", func() {
 			param := psmpb.PartnerServiceObject{
 				SupplierId:   100,
 				ServiceType:  "Supplier",
-				ServiceLevel: "CashVendor",
+				ServiceLevel: "Cash Vendor",
 			}
 
 			res, _ := new(services.PartnerServiceMappingService).Add(ctx, &param)
 
-			Expect(res.Message).To(Equal("Incompatible Service Type and Service Level"))
+			Expect(res.Message).To(Equal("Invalid Service Type and/or Service Level"))
 			Expect(res.Success).To(Equal(false))
 		})
 	})

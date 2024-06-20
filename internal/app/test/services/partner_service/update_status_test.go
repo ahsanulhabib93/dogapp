@@ -43,7 +43,8 @@ var _ = Describe("UpdateStatus", func() {
 	Context("When service is deactivated and proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.CashVendor, SupplierId: supplier.ID})
+			cashVendorServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Cash Vendor")
+			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, PartnerServiceLevelID: cashVendorServiceLevel.ID, SupplierId: supplier.ID})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier.ID,
@@ -65,7 +66,8 @@ var _ = Describe("UpdateStatus", func() {
 	Context("When service is activated and proper service type and level are given", func() {
 		It("Should return success response", func() {
 			supplier := test_helper.CreateSupplier(ctx, &models.Supplier{})
-			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, ServiceLevel: utils.CashVendor, SupplierId: supplier.ID, Active: false})
+			cashVendorServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Cash Vendor")
+			partnerservice := test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{ServiceType: utils.Transporter, PartnerServiceLevelID: cashVendorServiceLevel.ID, SupplierId: supplier.ID, Active: false})
 
 			param := psmpb.PartnerServiceObject{
 				SupplierId:       supplier.ID,

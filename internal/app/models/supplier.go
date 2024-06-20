@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -94,41 +93,6 @@ func (supplier *Supplier) IsOTPVerified() bool {
 	}
 
 	return *supplier.IsPhoneVerified
-}
-
-func (supplier *Supplier) Verify(ctx context.Context) error {
-	paymentAccountsCount := database.DBAPM(ctx).Model(supplier).Association("PaymentAccountDetails").Count()
-	if paymentAccountsCount == 0 {
-		return errors.New("At least one payment account details should be present")
-	}
-
-	addressesCount := database.DBAPM(ctx).Model(supplier).Association("SupplierAddresses").Count()
-	if addressesCount == 0 {
-		return errors.New("At least one supplier address should be present")
-	}
-
-	if !(supplier.IsOTPVerified() || supplier.IsAnyDocumentPresent(ctx)) {
-		return errors.New("At least one primary document or OTP verification needed")
-	}
-
-	// TBD: How to handle if multiple service mappings present
-	partnerService := PartnerServiceMapping{}
-	database.DBAPM(ctx).Model(PartnerServiceMapping{}).Where("supplier_id = ?", supplier.ID).First(&partnerService)
-	typeValue := utils.SupplierTypeValue[partnerService.ServiceLevel]
-
-	otpTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_otp_verification", []string{}).([]string)
-	if utils.IsInclude(otpTypeVerificationList, typeValue) && !supplier.IsOTPVerified() {
-		msg := fmt.Sprint("OTP verification required for supplier type: ", typeValue)
-		return errors.New(msg)
-	}
-
-	docTypeVerificationList := aaaModels.GetAppPreferenceServiceInstance().GetValue(ctx, "enabled_primary_doc_verification", []string{}).([]string)
-	if utils.IsInclude(docTypeVerificationList, typeValue) && !(supplier.IsAnyDocumentPresent(ctx)) {
-		msg := fmt.Sprint("At least one primary document required for supplier type: ", typeValue)
-		return errors.New(msg)
-	}
-
-	return nil
 }
 
 func (supplier *Supplier) IsAnyDocumentPresent(ctx context.Context) bool {

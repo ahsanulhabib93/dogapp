@@ -144,7 +144,8 @@ var _ = Describe("AddSupplier", func() {
 			Expect(len(partnerServices)).To(Equal(1))
 			partnerService := partnerServices[0]
 			Expect(partnerService.ServiceType).To(Equal(utils.Supplier))
-			Expect(partnerService.ServiceLevel).To(Equal(utils.Hlc))
+			serviceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "Hlc")
+			Expect(partnerService.PartnerServiceLevelID).To(Equal(serviceLevel.ID))
 			Expect(partnerService.Active).To(Equal(true))
 
 			Expect(len(supplier.SupplierCategoryMappings)).To(Equal(2))
@@ -213,7 +214,8 @@ var _ = Describe("AddSupplier", func() {
 			Expect(len(partnerServices)).To(Equal(1))
 			partnerService := partnerServices[0]
 			Expect(partnerService.ServiceType).To(Equal(utils.Supplier))
-			Expect(partnerService.ServiceLevel).To(Equal(utils.Hlc))
+			serviceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Supplier, "Hlc")
+			Expect(partnerService.PartnerServiceLevelID).To(Equal(serviceLevel.ID))
 			Expect(partnerService.Active).To(Equal(true))
 		})
 	})
