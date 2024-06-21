@@ -151,7 +151,7 @@ func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse
 	suppliers := []models.Supplier{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Preload("PartnerServiceMappings", "partner_service_mappings.service_type IN (?)", serviceTypes).
-		Preload("Attachments", "attachments.file_type in (?)", []utils.FileType{utils.TIN, utils.BIN}).
+		Preload("Attachments").
 		Where("id IN (?)", supplierIDs).
 		Find(&suppliers)
 
