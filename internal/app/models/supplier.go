@@ -54,7 +54,6 @@ type Supplier struct {
 	SupplierCategoryMappings []SupplierCategoryMapping
 	SupplierOpcMappings      []SupplierOpcMapping
 	PartnerServiceMappings   []PartnerServiceMapping `json:"partner_service_mappings"`
-	Attachments              []*Attachment           `gorm:"foreignKey:AttachableID;references:ID"`
 }
 
 type SupplierExtraDetails struct {

@@ -151,11 +151,10 @@ func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse
 	suppliers := []models.Supplier{}
 	database.DBAPM(ctx).Model(&models.Supplier{}).
 		Preload("PartnerServiceMappings", "partner_service_mappings.service_type IN (?)", serviceTypes).
-		Preload("Attachments", "attachable_type = ?", utils.AttachableTypeSupplier).
 		Where("id IN (?)", supplierIDs).
 		Find(&suppliers)
 
-	supplierAttachmentsMap := GetAttachmentsBySupplierIDs(ctx, suppliers)
+	supplierAttachmentsMap := GetAttachmentsBySupplierIDs(ctx, supplierIDs)
 	supplierMap := make(map[uint64]models.Supplier)
 	for _, supplier := range suppliers {
 		supplierMap[supplier.ID] = supplier
@@ -250,20 +249,24 @@ func GetAttachments(ctx context.Context, supplierId uint64, partnerServices []*s
 	return attachmentData
 }
 
-func GetAttachmentsBySupplierIDs(ctx context.Context, suppliers []models.Supplier) map[uint64][]*supplierPb.AttachmentObject {
+func GetAttachmentsBySupplierIDs(ctx context.Context, supplierIDs []uint64) map[uint64][]*supplierPb.AttachmentObject {
+	attachments := []models.Attachment{}
+	database.DBAPM(ctx).Model(&models.Attachment{}).
+		Where("attachable_id IN (?) AND attachable_type = ?", supplierIDs, utils.AttachableTypeSupplier).
+		Find(&attachments)
 	attachmentData := map[uint64][]*supplierPb.AttachmentObject{}
-	for _, supplier := range suppliers {
-		attachmentData[supplier.ID] = []*supplierPb.AttachmentObject{}
-		for _, attachment := range supplier.Attachments {
-			attachmentData[supplier.ID] = append(attachmentData[supplier.ID], &supplierPb.AttachmentObject{
-				Id:              attachment.ID,
-				AttachableType:  uint64(attachment.AttachableType),
-				AttachableId:    attachment.AttachableID,
-				FileType:        attachment.FileType.String(),
-				FileUrl:         attachment.FileURL,
-				ReferenceNumber: attachment.ReferenceNumber,
-			})
+	for _, attachment := range attachments {
+		if _, ok := attachmentData[attachment.AttachableID]; !ok {
+			attachmentData[attachment.AttachableID] = []*supplierPb.AttachmentObject{}
 		}
+		attachmentData[attachment.AttachableID] = append(attachmentData[attachment.AttachableID], &supplierPb.AttachmentObject{
+			Id:              attachment.ID,
+			AttachableType:  uint64(attachment.AttachableType),
+			AttachableId:    attachment.AttachableID,
+			FileType:        attachment.FileType.String(),
+			FileUrl:         attachment.FileURL,
+			ReferenceNumber: attachment.ReferenceNumber,
+		})
 	}
 	return attachmentData
 }
