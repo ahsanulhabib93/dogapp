@@ -154,6 +154,7 @@ func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse
 		Where("id IN (?)", supplierIDs).
 		Find(&suppliers)
 
+	supplierAttachmentsMap := GetAttachmentsBySupplierIDs(ctx, supplierIDs)
 	supplierMap := make(map[uint64]models.Supplier)
 	for _, supplier := range suppliers {
 		supplierMap[supplier.ID] = supplier
@@ -161,7 +162,12 @@ func PrepareListResponse(ctx context.Context, suppliersData []SupplierDBResponse
 
 	for _, supplierData := range suppliersData {
 		supplier := supplierMap[supplierData.ID]
-		data = append(data, PrepareSupplierResponse(ctx, supplier, supplierData))
+		supplierObject := PrepareSupplierResponse(ctx, supplier, supplierData)
+		if attachmentData, ok := supplierAttachmentsMap[supplier.ID]; ok {
+			supplierObject.Attachments = attachmentData
+		}
+		data = append(data, supplierObject)
+
 	}
 	return data
 }
@@ -240,6 +246,28 @@ func GetAttachments(ctx context.Context, supplierId uint64, partnerServices []*s
 		})
 	}
 
+	return attachmentData
+}
+
+func GetAttachmentsBySupplierIDs(ctx context.Context, supplierIDs []uint64) map[uint64][]*supplierPb.AttachmentObject {
+	attachments := []models.Attachment{}
+	database.DBAPM(ctx).Model(&models.Attachment{}).
+		Where("attachable_id IN (?) AND attachable_type = ?", supplierIDs, utils.AttachableTypeSupplier).
+		Find(&attachments)
+	attachmentData := map[uint64][]*supplierPb.AttachmentObject{}
+	for _, attachment := range attachments {
+		if _, ok := attachmentData[attachment.AttachableID]; !ok {
+			attachmentData[attachment.AttachableID] = []*supplierPb.AttachmentObject{}
+		}
+		attachmentData[attachment.AttachableID] = append(attachmentData[attachment.AttachableID], &supplierPb.AttachmentObject{
+			Id:              attachment.ID,
+			AttachableType:  uint64(attachment.AttachableType),
+			AttachableId:    attachment.AttachableID,
+			FileType:        attachment.FileType.String(),
+			FileUrl:         attachment.FileURL,
+			ReferenceNumber: attachment.ReferenceNumber,
+		})
+	}
 	return attachmentData
 }
 

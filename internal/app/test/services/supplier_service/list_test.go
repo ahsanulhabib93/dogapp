@@ -37,6 +37,16 @@ var _ = Describe("ListSupplier", func() {
 				SupplierOpcMappings:      []models.SupplierOpcMapping{{ProcessingCenterID: 3}, {ProcessingCenterID: 4}},
 				PartnerServiceMappings:   []models.PartnerServiceMapping{{PartnerServiceLevelID: hlcServiceLevel.ID}},
 			})
+			attachment1 := test_helper.CreateAttachment(ctx, &models.Attachment{
+				AttachableType: utils.AttachableTypeSupplier,
+				AttachableID:   supplier1.ID,
+				FileType:       utils.TIN,
+			})
+			attachment2 := test_helper.CreateAttachment(ctx, &models.Attachment{
+				AttachableType: utils.AttachableTypeSupplier,
+				AttachableID:   supplier1.ID,
+				FileType:       utils.BIN,
+			})
 			driverServiceLevel := helpers.GetServiceLevelByTypeAndName(ctx, utils.Transporter, "Driver")
 			test_helper.CreatePartnerServiceMapping(ctx, &models.PartnerServiceMapping{
 				SupplierId:            supplier1.ID,
@@ -68,6 +78,14 @@ var _ = Describe("ListSupplier", func() {
 			Expect(supplierData1.CategoryIds).To(Equal([]uint64{1, 2}))
 			Expect(supplierData1.OpcIds).To(Equal([]uint64{3, 4}))
 			Expect(supplierData1.Status).To(Equal(string(models.SupplierStatusPending)))
+			Expect(supplierData1.Attachments[0].ReferenceNumber).To(Equal(attachment1.ReferenceNumber))
+			Expect(supplierData1.Attachments[1].ReferenceNumber).To(Equal(attachment2.ReferenceNumber))
+			Expect(supplierData1.Attachments[0].AttachableId).To(Equal(supplier1.ID))
+			Expect(supplierData1.Attachments[1].AttachableId).To(Equal(supplier1.ID))
+			Expect(supplierData1.Attachments[0].AttachableType).To(Equal(uint64(utils.AttachableTypeSupplier)))
+			Expect(supplierData1.Attachments[1].AttachableType).To(Equal(uint64(utils.AttachableTypeSupplier)))
+			Expect(supplierData1.Attachments[0].FileType).To(Equal(utils.TIN.String()))
+			Expect(supplierData1.Attachments[1].FileType).To(Equal(utils.BIN.String()))
 
 			Expect(supplierData1.PartnerServices).To(HaveLen(2))
 			Expect(supplierData1.PartnerServices[0].ServiceType).To(Equal("Supplier"))
