@@ -309,6 +309,48 @@
             "description": "Access to view attachments",
             "scope_id": "supplierpanel",
             "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:officesuppliesandconsumablesservice:view",
+            "description": "Access to view office supplies and consumables",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:logisticsandtransportationservice:view",
+            "description": "Access to view logistics and transportation",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:cleaningandmaintenanceservice:view",
+            "description": "Access to view cleaning and maintenance",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:professionalservicesservice:view",
+            "description": "Access to view professional services",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:utilitiesandcommunicationservice:view",
+            "description": "Access to view utilities and communication",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:employeeandclientrelationsservice:view",
+            "description": "Access to view employee and client relations",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
+        },
+        {
+            "id": "supplierpanel:insuranceservice:view",
+            "description": "Access to view insurance",
+            "scope_id": "supplierpanel",
+            "vaccount_id": 2
         }
     ],
     "route_permissions": [
@@ -1082,6 +1124,51 @@
         {
             "role_name": "Vendor Panel Manager",
             "permission_id": "supplierpanel:attachment:admin",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:rentvendorservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:procurementvendorservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:officesuppliesandconsumablesservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:logisticsandtransportationservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:cleaningandmaintenanceservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:professionalservicesservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:utilitiesandcommunicationservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:employeeandclientrelationsservice:view",
+            "vaccount_id": 2
+        },
+        {
+            "role_name": "Vendor",
+            "permission_id": "supplierpanel:insuranceservice:view",
             "vaccount_id": 2
         }
     ]
