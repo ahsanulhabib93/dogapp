@@ -1,0 +1,14 @@
+name: Integration Test
+
+on:
+  pull_request:
+    branches: [master]
+    types: [labeled]
+
+jobs:
+  integration-tests:
+    if: ${{ github.event.label.name == 'Ok to test integration' }}
+    uses: shopuptech/integration-tests/.github/workflows/integration-tests.yml@master
+    secrets: inherit
+    with:
+      TEST_SUITE: ss2.smoke

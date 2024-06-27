@@ -77,9 +77,3 @@ jobs:
     secrets:
       GIHUB_PAT: ${{ secrets.GIHUB_PAT }}
 
-  integration-tests:
-    needs: deploy-staging
-    uses: shopuptech/integration-tests/.github/workflows/integration-tests.yml@master
-    secrets: inherit
-    with:
-      TEST_SUITE: ss2.smoke
