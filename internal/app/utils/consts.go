@@ -306,6 +306,7 @@ const (
 	POP_BOISHAKHI             BusinessUnit = 22
 	REDX_FULFILLMENT_SERVICE  BusinessUnit = 100
 	REDX_FULFILLMENT_SERVICE2 BusinessUnit = 101
+	DAS                       BusinessUnit = 200
 )
 
 func IsValidBusinessUnit(bu BusinessUnit) bool {
