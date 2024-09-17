@@ -1,8 +1,0 @@
-name: Manual workflow
-on:
-  workflow_dispatch:
-
-jobs:
-  create-release:
-    uses: shopuptech/shopup-cicd-git-actions/.github/workflows/manual.yml@master
-    secrets: inherit
