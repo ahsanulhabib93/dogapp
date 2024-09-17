@@ -1,5 +1,0 @@
-[kafkaConfig]
-brokerList=["127.0.0.1:9092"]
-    [[kafkaConfig.consumers]]
-    name="ss2"
-    topics=[]
